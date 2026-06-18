@@ -121,7 +121,9 @@ class RawStream:
                 s.close[fut] = base * np.exp(rng.normal(0, 0.5, fut.size))
                 s.open[fut] = base * np.exp(rng.normal(0, 0.5, fut.size))
                 s.high[fut] = np.maximum(s.open[fut], s.close[fut]) * (1 + rng.random(fut.size))
-                s.low[fut] = np.minimum(s.open[fut], s.close[fut]) * (1 - 0.5 * rng.random(fut.size))
+                s.low[fut] = np.minimum(s.open[fut], s.close[fut]) * (
+                    1 - 0.5 * rng.random(fut.size)
+                )
                 s.v_kline[fut] = rng.random(fut.size) * 1e6
                 s.quote_volume[fut] = s.v_kline[fut] * base
                 s.v_buy[fut] = rng.random(fut.size) * 1e6
@@ -132,7 +134,7 @@ class RawStream:
                     s.sizes[j] = rng.random(int(s.n_buy[j] + s.n_sell[j]) + 1) * 100.0
             elif mode == "revert":
                 anchor = float(s.close[max(0, k - 1)])
-                for off, j in enumerate(fut[:3]):
+                for j in fut[:3]:
                     s.close[j] = anchor  # snap back to pre-bar-k price
                     s.open[j] = anchor
                     s.high[j] = anchor * 1.001
@@ -235,7 +237,9 @@ def make_synthetic_stream(
             elif i in struct_pos:
                 close[i] = close[i - 1] * struct_pos[i]
             else:
-                close[i] = close[i - 1] * np.exp(rets[i])  # resumes from prior close (incl. plateau)
+                close[i] = close[i - 1] * np.exp(
+                    rets[i]
+                )  # resumes from prior close (incl. plateau)
             open_[i] = close[i - 1]
         if stale_bar[i]:
             open_[i] = high[i] = low[i] = close[i]

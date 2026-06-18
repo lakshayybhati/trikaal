@@ -28,8 +28,8 @@ def causal_cfg():
 
 @pytest.fixture(scope="session")
 def causal_data(causal_cfg):
-    """(stream, anom, cfg) — a small fixture sized for the truncation/perturbation harness."""
-    stream, anom = make_synthetic_stream(seed=7, n_bars=1000)
+    """(stream, anom, cfg) — a small fixture sized so the EXHAUSTIVE truncation sweep stays fast."""
+    stream, anom = make_synthetic_stream(seed=7, n_bars=600)
     return stream, anom, causal_cfg
 
 

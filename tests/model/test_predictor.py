@@ -58,6 +58,21 @@ def test_fine_head_conditions_on_coarse():
     assert (lf1 - lf2).abs().max() > 1e-5
 
 
+def test_main_fine_head_conditions_on_sampled_coarse_in_training():
+    """§6.3 / §7: during training the fine head conditions on the SAMPLED coarse (exposure-bias
+    fix), not the ground-truth coarse; at eval it uses the provided (teacher/argmax) coarse."""
+    set_determinism(0)
+    model = TrikaalAR(mtp_depths=0, coarse_sample_prob=1.0)
+    b, length = 2, 16
+    logits_c = torch.randn(b, length, model.v_c)  # non-degenerate distribution
+    tgt_c = torch.randint(0, model.v_c, (b, length))
+    model.train()
+    cond = model._coarse_conditioning(logits_c, tgt_c)
+    assert not torch.equal(cond, tgt_c), "training must condition the fine head on SAMPLED coarse"
+    model.eval()
+    assert torch.equal(model._coarse_conditioning(logits_c, tgt_c), tgt_c)
+
+
 def test_backbone_is_causal():
     """Coarse logits at positions <= t must not change when future tokens are altered."""
     set_determinism(0)

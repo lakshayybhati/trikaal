@@ -14,9 +14,7 @@ import numpy as np
 from trikaal.data.config import FeatureConfig
 
 
-def assign_segments(
-    bar_open_ms: np.ndarray, close: np.ndarray, cfg: FeatureConfig
-) -> np.ndarray:
+def assign_segments(bar_open_ms: np.ndarray, close: np.ndarray, cfg: FeatureConfig) -> np.ndarray:
     """Return ``segment_id`` [T] int64. Strictly causal: bar ``i`` reads only ``i`` and ``i-1``."""
     n = bar_open_ms.shape[0]
     seg = np.zeros(n, dtype=np.int64)

@@ -35,7 +35,9 @@ def test_clip_bounds_are_respected():
 def test_rolling_matches_manual_reference():
     rng = np.random.default_rng(2)
     f = rng.standard_normal(120)
-    z, warm = causal_zscore_segment(f, half_life=0, n_warm=8, estimator="rolling", rolling_window=20)
+    z, _warm = causal_zscore_segment(
+        f, half_life=0, n_warm=8, estimator="rolling", rolling_window=20
+    )
     t = 60
     w = f[t - 20 : t]
     expect = (f[t] - w.mean()) / np.sqrt(w.var() + 1e-8)

@@ -38,7 +38,7 @@ from trikaal.data.volatility import causal_vol_segment
 
 @dataclass
 class PerBarOutput:
-    """Output of the per-bar transform. ``x_f64`` is the pre-cast value used for bit-exact checks."""
+    """Output of the per-bar transform. ``x_f64`` is the pre-cast value for bit-exact checks."""
 
     x: np.ndarray  # [T,16] float32 (model-visible)
     x_f64: np.ndarray  # [T,16] float64 (pre-cast)
@@ -141,6 +141,14 @@ def compute_features(stream: RawStream, cfg: FeatureConfig) -> PerBarOutput:
         sigma[s0:s1] = sig
         vol_warm[s0:s1] = warm
 
+    # ---- planted SINGLE-BAR lookahead (test-only): sigma[leak_bar] reads the future label bar.
+    # Guarded so it vanishes under truncation to leak_bar, which is exactly how the exhaustive
+    # sweep catches it (a sparse anchor sampler that never draws leak_bar would not). ------------
+    if cfg.planted_leak == "localized_sigma_next" and cfg.leak_bar is not None:
+        lb = cfg.leak_bar
+        if 0 <= lb < T - 1 and lb + 1 < T:
+            sigma[lb] = sigma[lb] + abs(float(raw_ret[lb + 1]))
+
     # ---- optional input-path vol-scaling of ret_close / range (§3.3) ----------------------
     if cfg.vol_scale_inputs:
         raw_feat[:, 0] = raw_feat[:, 0] / (sigma + EPS_VOL)
@@ -198,6 +206,15 @@ def compute_features(stream: RawStream, cfg: FeatureConfig) -> PerBarOutput:
 
     # ---- targets: y_{t→t+1} = raw_ret[t+1] / sigma_t (label reads bar t+1; divisor is causal)
     target, target_valid = build_vol_scaled_targets(raw_ret, sigma, vol_warm, bounds)
+
+    # ---- planted SINGLE-BAR survivorship leak (test-only): the loss-inclusion flag at leak_bar
+    # is dropped based on the EXISTENCE of a future bar (lb+2, beyond the legitimate t+1 label
+    # horizon) — a textbook survivorship leak. Under truncation to lb+1 that bar is gone, so the
+    # flag reverts to its causal value: the divergence is what the exhaustive sweep catches. ----
+    if cfg.planted_leak == "localized_validity_next" and cfg.leak_bar is not None:
+        lb = cfg.leak_bar
+        if 0 <= lb and lb + 2 < T:
+            target_valid[lb] = False
 
     # ---- QA-only columns (never fed to the model) -----------------------------------------
     is_stale = stale_flag(o, stream.high, stream.low, c, v_kline, cfg)

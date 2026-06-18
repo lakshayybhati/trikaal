@@ -30,7 +30,7 @@ It builds, in order:
 
 | Gate | What it asserts | Where |
 |---|---|---|
-| **G0** | Lookahead truncation+perturbation invariant (planted leaks fail, real transforms pass); loader excludes QA-only columns; FSQ/backbone/MTP shape & causality units | `tests/data/test_causal_safety.py`, `tests/{tokenizer,model}/*` |
+| **G0** | **Exhaustive** truncation sweep — *every* bar is a truncation boundary (100% coverage is the gating criterion, not a sparse sample), so a single-bar localized leak cannot pass; plus an adversarial perturbation probe on the high-risk strata; planted leaks (global + localized divisor + localized survivorship) all fail; loader excludes QA-only columns; FSQ/backbone/MTP shape & causality units | `tests/data/test_causal_safety.py`, `tests/{tokenizer,model}/*` |
 | **G1 stage-1** | Tokenizer overfits one batch to recon **MAE < 1e-3** | `tests/tokenizer/test_roundtrip.py` |
 | **G1 stage-2** | Backbone+MTP overfit one batch to coarse+fine **CE < 0.05 nats/token** | `tests/model/test_overfit.py` |
 | **G2** | Two same-seed runs produce **bit-identical** loss curves | `tests/test_determinism.py` |
@@ -45,6 +45,23 @@ pytest -q -m "not slow"                   # fast suite (G0 units, G1 stage-2, G2
 pytest -q -m slow                         # the longer G1 stage-1 overfit gate
 python scripts/preflight.py               # G0/G1/G2 summary (the launcher's pre-flight)
 ```
+
+## Deferred to later milestones (explicitly out of this slice)
+
+- **Binance ingest (§2.1)** + the Parquet/DuckDB lake + content-hashed manifest — the whole
+  point of this slice is to be green *before* downloading anything.
+- **Inference / generation subsystem (§8)** — the end-to-end KV-cache generation path
+  (`TrikaalAR.step`, `BackboneOutput.kv_cache`) and Monte-Carlo rollout. The KV-cache *primitive*
+  (`MultiHeadSelfAttention.step`) is implemented and verified bit-equivalent to the full forward
+  (`tests/model/test_attention.py`); wiring it through block→model belongs with the eval harness.
+- **Eval harness (§8)** — purged walk-forward + embargo, the 2×2 ablation runner, the cost-aware
+  net-IR backtest. The training gates here use the parallel (non-cached) forward.
+- **Full-corpus Stage-1/Stage-2 training** — this slice overfits *single batches* to prove the
+  architecture is bug-free; convergence on the real corpus is a separate run.
+
+This scope was confirmed by a 4-dimension adversarial review (causal-safety / FSQ / backbone-MTP
+/ spec-invariants); its high-severity findings on the harness (sparse sampling → exhaustive
+coverage; unchecked `target_valid`/`ts`) and on §6.3 sampled-coarse conditioning were fixed here.
 
 ## Non-negotiable invariants (from `CLAUDE.md`)
 

@@ -47,11 +47,15 @@ class TrikaalAR(nn.Module):
         token_dropout: float = 0.1,
         mtp_depths: int = 4,
         mtp_mu: float = 0.3,
+        coarse_sample_prob: float = 1.0,
         max_len: int = 512,
     ) -> None:
         super().__init__()
         self.v_c, self.v_f, self.d_model = v_c, v_f, d_model
         self.mtp_mu = mtp_mu
+        # §6.3: fraction of the time the fine head is conditioned on the SAMPLED coarse (vs
+        # teacher-forced) during training. Default 1.0 = fully sampled from step 0 (Kronos parity).
+        self.coarse_sample_prob = coarse_sample_prob
         self.token_embed = TokenEmbedding(v_c, v_f, d_model, token_dropout)
         self.temporal = TemporalEmbedding(d_model)
         self.resid_drop = nn.Dropout(resid_dropout)
@@ -92,6 +96,20 @@ class TrikaalAR(nn.Module):
         q = self.token_embed.coarse(coarse_ids)
         return self.w_f(self.cross(h, q))
 
+    def _coarse_conditioning(self, logits_c: Tensor, tgt_c: Tensor) -> Tensor:
+        """§6.3: condition the fine head on the SAMPLED coarse prediction during training (so it
+        learns to be robust to its own coarse mistakes — the exposure-bias fix), not the
+        ground-truth coarse. Gradient never flows through the discrete sample (stop-grad)."""
+        if not self.training or self.coarse_sample_prob <= 0.0:
+            return tgt_c
+        with torch.no_grad():
+            probs = F.softmax(logits_c, dim=-1).reshape(-1, self.v_c)
+            sampled = torch.multinomial(probs, 1).reshape(tgt_c.shape)
+            if self.coarse_sample_prob < 1.0:
+                use = torch.rand(tgt_c.shape, device=tgt_c.device) < self.coarse_sample_prob
+                sampled = torch.where(use, sampled, tgt_c)
+        return sampled
+
     def forward(
         self,
         b_c: Tensor,
@@ -120,7 +138,8 @@ class TrikaalAR(nn.Module):
         h_pred = h[:, :-1]
         tgt_c, tgt_f = b_c[:, 1:], b_f[:, 1:]
         logits_c = self.w_c(h_pred)
-        logits_f = self.fine_logits(h_pred, tgt_c)  # teacher-forced coarse of the predicted bar
+        cond = self._coarse_conditioning(logits_c, tgt_c)  # SAMPLED coarse during training (§6.3)
+        logits_f = self.fine_logits(h_pred, cond)
         nll_coarse = F.cross_entropy(logits_c.reshape(-1, self.v_c), tgt_c.reshape(-1))
         nll_fine = F.cross_entropy(logits_f.reshape(-1, self.v_f), tgt_f.reshape(-1))
         nll_main = nll_coarse + nll_fine

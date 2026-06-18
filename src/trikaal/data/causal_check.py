@@ -27,14 +27,20 @@ from trikaal.data.config import FeatureConfig
 from trikaal.data.features import PerBarOutput, compute_features
 from trikaal.data.synthetic import AnomalyIndex, RawStream
 
-# Each output: (name, attribute, horizon_offset). horizon = anchor t + horizon_offset.
+# Each output: (name, attribute, horizon_offset). The output for bar t is fully determined at
+# raw-truncation boundary k = t + horizon_offset (inputs/divisor read bars <= t; the target
+# LABEL legitimately reads bar t+1, so target/target_valid have offset 1). EVERY model-visible
+# input (x, m, ts, raw) plus segment_id, the divisor sigma, and the loss-gating target_valid are
+# covered — there is no enumerated "safe transform" carve-out (§6 is transform-agnostic).
 _OUTPUTS: tuple[tuple[str, str, int], ...] = (
     ("x", "x_f64", 0),
     ("m", "m", 0),
     ("segment_id", "segment_id", 0),
     ("raw", "raw", 0),
     ("sigma", "sigma", 0),
+    ("ts", "ts", 0),  # model input (temporal embedding key) — must be causal too
     ("target", "target", 1),
+    ("target_valid", "target_valid", 1),  # the loss-inclusion flag — a survivorship surface
 )
 _RADIUS = 3  # high-risk region half-width around each flagged bar
 _PERTURB_MODES = ("noise", "revert", "signflip")
@@ -47,11 +53,18 @@ class CausalReport:
     n_checks: int
     strata_counts: dict[str, int]
     failures: list[dict] = field(default_factory=list)
+    coverage_bars: int = 0  # distinct bars whose outputs were checked
+    total_bars: int = 0
+
+    @property
+    def coverage(self) -> float:
+        return self.coverage_bars / self.total_bars if self.total_bars else 0.0
 
     def summary(self) -> str:
         head = "PASS" if self.passed else "FAIL"
         strata = ", ".join(f"{k}={v}" for k, v in self.strata_counts.items())
-        s = f"[causal-safety {head}] anchors={self.n_anchors} checks={self.n_checks} | {strata}"
+        cov = f"coverage={self.coverage_bars}/{self.total_bars} ({100 * self.coverage:.0f}%)"
+        s = f"[causal-safety {head}] {cov} checks={self.n_checks} | {strata}"
         if self.failures:
             f0 = self.failures[0]
             s += f"\n  first failure: output={f0['output']} t={f0['t']} mode={f0['mode']} "
@@ -92,14 +105,17 @@ def build_anchor_strata(
     def clamp(centers: list[int]) -> list[int]:
         return [int(c) for c in centers if lo <= c <= hi]
 
-    seg_starts = [0] + (np.nonzero(np.diff(out.segment_id) != 0)[0] + 1).tolist()
+    seg_starts = [0, *(np.nonzero(np.diff(out.segment_id) != 0)[0] + 1).tolist()]
     seg_boundary_centers = clamp(seg_starts) + [s - 1 for s in seg_starts if lo <= s - 1 <= hi]
 
     # (must_include_centers, full_candidate_pool) — centers are ALWAYS sampled (the exact bars
     # where a localized future-dependent gate fires), the rest fill the radius neighbourhood.
     plan: dict[str, tuple[list[int], list[int]]] = {
         "bad_tick_adjacent": (clamp(anom.bad_tick), expand(anom.bad_tick)),
-        "segment_boundary": (sorted(set(seg_boundary_centers)), expand(seg_starts) + seg_boundary_centers),
+        "segment_boundary": (
+            sorted(set(seg_boundary_centers)),
+            expand(seg_starts) + seg_boundary_centers,
+        ),
         "structural_break": (clamp(anom.structural_break), expand(anom.structural_break)),
         "stale_run": (clamp(anom.stale_run[:1] + anom.stale_run[-1:]), expand(anom.stale_run)),
         "random_background": ([], list(range(lo, hi + 1))),
@@ -156,9 +172,10 @@ def check_causal_safety(
             perts = {m: compute_features(stream.perturb_after_bar(h, rng, m), cfg) for m in modes}
 
             for name, attr, _ in outs:
-                # skip invalid targets (no label, or decision bar in vol warm-up)
-                if name == "target" and not full.target_valid[t]:
-                    continue
+                # Compare EVERY output (no skipping). _bit_equal is NaN-aware, so an invalid
+                # target (NaN in both) compares equal; a future-conditioned flip of target_valid
+                # or a corrupted target is caught. We never use target_valid to gate a check —
+                # that coupling would let a validity leak mask a target leak.
                 ref = _value_at(full, attr, t)
                 for label, cand in (("truncate", trunc), *perts.items()):
                     n_checks += 1
@@ -178,4 +195,50 @@ def check_causal_safety(
         n_checks=n_checks,
         strata_counts=counts,
         failures=failures,
+        coverage_bars=len(all_anchors),
+        total_bars=len(stream),
+    )
+
+
+def exhaustive_truncation_sweep(
+    stream: RawStream, cfg: FeatureConfig, *, stride: int = 1, stop_on_first_failure: bool = False
+) -> CausalReport:
+    """The merge gate: truncate the raw stream at EVERY bar boundary and assert each output is
+    byte-identical to the full-history build at the bar it is just-determined for.
+
+    Coverage is the gating criterion, not a sparse stochastic sample. At boundary ``k`` the stream
+    is truncated to bars ``[0..k]``; an output with horizon offset ``o`` is fully determined for bar
+    ``t = k - o`` (it may read bars ``<= k``). If a transform at bar ``t`` reads any bar ``> t+o``,
+    truncating to ``k = t+o`` removes that bar and the recomputed value diverges — caught here for
+    EVERY bar (any look-ahead distance ``>= 1``), which a sparse anchor sample cannot guarantee.
+
+    ``stride > 1`` trades coverage for speed; ``stride == 1`` is the only setting that guarantees
+    catching a single-bar, look-ahead-distance-1 leak, so it is the default and the CI gate value.
+    """
+    full = compute_features(stream, cfg)
+    total = len(stream)
+    failures: list[dict] = []
+    n_checks = 0
+    covered: set[int] = set()
+    for k in range(0, total, stride):
+        trunc = compute_features(stream.truncate_to_bar(k), cfg)
+        for name, attr, horizon_off in _OUTPUTS:
+            t = k - horizon_off
+            if t < 0:
+                continue
+            covered.add(t)
+            n_checks += 1
+            eq, delta = _bit_equal(getattr(trunc, attr)[t], getattr(full, attr)[t])
+            if not eq:
+                failures.append({"output": name, "t": int(t), "mode": "truncate", "delta": delta})
+        if stop_on_first_failure and failures:
+            break
+    return CausalReport(
+        passed=len(failures) == 0,
+        n_anchors=len(covered),
+        n_checks=n_checks,
+        strata_counts={"exhaustive_truncation": len(covered)},
+        failures=failures,
+        coverage_bars=len(covered),
+        total_bars=total,
     )

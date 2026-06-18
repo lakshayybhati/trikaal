@@ -14,7 +14,7 @@ import sys
 import numpy as np
 import torch
 
-from trikaal.data.causal_check import check_causal_safety
+from trikaal.data.causal_check import check_causal_safety, exhaustive_truncation_sweep
 from trikaal.data.config import synthetic_test_config
 from trikaal.data.features import compute_features
 from trikaal.data.synthetic import make_synthetic_stream
@@ -28,9 +28,13 @@ LEAKS = ("centered_zscore", "global_zscore", "sigma_includes_next", "forward_rev
 
 def gate_g0() -> bool:
     cfg = synthetic_test_config(half_life_fast=48, half_life_slow=96, n_warm=12, w_tau=20)
-    stream, anom = make_synthetic_stream(seed=7, n_bars=1000)
-    real = check_causal_safety(stream, cfg, anom, seed=1337, n_per_stratum=5)
-    print(f"  G0 causal-safety (real transforms): {real.summary()}")
+    stream, anom = make_synthetic_stream(seed=7, n_bars=600)
+    # the GATE: exhaustive truncation sweep (every bar), full coverage is the criterion
+    gate = exhaustive_truncation_sweep(stream, cfg)
+    print(f"  G0 exhaustive sweep (real transforms): {gate.summary()}")
+    # added probe: adversarial perturbation on the high-risk strata
+    probe = check_causal_safety(stream, cfg, anom, seed=1337, n_per_stratum=5)
+    print(f"  G0 perturbation probe: passed={probe.passed}")
     leaks_caught = []
     for leak in LEAKS:
         rep = check_causal_safety(
@@ -43,7 +47,7 @@ def gate_g0() -> bool:
         )
         leaks_caught.append(not rep.passed)
         print(f"    planted leak '{leak}': {'CAUGHT' if not rep.passed else 'MISSED'}")
-    return real.passed and all(leaks_caught)
+    return gate.passed and gate.coverage == 1.0 and probe.passed and all(leaks_caught)
 
 
 def gate_g1_stage1() -> bool:

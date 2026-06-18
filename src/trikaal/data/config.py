@@ -55,8 +55,12 @@ class FeatureConfig:
     # --- a deliberately-planted lookahead, for proving the harness has teeth ---
     # When set, the named transform peeks at future bars. Used ONLY by the causal-safety
     # test to demonstrate the invariant catches a leak; never enabled in any real run.
-    planted_leak: str | None = None  # None | "centered_zscore" | "sigma_includes_next"
-    #                                  | "forward_revert_badtick" | "global_zscore"
+    # Global leaks (fire at every bar): "centered_zscore" | "global_zscore" |
+    #   "sigma_includes_next" | "forward_revert_badtick".
+    # Localized leaks (fire only at leak_bar): "localized_sigma_next" (divisor reads bar+1) |
+    #   "localized_validity_next" (target_valid dropped on the existence of bar+2).
+    planted_leak: str | None = None
+    leak_bar: int | None = None  # the single bar a "localized_*" leak fires at
 
     def effective_n_warm(self, half_life: int) -> int:
         return max(self.n_warm, half_life // 8)
@@ -66,6 +70,13 @@ class FeatureConfig:
 
     def with_leak(self, leak: str | None) -> FeatureConfig:
         return replace(self, planted_leak=leak)
+
+    def with_localized_leak(self, bar: int, kind: str = "sigma") -> FeatureConfig:
+        """A single-bar lookahead at ``bar`` — used to prove the EXHAUSTIVE sweep catches a leak
+        that a sparse anchor sampler would miss. ``kind``: "sigma" (divisor reads bar+1) or
+        "validity" (the loss-inclusion flag target_valid reads bar+2)."""
+        leak = "localized_sigma_next" if kind == "sigma" else "localized_validity_next"
+        return replace(self, planted_leak=leak, leak_bar=bar)
 
 
 def synthetic_test_config(**overrides: object) -> FeatureConfig:
