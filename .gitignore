@@ -20,12 +20,13 @@ env/
 htmlcov/
 coverage.xml
 
-# Project runtime artifacts (content-hashed runs, data, weights)
-runs/
-data/
-raw/
-processed/
-wandb/
+# Project runtime artifacts (content-hashed runs, data, weights).
+# Root-anchored so they do NOT match the source packages src/trikaal/data/ or tests/data/.
+/runs/
+/data/
+/raw/
+/processed/
+/wandb/
 *.ckpt
 *.pt
 *.parquet

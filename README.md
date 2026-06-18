@@ -1,0 +1,55 @@
+# Trikaal — synthetic vertical slice (milestone 1)
+
+A microstructure-aware **FSQ tokenizer** for crypto 1-minute K-line foundation models — a
+controlled evolution of Kronos. The authoritative design is the blueprint spec at
+[`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md).
+
+## What this milestone proves
+
+The goal of this slice is to prove the **entire model + harness architecture trains and is
+leak-free on synthetic data**, with the pre-flight gates **G0 / G1 / G2** green, *before* writing
+any Binance ingest (§2.1) or downloading a single byte. The real-data pipeline is deliberately
+deferred until this slice is green.
+
+It builds, in order:
+
+1. **A seeded synthetic raw stream** (`trikaal.data.synthetic`) with deliberately injected
+   **gaps, bad ticks, structural breaks, and stale runs** — the four high-risk regions the
+   lookahead sampler must target.
+2. **The real per-bar feature transforms** (`trikaal.data.{segments,normalize,quality,volatility,features,targets}`)
+   — feature-spec §1/§3/§4/§5 + vol-scaling §3 — fed by the synthetic stream instead of Binance.
+3. **The causal-safety harness** (`trikaal.data.causal_check`) — the transform-agnostic
+   truncation + perturbation invariant (§1.6 / §2.6.2) with high-risk-region stratified sampling.
+   Four planted-lookahead variants prove the harness has teeth; the real transforms pass.
+4. **The FSQ tokenizer** (`trikaal.tokenizer`) — encoder → FSQ (`[11,9,9,7,7,5,5]`, coarse
+   `{11,9,9}`→891 / fine `{7,7,5,5}`→1225) → decoder, hierarchical Huber loss, **no commitment term**.
+5. **The AR backbone + MTP** (`trikaal.model`) — exact Kronos_small (8L/512/1024/8h, **21,301,248**
+   realized params) with hierarchical coarse→fine heads and DeepSeek-style MTP causal-chain depths.
+
+## Pre-flight gates (§7.0)
+
+| Gate | What it asserts | Where |
+|---|---|---|
+| **G0** | Lookahead truncation+perturbation invariant (planted leaks fail, real transforms pass); loader excludes QA-only columns; FSQ/backbone/MTP shape & causality units | `tests/data/test_causal_safety.py`, `tests/{tokenizer,model}/*` |
+| **G1 stage-1** | Tokenizer overfits one batch to recon **MAE < 1e-3** | `tests/tokenizer/test_roundtrip.py` |
+| **G1 stage-2** | Backbone+MTP overfit one batch to coarse+fine **CE < 0.05 nats/token** | `tests/model/test_overfit.py` |
+| **G2** | Two same-seed runs produce **bit-identical** loss curves | `tests/test_determinism.py` |
+
+## Running
+
+```bash
+pip install -e ".[dev]"
+
+ruff check . && ruff format --check .     # lint + format
+pytest -q -m "not slow"                   # fast suite (G0 units, G1 stage-2, G2)
+pytest -q -m slow                         # the longer G1 stage-1 overfit gate
+python scripts/preflight.py               # G0/G1/G2 summary (the launcher's pre-flight)
+```
+
+## Non-negotiable invariants (from `CLAUDE.md`)
+
+- **TFI, never OFI** — imbalance is signed executed-volume from aggTrades, not orderbook OFI.
+- **Strict causal-safety** — every output for bar `t` is a pure function of raw data with
+  effective timestamp `≤ t+1`; the divisor `σ_t` reads bars `≤ t`, the *label* may read `t+1`.
+- **One headline claim** — the FSQ tokenizer. MTP, vol-scaling, and the eval harness are secondary.
+- **Determinism is a deliverable** — one config + a pinned seed reproduces any run.
