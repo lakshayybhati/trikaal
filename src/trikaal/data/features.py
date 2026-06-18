@@ -10,6 +10,7 @@ property the causal-safety harness enforces.
 
 from __future__ import annotations
 
+from collections import deque
 from dataclasses import dataclass
 
 import numpy as np
@@ -258,6 +259,17 @@ def _d_oi(oi_ff: np.ndarray, bounds: list[tuple[int, int]]) -> np.ndarray:
     return out
 
 
+def _subsample_sorted(arr: np.ndarray, cap: int) -> np.ndarray:
+    """Deterministic distribution-preserving subsample: sorted, evenly-spaced order statistics.
+
+    Recompute-identical (no RNG), so the causal-safety sweep still passes; preserves the empirical
+    quantiles that ``tau`` needs (the spec's reservoir/sketch, §2.3)."""
+    if arr.size <= cap:
+        return arr
+    idx = np.linspace(0, arr.size - 1, cap).round().astype(np.int64)
+    return np.sort(arr)[idx]
+
+
 def _large_trade_share(
     sizes: list[np.ndarray],
     v_agg: np.ndarray,
@@ -266,20 +278,19 @@ def _large_trade_share(
     cfg: FeatureConfig,
 ) -> np.ndarray:
     out = np.zeros(len(sizes), dtype=np.float64)
+    cap = cfg.tau_pool_cap
     for s0, s1 in bounds:
+        window: deque[np.ndarray] = deque(maxlen=cfg.w_tau)  # past bars' (capped) size samples
         for p in range(s1 - s0):
             i = s0 + p
-            if p < cfg.w_tau:
-                continue  # warm-up: rolling-past window not filled
-            lo = max(s0, i - cfg.w_tau)
-            pool_list = [sizes[j] for j in range(lo, i) if sizes[j].size]
-            if not pool_list:
-                continue
-            pool = np.concatenate(pool_list)
-            tau = float(np.percentile(pool, cfg.q_tau))
-            bar = sizes[i]
-            if bar.size:
-                out[i] = float(np.sum(bar >= tau)) / (float(v_agg[i]) + EPS_SZ)
+            if p >= cfg.w_tau and window:
+                pool = np.concatenate(window) if len(window) > 1 else window[0]
+                bar = sizes[i]  # numerator uses the bar's FULL sizes (not the capped pool)
+                if pool.size and bar.size:  # all-empty window (e.g. a stale run) → large_share 0
+                    tau = float(np.percentile(pool, cfg.q_tau))
+                    out[i] = float(np.sum(bar >= tau)) / (float(v_agg[i]) + EPS_SZ)
+            # fold bar i's sizes into the rolling window AFTER emitting (strictly causal)
+            window.append(_subsample_sorted(sizes[i], cap) if sizes[i].size else sizes[i])
     return out
 
 

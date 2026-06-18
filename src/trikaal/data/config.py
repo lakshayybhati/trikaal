@@ -30,6 +30,11 @@ class FeatureConfig:
     # --- aggTrades / tau (§2.3) ---
     w_tau: int = 1440  # rolling-past window for the large-trade percentile
     q_tau: float = 90.0  # percentile defining a "large" trade
+    # Cap each past bar's contribution to the percentile POOL to a deterministic sorted
+    # subsample (the spec's "rolling reservoir/quantile sketch", §2.3) — bounds the per-bar
+    # percentile cost on liquid real symbols. Recompute-deterministic (so the causal sweep still
+    # passes). No effect when a bar has <= cap trades (e.g. the synthetic fixture).
+    tau_pool_cap: int = 64
 
     # --- data-quality gates (§5) ---
     badtick_k: float = 12.0  # MAD multiple flagging a bad-tick wick
