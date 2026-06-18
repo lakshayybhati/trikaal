@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Project runtime artifacts (content-hashed runs, data, weights)
+runs/
+data/
+raw/
+processed/
+wandb/
+*.ckpt
+*.pt
+*.parquet
+*.npy
