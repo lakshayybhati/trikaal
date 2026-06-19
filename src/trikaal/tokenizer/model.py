@@ -78,6 +78,25 @@ class TokenizerAE(nn.Module):
     def decode_latent(self, z_hat: Tensor) -> Tensor:
         return self.decoder(self.w_out(z_hat))
 
+    def decode_tokens(self, cidx: Tensor, fidx: Tensor) -> Tensor:
+        """``(b_c, b_f) -> x_hat`` — inverse of ``encode_tokens`` (the AR rollout→features path).
+
+        Unflatten the mixed-radix coarse/fine ids back to per-dim FSQ codes, dequantize to the grid
+        value ``z_hat = code − (L_i−1)/2`` (exactly the STE forward value the decoder consumes), and
+        decode. ``decode_tokens(*encode_tokens(x, m))`` reproduces ``forward(x, m)["x_hat"]``.
+        """
+        q = self.quant
+        codes = torch.zeros((*cidx.shape, q.dim), dtype=torch.long, device=cidx.device)
+        for ids, group in ((cidx, q.coarse_idx), (fidx, q.fine_idx)):
+            rem = ids.clone()
+            for pos in reversed(range(len(group))):  # big-endian mixed-radix unflatten
+                lvl = q.levels[group[pos]]
+                codes[..., group[pos]] = rem % lvl
+                rem = rem // lvl
+        half = (q.levels_t - 1.0) / 2.0
+        z_hat = codes.to(q.levels_t.dtype) - half
+        return self.decode_latent(z_hat)
+
     def forward(self, x: Tensor, mask: Tensor) -> dict[str, Tensor]:
         z = self.latent(x, mask)
         z_hat, codes, cidx, fidx = self.quant(z)
