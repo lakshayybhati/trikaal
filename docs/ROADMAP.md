@@ -40,9 +40,11 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 
 **M4 — Full universe ingest + cloud transition** ☐ — ⚑ **CLOUD BOUNDARY (VPS kicks in)**
 - **Goal:** §2 at scale — the full, delisting-aware universe lake.
+- **M4a (LOCAL, no spend):** generalize the proven single-symbol M2 pipeline to N symbols — universe-selection config + delisting-aware manifest schema + parallel aggTrades-reduction plan — and **dry-run on the local BTCUSDT data so it reproduces M2's `dataset_hash` bit-exactly** (regression that proves the single-symbol path survived generalization), causal sweep stays leak-free, plus a cloud cost estimate (GB + $ at 100 vs 200 pairs). Makes M4b turnkey. Adversarial-review the causal/normalization generalization (per-symbol stats must stay causal — the key risk).
+- **M4b (CLOUD, after user green-light + provisioning):** execute the ingest at scale.
 - **Exit gate:** 100–200 USDT pairs ingested (SHA-256, content-hashed manifest, **listing + delisting dates recorded**), full Parquet/DuckDB lake, causal exhaustive sweep green on a sampled cross-section of real universe bars.
-- **Compute:** **cloud** (storage + parallelism around the heavy aggTrades stream). **All intensive training from here is cloud CUDA A100/H100 — never MPS.**
-- **De-risk:** the heavy data-engineering lift is isolated from modeling and is independent of M5, so the two overlap.
+- **Compute:** M4a local; **M4b cloud** (storage + parallelism around the heavy aggTrades stream). **All intensive training from here is cloud CUDA A100/H100 — never MPS.**
+- **De-risk:** M4a does all the design/validation for free so the paid M4b crossing is turnkey; the heavy data lift is isolated from modeling.
 
 **M5 — Eval harness (co-equal subsystem)** ✅
 - **Goal:** build the entire §8 harness — train-once-eval-forward folds, Q1–Q4 quadrants, cost-aware net-IR (funding + vol-scaled spread + break-even), secondary diagnostics, DSR/PBO, MDE/effective-N, the Cell-5 placebo machinery, and the Cell-1 external validation against published Kronos-small.
