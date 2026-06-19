@@ -65,6 +65,7 @@ class UniverseManifest:
     total_bars: int
     symbols: list[SymbolCoverage]
     built_at_utc: str | None = None  # provenance only — excluded from the content hash
+    metadata: dict[str, Any] = field(default_factory=dict)  # corpus-purpose / hashing-scope note
 
     def manifest_content_hash(self) -> str:
         """Deterministic hash over config + symbol-sorted coverage (NO wall-clock field)."""
@@ -98,11 +99,13 @@ def build_manifest(
     *,
     raw_files: dict[str, list[dict[str, Any]]] | None = None,
     built_at_utc: str | None = None,
+    metadata: dict[str, Any] | None = None,
 ) -> UniverseManifest:
     """Assemble the manifest from a :class:`UniverseSpec` + :class:`UniverseBuildResult`.
 
     ``raw_files`` maps symbol → list of raw-file checksum records (from the ingest manifest);
-    omit in a streams-only (synthetic / dry-run) build.
+    omit in a streams-only (synthetic / dry-run) build. ``metadata`` carries annotation (e.g. the
+    corpus-purpose + hashing-scope note); it is provenance, excluded from the content hash.
     """
     spec_by_sym = {s.symbol: s for s in spec.symbols}
     raw_files = raw_files or {}
@@ -140,6 +143,7 @@ def build_manifest(
         total_bars=result.total_bars,
         symbols=rows,
         built_at_utc=built_at_utc,
+        metadata=metadata or {},
     )
 
 
