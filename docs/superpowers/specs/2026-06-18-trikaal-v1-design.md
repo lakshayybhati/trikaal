@@ -6,7 +6,7 @@
 | Status | Design — spine approved; **pending final user review** |
 | Date | 2026-06-18 |
 | Scope | v1 — single paper, single model |
-| Parent work | Kronos (Shi et al. 2025, arXiv:2508.02739) |
+| Prior art (cited reference, **not a dependency**) | Kronos (Shi et al. 2025, arXiv:2508.02739) |
 | Model class | decoder-only, Kronos_small class (**~21.30M** realized params) |
 | Data | crypto-only, Binance spot + USDT-perps, 1-minute spine, ~500M–1B bars |
 
@@ -22,10 +22,12 @@ Everything else — DeepSeek-V3-style **MTP** heads for multi-horizon output, **
 
 | | OHLCV-only (F = 7) | +Microstructure (F = 16) |
 |---|---|---|
-| **BSQ** | Cell 1 — Kronos_small reproduction (validated vs public weights) | Cell 3 — isolates the microstructure leg |
+| **BSQ** | Cell 1 — our BSQ baseline (externally validated vs published Kronos-small) | Cell 3 — isolates the microstructure leg |
 | **FSQ** | Cell 2 — isolates the FSQ leg | Cell 4 — **Trikaal** (full model) |
 
 Both legs must visibly earn their place across tokenizer-level metrics (reconstruction MAE/MSE, codebook usage/perplexity, collapse rate) **and** every downstream task — or it is reported honestly.
+
+**Required negative control (placebo).** A fifth arm — FSQ + *temporally-shuffled* microstructure (Cell 4's exact input capacity, with the microstructure channels' time-alignment destroyed) — separates microstructure *information* from raw input *capacity*. If Cell 4's gain over Cell 2 survives the shuffle, the gain was capacity, not signal, and **the microstructure leg of the claim is withdrawn**. This is a required, always-published result (§8.C.4), not optional.
 
 ### Headline metric
 
@@ -40,8 +42,9 @@ Cost-aware **net Information Ratio** computed on a **portfolio return series**, 
 - **TFI, never OFI** — imbalance is computed from free aggTrades (signed executed-volume); true order-book OFI is v2.
 - **Strict causal-safety** — no transform (feature, normalization, vol-scale, data-quality gate, or target) may read data with effective timestamp > t+1; enforced as a transform-agnostic CI gate.
 - **One headline claim** — MTP, vol-scaling, and the eval harness are secondary, not competing contributions.
+- **Full in-house independence** — no Kronos code or weights are part of Trikaal; every component (attention, blocks, tokenizer, FSQ, training loop, eval, metrics) is self-written. Kronos's paper is cited prior art; its **public weights appear in exactly one place — the eval harness, as an external validation target for our BSQ baseline (§8.C.3)** — and never enter the model.
 - **Bits-per-token is the control** — never a parameter-padding lever; the realized ~21.30M is reported honestly.
-- **Determinism is a deliverable** — one config + pinned seed reproduces any run; every dataset is content-hashed.
+- **Determinism is a deliverable (scoped honestly)** — the **data pipeline, frozen-stats, and any prediction replay are bit-exact** from one config + pinned seed + content-hashed inputs; **GPU training is reproducible only up to FlashAttention-2 non-determinism** (bit-exact solely under the deterministic-attention fallback, §7.G2), and every run records which mode it used. Every dataset is content-hashed.
 
 ### Scope
 
@@ -378,7 +381,7 @@ Two sources, two cadences, **one immutability rule**: raw bytes are written once
 
 #### 1.3 Universe selection
 
-Top ~100–200 USDT pairs by cumulative quote volume, frozen at **project start** into `config/universe.yaml` (symbol, market(s), listing date, perp-available flag, OI-coverage start). Survivorship bias is acknowledged and bounded: v1 is a *modeling* claim (tokenizer), not a tradable-universe claim; the eval section's backtest must use the same frozen universe and disclose this. Spot+perp pairs are ingested for both markets; the fused token uses perp microstructure where available, spot otherwise (mask bits 14–16 carry the distinction).
+Top ~100–200 USDT pairs by cumulative quote volume, recorded into `config/universe.yaml` (symbol, market(s), listing date, **delisting date**, perp-available flag, OI-coverage start). **Survivorship bias is owned, not dodged.** Because the headline metric is cost-aware net-IR (a *tradability* quantity), a universe frozen at *project start* would survivorship-bias the backtest. v1 therefore **includes delisted/relisted pairs wherever the Binance dumps cover their active life** — a symbol present for only part of the window contributes only its live bars (its `delisting date` truncates it). Where a pair's history is unavailable (pre-dump-coverage or never published), its absence is **recorded and quantified** (count and quote-volume share of pairs that could not be included) and the **net-IR is reported with an explicit survivorship caveat** in both the paper and the model card (§9.3.2) — never papered over. The eval backtest and the secondary RankIC diagnostics use this same delisting-aware universe. Spot+perp pairs are ingested for both markets; the fused token uses perp microstructure where available, spot otherwise (mask bits 14–16 carry the distinction).
 
 ---
 
@@ -1964,7 +1967,7 @@ def set_determinism(seed: int):
 | **Stage 2** (AR, 1.5 passes × 0.75B) | ≈ 1.1B tokens | ≈ 75k tok/s (incl. MTP) | **≈ 4–5 h** → with grad-accum/eval overhead **≈ 6–9 h** | **≈ 3–5 h** |
 | **Total (single GPU)** | — | — | **≈ 10–15 h** | **≈ 6–9 h** |
 
-So a full Stage-1 + Stage-2 cycle fits comfortably in **<1 day on a single A100**, **half a day on an H100** — cheap enough to run the entire **2×2 {BSQ,FSQ}×{OHLCV-only,+microstructure} ablation** (4 Stage-1 + 4 Stage-2 cycles) in a few GPU-days. The OHLCV-only arm is the **`F = 7`** Kronos-equivalent subset (5 price/shape + 2 volume/liquidity) vs the full `F = 16` vector. **G3 replaces these a-priori numbers with measured tok/s before any full launch.** If measured throughput < 60% of assumed, re-plan (Correction-grade gate, not a guess).
+So a full Stage-1 + Stage-2 cycle fits comfortably in **<1 day on a single A100**, **half a day on an H100**. The full experiment is **train-once-then-evaluate-forward** (§8.A.2): one training cycle per **(cell × seed)** — **5 cells** (the 2×2 plus the §C.4 placebo) **× ≥3 seeds = 15 cycles** — with the `K = 6` forward blocks scored on each trained checkpoint **without retraining**. That is ≈ **15 GPU-days on A100 (≈ 8 on H100)** for the headline experiment, plus the cheap (eval-only / small-slice) `κ`-filter search and dropout sweep. The OHLCV-only arm is the **`F = 7`** Kronos-equivalent subset (5 price/shape + 2 volume/liquidity) vs the full `F = 16` vector. **Retrain-per-fold would multiply the 15 cycles by `K = 6` (~90 cycles) — explicitly a costed v1.x follow-up, not v1 (§8.A.2).** **G3 replaces these a-priori numbers with measured tok/s before any full launch.** If measured throughput < 60% of assumed, re-plan (Correction-grade gate, not a guess).
 
 ---
 
@@ -2120,34 +2123,34 @@ label_span(t) = [t+1, t + H_max]            # H_max = 60 (longest evaluated roll
 
 The sample's **feature window** is the preceding `L ≤ 512` bars `[t-L+1, t]`. Two samples whose `[feature_window ∪ label_span]` intervals overlap share information; if one is in train and the other in test, the test leaks. **Purge removes that overlap.**
 
-##### A.2 Time folds (walk-forward, anchored expanding)
+##### A.2 Time split — train ONCE, evaluate forward (no per-fold retraining)
 
-Partition the global time axis (UTC, 1m grid) into `K` contiguous, chronologically ordered blocks. v1 default `K = 6`, sized so each test block ≈ 2–3 months of data (a full quarter of regime variety per fold is the selection criterion). Fold `k` uses:
+Partition the global time axis (UTC, 1m grid) into a single anchored **train span** `[T_0, T_train_end)` followed by `K` contiguous, chronologically ordered **forward evaluation blocks** (v1 default `K = 6`, each ≈ 2–3 months — a quarter of regime variety per block is the selection criterion). **One** model is trained per `(cell, seed)` on the train span; the `K` forward blocks are **evaluation-only windows of that single checkpoint — the model is NOT retrained per block.**
 
 ```
-Train_k = all samples with decision bar t  in  [T_0,           T_k_start - 1]
-Test_k  = all samples with decision bar t  in  [T_k_start,     T_k_end]
+Train (once)  = all samples with decision bar t  in  [T_0,         T_train_end)
+Eval block_k  = all samples with decision bar t  in  [B_k_start,   B_k_end]      # k = 1..K, sequential, all ≥ T_train_end
 ```
 
-Anchored/expanding (train always starts at `T_0`) is the default because a foundation-scale model is data-hungry and we want monotone-growing train sets; a **rolling** variant (fixed-width train window) is available via config for a robustness check (report both if they disagree by > 1 IR unit). Only past data ever trains for a future test block — walk-forward is one-directional by construction.
+**Rationale (compute + standard practice).** For a foundation-scale, data-hungry model the defensible and standard protocol is **pretrain-once-then-evaluate-forward**, not retrain-per-fold: the forward blocks probe generalization across time/regime on a *fixed* checkpoint, which is exactly the production use (you do not refit between every forecast). This keeps the experiment at **≈ (cells × seeds) training runs** (§8 wall-clock) instead of multiplying by `K`. The per-block headline is still reported **separately** so a regime-sensitive block is visible (the temporal-OOS diagnostic, §A.5 Q2/Q4). A **rolling** evaluation variant (fixed look-back at score time, still no retraining) is available via config for robustness (report both if they disagree by > 1 IR unit). Retrain-per-fold (a fresh fit per block, anchored-expanding) is a strictly more expensive rigor variant — a **named, costed v1.x follow-up, not v1.** Only past data ever trains; the split is one-directional by construction.
 
 ##### A.3 PURGE
 
-For each test block `Test_k` with bar range `[T_k_start, T_k_end]`, drop from `Train_k` **every training sample `t` whose feature-or-label interval intersects the test block's bar range:**
+Drop from the (single) **Train** set every training sample `t` whose feature-or-label interval reaches into the evaluation region. Because Train lies entirely before the eval blocks, the binding case is the **train→eval boundary**:
 
 ```
-drop t from Train_k  if  [t - L + 1,  t + H_max]  ∩  [T_k_start, T_k_end]  ≠ ∅
+drop t from Train  if  [t - L + 1,  t + H_max]  ∩  [T_train_end, B_K_end]  ≠ ∅
 ```
 
-This removes (i) training samples whose 60-bar label reaches into the test block (forward leak) and (ii) training samples whose feature window overlaps the test block (backward leak at the boundary). Purging is applied at the *sample* level, not the *bar* level: a bar may survive as context while the sample anchored there is dropped.
+This removes (i) training samples whose 60-bar label reaches past `T_train_end` into the eval region (forward leak) and (ii) any sample whose feature window overlaps it (backward leak at the boundary) — equivalently, it insets Train's right edge by `H_max`, which the embargo (§A.4) then extends to `E`. Purging is applied at the *sample* level, not the *bar* level: a bar may survive as context while the sample anchored there is dropped. (In the optional rolling/CPCV variants, where post-test bars re-enter training, the purge applies at every train↔test boundary; the formula generalizes per boundary.)
 
 ##### A.4 EMBARGO — LEADING gap on the train→test boundary (the binding guard for anchored mode)
 
-Purging removes only samples whose feature-or-label interval *overlaps* the test block. But serial correlation in 1m crypto returns/microstructure leaks across the boundary **beyond** the overlap region: a train sample anchored at `t = T_k_start − (H_max+1)` has a label ending exactly at `T_k_start − 1` (no overlap, so it survives the purge) yet sits immediately adjacent to the test block and is autocorrelated with its leading edge. In the **default anchored walk-forward, `Train_k` lies entirely before the test block**, so the operative leakage guard is a **LEADING embargo** that inset the train block's right edge:
+Purging removes only samples whose feature-or-label interval *overlaps* the test block. But serial correlation in 1m crypto returns/microstructure leaks across the boundary **beyond** the overlap region: a train sample anchored at `t = T_k_start − (H_max+1)` has a label ending exactly at `T_k_start − 1` (no overlap, so it survives the purge) yet sits immediately adjacent to the test block and is autocorrelated with its leading edge. In the **train-once design, `Train` lies entirely before the evaluation region**, so the operative leakage guard is a **LEADING embargo** at the single train→eval boundary `T_train_end`, insetting the train span's right edge:
 
 ```
-LEADING embargo band = [T_k_start - E,  T_k_start - 1]   # drop all training samples anchored here
-                                                          # (equivalently: inset Train_k right edge by E)
+LEADING embargo band = [T_train_end - E,  T_train_end - 1]   # drop all training samples anchored here
+                                                             # (equivalently: inset Train's right edge by E)
 ```
 
 The previously-specified *trailing* band `[T_k_end + 1, T_k_end + E]` is **inert in anchored mode** (no train samples ever lie after `T_k_end`) and applies **only to rolling and CPCV modes**, where post-test bars re-enter training; it is scoped explicitly to those modes.
@@ -2175,7 +2178,7 @@ A single time split tests "does it generalize forward"; it does **not** test "do
 | Q3 (cross-sectional OOS) | HELDOUT | TRAIN time | generalization to unseen *coins* |
 | **Q4 (true OOS — HEADLINE)** | **HELDOUT** | **FUTURE block** | unseen coins *and* unseen future — the published number |
 
-**The headline net-IR is always reported on Q4.** Q2/Q3 are diagnostics that localize failure (Q2≫Q4 ⇒ symbol-overfit; Q3≫Q4 ⇒ regime/time-overfit). The `K`-fold walk-forward of A.2 runs *within* the TRAIN_SYMBOLS set to produce Q2; Q3/Q4 evaluate the same trained checkpoints on the held-out symbols at, respectively, in-window and final-future time.
+**The headline net-IR is always reported on Q4.** Q2/Q3 are diagnostics that localize failure (Q2≫Q4 ⇒ symbol-overfit; Q3≫Q4 ⇒ regime/time-overfit). The `K` forward evaluation blocks of A.2 are scored on the **single trained checkpoint** within TRAIN_SYMBOLS to produce Q2; Q3/Q4 score that **same** checkpoint on the held-out symbols at, respectively, in-window and final-future time (no retraining anywhere).
 
 **Causal-safety hooks inherited.** Normalization stats for held-out symbols are computed in **frozen-stats mode** frozen at each fold's train/test boundary (no held-out-symbol future ever touches a statistic). The `tau` sketch and EWMA state for held-out symbols are warmed *only* on their own pre-test bars within-segment. The feature-spec pipeline-purity test (the transform-agnostic truncation/perturbation invariant — that the entire feature/mask/`segment_id`/target pipeline is a pure function of raw data with effective timestamp `≤ t+1`, with test bars sampled specifically from bad-tick-adjacent, segment-boundary, structural-break, and stale-run regions) is re-run on a sample of Q4 bars as a merge gate on the harness itself.
 
@@ -2216,7 +2219,7 @@ c_total (round-trip execution) = 2 * c_side          # enter + exit
 **Execution defaults and rationale (cite):**
 
 - `f_taker = 0.04%` (4 bps) — Binance USDT-perp / spot taker fee at a representative VIP-0–1 tier. Conservative; many makers pay less but we assume **taker** (we cross the book, consistent with an aggressive 1m signal).
-- `spread_bps`: BTC/ETH effective half-spread on Binance is ~0.01–0.05%; mid-cap USDT pairs 0.05–0.3%. We use a **per-symbol, per-bar effective spread** when reconstructible from data, else a liquidity-decile default: BTC/ETH `spread_bps = 1 bp`, top-20 `= 3 bp`, the long tail `= 10 bp`. (Effective Binance order-book spreads of 0.01–0.1% are well documented; see refs below.)
+- `spread_bps`: BTC/ETH effective half-spread on Binance is ~0.01–0.05%; mid-cap USDT pairs 0.05–0.3%. We use a **per-symbol, per-bar effective spread** when reconstructible from data, else a liquidity-decile default: BTC/ETH `spread_bps = 1 bp`, top-20 `= 3 bp`, the long tail `= 10 bp`. (Effective Binance order-book spreads of 0.01–0.1% are well documented; see refs below.) **Volatility-scaled spread (the filter trades the wide-spread bars).** Because the execution filter (§B.1) fires disproportionately on high-conviction = high-volatility bars — and effective spread widens with volatility — the per-bar spread is scaled by the bar's causal realized-vol ratio: `spread_bps(symbol, t) = spread_decile · max(1, σ_t / σ̄_symbol)` (`σ_t` the §7 causal EWMA vol, `σ̄_symbol` its trailing mean). A flat decile spread would understate cost exactly on the bars we trade; this multiplier is causal (`σ_t` reads `≤ t`) and content-hashed.
 - `k_impact = 0.1` (10 bps per unit of `Q/ADV` participation) as a conservative linear temporary-impact coefficient; `Q` = order notional, `ADV_t` = causal trailing 24h average dollar volume (`log_amount`-derived, de-logged). With unit notional sized to ≤ a small fraction of ADV the impact term is small but **present from day one** so the model cannot learn to "trade" illiquid bars for free.
 
 **Funding term (perpetuals only).** Perps pay/receive funding every 8h; any position held across a settlement boundary realizes a funding cash flow that is a first-order, recurring cost. Because `funding_rate` is in the feature set and causally available, the funding debit is a deterministic add-on to each trade's net P&L:
@@ -2227,7 +2230,7 @@ funding_cost(symbol, t, h, s_t) = s_t * Σ_{settlements g ∈ [t+1, t+h]}  fundi
 
 i.e. a **long** position pays positive funding and a **short** receives it (and vice-versa for negative funding). The term is **zero** when the holding interval `[t+1, t+h]` spans no funding settlement (the common case for `h ≤ 60` min, but non-trivial for multi-bar held horizons and any position straddling an 8h timestamp). **Spot-pair trades have no funding leg** and the term is identically zero. Funding is included in the cost-stress sensitivity sweep (§E) alongside the execution components.
 
-This yields an all-in **round-trip execution cost in the 0.1%–0.3% band** the crypto cost literature reports for taker execution on liquid pairs (≈8 bps for BTC up to ≈30+ bps for mid-caps), plus a position-dependent funding leg, matching the project mandate. The exact `c_total` and `funding_cost` per trade are computed per `(symbol, bar)`, **never** a flat universe constant, and the full cost-config is content-hashed with every reported number. Sensitivity is mandatory: re-report the headline IR at `c_total ∈ {0.10%, 0.20%, 0.30%}` and with funding stressed (the cost-stress curve, §E).
+This yields an all-in **round-trip execution cost in the 0.1%–0.3% band** the crypto cost literature reports for taker execution on liquid pairs (≈8 bps for BTC up to ≈30+ bps for mid-caps), plus a position-dependent funding leg, matching the project mandate. The exact `c_total` and `funding_cost` per trade are computed per `(symbol, bar)`, **never** a flat universe constant, and the full cost-config is content-hashed with every reported number. **The headline net-IR is reported at the conservative `c_total = 0.30%` upper bound** (with the full sensitivity curve alongside); a model that clears costs only at `0.10%` is reported as not robust, never headlined. Sensitivity is mandatory: re-report the headline IR at `c_total ∈ {0.10%, 0.20%, 0.30%}` and with funding stressed (the cost-stress curve, §E).
 
 > Refs for the cost model: Lopez de Prado (2018) on cost-aware backtesting; documented Binance effective spreads of ~0.01–0.1% on liquid order-book pairs ([CoinMetrics/market-microstructure surveys](https://www.coinmetro.com/glossary/bid-ask-spread)); Bitcoin bid-ask spread ≈0.02–0.04% on majors ([market-microstructure references](https://markets.bitcoin.com/glossary/spread)). The paper cites the primary academic crypto-cost sources (e.g. Makarov & Schoar 2020 on crypto market frictions; Marshall, Nguyen & Visaltanachoti on crypto liquidity) alongside these.
 
@@ -2266,6 +2269,7 @@ periods_per_year = 525600 / h        # h=1 →525600, h=5 →105120, h=15 →350
 - **A per-trade IR, if reported at all, is labeled explicitly as a per-trade statistic and is NOT sqrt-annualized** (it is a descriptive trade-quality number, not an annualized portfolio ratio).
 - The per-symbol net-return distribution is still published as a **box-plot** (so a single lucky coin cannot carry the result; see §E no-cherry-picking).
 - We additionally report **net Sharpe** on the same portfolio series and gate it through the **Deflated Sharpe Ratio** (Bailey & Lopez de Prado) accounting for the number of ablation cells and hyperparameter trials, so an IR inflated by multiple-testing is discounted — see §E.
+- **Break-even cost (first-class result):** report `c_break` = the round-trip cost at which net-IR crosses zero (solve `IR_net(c_total) = 0` over the cost-stress sweep). `c_break` relative to the realistic 0.10–0.30% band is the headline robustness number — a strategy whose `c_break` sits *inside or below* the realistic band is reported as **cost-fragile, not alpha**.
 
 ##### B.4 Baselines — the headline is INCREMENTAL net-IR over the best naive benchmark
 
@@ -2281,16 +2285,17 @@ Degenerate internal baselines alone (no-trade `s_t ≡ 0`, trade-everything `κ�
 
 #### C. The 2×2 ablation protocol {BSQ, FSQ} × {OHLCV, +micro} at matched bits-per-token
 
-This is the experiment. The headline claim ("microstructure-aware FSQ tokenizer beats Kronos BSQ") is **only** established by this controlled 2×2, with everything but the manipulated variable held identical.
+This is the experiment. The headline claim ("microstructure-aware FSQ tokenizer beats the BSQ baseline") is **only** established by this controlled 2×2 (plus the §C.4 placebo control), with everything but the manipulated variable held identical.
 
 ##### C.1 The four cells
 
 | Cell | Quantizer | Input vector | Role |
 |---|---|---|---|
-| **1** | BSQ | OHLCV-only — `F = 7` (5 price/shape + 2 volume/liquidity = the Kronos-equivalent subset) | **Kronos reproduction / baseline** |
+| **1** | BSQ | OHLCV-only — `F = 7` (5 price/shape + 2 volume/liquidity = the Kronos-equivalent subset) | **our BSQ baseline** (externally validated vs published Kronos-small, §C.3) |
 | **2** | BSQ | full `F = 16` (+micro) | isolates the *microstructure* leg |
 | **3** | FSQ | OHLCV-only — `F = 7` | isolates the *FSQ* leg |
 | **4** | **FSQ** | **full `F = 16` (+micro)** | **the proposed model** |
+| **5 (placebo)** | FSQ | full `F = 16`, microstructure channels (dims 8–16) **temporally shuffled** (surrogate) | **negative control** — separates microstructure *information* from input *capacity* (§C.4) |
 
 The OHLCV-only arm is **`F = 7`** (5 price/shape + 2 volume/liquidity), matching the feature spec and the Kronos-equivalent subset — not 6. Two main effects, cleanly separable: (4 vs 3)+(2 vs 1) attributes the **microstructure** contribution; (3 vs 1)+(4 vs 2) attributes the **FSQ** contribution; the interaction (4−2)−(3−1) tests whether FSQ and micro are synergistic. One claim, two mechanically-independent legs — exactly the design contract.
 
@@ -2303,18 +2308,35 @@ Everything except {quantizer, input dims}:
 - **Training budget:** identical optimizer (AdamW), identical dropout schedule, identical token/step count, identical data folds (A.5), identical seeds (run **≥3 seeds per cell**, report mean ± std — single-seed ablation numbers are not publishable). The Stage-1 tokenizer reconstruction loss is **Huber (smooth-L1, δ=1.0)** for both coarse and fine legs, with Stage-1 tokenizer dropout default `0.0` — both per the Tokenizer section's canonical config, referenced not restated.
 - **Eval:** identical Q4 test set, identical cost model (including funding), identical execution filter (`θ = κ·c_total`, same tuned `κ`), identical horizons (all produced by autoregressive rollout). The *only* differences are the two manipulated factors.
 
-For OHLCV-only cells (1, 3), the micro/perp dims are **removed from the tokenizer input entirely** (not zero-filled) so the tokenizer's capacity is spent only on the `F = 7` OHLCV subset — otherwise cell 1 is not a faithful Kronos reproduction. The mask convention still applies to the OHLCV fields.
+For OHLCV-only cells (1, 3), the micro/perp dims are **removed from the tokenizer input entirely** (not zero-filled) so the tokenizer's capacity is spent only on the `F = 7` OHLCV subset — otherwise cell 1 is not a clean OHLCV-only BSQ baseline. The mask convention still applies to the OHLCV fields.
 
-##### C.3 Validating the Kronos reproduction (cell 1) against public weights
+##### C.3 External validation of the BSQ baseline (cell 1) against published Kronos-small
 
-Cell 1 must be a *trustworthy* Kronos_small reproduction or the whole comparison is suspect. Validation protocol:
+Cell 1 must be a *trustworthy* BSQ baseline or the whole comparison is suspect. **This step is a calibration of our harness against prior art, not a reimplementation:** no Kronos code or weights are part of Trikaal — the official weights are loaded **only here, inside the eval harness**, as an external yardstick, and never become a model component. Validation protocol:
 
 1. **Architecture parity check:** assert param count, layer shapes, and tensor flow match the published Kronos_small (≈24.7M, OHLCV input) within the param tolerance; diff the config against the released spec.
-2. **Public-weights benchmark:** load the **official released Kronos_small weights** and run *our* eval harness on a *common public slice* (a fixed set of symbols/dates that overlaps Kronos's evaluation domain, e.g. the BTC/ETH 1m window in their setup). Record their IC/RankIC/MAE/R² under our metric code.
+2. **Public-weights benchmark:** load the **official released Kronos_small weights** and run *our* eval harness on a *common public slice* (a fixed set of symbols/dates that overlaps Kronos's evaluation domain, e.g. the BTC/ETH 1m window in their setup). **Feed official Kronos its own native input pipeline (its released OHLCV normalization and tokenization), NOT our `F = 7` causal feature representation** — otherwise the tolerance band silently absorbs an input-representation difference and the backbone-parity invariant is violated at the input layer. Record their IC/RankIC/MAE/R² under our metric code.
 3. **Reproduction tolerance gate:** our from-scratch cell-1 checkpoint, trained on our data, must reach **IC/RankIC within a stated tolerance band of the public-weights numbers on that common slice** (target: within ~10–15% relative on RankIC; if our data domain differs, we report the gap and its cause rather than hiding it). If cell-1 underperforms public Kronos beyond tolerance, **the ablation is blocked** — we are not allowed to claim FSQ beats a *crippled* baseline.
 4. **Metric-code cross-check:** compute IC/RankIC on the public weights with both our harness and (where feasible) the authors' reported protocol; agreement validates our metric implementations themselves.
 
-This makes cell 1 simultaneously our baseline *and* an external calibration of the entire harness.
+This makes cell 1 simultaneously our baseline *and* an external calibration of the entire harness. (Cell 1 is **our** BSQ implementation at matched bpt; published Kronos-small is the external yardstick it is validated against — never a component of, or a dependency for, the model.)
+
+---
+
+#### C.4 The microstructure placebo (negative control — Cell 5)
+
+The 2×2 matches *tokenizer* capacity at equal bits-per-token, but the +microstructure cells (3, 4) carry **more input information by construction** (16 dims vs 7). A gain for Cell 4 over Cell 2 could therefore be microstructure *information* **or** merely the extra input *capacity*. Cell 5 disambiguates — it is the decisive defense of the microstructure leg.
+
+**Construction.** Cell 5 is bit-for-bit Cell 4 (FSQ, `F = 16`, identical backbone / bpt / training budget) except the **microstructure sub-vector (dims 8–16) is replaced by a surrogate** that preserves its joint marginal distribution and internal cross-channel structure while **destroying its temporal alignment** with the OHLCV channels and the forecast target:
+
+- **Primary surrogate — block time-permutation.** Within each contiguous segment, apply a fixed seeded permutation of the microstructure sub-vector **as a unit** across the time axis (the 9-dim block at bar `t` moves to a permuted position; within-bar cross-channel structure preserved, alignment to OHLCV/target destroyed).
+- **Stricter alternative — phase-randomized surrogate.** Per channel, randomize the Fourier phase while preserving the power spectrum (Theiler surrogate): keeps each channel's autocorrelation, destroys its cross-correlation with returns. Reported when the permutation result is ambiguous.
+
+**Causal-safety note.** The placebo is a **control arm, never a deployable configuration**, so its surrogate transform is *deliberately allowed to be non-causal* (it permutes/transforms over a whole segment) — its only purpose is to destroy predictive signal. It is **seed-pinned, applied identically in train and eval** (the model both trains and is scored on the same surrogate), content-hashed, and **never shipped** in any released checkpoint. The standard causal-safety gate is therefore explicitly **scoped out** for Cell 5's microstructure channels, and the harness flags Cell 5 as a control so it can never be mistaken for a model.
+
+**Decision rule.** Define the microstructure effect `Δ_micro = IR_net(Cell 4) − IR_net(Cell 2)` and the capacity-only effect `Δ_placebo = IR_net(Cell 5) − IR_net(Cell 2)`. The microstructure leg of the claim **holds only if `Δ_micro` exceeds `Δ_placebo` by a margin that survives the Deflated Sharpe discount (§E)**. If `Δ_micro ≈ Δ_placebo`, the apparent benefit is input capacity, not microstructure information, and **the microstructure leg is withdrawn from the paper's claim** — the FSQ leg stands or falls on its own. Cell 5 runs the same **≥3 seeds** as every other cell. A BSQ placebo is optional, run only if Cell 3 (BSQ+micro) itself shows a positive microstructure effect worth controlling.
+
+This control is reported whatever its outcome (§E.7).
 
 ---
 
@@ -2385,7 +2407,11 @@ These are not optional disclosures; they are CI-enforced conditions on what may 
 
 6. **Honest degradation forecast (mandatory, stated up front).** We publish, *before* any live deployment, an explicit expected gap between backtest Q4 net-IR and live net-IR, with its causes itemized: (i) **slippage realism** — our linear impact + half-spread understates true impact on the illiquid tail and during volatility spikes; expect cost realization worse than modeled. (ii) **funding drift** — realized funding can diverge from the recorded settlement series during stress; the funding leg may bite harder live. (iii) **non-stationarity / alpha decay** — 1m crypto microstructure edges decay as others trade them; expect signal half-life of weeks–months, not the static backtest. (iv) **fill uncertainty** — we assume taker fills at `C_{t+1}`; real fills miss, partially fill, or move the price. (v) **regime shift** — Q4 is one future block; a regime unseen in training degrades further. **Stated forecast: live net-IR is expected to realize at roughly 40–60% of backtest Q4 net-IR after these frictions, and a backtest Q4 net Sharpe above ~3 is treated as a red flag for overfitting (triggering the §E.4 investigation), not a success.** The paper's headline claim is framed as a *controlled relative* result — FSQ+micro vs BSQ baseline under the identical harness, and as **incremental** net-IR over the best naive benchmark (§B.4) — which is robust to this absolute degradation even though the absolute IR is not.
 
-These six commitments are what make the harness co-equal with the model: they are the difference between a publishable research artifact and a curve-fit.
+7. **Microstructure placebo (negative control).** The headline microstructure effect is reported alongside the §C.4 shuffled-microstructure placebo (Cell 5). The microstructure leg holds only if `Δ_micro` exceeds `Δ_placebo` by a DSR-surviving margin; if not, the gain was input capacity, not signal, and the microstructure leg is **withdrawn**. This control is mandatory and published whatever its outcome.
+
+8. **Statistical power stated up front (effective-N, not just trial count).** Before the Q4 run we report a **minimum-detectable-effect (MDE)**: given the cost model, the trade frequency the filter admits, and the **effective** number of independent observations — crypto is ≈ one-factor, so 100–200 symbols collapse to far fewer independent bets, and `K = 6` forward blocks give ≈6 quasi-independent regime samples — the smallest `Cell 4 − Cell 1` (and `Cell 4 − placebo`) net-IR gap distinguishable from noise at the pre-registered significance, after DSR. The portfolio-period IR's standard error uses the **cross-sectional-correlation-adjusted breadth** (effective N), not the raw concurrent-position count. If the plausible microstructure edge is below the MDE, the experiment is declared **underpowered before compute is spent** — the design is changed or the result is reported as inconclusive, never spun as a win. A **first cut of this MDE / effective-N estimate is produced in the M2 report** on the single coin-year, alongside the per-feature causal IC screen.
+
+These eight commitments are what make the harness co-equal with the model: they are the difference between a publishable research artifact and a curve-fit.
 
 ---
 
@@ -2621,22 +2647,24 @@ Three artifacts under one HF model repo `trikaal/trikaal-small-v1`, each a separ
 
 Also shipped in the repo: the **frozen-stats normalization table** (per symbol, per feature `(mu, var)` at the train/test boundary — feature-spec §3.4) and the **dataset content-hash manifest**, so the published eval is a pure function of `(weights, frozen-stats, raw test bars)`. `scripts/export_hf.py` builds and pushes this; `release.yml` automates it on tag.
 
+**Data redistribution (Binance terms).** Raw Binance dumps and `aggTrades` are **not** redistributed — Binance's terms govern that data. The release ships the **ingest pipeline + content-hash manifest** so users reconstruct the exact dataset by re-pulling from `data.binance.vision` themselves; only derived artifacts we are clearly entitled to publish (frozen-stats table, configs, weights) ship directly. If a small fixed eval slice must ship for one-command reproducibility, its redistributability is verified against Binance's terms first; the default is re-pull, not re-host. (Apache-2.0 in §3.5 licenses our *code and weights*, not Binance's data.)
+
 #### 3.2 Model card (`docs/model_card.md` → HF)
 Mandatory sections (a reviewer/user must find each):
 - **Intended use & out-of-scope use:** research forecasting of crypto 1m K-lines; explicitly NOT a deployed trading system.
 - **Training-data recipe:** Binance spot + USDT-perps, top ~100–200 USDT pairs, ~2019–present, 1m spine, ~500M–1B bars, multi-stage cleaning, segment-splitting on gaps. Mirrors `docs/data_recipe.md`; cites the content-hash manifest.
 - **Architecture:** Kronos_small AR config + the FSQ tokenizer (the novel leg) + MTP heads, with the explicit statement that the backbone is held at Kronos parity *on purpose* for a clean comparison.
 - **Eval results — INCLUDING LOSSES:** the 2×2 ablation table (the central result), the **headline cost-aware NET Information Ratio** under the execution filter with the stated transaction-cost band, then secondary IC/RankIC/MAE/R²/generative/backtest metrics. Report final tokenizer reconstruction losses (`L_coarse`, `L_fine`, per-stage residual contribution) and predictor train/val loss curves — not just downstream metrics — so the artifact is honestly auditable.
-- **Limitations:** 27M params saturates ~1–2B bars; crypto-only, Binance-only; 512-bar context; spot pairs have structurally-absent funding/OI; backtest is purged walk-forward but still historical (no live-trading guarantee).
+- **Limitations:** 27M params saturates ~1–2B bars; crypto-only, Binance-only; 512-bar context; spot pairs have structurally-absent funding/OI; backtest is purged walk-forward but still historical (no live-trading guarantee); **net-IR carries a residual survivorship caveat** — the universe includes delisted pairs where dumps allow, but pairs with no published history are absent, biasing net-IR optimistic by the stated (quantified) margin (§1.3).
 - **The explicit TFI-not-OFI caveat** (Correction 2): microstructure imbalance is **trade-flow imbalance (TFI)** computed from `aggTrades` taker side, NOT orderbook order-flow imbalance (OFI). True OFI requires L2 depth, which is **explicit v2 future work**. State plainly that a TFI signal is the weaker trade-based cousin of OFI.
 - **Not-financial-advice notice:** prominent, unambiguous — outputs are model predictions for research, not investment advice; no warranty; crypto markets carry total-loss risk.
-- **Reproducibility block:** the exact `reproduce_paper.sh` command, the dataset/config/weights hashes, and the frozen-stats table reference.
+- **Reproducibility block:** the exact `reproduce_paper.sh` command, the dataset/config/weights hashes, and the frozen-stats table reference. The bit-exact-reproducibility guarantee is **scoped to data + frozen-stats + seeded config + prediction replay**; **GPU training is bit-exact only under the deterministic-attention fallback** (FlashAttention-2 is otherwise non-deterministic), and each checkpoint records which mode produced it.
 
 #### 3.3 Paper (`paper/`)
 **Single-hook framing.** Abstract and contributions state exactly one claim: a microstructure-aware FSQ tokenizer for financial K-lines, with two mechanically-independent legs (FSQ-replaces-BSQ; free microstructure features in the per-bar vector) under one umbrella. **The 2×2 table {BSQ, FSQ} × {OHLCV-only, +microstructure}, at matched bits-per-token, is the central result/figure.** Everything else (Kronos-parity backbone, MTP, vol-scaled targets, eval harness) is positioned as inherited method or production harness, *not* a second research claim — keeping the paper honest and unrejectable on scope-creep grounds. The cost-aware NET-IR-under-execution-filter result is the headline downstream metric; RankIC etc. are reported as secondary diagnostics. Purged walk-forward + embargo and the cited transaction-cost model (0.1–0.3%/trade) are stated as method, not afterthoughts.
 
 #### 3.4 Live demo (`demo/` → HF Space)
-A Gradio/Streamlit app that consumes a **live Binance 1m WS stream (or a deterministic Parquet replay)** and renders a **multi-horizon distributional forecast** at 1/5/15/60 min using the MTP heads + nucleus sampling + MC trajectories. The visual is a **fan chart of prediction intervals** (e.g. 50/80/95% bands), never a single point line — directly demonstrating the "distributional output by contract" principle (Addition 3). The demo carries the same not-financial-advice banner and a "replay mode" toggle so the published artifact is reproducible offline.
+A Gradio/Streamlit app that consumes a **live Binance 1m WS stream (or a deterministic Parquet replay)** and renders a **multi-horizon distributional forecast** at 1/5/15/60 min using the MTP heads + nucleus sampling + MC trajectories. The visual is a **fan chart of prediction intervals** (e.g. 50/80/95% bands), never a single point line — directly demonstrating the "distributional output by contract" principle (Addition 3). The demo carries the same not-financial-advice banner and a "replay mode" toggle so the published artifact is reproducible offline. It renders **forecasts only** — never buy/sell signals, positions, sizing, or a P&L/leaderboard — so the artifact stays unambiguously a research *visualization*, not a trading product.
 
 #### 3.5 License
 **Apache-2.0** (over MIT): the explicit patent grant and `NOTICE`-based attribution are the right fit for a model-weights research release that builds on Kronos, and it is the de-facto standard for HuggingFace model artifacts. `NOTICE` attributes Kronos (Shi et al. 2025, arXiv:2508.02739) and any vendored ideas; `CITATION.cff` makes citing Trikaal itself trivial.
@@ -2645,7 +2673,7 @@ A Gradio/Streamlit app that consumes a **live Binance 1m WS stream (or a determi
 
 ### 4. Future-work roadmap — firewalled from v1
 
-The roadmap is a **firewall, not a backlog**: nothing below is in v1, and the repo is structured so that a v1 reviewer can verify the v1 scope is closed and self-contained before any v2 work begins. v1 ships the **controlled comparison to Kronos_small with the FSQ-tokenizer claim proven by the 2×2 table** — and stops there.
+The roadmap is a **firewall, not a backlog**: nothing below is in v1, and the repo is structured so that a v1 reviewer can verify the v1 scope is closed and self-contained before any v2 work begins. v1 ships the **controlled comparison — our FSQ vs our BSQ at matched bits-per-token, externally validated against published Kronos-small — with the FSQ-tokenizer claim proven by the 2×2 table (and defended by the §8.C.4 placebo)** — and stops there.
 
 #### 4.1 What is deliberately NOT in v1 (and why)
 | Excluded | Why it's out of v1 |
