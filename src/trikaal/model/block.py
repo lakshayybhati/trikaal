@@ -6,6 +6,7 @@ tokenizer AE uses SwiGLU (Tokenizer §a). Both are selectable via ``ffn_kind``.
 
 from __future__ import annotations
 
+import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 
@@ -68,3 +69,12 @@ class TransformerBlock(nn.Module):
         x = x + self.resid_drop(self.attn(self.norm1(x)))
         x = x + self.resid_drop(self.ffn(self.norm2(x)))
         return x
+
+    @torch.no_grad()
+    def step(self, x_t: Tensor, cache: dict, pos: int) -> Tensor:
+        """Incremental one-bar step mirroring ``forward`` with dropout off (KV-cached generation).
+
+        ``x_t``: [B, 1, d_model]; ``cache``: this block's persistent KV dict; ``pos``: bar index.
+        """
+        h = x_t + self.attn.step(self.norm1(x_t), cache, pos)
+        return h + self.ffn(self.norm2(h))

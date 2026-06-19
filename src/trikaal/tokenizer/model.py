@@ -36,6 +36,20 @@ class TokenizerAE(nn.Module):
         max_len: int = 512,
     ) -> None:
         super().__init__()
+        self._config = {
+            "levels": list(levels),
+            "n_features": n_features,
+            "d_model": d_model,
+            "n_layers": n_layers,
+            "n_heads": n_heads,
+            "d_ff": d_ff,
+            "dropout": dropout,
+            "per_stage_scale": per_stage_scale,
+            "encoder_causal": encoder_causal,
+            "huber_delta": huber_delta,
+            "finance_weighted": finance_weighted,
+            "max_len": max_len,
+        }
         self.encoder = TokenizerEncoder(
             n_features, d_model, n_layers, n_heads, d_ff, dropout, encoder_causal, max_len
         )
@@ -48,6 +62,10 @@ class TokenizerAE(nn.Module):
         self.huber_delta = huber_delta
         self.v_c, self.v_f = self.quant.v_c, self.quant.v_f
         self.register_buffer("w_feat", default_feature_weights(finance_weighted))
+
+    def get_config(self) -> dict:
+        """The complete constructor kwargs — pass to ``save_checkpoint`` for a faithful reload."""
+        return dict(self._config)
 
     def latent(self, x: Tensor, mask: Tensor) -> Tensor:
         return self.w_in(self.encoder(x, mask))

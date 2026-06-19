@@ -4,7 +4,7 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 
 **Standing discipline (overrides any tempt-to-expand).** v1 is **one** sharp, controlled, honestly-evaluated claim — the microstructure-aware FSQ tokenizer at ~27M (realized 21.3M) params — *not* a race to be "the best." No v2/v3 items pulled forward (regime-conditioning, OFI/L2 depth, meta-labeling/sizing, cross-asset, base-class scale). No new "novelty." **Honest over impressive; a clean null is a valid, publishable outcome.** Anything that tempts scope expansion: *parked, we build.*
 
-**Critical path:** M2 ✅ → M3 → (M4 ∥ M5) → **M6** → M7 → M8, with two hard entry gates on M6 (below). M4 is the cloud boundary.
+**Critical path:** M2 ✅ → M3 ✅ → (M4 ∥ M5) → **M6** → M7 → M8, with two hard entry gates on M6 (below). M4 is the cloud boundary.
 
 **Independence framing (use this language everywhere):** Cell 1 is **our BSQ baseline, externally validated against published Kronos-small** — *not* a "Kronos reproduction." No Kronos code or weights are part of the model; the public weights appear only inside the eval harness as a validation target.
 
@@ -31,10 +31,11 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 - **Compute:** local MPS (dev-grade; *not* a determinism-gated artifact).
 - **De-risk:** proves one coin-year before the multi-TB universe; the IC screen is the cheap early read that decides whether M6's microstructure arms are worth GPU-days (→ **M6 Gate B**).
 
-**M3 — Stage-2 AR on the single symbol** ▶ NEXT
+**M3 — Stage-2 AR on the single symbol** ✅
 - **Goal:** prove the backbone *learns to predict* real tokens (hierarchical coarse→fine + MTP) and the generation/KV-cache path runs end-to-end.
 - **Exit gate:** AR train/val loss converges and **beats a trivial next-token baseline** on BTCUSDT-2023; the KV-cache `step` path is wired and bit-equivalent to the parallel forward; produces a usable single-symbol checkpoint.
-- **Compute:** local / small CUDA (dev-grade checkpoint — the last cheap single-symbol de-risk).
+- **Result (qualified PASS):** train NLL falls 13.38→11.93 (backbone fits real tokens); best-val (step 250) beats the train-marginal CE — **coarse +0.1195, fine +0.0419 nats** (coarse/regime token predictable, fine/residual near-noise); all 4 MTP depths drop (~0.5 nats each); **KV-cache rollout bit-exact, max|Δ| 3.3e-6**; checkpoint saved + content-hashed (`predictor_hash 6d118ede…`). Honest caveats: modest margin + fast single-coin-year overfit (val min ~step 250) — the expected single-regime limit; top-1 acc near the uniform floor for 891/1225-way stochastic targets (CE is the signal); MPS dev-grade (predictor weights not bit-reproducible). Write-up: `docs/milestone3_stage2_btcusdt.md`.
+- **Compute:** local MPS (dev-grade checkpoint — the last cheap single-symbol de-risk).
 - **De-risk:** confirms the predictor works before the universe and the 15-cycle ablation; **its checkpoint is the fixture M5 is validated against (→ M6 Gate A).**
 
 **M4 — Full universe ingest + cloud transition** ☐ — ⚑ **CLOUD BOUNDARY (VPS kicks in)**

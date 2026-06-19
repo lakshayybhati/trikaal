@@ -64,6 +64,7 @@ class Stage1Result:
     converged_step: int | None
     final_recon_mae: float
     history: list[dict] = field(default_factory=list)
+    model: TokenizerAE | None = None  # the trained tokenizer (for freezing/checkpointing)
 
 
 def train_stage1(
@@ -147,4 +148,6 @@ def train_stage1(
             best = min(best, val_mae)
 
     final = history[-1]["val_mae"] if history else float("nan")
-    return Stage1Result(converged_step=converged_step, final_recon_mae=final, history=history)
+    return Stage1Result(
+        converged_step=converged_step, final_recon_mae=final, history=history, model=model
+    )

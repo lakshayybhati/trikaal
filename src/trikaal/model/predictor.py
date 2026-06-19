@@ -51,6 +51,22 @@ class TrikaalAR(nn.Module):
         max_len: int = 512,
     ) -> None:
         super().__init__()
+        self._config = {
+            "v_c": v_c,
+            "v_f": v_f,
+            "n_layers": n_layers,
+            "d_model": d_model,
+            "d_ff": d_ff,
+            "n_heads": n_heads,
+            "ffn_dropout": ffn_dropout,
+            "resid_dropout": resid_dropout,
+            "attn_dropout": attn_dropout,
+            "token_dropout": token_dropout,
+            "mtp_depths": mtp_depths,
+            "mtp_mu": mtp_mu,
+            "coarse_sample_prob": coarse_sample_prob,
+            "max_len": max_len,
+        }
         self.v_c, self.v_f, self.d_model = v_c, v_f, d_model
         self.mtp_mu = mtp_mu
         # §6.3: fraction of the time the fine head is conditioned on the SAMPLED coarse (vs
@@ -83,6 +99,10 @@ class TrikaalAR(nn.Module):
             else None
         )
 
+    def get_config(self) -> dict:
+        """The complete constructor kwargs — pass to ``save_checkpoint`` for a faithful reload."""
+        return dict(self._config)
+
     # ---- trunk + heads -------------------------------------------------------------------
     def trunk(self, b_c: Tensor, b_f: Tensor, ts: Tensor) -> Tensor:
         e = self.token_embed(b_c, b_f) + self.temporal(ts)
@@ -95,6 +115,49 @@ class TrikaalAR(nn.Module):
         # query embedding REUSES CoarseEmbed (zero marginal params, §2)
         q = self.token_embed.coarse(coarse_ids)
         return self.w_f(self.cross(h, q))
+
+    # ---- KV-cached single-step generation (the M5/M6 rollout primitive) -------------------
+    def init_caches(self) -> list[dict]:
+        """One persistent KV dict per backbone block; reset per generated sequence."""
+        return [{"k": None, "v": None} for _ in self.blocks]
+
+    @torch.no_grad()
+    def trunk_step(
+        self, b_c_t: Tensor, b_f_t: Tensor, ts_t: Tensor, caches: list[dict], pos: int
+    ) -> Tensor:
+        """Cached one-bar trunk: mirrors ``trunk`` at position ``pos`` with dropout off.
+
+        Inputs are the single-bar ids/timestamp ``[B, 1]``. ``caches`` carries the per-block KV
+        state across calls; ``pos`` is the absolute bar index (drives RoPE)."""
+        x = self.token_embed(b_c_t, b_f_t) + self.temporal(ts_t)  # token-drop is identity in eval
+        for blk, cache in zip(self.blocks, caches, strict=True):
+            x = blk.step(x, cache, pos)
+        return self.norm_final(x)
+
+    @torch.no_grad()
+    def step(
+        self,
+        b_c_t: Tensor,
+        b_f_t: Tensor,
+        ts_t: Tensor,
+        caches: list[dict],
+        pos: int,
+        *,
+        sample: bool = False,
+    ) -> BackboneOutput:
+        """One cached AR step: feed bar ``pos``'s tokens, get its next-bar logits (coarse+fine).
+
+        Bit-equivalent to the parallel ``forward`` read at position ``pos`` (verified in tests).
+        ``sample`` draws the conditioning coarse from the softmax; else argmax (matches forward)."""
+        h = self.trunk_step(b_c_t, b_f_t, ts_t, caches, pos)
+        logits_c = self.w_c(h)
+        if sample:
+            probs = F.softmax(logits_c, dim=-1).reshape(-1, self.v_c)
+            coarse_cond = torch.multinomial(probs, 1).reshape(b_c_t.shape)
+        else:
+            coarse_cond = logits_c.argmax(dim=-1)
+        logits_f = self.fine_logits(h, coarse_cond)
+        return BackboneOutput(h, logits_c, logits_f, coarse_cond)
 
     def _coarse_conditioning(self, logits_c: Tensor, tgt_c: Tensor) -> Tensor:
         """§6.3: condition the fine head on the SAMPLED coarse prediction during training (so it
