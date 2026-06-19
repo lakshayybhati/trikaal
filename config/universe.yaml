@@ -1,0 +1,98 @@
+# Trikaal universe definition (data-pipeline §1.3) — the delisting-aware symbol set the
+# full-universe ingest (M4b) and the 2×2+placebo ablation (M6) run over.
+#
+# M4a (this file) defines the SCHEMA + selection RULE + a small hand-verified SAMPLE.
+# The full 100–200-pair `symbols:` list is POPULATED at M4b by the bootstrap
+# (`trikaal.data.universe.bootstrap_universe`) directly from the data — ranked by
+# cumulative quote volume over the window, with listing/delisting dates resolved from a
+# first/last-kline probe against Binance exchangeInfo. Do NOT hand-curate the full list:
+# memory-sourced delisting dates are a survivorship-leak risk (CLAUDE.md invariant 2/§1.3).
+#
+# CAUSAL INVARIANT (the one that breaks when you go 1 symbol → N): every normalization,
+# volatility, and tau statistic is computed STRICTLY PER-SYMBOL and causally. There is no
+# universe-wide / cross-symbol fit anywhere. The frozen-stats table is keyed per
+# (symbol, feature). The universe config only selects *which* symbols and *what window*;
+# it never couples their statistics. (Enforced by tests/data/test_universe.py.)
+
+name: trikaal-v1-universe
+frequency: 1m
+market: um                 # USDⓂ perpetual futures (futures/um). Spot is out of scope for v1.
+
+# Observation window applied to every symbol. A symbol present for only part of the window
+# contributes ONLY its live bars: bars are kept iff listing_ms <= bar_open_ms < delisting_ms
+# (half-open; the delisting day onward is dropped — "delisting truncates it", §1.3).
+window:
+  start: "2023-01-01"      # inclusive, UTC midnight
+  end:   "2024-01-01"      # exclusive, UTC midnight
+
+# -------------------------------------------------------------------------------------------
+# Selection rule (§1.3) — applied by bootstrap_universe at M4b over ALL USDⓂ perps that were
+# live for any part of the window. Survivorship is OWNED: delisted symbols are INCLUDED for
+# the span they traded (that is the whole point of the delisting-aware manifest).
+# -------------------------------------------------------------------------------------------
+selection:
+  rule: cumulative_quote_volume   # rank by Σ quote_volume over the symbol's live window
+  top_n: 150                      # target universe size; M4b cost estimate covers 100 & 200
+  min_live_days: 30               # drop symbols with < 30 live days in the window (too short to fit per-symbol stats)
+  min_live_bars: 43200            # = 30 * 1440; redundant guard on the bar count after gaps
+  include_delisted: true          # keep delisted symbols for their live span (survivorship-owned)
+  quote_asset: USDT               # USDT-margined only (no USDC/coin-margined in v1)
+
+# -------------------------------------------------------------------------------------------
+# Per-symbol schema (§1.3). One entry per symbol. Dates are UTC "YYYY-MM-DD" or null.
+#   symbol            : Binance symbol, e.g. BTCUSDT
+#   market            : "um" (USDⓂ perp) — the only v1 market
+#   listing_date      : first day the perp traded (bars before this are not this symbol's)
+#   delisting_date    : first day it STOPPED trading, or null if still live; half-open upper bound
+#   perp_available    : true for USDⓂ perp (funding/OI channels apply); false ⇒ funding/OI masked
+#   oi_coverage_start : first day open-interest history is available (the §1.2 retention trap:
+#                       Binance OI hist only retains ~30d, so historically OI is zero-filled +
+#                       masked; null ⇒ no OI coverage in-window ⇒ OI masked for the whole span)
+#
+# SAMPLE below is hand-verified-as-schema (majors + delisted exemplars to exercise truncation).
+# listing/delisting/oi dates marked "provisional" are RE-RESOLVED from the data at M4b — they
+# are placeholders that show the schema, not asserted ground truth (honesty > false precision).
+# -------------------------------------------------------------------------------------------
+symbols:
+  - symbol: BTCUSDT
+    market: um
+    listing_date: "2019-09-08"      # provisional (USDⓂ perp launch); re-probed at M4b
+    delisting_date: null            # live
+    perp_available: true
+    oi_coverage_start: null         # OI hist retention trap → historically masked (§1.2)
+
+  - symbol: ETHUSDT
+    market: um
+    listing_date: "2019-11-27"      # provisional
+    delisting_date: null
+    perp_available: true
+    oi_coverage_start: null
+
+  - symbol: SOLUSDT
+    market: um
+    listing_date: "2020-09-14"      # provisional
+    delisting_date: null
+    perp_available: true
+    oi_coverage_start: null
+
+  # --- delisted exemplar (exercises delisting-truncation: only its live span is ingested) ---
+  # FTX-collapse-era delistings. Exact delisting dates are RESOLVED AT M4b from a last-kline
+  # probe; the provisional date here only demonstrates the half-open truncation mechanism,
+  # which is exercised exactly (not from memory) by the synthetic fixture in the tests.
+  # SRMUSDT delists DURING the window → contributes only its pre-delisting months (partial
+  # truncation demonstrated in the ingest plan). FTTUSDT delists BEFORE the window → excluded
+  # entirely (also correct survivorship behavior). Both dates are illustrative placeholders
+  # re-resolved at M4b from a last-kline probe — not asserted ground truth.
+  - symbol: SRMUSDT
+    market: um
+    listing_date: "2020-09-29"      # provisional
+    delisting_date: "2023-06-15"    # illustrative (resolved at M4b) → live Jan–Jun 2023 only
+    perp_available: true
+    oi_coverage_start: null
+
+  - symbol: FTTUSDT
+    market: um
+    listing_date: "2020-07-22"      # provisional
+    delisting_date: "2022-12-12"    # illustrative (resolved at M4b) → delisted before window, excluded
+    perp_available: true
+    oi_coverage_start: null
