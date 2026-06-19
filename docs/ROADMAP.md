@@ -4,7 +4,7 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 
 **Standing discipline (overrides any tempt-to-expand).** v1 is **one** sharp, controlled, honestly-evaluated claim — the microstructure-aware FSQ tokenizer at ~27M (realized 21.3M) params — *not* a race to be "the best." No v2/v3 items pulled forward (regime-conditioning, OFI/L2 depth, meta-labeling/sizing, cross-asset, base-class scale). No new "novelty." **Honest over impressive; a clean null is a valid, publishable outcome.** Anything that tempts scope expansion: *parked, we build.*
 
-**Critical path:** M2 ✅ → M3 ✅ → (M4 ∥ M5) → **M6** → M7 → M8, with two hard entry gates on M6 (below). M4 is the cloud boundary.
+**Critical path:** M2 ✅ → M3 ✅ → **M5** → **M4** → **M6** → M7 → M8, with two hard entry gates on M6 (below). M4/M5 are *independent* (parallelizable with two builders), but with one builder **M5 runs first** — it is local/cheap and the highest-risk-to-find-late subsystem — and **M4 crosses the cloud boundary**, deferred until just before M6 so we cross into paid compute once, with a proven harness.
 
 **Independence framing (use this language everywhere):** Cell 1 is **our BSQ baseline, externally validated against published Kronos-small** — *not* a "Kronos reproduction." No Kronos code or weights are part of the model; the public weights appear only inside the eval harness as a validation target.
 
@@ -46,13 +46,13 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 
 **M5 — Eval harness (co-equal subsystem)** ☐
 - **Goal:** build the entire §8 harness — train-once-eval-forward folds, Q1–Q4 quadrants, cost-aware net-IR (funding + vol-scaled spread + break-even), secondary diagnostics, DSR/PBO, MDE/effective-N, the Cell-5 placebo machinery, and the Cell-1 external validation against published Kronos-small.
-- **Exit gate (vertical-slice discipline applied to eval — see Gate A):** the **full harness runs end-to-end and leak-free on the M3 single-symbol checkpoint** — folds, Q1–Q4, net-IR, placebo, DSR/PBO all execute; the §8.A.5/§8.E.5 causal-safety exhaustive sweep is re-run on a Q4 sample and passes. **The numbers are meaningless (one coin, dev-grade model) and that is the point — we are testing the machine, not the result.** Plus: Cell-1 (our BSQ baseline) validates within tolerance vs published Kronos-small on a common slice, fed **Kronos's own input pipeline** (§8.C.3) — or the ablation is blocked.
+- **Exit gate (vertical-slice discipline applied to eval — see Gate A):** the **full harness runs end-to-end and leak-free on the M3 single-symbol checkpoint** — folds, Q1–Q4, net-IR, placebo, DSR/PBO all execute; the §8.A.5/§8.E.5 causal-safety exhaustive sweep is re-run on a Q4 sample and passes. **The numbers are meaningless (one coin, dev-grade model) and that is the point — we are testing the machine, not the result.** Plus a **metric-code cross-check**: run published Kronos-small weights through our harness on a common BTC slice to validate our IC/RankIC/MAE/R² *implementations* against Kronos's reported numbers (§8.C.3 steps 1–2, 4). *(The full "our Cell-1 reaches within ~10–15% of Kronos" reproduction gate needs a **universe-trained** Cell-1 and therefore lives at M6, not here — you cannot validate a baseline that has not been trained yet.)*
 - **Compute:** cloud.
 - **De-risk:** a metric-code bug found here costs one cheap run; the same bug found after M6 costs ~15 GPU-days. This is the single most expensive bug to discover late.
 
 **M6 — The 2×2 + placebo ablation (THE experiment)** ☐
 - **Goal:** run the controlled experiment — our FSQ vs our BSQ at matched bits-per-token, × {OHLCV-only, +micro}, plus the shuffled-microstructure placebo (Cell 5).
-- **Entry gates (both binding — see below):** **Gate A** (M5 validated on the M3 checkpoint) **and Gate B** (microstructure kill-switch from the M2 IC screen).
+- **Entry gates (both binding — see below):** **Gate A** (M5 validated on the M3 checkpoint) **and Gate B** (microstructure kill-switch from the M2 IC screen). **Setup gate (§8.C.3 step 3):** once Cell-1 (our BSQ baseline) is trained on the universe, it must reach within ~10–15% RankIC of published Kronos-small on a common slice (fed Kronos's own input pipeline) — else the ablation is blocked; we do not claim FSQ beats a crippled baseline.
 - **Exit gate:** G3 throughput check first; then 5 cells × ≥3 seeds = **15 train-once cycles** complete; headline net-IR @ 0.30% + break-even cost + all four quadrants + the placebo verdict, **DSR-deflated**.
 - **Compute:** cloud CUDA, ~15 GPU-days.
 - **De-risk:** gated so it runs *only* when the harness is proven trustworthy (A) and the cheap signal says the spend is justified (B).
