@@ -6,11 +6,12 @@ Project overview, the non-negotiable invariants, and the engineering norms this 
 
 **Trikaal** — a ~27M-parameter, built-from-scratch decoder-only foundation model for the "language" of **crypto 1-minute K-lines**, intended for release as a research artifact (code + weights on HuggingFace + a paper + a live demo). It is a *controlled* evolution of **Kronos** (Shi et al. 2025, arXiv:2508.02739) with exactly **one** novel research contribution: a **microstructure-aware FSQ tokenizer** for financial K-lines.
 
-**Current phase: pre-implementation.** No source code exists yet. The authoritative design is the blueprint spec — build against it, not against assumptions or against Kronos's code.
+**Current phase: implementation underway.** M1 (synthetic vertical slice) and M2 (BTCUSDT single-symbol real slice + Stage-1 tokenizer) are complete; M3 (Stage-2 AR) is next. The live build order and per-milestone exit gates live in `docs/ROADMAP.md`. The authoritative *design* remains the blueprint spec — build against it, not against assumptions or against Kronos's code.
 
 ## Sources of truth (read before doing any work)
 
-- **Blueprint spec:** `docs/superpowers/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness, roadmap). If anything here conflicts with the spec, the spec wins. (Being finalized in the originating session; treat it as canonical once present.)
+- **Blueprint spec (design):** `docs/superpowers/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness). If anything here conflicts with the spec, the spec wins.
+- **Execution roadmap (build order):** `docs/ROADMAP.md` — the milestone sequence from here to a shipped paper, each with a testable exit gate, plus the two binding M6 entry gates. Self-sequence against it; update it when a milestone closes.
 - **Parent paper:** `/Users/lakshaybhati/Downloads/2508.02739v1 copy.pdf` (Kronos). Trikaal inherits its two-stage tokenizer→autoregressive design and most of its training/eval scaffolding.
 
 ## Non-negotiable invariants
