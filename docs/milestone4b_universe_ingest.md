@@ -40,7 +40,8 @@ liquidity rank proxy). Result for window **2021-01-01 → 2025-01-01, top-200 US
   **publish-lag tolerance** — see §7 — so a still-live symbol that merely trails the freshest dump by
   a month is not mis-stamped delisted; this corrected 3 symbols vs a zero-tolerance comparison.)
 - **Full-plan download ≈ 432 GB aggTrades + ~13 GB klines ≈ 445 GB** → at the measured 8.3 MB/s,
-  **≈ 14.5 hours** of download (bandwidth-bound; unbeatable by parallelism).
+  **≈ 15 hours** of download (445 GB / 8.3 MB/s = 14.9 h; ~15.9 h at the single-stream 7.8 MB/s) —
+  bandwidth-bound; unbeatable by parallelism.
 - Est ≈ **315 M bars** — below the nominal 500 M–1 B band (flagged): 200 pairs over the fullest
   window, with many partial-coverage (delisted / late-listed) symbols, lands ~315 M. Per the
   corpus-purpose note (§5) this is *adequate* — a 27 M backbone saturates ~1–2 B bars, so the band is
@@ -99,8 +100,10 @@ run that **resumed** — the ledger correctly skipped the 2 already-built symbol
 - **Resume proven:** the 4-symbol run skipped KEYUSDT + SAGAUSDT (already in the ledger).
 - **Real delisting truncation exercised:** KLAYUSDT delisted **2024-11** (within the window —
   derived from dump coverage, not memory) → manifest `tail_truncated=True`, lake ends 2024-10-31.
-- **Universe Merkle root (over the lake):** `sha256:f0ca2d37225cbacf…`;
-  **manifest content_hash:** `sha256:a428c807fd0c7b99…`. Per-symbol coverage in the manifest is read
+- **Universe Merkle root (over the lake) — the reproducibility anchor:** `sha256:f0ca2d37225cbacf…`,
+  computed over the sorted `(symbol, lake dataset_hash)` pairs and **stable across re-runs**. (The
+  rolled-up `universe_manifest.json` is a derived, gitignored convenience artifact — its own
+  content_hash is not the anchor and is not cited here.) Per-symbol coverage in the manifest is read
   back from the **lake itself** (DuckDB min/max date + segment count), so it is accurate for every
   built symbol including ones only resumed.
 
@@ -127,19 +130,19 @@ training loss is **expected** to plateau in this range — by design, not a bug.
 
 | Gate criterion | Status |
 |---|---|
-| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ⚠ **machinery + config + manifest done; lake realized on a bounded resumable subset** — the full 200-pair lake is the 14.5 h bandwidth-bound continuation (`python scripts/m4b_universe_ingest.py` with no `--max-*`). NOT completable in-session at 8 MB/s. |
+| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ⚠ **machinery + config + manifest done; lake realized on a bounded resumable subset** — the full 200-pair lake is the ~15 h bandwidth-bound continuation (`python scripts/m4b_universe_ingest.py` with no `--max-*`). NOT completable in-session at 8 MB/s. |
 | Realized bar count in ~500M–1B band (flag if off) | **Flagged:** full plan ≈ 315 M (below band; adequate for the corpus purpose — see §2/§5). Realized subset bars in §4. |
-| Causal exhaustive sweep GREEN on a real-universe cross-section | ✅ run in-line on a real ingested symbol (§4 / summary) |
+| Causal exhaustive sweep GREEN on a real-universe cross-section | ✅ run in-line on real ingested bars — now a **HARD GATE** (a RED sweep raises `FatalIngestError` before the lake write → the run aborts non-zero; the symbol is never recorded/evicted) **broadened to BOTH a live and a delisting-tail symbol** (§4 / summary / §7) |
 | Peak disk, final lake size, raw retention outcome | ✅ reported (§4) |
 | "universe Merkle root over the lake; raw checksums for provenance only" | ✅ printed + in manifest metadata |
-| Tests green + ruff clean; evict-after-record adversarially reviewed | ✅ **154 tests green, ruff clean.** Evict-after-record verdict: **invariant holds, no violations** (single chokepoint, structural ordering, crash-safe across all kill-windows). A 14-agent verification workflow over the whole M4b surface **found + fixed 2 HIGH + 1 MED** (§7). |
+| Tests green + ruff clean; evict-after-record adversarially reviewed | ✅ **159 tests green, ruff clean.** Evict-after-record verdict: **invariant holds, no violations** (single chokepoint, structural ordering, crash-safe across all kill-windows). A 14-agent verification workflow over the whole M4b surface **found + fixed 2 HIGH + 1 MED** (§7). |
 
 **Honest bottom line.** The M4b *machine* is built, tested, reviewed, and proven on real
 multi-symbol, multi-regime, survivorship-correct data with the governor + eviction + resume all
 exercised. The full 200-pair × 4-year lake was **not** completed in-session because the download is a
-hard ~14.5-hour, 8 MB/s-bandwidth-bound job that parallelism cannot shorten — it is one resumable
+hard ~15-hour, 8 MB/s-bandwidth-bound job that parallelism cannot shorten — it is one resumable
 command away, and every criterion except "all 200 symbols downloaded" is met. **Decision for the
-supervisor:** let the resumable job run to completion locally (~14.5 h wall, free), or move the
+supervisor:** let the resumable job run to completion locally (~15 h wall, free), or move the
 download to a higher-bandwidth box (the runbook's cloud path) before M6.
 
 ## 7. Adversarial verification — multi-agent, every finding verified
@@ -172,8 +175,27 @@ all fixed:**
   universe. (Other LOWs — the byte-proxy proration approximation, monthly-granularity delist day —
   are documented limitations, no code change.)
 
-The evict-after-record invariant itself was re-verified clean. All fixes are covered by the +10 new
-tests (154 total green).
+The evict-after-record invariant itself was re-verified clean.
+
+**Post-review hardening (supervisor gate-review → GO_WITH_FIXES).** Two correctness gaps on the
+real-data path, both now closed:
+
+- **Enforce + broaden the in-line causal sweep (invariant #2, BLOCKER).** The sweep previously only
+  *printed* its result and ran once (on the first symbol, always a live one), so a RED sweep would
+  not fail the run and the delisting-tail seam shared by all 41 delisted symbols was never swept.
+  Now `run_sweep` is a **hard gate**: a RED — or degenerate `<100%`-coverage / `0`-check — sweep
+  raises `FatalIngestError` *before* the lake write, so a leaking symbol is never written, recorded,
+  or evicted; the orchestrator treats `FatalIngestError` as fatal (not an isolatable per-symbol
+  fault) and aborts the whole run non-zero. It is **broadened** to fire once on a **live** symbol and
+  once on a **delisting-tail** symbol (labelled by the same `delisting < window_end` rule the
+  manifest uses), and the full run additionally requires both to have fired GREEN.
+- **Orchestrator-path per-symbol independence test.** Independence was pinned only on the in-memory
+  fan-out; a new test drives the **real** `IngestOrchestrator` (3 concurrent workers, tight evicting
+  cap) with a finalize that runs the real `compute_features`, asserting each symbol's recorded
+  `dataset_hash` is bit-identical to building it alone — the 1→N leak guard through the production
+  concurrency + eviction interleaving.
+
+All fixes are covered by new tests; **159 total green, ruff clean.**
 
 ## 8. Reproduce
 
@@ -186,7 +208,7 @@ python scripts/m4b_universe_ingest.py --config-only --top-n 200 \
 python scripts/m4b_universe_ingest.py --max-symbols 12 --max-gb 10 \
   --raw-cache-cap-gb 3 --min-free-disk-gb 30
 
-# the full run (resumable; ~14.5 h bandwidth-bound at ~8 MB/s):
+# the full run (resumable; ~15 h bandwidth-bound at ~8 MB/s):
 python scripts/m4b_universe_ingest.py --top-n 200 \
   --window-start 2021-01-01 --window-end 2025-01-01 \
   --raw-cache-cap-gb 380 --min-free-disk-gb 50

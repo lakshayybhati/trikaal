@@ -13,6 +13,7 @@ from trikaal.data.ingest_orchestrator import (
     DiskGovernorAbort,
     DownloadResult,
     EvictBeforeRecordError,
+    FatalIngestError,
     GovernorKnobs,
     IngestOrchestrator,
     Ledger,
@@ -244,6 +245,98 @@ def test_failure_phantom_does_not_spuriously_abort_a_later_symbol(tmp_path):
     assert not rep.aborted
     assert rep.failed_symbols == ["AAAUSDT"]
     assert orch.ledger.is_lake_built("BBBUSDT") and rep.n_symbols_built == 1
+
+
+def test_fatal_finalize_error_aborts_whole_run(tmp_path):
+    """A FatalIngestError from finalize (e.g. the in-line causal sweep going RED) must ABORT the
+    whole run — NOT be isolated like a transient per-symbol fault (contrast
+    test_orchestrator_isolates_a_failing_symbol, which uses a plain RuntimeError) — and the leaking
+    symbol must never be recorded lake-built (finalize raises before record_lake_built)."""
+    plan = {"AAAUSDT": ["2023-01"], "BBBUSDT": ["2023-01"]}
+    download, _finalize, _order, _rawdir = _fakes(tmp_path)
+
+    def fatal_finalize(sym, periods):
+        raise FatalIngestError("real-universe causal sweep RED on AAAUSDT [live] — lookahead leak")
+
+    led = Ledger(tmp_path / "ledger.jsonl")
+    orch = IngestOrchestrator(
+        plan=plan,
+        knobs=GovernorKnobs(raw_cache_cap_gb=100, min_free_disk_gb=1, max_concurrent_downloads=3),
+        ledger=led,
+        download_fn=download,
+        finalize_symbol_fn=fatal_finalize,
+        est_bytes_fn=lambda s, p: GB,
+        disk_free_fn=lambda: 600 * GB,
+    )
+    rep = orch.run()
+    assert rep.aborted and rep.n_symbols_built == 0
+    assert "causal sweep RED" in (rep.error or "")
+    assert not led.built_symbols()  # leaking symbol (and everything) never recorded
+
+
+def test_orchestrator_path_per_symbol_independence(tmp_path):
+    """The 1→N leak guard THROUGH the real production path (IngestOrchestrator): each symbol's
+    recorded dataset_hash must be bit-identical to building that symbol ALONE — even under
+    concurrent downloads + a tight evicting cap that interleaves raw-eviction between builds.
+
+    test_per_symbol_independence pins this on the in-memory fan-out (build_universe_from_streams);
+    this pins it on the orchestrator, whose injected finalize runs the REAL compute_features per
+    symbol while the governor evicts. Synthetic streams stand in for the (downloaded) raw so the
+    test needs no network/zips; the placeholder zips exercise the disk governor + eviction."""
+    from trikaal.data.config import synthetic_test_config
+    from trikaal.data.synthetic import make_synthetic_stream
+    from trikaal.data.universe import SymbolSpec
+    from trikaal.data.universe_build import build_one_symbol
+
+    cfg = synthetic_test_config(
+        half_life_fast=48, half_life_slow=96, n_warm=12, w_tau=20, vol_window=24, n_warm_vol=12
+    )
+    win = dict(window_start="2019-01-01", window_end="2030-01-01")
+    syms = ["AAAUSDT", "BBBUSDT", "CCCUSDT"]
+    streams = {
+        s: make_synthetic_stream(seed=i + 1, n_bars=720 + 40 * i)[0] for i, s in enumerate(syms)
+    }
+    specs = {s: SymbolSpec(symbol=s) for s in syms}
+
+    # reference: each symbol built ALONE (root=None → hash only, no lake write, no orchestration)
+    alone = {
+        s: build_one_symbol(streams[s], specs[s], **win, cfg=cfg, root=None).dataset_hash
+        for s in syms
+    }
+
+    rawdir = tmp_path / "raw"
+    rawdir.mkdir()
+    lake = tmp_path / "lake"
+
+    def download(sym, per):
+        p = rawdir / f"{sym}-{per}.zip"
+        p.write_bytes(b"\0" * 1024)
+        return DownloadResult(sym, per, [p], GB, {p.name: "sha256:fake"})
+
+    def finalize(sym, periods):
+        # REAL feature build through the (concurrent + evicting) orchestrator, from the in-memory
+        # stand-in stream → writes the lake partition exactly as production does.
+        b = build_one_symbol(streams[sym], specs[sym], **win, cfg=cfg, root=lake)
+        return b.dataset_hash, b.n_bars, {f"{sym}-{p}.zip": "sha256:fake" for p in periods}
+
+    led = Ledger(tmp_path / "ledger.jsonl")
+    orch = IngestOrchestrator(
+        plan={s: ["2023-01"] for s in syms},
+        # tight cap (2 GB vs 3×1 GB) FORCES eviction interleaving between builds; 3 concurrent
+        knobs=GovernorKnobs(raw_cache_cap_gb=2, min_free_disk_gb=1, max_concurrent_downloads=3),
+        ledger=led,
+        download_fn=download,
+        finalize_symbol_fn=finalize,
+        est_bytes_fn=lambda s, p: GB,
+        disk_free_fn=lambda: 600 * GB,
+    )
+    rep = orch.run()
+    assert not rep.aborted and rep.n_symbols_built == 3
+    assert rep.n_symbols_evicted == 3  # eviction genuinely interleaved with builds
+    for s in syms:
+        assert led._built[s]["dataset_hash"] == alone[s], (
+            f"{s}: dataset_hash changed through the orchestrator — cross-symbol/eviction leak"
+        )
 
 
 def test_orchestrator_resumes_from_ledger(tmp_path):

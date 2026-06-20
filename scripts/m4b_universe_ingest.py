@@ -36,6 +36,7 @@ from trikaal.data.ingest import DumpSpec, ingest_month
 from trikaal.data.ingest_orchestrator import (
     GB,
     DownloadResult,
+    FatalIngestError,
     GovernorKnobs,
     IngestOrchestrator,
     Ledger,
@@ -182,7 +183,10 @@ def main() -> int:
     )
 
     checks_by_symbol: dict[str, dict] = defaultdict(dict)
-    sweep_result: dict[str, object] = {}  # one-time cross-section sweep on real universe bars
+    # one-time real-bar exhaustive causal sweep per coverage class — keyed "live"/"tail" so BOTH a
+    # full-window symbol AND a delisting-tail-truncated symbol (the highest-risk causal seam, the
+    # truncate∘causality path that ALL 41 delisted symbols share) are gated, not just the first.
+    sweeps: dict[str, dict] = {}
 
     def download(sym: str, per: str) -> DownloadResult:
         paths, total, checks = [], 0, {}
@@ -197,11 +201,47 @@ def main() -> int:
         checks_by_symbol[sym].update(checks)
         return DownloadResult(sym, per, paths, total, checks)
 
+    def run_sweep(label: str, sym: str, stream, lo: float, hi: float) -> None:
+        """One-time exhaustive truncation sweep on a slice of REAL universe bars (raw still in
+        memory; O(T^2) so a head-slice keeps it fast). HARD GATE: a RED sweep — or a degenerate
+        0-check / <100%-coverage sweep — raises FatalIngestError BEFORE the lake write below, so a
+        symbol that fails causal safety is NEVER written, recorded, or evicted, and the whole run
+        aborts (invariant #2 is not isolatable like a transient fault)."""
+        sl = slice_stream_by_ms(stream, lo, hi)
+        n = min(args.sweep_sample_bars, len(sl.bar_open_ms))
+        sl = slice_stream_by_ms(sl, -1e18, float(sl.bar_open_ms[n - 1]) + 1)
+        rep_sweep = exhaustive_truncation_sweep(sl, FeatureConfig())
+        sweeps[label] = {
+            "symbol": sym,
+            "passed": rep_sweep.passed,
+            "coverage": rep_sweep.coverage,
+            "n_checks": rep_sweep.n_checks,
+            "bars": len(sl.bar_open_ms),
+        }
+        if not (rep_sweep.passed and rep_sweep.coverage == 1.0 and rep_sweep.n_checks > 0):
+            raise FatalIngestError(
+                f"real-universe causal sweep RED on {sym} [{label}]: passed={rep_sweep.passed} "
+                f"coverage={rep_sweep.coverage:.3f} checks={rep_sweep.n_checks} — lookahead leak"
+            )
+
     def finalize(sym: str, months: list[str]) -> tuple[str, int, dict]:
         spec_s = spec_by_sym[sym]
         stream = build_symbol_stream(
             sym, months, raw_root=RAW_ROOT_DEFAULT, is_perp=spec_s.perp_available
         )
+        # Coverage class by the SAME spec rule the manifest uses for tail_truncated (delisting
+        # within the window) — NOT a bar test: bootstrapped delistings sit on the first-of-month
+        # AFTER the last dump, so slice is identity at the tail and a bar test would label every
+        # one of the 41 delisted symbols "live" and the tail sweep would never fire. This fires it
+        # on the first real delisted symbol — a structurally distinct (shorter, earlier-ending) real
+        # stream. Gate runs BEFORE the build/record/evict (raw still in memory here).
+        lo, hi = spec_s.active_window_ms(win[0], win[1])
+        is_tail = bool(
+            spec_s.delisting_date and date_to_ms(spec_s.delisting_date) < date_to_ms(win[1])
+        )
+        label = "tail" if is_tail else "live"
+        if label not in sweeps:
+            run_sweep(label, sym, stream, lo, hi)
         build = build_one_symbol(
             stream,
             spec_s,
@@ -210,23 +250,6 @@ def main() -> int:
             cfg=FeatureConfig(),
             root=LAKE_ROOT,
         )
-        # one-time exhaustive causal sweep on a slice of the FIRST real universe symbol (raw still
-        # in memory here; O(T^2) so a slice keeps it fast) — the M4 exit-gate cross-section check.
-        if not sweep_result:
-            lo, hi = spec_s.active_window_ms(win[0], win[1])
-            sl = slice_stream_by_ms(stream, lo, hi)
-            n = min(args.sweep_sample_bars, len(sl.bar_open_ms))
-            sl = slice_stream_by_ms(sl, -1e18, float(sl.bar_open_ms[n - 1]) + 1)
-            rep_sweep = exhaustive_truncation_sweep(sl, FeatureConfig())
-            sweep_result.update(
-                {
-                    "symbol": sym,
-                    "passed": rep_sweep.passed,
-                    "coverage": rep_sweep.coverage,
-                    "n_checks": rep_sweep.n_checks,
-                    "bars": len(sl.bar_open_ms),
-                }
-            )
         return build.dataset_hash, build.n_bars, dict(checks_by_symbol[sym])
 
     def est_bytes(sym: str, per: str) -> int:
@@ -321,12 +344,13 @@ def main() -> int:
         f"  peak raw cache: {rep.peak_raw_cache_bytes / GB:.1f} GB   "
         f"evicted: {rep.n_symbols_evicted} symbols / {rep.raw_bytes_evicted / GB:.1f} GB"
     )
-    if sweep_result:
-        sw = sweep_result
-        print(
-            f"  causal sweep  : {sw['symbol']} {sw['bars']} bars → passed={sw['passed']} "
-            f"coverage={sw['coverage'] * 100:.0f}% checks={sw['n_checks']}"
-        )
+    for label in ("live", "tail"):
+        sw = sweeps.get(label)
+        if sw:
+            print(
+                f"  causal sweep  : [{label}] {sw['symbol']} {sw['bars']} bars → "
+                f"passed={sw['passed']} cov={sw['coverage'] * 100:.0f}% checks={sw['n_checks']}"
+            )
     print(f"  universe hash : {universe_hash}")
     print(f"  manifest      : {mpath} (content_hash={manifest.manifest_content_hash()[:30]}…)")
     if rep.failed_symbols:
@@ -336,6 +360,27 @@ def main() -> int:
     print(
         "  NOTE: universe Merkle root is over the lake; raw checksums recorded for provenance only."
     )
+
+    # ---- HARD EXIT GATE (invariant #2 on the real-data path) ----
+    # A sweep that ran but is not clean-GREEN → fail. A RED sweep already raised inside finalize and
+    # aborted the run; this also defends against a degenerate 0-check / <100%-coverage record.
+    def sweep_ok(d: dict | None) -> bool:
+        return bool(d) and d["passed"] and d["coverage"] == 1.0 and d["n_checks"] > 0
+
+    red = sorted(lab for lab, d in sweeps.items() if not sweep_ok(d))
+    if red:
+        print(f"FATAL: real-universe causal sweep RED {red} — lookahead leak")
+        return 1
+    if rep.aborted:
+        print(f"FATAL: ingest aborted — {rep.error}")
+        return 1
+    # On the FULL run (no --max-* bounds) the exit gate REQUIRES the sweep to have fired GREEN on
+    # BOTH a live and a delisting-tail symbol; a bounded smoke run is exempt (it may lack a class).
+    full_run = args.max_symbols is None and args.max_gb is None
+    missing = [lab for lab in ("live", "tail") if lab not in sweeps]
+    if full_run and missing:
+        print(f"FATAL: exit gate requires GREEN live+tail real-bar sweeps; missing {missing}")
+        return 1
     return 0
 
 

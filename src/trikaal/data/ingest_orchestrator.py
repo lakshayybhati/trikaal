@@ -45,6 +45,14 @@ class DiskGovernorAbort(RuntimeError):
     """A single symbol's raw alone cannot fit the cache cap / free floor (pathological)."""
 
 
+class FatalIngestError(RuntimeError):
+    """A correctness-invariant violation raised inside ``finalize`` (e.g. a causal-safety/lookahead
+    leak caught by the in-line real-bar sweep). Unlike a transient download/build fault — which is
+    isolated to its symbol and the run continues — this aborts the WHOLE run: invariant #2 is hard,
+    so a detected leak must STOP the ingest, not let 199 more symbols build behind it. It is raised
+    BEFORE ``record_lake_built``, so the leaking symbol is never recorded or evicted."""
+
+
 @dataclass(frozen=True)
 class GovernorKnobs:
     raw_cache_cap_gb: float = 380.0  # pause downloads when in-flight raw exceeds this
@@ -299,15 +307,21 @@ class IngestOrchestrator:
                                 self._evict_built([sym])  # reclaim raw immediately (lake is tiny)
                                 cache_gb = self._gov.raw_cache_bytes / GB
                                 log(f"built {sym}: {nbars:,} bars (raw cache {cache_gb:.1f} GB)")
+                        except FatalIngestError:
+                            # invariant violation (e.g. a causal leak) — NOT a transient per-symbol
+                            # fault: do not isolate. Propagate to abort the whole run. The symbol
+                            # was never recorded (raised before record_lake_built), so nothing is
+                            # committed or evicted; its raw stays on disk for forensics.
+                            raise
                         except Exception as e:  # isolate one symbol's failure — never sink the run
                             failed.add(sym)
                             # Release the symbol's FULL real footprint plus this month's live
-                            # reservation. `est` is still live ONLY on the download leg (this month
-                            # never reached line 283); if finalize raised, est was already folded
-                            # into _raw_bytes at line 279 → do not subtract it twice (would go
-                            # negative). Then physically delete the symbol's staged raw — NOT via
-                            # evict_raw (it asserts is_lake_built and would refuse a failed symbol);
-                            # a failed symbol has no lake partition, so its raw is garbage,
+                            # reservation. `est` is still live ONLY on the download leg (download
+                            # raised before its `est → real` swap); if finalize raised, this month's
+                            # `est` was already swapped into `_raw_bytes` → don't subtract it twice
+                            # (would go negative). Then physically delete the symbol's staged raw —
+                            # NOT via evict_raw (it asserts is_lake_built and would refuse a failed
+                            # symbol); a failed symbol has no lake partition, so its raw is garbage,
                             # re-fetched idempotently on resume.
                             live_est = est if per not in staged.get(sym, set()) else 0
                             self._gov.raw_cache_bytes -= self._raw_bytes.get(sym, 0) + live_est
@@ -322,7 +336,7 @@ class IngestOrchestrator:
                             log(f"FAILED {sym} {per}: {type(e).__name__}: {e}")
                     submit_more()
                     check_not_stuck()
-            except DiskGovernorAbort as e:
+            except (DiskGovernorAbort, FatalIngestError) as e:
                 aborted, err = True, str(e)
 
         return OrchestratorReport(
@@ -343,6 +357,7 @@ __all__ = [
     "DiskGovernorAbort",
     "DownloadResult",
     "EvictBeforeRecordError",
+    "FatalIngestError",
     "GovernorKnobs",
     "IngestOrchestrator",
     "Ledger",
