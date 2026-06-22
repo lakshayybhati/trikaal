@@ -111,9 +111,10 @@ never pressured the floor — the link, not disk, was the bottleneck); **503 GB*
 **Merkle anchor vs the manifest.** The 200-symbol universe Merkle (`5dfd667d…`) is `content_hash` over
 the ledger's sorted `(symbol, lake dataset_hash)` pairs — the reproducibility anchor, derivable
 directly from the append-only ledger (so it survives raw eviction). The rolled-up
-`universe_manifest.json` is a derived, **gitignored** convenience; its per-symbol coverage rollup is
-pathologically slow on this lake (see §4.1), so it currently reflects the 199-symbol first-pass
-intermediate — a fast follow, **not** the anchor.
+`universe_manifest.json` is a derived, **gitignored** convenience; its rollup was rewritten to a
+single `GROUP BY` pass (`rollup_manifest()` / the `--manifest-only` mode) and **regenerated at the
+full 200 symbols over the compacted lake — its `universe_hash` equals `5dfd667d…`** (manifest
+content_hash `924174f1…`).
 
 The lake lands in `processed/universe_bars/` (separate from the M2/M3/M5 `processed/bars/`, untouched);
 the resumable ledger in `processed/universe/ingest_ledger_2021-01-01_2025-01-01.jsonl`.
@@ -152,11 +153,16 @@ a drop-for-missing-micro matter; all 200 stay in the eval lake. Full per-symbol 
 warm-up/QA (0.3%) and masked 1,363 more micro bars (0.5%) to zero-vol/vre; TURBOUSDT 811 + 1,313;
 NOTUSDT 809 + 1,479 — confirming warm-up and zero-vol/vre feature-masking apply **per symbol**.
 
-**Lake fragmentation (flag for M6).** The lake is Hive-partitioned by `(symbol, frequency, date)` =
-**per-day** → **211,595 parquet files** for 304 M bars. A single GROUP-BY pass is ~1-2 min, but the
-manifest rollup's **200 sequential per-symbol queries** each re-glob all 211k files → ~40 min (why the
-AXS-retry rollup was stopped and the Merkle taken from the ledger). M6 training data-loading pays the
-same tax — **compacting to month-partitioned / coalesced Parquet is a recommended pre-M6 step.**
+**Lake compaction (RESOLVED — done, hash-preserving).** The lake was first written Hive-partitioned by
+`(symbol, frequency, date)` = **per-day** → **211,595 parquet files** for 304 M bars, which made the
+rollup's per-symbol re-globbing pathological (~40 min) and would tax M6 data-loading. It was compacted
+to `(symbol, frequency, month)` → **7,024 files** (one per symbol-month, **30× fewer**; 23 GB → 15 GB,
+larger row-groups compress better) via `scripts/compact_lake.py`. **Content-preservation is proven, not
+assumed:** the compactor re-derives **all 200** per-symbol `dataset_hash`es from the compacted lake and
+the universe Merkle — **0 mismatches, Merkle == `5dfd667d…`** (identical `x`/`m`/`ts` ⟹ identical causal
+result, so the Merkle subsumes a causal re-sweep). It wrote to a **new directory**, verified, then
+swapped; the original is kept as `processed/universe_bars_orig/` (gitignored backup). `lake.connect` /
+`assemble_window` query the compacted lake unchanged.
 
 **Reproducibility survives raw eviction.** The universe Merkle root + per-symbol content-hashes are
 over the **reduced lake** (the kept artifact). The raw Binance SHA-256 of every shard is recorded in
@@ -177,7 +183,7 @@ training loss is **expected** to plateau in this range — by design, not a bug.
 
 | Gate criterion | Status |
 |---|---|
-| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ✅ **MET** — 200/200 symbols, 304,625,181 bars, 23 GB Hive-Parquet/DuckDB lake; universe Merkle `5dfd667d…` (over the lake, from the ledger). Listing/delisting in `config/universe_full.yaml`; corpus-purpose in the manifest metadata. (Manifest coverage rollup at 199 — a fast follow; §4.1.) |
+| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ✅ **MET** — 200/200 symbols, 304,625,181 bars, 23 GB Hive-Parquet/DuckDB lake; universe Merkle `5dfd667d…` (over the lake, from the ledger). Listing/delisting in `config/universe_full.yaml`; corpus-purpose in the manifest metadata. Manifest **regenerated at 200**, `universe_hash` == `5dfd667d…`; lake **compacted to 7,024 files** (content-identical, §4.1). |
 | Realized bar count in ~500M–1B band (flag if off) | **Flagged (realized 304.6 M):** below the 500 M–1 B band but **adequate by design** — past saturation for a 27 M model; this lake is regime×symbol breadth, not training fuel (§2/§5). |
 | Causal exhaustive sweep GREEN on a real-universe cross-section | ✅ **GREEN at scale** — hard-gated in-line sweep fired on BOTH classes: `[live] HOOKUSDT`, `[tail] YFIIUSDT`, + `[live] AXSUSDT` on resume (each 100% cov, 6398 checks). A RED sweep raises `FatalIngestError` and aborts before recording (§4 / §7). |
 | Peak disk, final lake size, raw retention outcome | ✅ peak raw cache **30 GB**, **503 GB** evicted → raw 0; final lake **23 GB**; free disk 628 GB (§4) |
@@ -187,11 +193,11 @@ training loss is **expected** to plateau in this range — by design, not a bug.
 **Honest bottom line.** The full 200-pair × 4-year universe lake is **complete**: 200/200 symbols,
 304.6 M bars, both-class causal sweeps GREEN at scale, eviction/resume/governor all exercised on real
 data, universe Merkle `5dfd667d…`. The run took **~52.8 h** at the home link's **~2.3 MB/s sustained**
-(not the 8.3 MB/s burst), with one transient `TimeoutError` recovered by resume (`aborted=False`). Two
-**fast-follow** loose ends, neither blocking the gate: regenerate the 200-symbol manifest (its rollup
-is slow on the 211k-file day-partitioned lake — §4.1) and consider compacting the lake before M6
-data-loading. **The M4 exit gate is MET; this close-out goes to the supervisor for the M6 entry-gate
-check.**
+(not the 8.3 MB/s burst), with one transient `TimeoutError` recovered by resume (`aborted=False`). The
+two M6-prep fast-follows are **DONE, hash-preserving**: the manifest rollup is now a single `GROUP BY`
+and the manifest is regenerated at 200 (`universe_hash` `5dfd667d…`), and the lake is compacted
+211,595 → **7,024 files** with all-200 dataset_hashes proven identical (§4.1). **The M4 exit gate is
+MET; this close-out goes to the supervisor for the M6 entry-gate check.**
 
 ## 7. Adversarial verification — multi-agent, every finding verified
 

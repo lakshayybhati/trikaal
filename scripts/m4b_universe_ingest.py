@@ -132,6 +132,70 @@ def select_subset(spec, est, *, max_symbols, max_gb, window):
     return chosen
 
 
+def rollup_manifest(spec, win, ledger, *, lake_root=LAKE_ROOT) -> UniverseManifest:
+    """Roll the ledger + lake into a content-hashed manifest in ONE GROUP-BY pass over the lake.
+
+    Coverage (first/last date, n_bars, n_segments) comes from a single `GROUP BY symbol` — a
+    per-symbol query loop re-globs the whole partitioned lake once per symbol (~40 min at 200
+    symbols / 200k+ files vs ~1-2 min for one pass). The universe Merkle is `content_hash` over the
+    ledger's sorted `(symbol, dataset_hash)` pairs — the reproducibility anchor, independent of file
+    layout (so it survives lake compaction). Shared by the normal run and `--manifest-only`.
+    """
+    spec_by_sym = {s.symbol: s for s in spec.symbols}
+    built = ledger.built_symbols()
+    cov: dict[str, tuple[str, str, int, int]] = {}
+    if built:
+        con = lake_connect(lake_root)
+        for sym, fd, ld, nb, ns in con.execute(
+            "SELECT symbol, CAST(min(date) AS VARCHAR), CAST(max(date) AS VARCHAR), "
+            "count(*), count(DISTINCT segment_id) FROM bars GROUP BY symbol"
+        ).fetchall():
+            cov[sym] = (fd or "", ld or "", int(nb or 0), int(ns or 0))
+
+    rows, lake_hashes = [], {}
+    for sym in built:
+        rec = ledger._built[sym]
+        s = spec_by_sym.get(sym)
+        first_d, last_d, n_bars, n_seg = cov.get(sym, ("", "", 0, 0))
+        lake_hashes[sym] = rec["dataset_hash"]
+        # truncated = the symbol's window-span was bounded by its OWN lifecycle, not the window edge
+        head = bool(s and s.listing_date and date_to_ms(s.listing_date) > date_to_ms(win[0]))
+        tail = bool(s and s.delisting_date and date_to_ms(s.delisting_date) < date_to_ms(win[1]))
+        rows.append(
+            SymbolCoverage(
+                symbol=sym,
+                market="um",
+                listing_date=s.listing_date if s else None,
+                delisting_date=s.delisting_date if s else None,
+                oi_coverage_start=None,
+                perp_available=True,
+                first_bar_date=first_d,
+                last_bar_date=last_d,
+                n_bars=n_bars,
+                n_segments=n_seg,
+                head_truncated=head,
+                tail_truncated=tail,
+                dataset_hash=rec["dataset_hash"],
+                raw_files=[{"file": k, "sha256": v} for k, v in rec.get("checksums", {}).items()],
+            )
+        )
+    universe_hash = content_hash([[s, lake_hashes[s]] for s in sorted(lake_hashes)])
+    return UniverseManifest(
+        name=spec.name,
+        frequency="1m",
+        market="um",
+        window_start=win[0],
+        window_end=win[1],
+        config_hash=spec.config_hash(),
+        universe_hash=universe_hash,
+        n_symbols=len(built),
+        total_bars=sum(r.n_bars for r in rows),
+        symbols=rows,
+        built_at_utc=None,
+        metadata=CORPUS_PURPOSE,
+    )
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--top-n", type=int, default=200)
@@ -144,6 +208,11 @@ def main() -> int:
     ap.add_argument("--max-concurrent-downloads", type=int, default=4)
     ap.add_argument("--sweep-sample-bars", type=int, default=800)
     ap.add_argument("--config-only", action="store_true")
+    ap.add_argument(
+        "--manifest-only",
+        action="store_true",
+        help="regenerate the manifest from the ledger + lake (no download/build/sweep)",
+    )
     args = ap.parse_args()
 
     win = (args.window_start, args.window_end)
@@ -162,6 +231,16 @@ def main() -> int:
     write_config(spec, est, Path("config/universe_full.yaml"))
     print("[bootstrap] wrote config/universe_full.yaml + corpus-purpose metadata")
     if args.config_only:
+        return 0
+
+    if args.manifest_only:
+        ledger = Ledger(LEDGER_PATH.with_name(f"ingest_ledger_{win[0]}_{win[1]}.jsonl"))
+        manifest = rollup_manifest(spec, win, ledger)
+        mpath = manifest.write(Path("processed/universe/universe_manifest.json"))
+        print(f"[manifest-only] {manifest.n_symbols} symbols, {manifest.total_bars:,} bars")
+        print(f"[manifest-only] written → {mpath}")
+        print(f"[manifest-only] universe Merkle      : {manifest.universe_hash}")
+        print(f"[manifest-only] manifest content_hash: {manifest.manifest_content_hash()}")
         return 0
 
     subset = select_subset(spec, est, max_symbols=args.max_symbols, max_gb=args.max_gb, window=win)
@@ -276,62 +355,10 @@ def main() -> int:
     rep = orch.run(progress=lambda m: print(f"  [{time.time() - t0:.0f}s] {m}", flush=True))
     dt = time.time() - t0
 
-    # ---- roll up the ledger into a content-hashed manifest over the LAKE ----
-    # Coverage is read from the LAKE itself (DuckDB) so it is accurate for every built symbol —
-    # including ones built in a PRIOR run and only resumed here (builds_by_symbol is in-memory).
+    # ---- roll up the ledger + lake into the content-hashed manifest (ONE GROUP-BY pass) ----
     built = ledger.built_symbols()
-    con = lake_connect(LAKE_ROOT) if built else None
-
-    def lake_coverage(sym: str) -> tuple[str, str, int, int]:
-        row = con.execute(
-            "SELECT CAST(min(date) AS VARCHAR), CAST(max(date) AS VARCHAR), "
-            "count(*), count(DISTINCT segment_id) FROM bars WHERE symbol = ?",
-            [sym],
-        ).fetchone()
-        return (row[0] or "", row[1] or "", int(row[2] or 0), int(row[3] or 0))
-
-    rows, lake_hashes = [], {}
-    for sym in built:
-        rec = ledger._built[sym]
-        s = spec_by_sym.get(sym)
-        first_d, last_d, n_bars, n_seg = lake_coverage(sym)
-        lake_hashes[sym] = rec["dataset_hash"]
-        # truncated = the symbol's window-span was bounded by its OWN lifecycle, not the window edge
-        head = bool(s and s.listing_date and date_to_ms(s.listing_date) > date_to_ms(win[0]))
-        tail = bool(s and s.delisting_date and date_to_ms(s.delisting_date) < date_to_ms(win[1]))
-        rows.append(
-            SymbolCoverage(
-                symbol=sym,
-                market="um",
-                listing_date=s.listing_date if s else None,
-                delisting_date=s.delisting_date if s else None,
-                oi_coverage_start=None,
-                perp_available=True,
-                first_bar_date=first_d,
-                last_bar_date=last_d,
-                n_bars=n_bars,
-                n_segments=n_seg,
-                head_truncated=head,
-                tail_truncated=tail,
-                dataset_hash=rec["dataset_hash"],
-                raw_files=[{"file": k, "sha256": v} for k, v in rec.get("checksums", {}).items()],
-            )
-        )
-    universe_hash = content_hash([[s, lake_hashes[s]] for s in sorted(lake_hashes)])
-    manifest = UniverseManifest(
-        name=spec.name,
-        frequency="1m",
-        market="um",
-        window_start=win[0],
-        window_end=win[1],
-        config_hash=spec.config_hash(),
-        universe_hash=universe_hash,
-        n_symbols=len(built),
-        total_bars=sum(r.n_bars for r in rows),
-        symbols=rows,
-        built_at_utc=None,
-        metadata=CORPUS_PURPOSE,
-    )
+    manifest = rollup_manifest(spec, win, ledger)
+    universe_hash = manifest.universe_hash
     mpath = manifest.write(Path("processed/universe/universe_manifest.json"))
 
     print("\n=== M4b ingest summary ===")
