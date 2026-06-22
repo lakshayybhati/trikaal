@@ -39,9 +39,11 @@ liquidity rank proxy). Result for window **2021-01-01 → 2025-01-01, top-200 US
   each contributes only its `[listing, delisting)` bars. (The delisting decision carries a 1-month
   **publish-lag tolerance** — see §7 — so a still-live symbol that merely trails the freshest dump by
   a month is not mis-stamped delisted; this corrected 3 symbols vs a zero-tolerance comparison.)
-- **Full-plan download ≈ 432 GB aggTrades + ~13 GB klines ≈ 445 GB** → at the measured 8.3 MB/s,
-  **≈ 15 hours** of download (445 GB / 8.3 MB/s = 14.9 h; ~15.9 h at the single-stream 7.8 MB/s) —
-  bandwidth-bound; unbeatable by parallelism.
+- **Full-plan download ≈ 432 GB aggTrades + ~13 GB klines ≈ 445 GB** → at the *burst* 8.3 MB/s this
+  projected to **≈ 15 hours**. **Realized: ~52.8 h at ~2.3 MB/s _sustained_** (§4) — the burst rate
+  did not hold over a 2-day pull, so the projection was ~3.6× optimistic. Either way the conclusion
+  stands: it is **bandwidth-bound and unbeatable by parallelism** (the peak raw cache never pressured
+  the 380 GB cap — disk and CPU were idle waiting on the link).
 - Est ≈ **315 M bars** — below the nominal 500 M–1 B band (flagged): 200 pairs over the fullest
   window, with many partial-coverage (delisted / late-listed) symbols, lands ~315 M. Per the
   corpus-purpose note (§5) this is *adequate* — a 27 M backbone saturates ~1–2 B bars, so the band is
@@ -76,40 +78,85 @@ symbols are skipped; a non-built symbol's raw is re-fetched if evicted (idempote
 download) or reused if cached. One symbol's download/build failure is **isolated** (logged, skipped),
 never sinking the run.
 
-## 4. Realized run (bounded, real, resumable)
+## 4. Realized run — the full 200-symbol universe
 
-Bounded to a bandwidth-feasible, resumable **prefix** of the top-200 (smallest-footprint first +
-guaranteed delisted symbols), full **2021–2025** window, **tight 3 GB cap to force real eviction**.
-Executed as two runs (a 12-symbol run stopped after 2 builds to demonstrate resume, then a 4-symbol
-run that **resumed** — the ledger correctly skipped the 2 already-built symbols):
+The full run completed locally (governed, resumable, per-symbol failure-isolated): **200 / 200
+symbols, 304,625,181 bars**, 7,024 month-shards, window **2021-01-01 → 2025-01-01**. One symbol
+(**AXSUSDT**) failed mid-run on a transient `TimeoutError` (download of its 2023-12 shard) and was
+failure-isolated — the first pass finished **199/200 with `aborted=False`**; a **resume** (the same
+launch command — the window-scoped ledger skipped the 199 built and re-attempted only AXSUSDT)
+rebuilt it cleanly on a fresh download → **200/200**.
 
-| Symbol | Bars | Coverage (real, from data) | Regimes spanned |
-|---|---|---|---|
-| **KLAYUSDT** | 1,606,830 | 2021-10-12 → 2024-10-31 | **all four** (2021 bull / 2022 bear+FTX / 2023 recovery / 2024 ETF) |
-| KEYUSDT | 846,000 | 2023-05-24 → 2024-12-31 | 2023 recovery, 2024 ETF |
-| SAGAUSDT | 383,850 | 2024-04-09 → 2024-12-31 | 2024 ETF |
-| ZROUSDT | 279,930 | 2024-06-20 → 2024-12-31 | 2024 ETF |
-| **Total** | **3,116,610 bars** (DuckDB count over the lake) | 73 month-shards, 4 symbols | multi-regime ✓ |
+| Metric | Realized |
+|---|---|
+| Symbols | **200 / 200** (199 first pass + AXSUSDT recovered on resume) |
+| Bars (DuckDB count over the lake) | **304,625,181** |
+| Lake on disk | **23 GB** Hive-partitioned zstd Parquet (raw fully evicted; free disk 628 GB) |
+| Peak raw cache / evicted | **30.0 GB** peak (380 GB cap — never pressured) ; **195 symbols / 503 GB** cycled through eviction → raw → 0 |
+| Wall clock | **~52.8 h** (190,111 s) first pass + ~43 min AXS resume |
+| Effective throughput | **~2.3 MB/s sustained** (445 GB / 190,111 s) — **~3.6× below** the 8.3 MB/s burst (§1); the home link's *sustained* rate, not its burst, set the wall, so the earlier ~15 h projection was optimistic (the AXS timeout at 34.5 h is consistent with a flaky link) |
+| Universe Merkle (over the lake) | **`sha256:5dfd667d05b97bda…`** (200-sym; the 199-sym first-pass intermediate was `9400a271…`) |
 
-**Realized invariants on REAL data:**
-- **Eviction held the cache bounded:** peak raw cache **0.8 GB**, evicted 2 symbols / **1.4 GB** in
-  the final run; cache → 0.0 GB after the last build. Final **free disk 661 GB**; only the **281 MB
-  lake** is retained (all raw reclaimed; the M2 BTCUSDT raw + lake untouched).
-- **Cross-section causal exhaustive sweep GREEN** on real universe bars: ZROUSDT 800-bar slice →
-  `passed=True, coverage=100%, 6398 checks`.
-- **Resume proven:** the 4-symbol run skipped KEYUSDT + SAGAUSDT (already in the ledger).
-- **Real delisting truncation exercised:** KLAYUSDT delisted **2024-11** (within the window —
-  derived from dump coverage, not memory) → manifest `tail_truncated=True`, lake ends 2024-10-31.
-- **Universe Merkle root (over the lake) — the reproducibility anchor:** `sha256:f0ca2d37225cbacf…`,
-  computed over the sorted `(symbol, lake dataset_hash)` pairs and **stable across re-runs**. (The
-  rolled-up `universe_manifest.json` is a derived, gitignored convenience artifact — its own
-  content_hash is not the anchor and is not cited here.) Per-symbol coverage in the manifest is read
-  back from the **lake itself** (DuckDB min/max date + segment count), so it is accurate for every
-  built symbol including ones only resumed.
+**Causal safety held at scale (the hard gate, invariant #2).** The in-line exhaustive truncation
+sweep fired GREEN on BOTH coverage classes on REAL universe bars: **`[live] HOOKUSDT`** and
+**`[tail] YFIIUSDT`** (each an 800-bar slice → `passed=True, coverage=100%, 6398 checks`); the AXS
+resume fired a third, **`[live] AXSUSDT`**, also GREEN. A RED sweep raises `FatalIngestError` and
+aborts before recording/evicting — none did, across 200 symbols.
 
-The lake lands in `processed/universe_bars/` (separate from the M2/M3/M5 `processed/bars/` — those
-are untouched); the content-hashed manifest in `processed/universe/universe_manifest.json`; the
-resumable ledger in `processed/universe/ingest_ledger_2021-01-01_2025-01-01.jsonl`.
+**Eviction / resume / governor at scale.** Peak raw cache **30 GB** against the 380 GB cap (downloads
+never pressured the floor — the link, not disk, was the bottleneck); **503 GB** of raw cycled through
+`download → SHA-256 verify → reduce-in-memory → record → evict`, leaving only the **23 GB lake** (raw
+→ 0). The one transient failure was recovered by **resume** with zero data loss; `aborted=False`.
+
+**Merkle anchor vs the manifest.** The 200-symbol universe Merkle (`5dfd667d…`) is `content_hash` over
+the ledger's sorted `(symbol, lake dataset_hash)` pairs — the reproducibility anchor, derivable
+directly from the append-only ledger (so it survives raw eviction). The rolled-up
+`universe_manifest.json` is a derived, **gitignored** convenience; its per-symbol coverage rollup is
+pathologically slow on this lake (see §4.1), so it currently reflects the 199-symbol first-pass
+intermediate — a fast follow, **not** the anchor.
+
+The lake lands in `processed/universe_bars/` (separate from the M2/M3/M5 `processed/bars/`, untouched);
+the resumable ledger in `processed/universe/ingest_ledger_2021-01-01_2025-01-01.jsonl`.
+
+### 4.1 Data quality — usability per ablation arm + the micro-availability read (for the M6 draw)
+
+`scripts/m4b_data_quality.py` (single-pass DuckDB aggregation over the lake) reports per-symbol
+usability for **both 2×2 arms**, with the mask-bit groups stated so the definition is auditable
+(`m_i = 1` = masked: warm-up incomplete / zero-vol / vol-recon-err):
+- **OHLCV arm** usable ⇔ bits **0-6** unmasked (ret_close, range, body, upper/lower wick, log_volume, log_amount);
+- **+micro arm** usable ⇔ bits **0-12** unmasked (OHLCV **+** aggTrades microstructure 7-12: TFI, signed_count_imbalance, trade_count, mean_trade_size, trade_size_dispersion, large_trade_share);
+- perp bits **13-15** (funding, log_oi, d_oi) are EXCLUDED — masked historically (§1.2 OI retention trap).
+
+| | |
+|---|---|
+| Total bars | 304,625,181 |
+| **OHLCV-usable** (post warm-up) | **303,283,972 — 99.56%** |
+| **+micro-usable** | **300,311,536 — 98.58%** |
+| **Micro-availability ratio** (micro-usable / OHLCV-usable) | **99.0% universe-wide ; 0 symbols below 0.7** |
+| OHLCV-usable / symbol | min 279,121 · median 1,757,144 · max 2,102,886 |
+| Avg is_stale% / zero-vol% | **0.175% / 0.376%** |
+| Thin-coin candidates (OHLCV-usable < 0.5×median **or** stale > 10%) | **43** |
+
+**Read for M6.** (1) **Usability is high** — warm-up costs only ~0.3% of bars per symbol (most coins
+are long single segments, so the ~800-bar z-score warm-up is a one-time tax). (2) **Microstructure is
+nearly always present** — 99.0% micro-availability and **zero micro-starved coins**, so the +micro
+cells get ~full coverage and the **shuffled-micro placebo comparison is not diluted** by missing
+micro. (3) The **43 thin coins are thin by bar-count, not micro-quality** — almost all are recent 2024
+listings (ZRO/TURBO/NOT/TAO/SAGA/ENA/… ~280k-500k bars, micro-ratio ~1.00); the lone genuinely
+illiquid one is the delisted **FRONTUSDT** (stale 2.5%, zero-vol 2.6%). **Recommendation:** treat the
+thin coins as a *sampling-weight* matter for the training draw (fewer bars ⇒ proportional weight), not
+a drop-for-missing-micro matter; all 200 stay in the eval lake. Full per-symbol table:
+`docs/_m4b_dq_table.md`.
+
+**Spot-check (3 thinnest) — per-symbol masking fired:** ZROUSDT dropped 809/279,930 OHLCV bars to
+warm-up/QA (0.3%) and masked 1,363 more micro bars (0.5%) to zero-vol/vre; TURBOUSDT 811 + 1,313;
+NOTUSDT 809 + 1,479 — confirming warm-up and zero-vol/vre feature-masking apply **per symbol**.
+
+**Lake fragmentation (flag for M6).** The lake is Hive-partitioned by `(symbol, frequency, date)` =
+**per-day** → **211,595 parquet files** for 304 M bars. A single GROUP-BY pass is ~1-2 min, but the
+manifest rollup's **200 sequential per-symbol queries** each re-glob all 211k files → ~40 min (why the
+AXS-retry rollup was stopped and the Merkle taken from the ledger). M6 training data-loading pays the
+same tax — **compacting to month-partitioned / coalesced Parquet is a recommended pre-M6 step.**
 
 **Reproducibility survives raw eviction.** The universe Merkle root + per-symbol content-hashes are
 over the **reduced lake** (the kept artifact). The raw Binance SHA-256 of every shard is recorded in
@@ -130,20 +177,21 @@ training loss is **expected** to plateau in this range — by design, not a bug.
 
 | Gate criterion | Status |
 |---|---|
-| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ⚠ **machinery + config + manifest done; lake realized on a bounded resumable subset** — the full 200-pair lake is the ~15 h bandwidth-bound continuation (`python scripts/m4b_universe_ingest.py` with no `--max-*`). NOT completable in-session at 8 MB/s. |
-| Realized bar count in ~500M–1B band (flag if off) | **Flagged:** full plan ≈ 315 M (below band; adequate for the corpus purpose — see §2/§5). Realized subset bars in §4. |
-| Causal exhaustive sweep GREEN on a real-universe cross-section | ✅ run in-line on real ingested bars — now a **HARD GATE** (a RED sweep raises `FatalIngestError` before the lake write → the run aborts non-zero; the symbol is never recorded/evicted) **broadened to BOTH a live and a delisting-tail symbol** (§4 / summary / §7) |
-| Peak disk, final lake size, raw retention outcome | ✅ reported (§4) |
+| Full universe lake (200 pairs, multi-year), Parquet+DuckDB, content-hashed manifest w/ listing+delisting + Merkle root + corpus-purpose | ✅ **MET** — 200/200 symbols, 304,625,181 bars, 23 GB Hive-Parquet/DuckDB lake; universe Merkle `5dfd667d…` (over the lake, from the ledger). Listing/delisting in `config/universe_full.yaml`; corpus-purpose in the manifest metadata. (Manifest coverage rollup at 199 — a fast follow; §4.1.) |
+| Realized bar count in ~500M–1B band (flag if off) | **Flagged (realized 304.6 M):** below the 500 M–1 B band but **adequate by design** — past saturation for a 27 M model; this lake is regime×symbol breadth, not training fuel (§2/§5). |
+| Causal exhaustive sweep GREEN on a real-universe cross-section | ✅ **GREEN at scale** — hard-gated in-line sweep fired on BOTH classes: `[live] HOOKUSDT`, `[tail] YFIIUSDT`, + `[live] AXSUSDT` on resume (each 100% cov, 6398 checks). A RED sweep raises `FatalIngestError` and aborts before recording (§4 / §7). |
+| Peak disk, final lake size, raw retention outcome | ✅ peak raw cache **30 GB**, **503 GB** evicted → raw 0; final lake **23 GB**; free disk 628 GB (§4) |
 | "universe Merkle root over the lake; raw checksums for provenance only" | ✅ printed + in manifest metadata |
 | Tests green + ruff clean; evict-after-record adversarially reviewed | ✅ **159 tests green, ruff clean.** Evict-after-record verdict: **invariant holds, no violations** (single chokepoint, structural ordering, crash-safe across all kill-windows). A 14-agent verification workflow over the whole M4b surface **found + fixed 2 HIGH + 1 MED** (§7). |
 
-**Honest bottom line.** The M4b *machine* is built, tested, reviewed, and proven on real
-multi-symbol, multi-regime, survivorship-correct data with the governor + eviction + resume all
-exercised. The full 200-pair × 4-year lake was **not** completed in-session because the download is a
-hard ~15-hour, 8 MB/s-bandwidth-bound job that parallelism cannot shorten — it is one resumable
-command away, and every criterion except "all 200 symbols downloaded" is met. **Decision for the
-supervisor:** let the resumable job run to completion locally (~15 h wall, free), or move the
-download to a higher-bandwidth box (the runbook's cloud path) before M6.
+**Honest bottom line.** The full 200-pair × 4-year universe lake is **complete**: 200/200 symbols,
+304.6 M bars, both-class causal sweeps GREEN at scale, eviction/resume/governor all exercised on real
+data, universe Merkle `5dfd667d…`. The run took **~52.8 h** at the home link's **~2.3 MB/s sustained**
+(not the 8.3 MB/s burst), with one transient `TimeoutError` recovered by resume (`aborted=False`). Two
+**fast-follow** loose ends, neither blocking the gate: regenerate the 200-symbol manifest (its rollup
+is slow on the 211k-file day-partitioned lake — §4.1) and consider compacting the lake before M6
+data-loading. **The M4 exit gate is MET; this close-out goes to the supervisor for the M6 entry-gate
+check.**
 
 ## 7. Adversarial verification — multi-agent, every finding verified
 
