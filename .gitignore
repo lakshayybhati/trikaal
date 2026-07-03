@@ -19,8 +19,8 @@ env/
 .coverage
 htmlcov/
 coverage.xml
-# uv resolves a lockfile when it runs the suite; we don't pin it (deps live in pyproject).
-uv.lock
+# uv.lock is TRACKED (committed): bit-exact eval replay (invariant 7) requires a pinned
+# environment — the Gate-A anchor drifted twice under floor-only pins before this was learned.
 
 # Project runtime artifacts (content-hashed runs, data, weights).
 # Root-anchored so they do NOT match the source packages src/trikaal/data/ or tests/data/.
