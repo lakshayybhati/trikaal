@@ -1,0 +1,77 @@
+{
+  "anchor": "gate-A results_hash (M5 harness on the frozen M3 checkpoint)",
+  "env": {
+    "device": "mps",
+    "numpy": "2.4.6",
+    "python": "3.11.7",
+    "torch": "2.12.1"
+  },
+  "gate_a_causal_sweep": {
+    "coverage": 420,
+    "passed": true,
+    "total": 420
+  },
+  "inputs": {
+    "dataset_hash": "sha256:1d3ec4f8db6686e20cd57749db4ca441c3e0d13c62a97c5f82eb0120bc9fa961",
+    "predictor_hash": "sha256:6d118ede6bfcab2e1c3f41e1cf55c25d7ba76df351125cc299608a4425fbe034",
+    "tokenizer_hash": "sha256:ce7c8c4ae0b62c89389df21aad015b110d689591d1f0ccade521c1845d15e972"
+  },
+  "params": {
+    "cap": 300,
+    "horizons": [
+      5,
+      15,
+      60
+    ],
+    "seed": 0,
+    "seq_len": 128
+  },
+  "per_horizon": {
+    "15": {
+      "activity": 0.17,
+      "break_even": -Infinity,
+      "dsr": 0.0,
+      "ir_headline_030_netting": -51.49459678441873,
+      "ir_modeled_cost": -23.19262904694866,
+      "kappa_chosen": 3.0,
+      "pbo": 0.0,
+      "val_ir_by_kappa": {
+        "1.0": -50.18860101595519,
+        "1.5": -46.38447947998718,
+        "2.0": -39.80589302047495,
+        "3.0": -31.115979776975987
+      }
+    },
+    "5": {
+      "activity": 0.006666666666666667,
+      "break_even": -Infinity,
+      "dsr": 6.214381342850572e-09,
+      "ir_headline_030_netting": -22.843994009314837,
+      "ir_modeled_cost": -15.199962910267063,
+      "kappa_chosen": 3.0,
+      "pbo": 0.2,
+      "val_ir_by_kappa": {
+        "1.0": -56.38135601068107,
+        "1.5": -50.096664026879345,
+        "2.0": -41.23476027105119,
+        "3.0": -32.575632831137
+      }
+    },
+    "60": {
+      "activity": 0.5166666666666667,
+      "break_even": -Infinity,
+      "dsr": 0.0,
+      "ir_headline_030_netting": -28.631437952322177,
+      "ir_modeled_cost": -7.845728061429143,
+      "kappa_chosen": 3.0,
+      "pbo": 0.0,
+      "val_ir_by_kappa": {
+        "1.0": -22.59776547453598,
+        "1.5": -18.587022142871135,
+        "2.0": -17.339733330688958,
+        "3.0": -9.769468543057293
+      }
+    }
+  },
+  "results_hash": "sha256:5eead7b6cb90ffe2da0ac48752ebb819de186dbae665e954baec2e7d8b7bea46"
+}

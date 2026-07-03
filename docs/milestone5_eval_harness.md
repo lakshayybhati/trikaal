@@ -47,7 +47,8 @@ runner `scripts/m5_eval_harness.py`.
 | diagnostics | vol R²: perfect→1, at-mean→0; pinball 0.9 under-pred=0.9; PICP=0.4 on [0,2] vs [1..5] |
 | placebo | block-permute preserves micro marginal, destroys alignment; phase-randomize preserves \|FFT\| |
 
-**46 eval unit tests green** (all KATs + Gate-A + the end-to-end harness smoke + `decode_tokens`).
+**52 eval-suite tests green** (all KATs + Gate-A + the end-to-end harness smoke + `decode_tokens`;
+`tests/eval` 50 — incl. the §6-item-10 instrument KATs added at M6 Phase 0 — + `decode_tokens` 2).
 
 ## Phase 4 — Gate-A causal re-validation
 
@@ -77,7 +78,20 @@ IR(shuffled)=−71.3, RankIC=+0.046`. These are **garbage** (a dev-grade model t
 token-frequency, one symbol, ~200 decisions) — the deeply negative IRs and degenerate `nan`/`±inf`
 break-evens are exactly what a meaningless run should look like. **The machine ran every stage
 without error and leak-free; that is the deliverable.** Outputs content-hashed
-(`results_hash 75caa9ef…`).
+(`results_hash 75caa9ef…` at M5 time).
+
+> **Anchor history (M6 Phase 0, 2026-07):** `75caa9ef` and its unpinned-env successor `91ed9054`
+> are both **RETIRED**. `75caa9ef` failed to reproduce under dependency drift (numpy 1.x→2.3.3 /
+> torch→2.11.0 flipped κ* 2.0→3.0 deterministically); before a lockfile landed the env drifted
+> again (numpy 2.4.6 / torch 2.12.1), and the 2026-07-04 audit found instrument defects (headline
+> netted at the modeled ~0.11 % cost while labeled "@0.30 %"; active-only-series annualization
+> inflating IR by ~1/√activity; a time-misaligned PBO matrix) — fixed in m6_design §6 item 10,
+> each with a KAT. The NEW anchor, established under the **committed** env (`uv.lock`;
+> numpy==2.4.6 / torch==2.12.1 / py 3.11.7, device=mps, seed 0) with the corrected instrument,
+> **run twice → bit-identical**:
+> `results_hash sha256:5eead7b6cb90ffe2da0ac48752ebb819de186dbae665e954baec2e7d8b7bea46`
+> — durable record in `runs_manifest/gate_a_run_manifest.json` (committed). Any later
+> non-reproduction is a fail-closed STOP (m6_preflight Item 1).
 
 ## Adversarial review (required before declaring M5 done)
 
