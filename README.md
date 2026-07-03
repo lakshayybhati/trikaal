@@ -1,10 +1,20 @@
-# Trikaal — synthetic vertical slice (milestone 1)
+# Trikaal
 
 A microstructure-aware **FSQ tokenizer** for crypto 1-minute K-line foundation models — a
 controlled evolution of Kronos. The authoritative design is the blueprint spec at
-[`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md).
+[`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md);
+the live build order + milestone exit gates are in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-## What this milestone proves
+**Status:** M1 (synthetic slice), M2 (BTCUSDT real slice + Stage-1 tokenizer), M3 (Stage-2 AR),
+M5 (eval harness), and M4 (the full 200-symbol / 304.6 M-bar universe lake, Merkle `5dfd667d…`)
+are **complete**; **M6** (the 5-cell {BSQ,FSQ}×{OHLCV,+micro}+placebo ablation) is next — see
+[`docs/m6_design.md`](docs/m6_design.md). The environment is **pinned** (committed `uv.lock`;
+`uv sync --locked --extra data --extra dev`).
+
+The sections below describe the original milestone-1 synthetic slice, whose gates and structure
+still underpin the repo.
+
+## What the M1 slice proves
 
 The goal of this slice is to prove the **entire model + harness architecture trains and is
 leak-free on synthetic data**, with the pre-flight gates **G0 / G1 / G2** green, *before* writing
