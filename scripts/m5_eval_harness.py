@@ -13,6 +13,7 @@ machine is correct and leak-free, not any result. Outputs are content-hashed.
 
 from __future__ import annotations
 
+import json
 import sys
 import time
 from pathlib import Path
@@ -118,9 +119,20 @@ def main(horizons=(5, 15, 60), cap: int = 300) -> int:
         except Exception as e:  # crash-safe: a horizon failure doesn't lose the others
             print(f"[h={h}] FAILED: {type(e).__name__}: {e}")
 
+    # The anchor payload pins the headline (0.30%-netted), the modeled-cost secondary, the full
+    # per-κ VAL curve (the κ*-knife-edge), and DSR/PBO/break-even — a regression in any of them
+    # moves the hash (§6 item 10d; re-anchored after the item-10 instrument fixes).
     rhash = content_hash(
         {
-            str(h): [r.ir_headline, r.dsr, r.pbo, r.break_even, r.kappa_chosen]
+            str(h): [
+                r.ir_headline,
+                r.ir_modeled_cost,
+                r.dsr,
+                r.pbo,
+                r.break_even,
+                r.kappa_chosen,
+                [[k, v] for k, v in sorted(r.val_ir_by_kappa.items())],
+            ]
             for h, r in results.items()
         },
         {"gate_a": gate["passed"], "dataset": data["dataset_hash"]},
@@ -129,6 +141,45 @@ def main(horizons=(5, 15, 60), cap: int = 300) -> int:
         f"\n[m5] horizons run: {sorted(results)}; gate-A {gate['passed']}; "
         f"results_hash {rhash[:23]}…"
     )
+    # Durable run-manifest (m6_preflight Item 1: "never stdout-only again") — FULL hashes +
+    # env/device/seed provenance, written to a TRACKED dir. Content is deterministic (no
+    # wall-clock), so two bit-identical runs produce a byte-identical file; the git commit
+    # supplies the timestamp. This is the Gate-A anchor artifact.
+    manifest = {
+        "anchor": "gate-A results_hash (M5 harness on the frozen M3 checkpoint)",
+        "results_hash": rhash,
+        "inputs": {
+            "dataset_hash": data["dataset_hash"],
+            "tokenizer_hash": tok_l.hash,
+            "predictor_hash": pred_l.hash,
+        },
+        "env": {
+            "python": sys.version.split()[0],
+            "numpy": np.__version__,
+            "torch": torch.__version__,
+            "device": dev,
+        },
+        "params": {"horizons": sorted(results), "cap": cap, "seq_len": 128, "seed": 0},
+        "gate_a_causal_sweep": gate,
+        "per_horizon": {
+            str(h): {
+                "ir_headline_030_netting": r.ir_headline,
+                "ir_modeled_cost": r.ir_modeled_cost,
+                "kappa_chosen": r.kappa_chosen,
+                "val_ir_by_kappa": {str(k): v for k, v in sorted(r.val_ir_by_kappa.items())},
+                "dsr": r.dsr,
+                "pbo": r.pbo,
+                "break_even": r.break_even,
+                "activity": r.activity,
+            }
+            for h, r in results.items()
+        },
+    }
+    mdir = Path("runs_manifest")
+    mdir.mkdir(exist_ok=True)
+    mpath = mdir / "gate_a_run_manifest.json"
+    mpath.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+    print(f"[m5] run-manifest → {mpath}")
     print(
         "[m5] NUMBERS ARE MEANINGLESS (dev-grade model, one symbol, synthetic Q3/Q4) — "
         "this proves the machine, not a result."
@@ -139,7 +190,14 @@ def main(horizons=(5, 15, 60), cap: int = 300) -> int:
 def _print_horizon(res, secs) -> None:
     p = print
     p(f"\n--- horizon h={res.horizon}min ({secs:.0f}s) — MEANINGLESS dev-grade numbers ---")
-    p(f"  κ* (tuned on VAL): {res.kappa_chosen};  net-IR headline @0.30%: {res.ir_headline:+.3f}")
+    # ir_headline is genuinely NETTED at the flat 0.30% round-trip (§6 item 10a); the modeled-cost
+    # IR (the pre-fix number this label used to mislabel) is the named secondary.
+    p(
+        f"  κ* (tuned on VAL): {res.kappa_chosen};  net-IR headline @0.30% netting: "
+        f"{res.ir_headline:+.3f}  (secondary, modeled-cost: {res.ir_modeled_cost:+.3f}; "
+        f"activity {res.activity:.2f})"
+    )
+    p(f"  per-κ VAL IR: {{{', '.join(f'{k}: {v:+.2f}' for k, v in res.val_ir_by_kappa.items())}}}")
     cs = res.cost_stress
     p(
         f"  cost-stress IR: 0.10%={cs[0.001]:+.2f} 0.20%={cs[0.002]:+.2f} 0.30%={cs[0.003]:+.2f}  "

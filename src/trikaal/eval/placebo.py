@@ -26,6 +26,27 @@ from trikaal.data.segments import segment_bounds
 # signed_count_imbalance, trade_count, mean_trade_size, trade_size_dispersion, large_trade_share).
 # The spec's full microstructure sub-vector is dims 7–15 (incl. funding/OI), masked in this build.
 MICRO_DIMS: tuple[int, ...] = (7, 8, 9, 10, 11, 12)
+# Perp channels (funding, log_oi, d_oi) — masked historically (§1.2 OI retention trap), so
+# MICRO_DIMS excludes them. The tripwire below is what makes that exclusion SAFE.
+PERP_DIMS: tuple[int, ...] = (13, 14, 15)
+
+
+def assert_perp_dims_masked(mask: np.ndarray, *, perp_dims: tuple[int, ...] = PERP_DIMS) -> None:
+    """Tripwire (m6_design §6 item 10f): funding/OI must be FULLY masked in any eval slice.
+
+    ``MICRO_DIMS`` deliberately stops at dim 12 because this build masks funding/OI everywhere.
+    If those dims ever ACTIVATE (mask bit 0), the Cell-5 shuffle would silently under-shuffle —
+    leaving real, temporally-aligned funding/OI information inside a "shuffled-micro" placebo cell
+    and corrupting the Δ_micro-vs-Δ_placebo comparison. Fail loudly; never silently exclude."""
+    m = np.asarray(mask)
+    cols = list(perp_dims)
+    active = m[:, cols] == 0  # mask semantics: 0 = usable/active, 1 = masked
+    if bool(active.any()):
+        n_active = int(active.sum())
+        raise AssertionError(
+            f"placebo tripwire: funding/OI dims {perp_dims} are ACTIVE on {n_active} entries — "
+            "MICRO_DIMS under-shuffles; extend the Cell-5 shuffle-dim set before evaluating"
+        )
 
 
 def block_time_permute(
@@ -84,4 +105,11 @@ def placebo_verdict(ir_cell2: float, ir_cell4: float, ir_cell5: float) -> dict[s
     }
 
 
-__all__ = ["MICRO_DIMS", "block_time_permute", "phase_randomize", "placebo_verdict"]
+__all__ = [
+    "MICRO_DIMS",
+    "PERP_DIMS",
+    "assert_perp_dims_masked",
+    "block_time_permute",
+    "phase_randomize",
+    "placebo_verdict",
+]

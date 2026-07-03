@@ -23,7 +23,7 @@ from trikaal.eval.diagnostics import picp_mpiw, vol_mae_r2
 from trikaal.eval.folds import FoldPlan, make_fold_plan, quadrant
 from trikaal.eval.ic_screen import pearson, spearman_rankic
 from trikaal.eval.metrics import break_even_cost, information_ratio, periods_per_year
-from trikaal.eval.placebo import block_time_permute, placebo_verdict
+from trikaal.eval.placebo import assert_perp_dims_masked, block_time_permute, placebo_verdict
 from trikaal.eval.predict import predict_mu, sigma_hat
 from trikaal.eval.strategy import net_trade_returns, portfolio_period_returns, positions
 
@@ -77,35 +77,60 @@ def _per_bar_cost(cost: CostModel, sigma: np.ndarray, decisions: np.ndarray, spr
 class BacktestOut:
     ir: float
     n_trades: int
-    series: np.ndarray
+    series: np.ndarray  # FULL stride-h calendar grid, flat periods 0.0 (m6_design §6 item 10b)
     breadth: np.ndarray
+    activity: float = float("nan")  # traded fraction of the calendar grid (reported separately)
     period_returns_by_kappa: dict[float, np.ndarray] = field(default_factory=dict)
 
 
 def single_symbol_backtest(
-    mu: np.ndarray, y: np.ndarray, c_total: np.ndarray, h: int, kappa: float
+    mu: np.ndarray,
+    y: np.ndarray,
+    c_total: np.ndarray,
+    h: int,
+    kappa: float,
+    *,
+    c_net: np.ndarray | float | None = None,
 ) -> BacktestOut:
-    """Single-symbol stride-h backtest at filter multiple ``kappa`` → portfolio period-IR."""
+    """Single-symbol stride-h backtest at filter multiple ``kappa`` → portfolio period-IR.
+
+    Positions come from the execution filter θ = κ·``c_total`` (the modeled cost); the *netting*
+    cost is ``c_net`` (default: the same ``c_total``) — so the pre-registered headline can net at
+    the flat 0.30 % round-trip while the filter still uses the modeled cost (§6 item 10a).
+
+    The returned ``series`` covers the **full stride-h calendar grid with flat periods as 0.0**
+    (§6 item 10b): annualizing an active-only series at full calendar frequency inflates the IR by
+    ~1/√(activity) and biases cross-cell ΔIR whenever trade rates differ. Activity is reported
+    separately, never folded into the annualization.
+    """
     theta = kappa * c_total
     s = positions(mu, theta)
     active = s != 0
-    net = net_trade_returns(s[active], y[active], c_total[active])
+    cn = c_total if c_net is None else np.broadcast_to(np.asarray(c_net, np.float64), mu.shape)
+    net = net_trade_returns(s[active], y[active], cn[active])
     period_idx = np.arange(mu.shape[0])[active]  # one symbol → each decision is its own period
     ps = portfolio_period_returns(period_idx, net, n_periods=mu.shape[0])
+    calendar = np.zeros(mu.shape[0], dtype=np.float64)  # flat periods = 0.0 (held cash)
+    if ps.returns.size:
+        calendar[np.unique(period_idx)] = ps.returns
     return BacktestOut(
-        ir=information_ratio(ps.returns, h),
+        ir=information_ratio(calendar, h),
         n_trades=int(active.sum()),
-        series=ps.returns,
+        series=calendar,
         breadth=ps.breadth,
+        activity=float(active.mean()) if mu.shape[0] else float("nan"),
     )
 
 
-def cost_stress_curve(mu: np.ndarray, y: np.ndarray, h: int, kappa: float) -> dict[float, float]:
-    """IR at flat c_total ∈ {0.10,0.20,0.30%} (§8.E.2 cost-stress)."""
+def cost_stress_curve(
+    mu: np.ndarray, y: np.ndarray, c_theta: np.ndarray, h: int, kappa: float
+) -> dict[float, float]:
+    """IR of the SAME strategy (positions from θ = κ·``c_theta``, the modeled cost) re-netted at
+    flat c ∈ {0.10,0.20,0.30 %} (§8.E.2 cost-stress). Netting-only stress keeps the position set
+    fixed, so IR(c) is monotone in c and the 0.30 % point IS the headline (§6 item 10a)."""
     out: dict[float, float] = {}
     for c in FLAT_COSTS:
-        ct = np.full(mu.shape[0], c)
-        out[c] = single_symbol_backtest(mu, y, ct, h, kappa).ir
+        out[c] = single_symbol_backtest(mu, y, c_theta, h, kappa, c_net=c).ir
     return out
 
 
@@ -113,7 +138,8 @@ def cost_stress_curve(mu: np.ndarray, y: np.ndarray, h: int, kappa: float) -> di
 class HarnessResult:
     horizon: int
     kappa_chosen: float
-    ir_headline: float
+    ir_headline: float  # net-IR NETTED at the flat HEADLINE_COST (0.30 %/round-trip, §6 item 10a)
+    ir_modeled_cost: float  # secondary: netted at the modeled per-decision cost (the old headline)
     cost_stress: dict[float, float]
     break_even: float
     dsr: float
@@ -123,6 +149,8 @@ class HarnessResult:
     quadrants_run: list[str]
     n_decisions: int
     notes: list[str]
+    val_ir_by_kappa: dict[float, float] = field(default_factory=dict)  # §6 item 10d: κ* audit trail
+    activity: float = float("nan")  # traded fraction of the headline calendar grid
 
 
 def run_harness(
@@ -171,9 +199,11 @@ def run_harness(
     kappa_star = max(KAPPAS, key=lambda k: ir_val[k] if np.isfinite(ir_val[k]) else -1e9)
     notes.append(f"κ chosen on VAL block (never headline): κ*={kappa_star}")
 
-    # HEADLINE backtest + cost-stress + break-even at κ*
-    head = single_symbol_backtest(mu_hd, y_hd, c_hd, h, kappa_star)
-    stress = cost_stress_curve(mu_hd, y_hd, h, kappa_star)
+    # HEADLINE backtest: positions from θ = κ*·c_modeled, NETTED at the flat pre-registered
+    # HEADLINE_COST (§6 item 10a). The modeled-cost IR is kept as a named secondary.
+    head = single_symbol_backtest(mu_hd, y_hd, c_hd, h, kappa_star, c_net=HEADLINE_COST)
+    head_modeled = single_symbol_backtest(mu_hd, y_hd, c_hd, h, kappa_star)
+    stress = cost_stress_curve(mu_hd, y_hd, c_hd, h, kappa_star)
     c_break = break_even_cost(np.array(FLAT_COSTS), np.array([stress[c] for c in FLAT_COSTS]))
 
     # DSR over the multiple-testing trial budget; PBO via CSCV on the κ-config matrix (VAL)
@@ -186,15 +216,16 @@ def run_harness(
         if head.series.size >= 2
         else float("nan")
     )
-    lengths = [per_kappa_val[k].size for k in KAPPAS]
+    # PBO input is the TIME-ALIGNED [T_grid, |κ|] matrix (§6 item 10c): every κ's series covers the
+    # same full VAL calendar grid with per-κ flat periods as 0 — never active-only series truncated
+    # to a common min-length (rows would compare different time periods; statistically invalid).
     pbo = float("nan")
-    if min(lengths) >= 16:
-        m = np.column_stack([per_kappa_val[k][: min(lengths)] for k in KAPPAS])
+    t_grid = mu_val.shape[0]
+    if t_grid >= 16:
+        m = dsr_mod.time_aligned_pbo_matrix(per_kappa_val)
         pbo = dsr_mod.pbo_cscv(m, n_splits=8)
     else:
-        notes.append(
-            "PBO skipped: too few common VAL periods across κ configs (dev-grade subsample)"
-        )
+        notes.append("PBO skipped: VAL calendar grid too short (dev-grade subsample)")
 
     # Placebo: re-tokenize the shuffled-micro surrogate and re-backtest (same model, off-dist)
     placebo_info = _placebo_codepath(
@@ -223,6 +254,7 @@ def run_harness(
         horizon=h,
         kappa_chosen=kappa_star,
         ir_headline=head.ir,
+        ir_modeled_cost=head_modeled.ir,
         cost_stress=stress,
         break_even=c_break,
         dsr=dsr,
@@ -232,6 +264,8 @@ def run_harness(
         quadrants_run=q_run,
         n_decisions=int(hd_dec.size + val_dec.size),
         notes=notes,
+        val_ir_by_kappa={k: float(ir_val[k]) for k in KAPPAS},
+        activity=head.activity,
     )
 
 
@@ -257,6 +291,10 @@ def _placebo_codepath(
     """Exercise §8.C.4: build the shuffled-micro surrogate, re-tokenize, re-backtest, compare."""
     from trikaal.train.token_stream import tokenize_features
 
+    # Tripwire (§6 item 10f): MICRO_DIMS (7-12) deliberately excludes funding/OI (13-15) because
+    # this build masks them everywhere; if they ever ACTIVATE, the shuffle would silently
+    # under-shuffle (real funding/OI info left aligned in a "shuffled-micro" cell) — fail loudly.
+    assert_perp_dims_masked(lake["mask"])
     x_surr = block_time_permute(lake["x"], lake["segment_id"], seed=0)
     sc, sf = tokenize_features(
         tok, x_surr, lake["mask"], lake["segment_id"], window=seq_len, device=device

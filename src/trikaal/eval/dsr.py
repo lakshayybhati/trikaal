@@ -127,6 +127,27 @@ def deflated_sharpe_ratio(returns: np.ndarray, *, n_trials: int, var_sr: float) 
     return probabilistic_sharpe_ratio(returns, sr0)
 
 
+def time_aligned_pbo_matrix(per_config: dict[float, np.ndarray]) -> np.ndarray:
+    """Build the CSCV input ``[T_grid, N_configs]`` from per-config FULL-calendar-grid series.
+
+    Every config's series must cover the SAME stride-h calendar grid (flat periods as 0), so each
+    row is one time period across all configs — the property CSCV requires. Ragged inputs (the old
+    active-only-then-truncate-to-min construction compared different time periods per row —
+    statistically invalid, m6_design §6 item 10c) are REJECTED, not silently truncated. Columns
+    are stacked in sorted-config order for determinism.
+    """
+    keys = sorted(per_config)
+    if len(keys) < 2:
+        raise ValueError("need ≥2 configs for a PBO matrix")
+    lengths = {k: np.asarray(per_config[k]).shape[0] for k in keys}
+    if len(set(lengths.values())) != 1:
+        raise ValueError(
+            f"per-config series are not time-aligned (lengths {lengths}) — every config must "
+            "cover the same full calendar grid with flat periods as 0; refusing to truncate"
+        )
+    return np.column_stack([np.asarray(per_config[k], dtype=np.float64) for k in keys])
+
+
 def pbo_cscv(return_matrix: np.ndarray, *, n_splits: int = 8) -> float:
     """Probability of Backtest Overfitting via Combinatorially-Symmetric Cross-Validation.
 
@@ -166,4 +187,5 @@ __all__ = [
     "pbo_cscv",
     "probabilistic_sharpe_ratio",
     "psr_from_moments",
+    "time_aligned_pbo_matrix",
 ]
