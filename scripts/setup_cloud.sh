@@ -3,9 +3,10 @@
 # Phase-A artifact (no GPU rented by this file; it runs ON the instance once one exists).
 #
 # Idempotent: safe to re-run. Brings a bare GPU box → verified-ready:
-#   clone repo @ pinned commit → Python-3.11 venv (inherits the image's CUDA torch)
-#   → project deps + wandb + flash-attn → VERIFY (nvidia-smi, torch CUDA+bf16, flash_attn,
-#   ruff, pytest -m "not slow") → READY banner (GPU name + VRAM).
+#   clone repo @ pinned commit → uv sync --locked from the COMMITTED uv.lock (exact pinned env:
+#   numpy==2.4.6, torch==2.12.1 CUDA wheel; uv auto-provisions Python 3.11 — the image's
+#   python/torch no longer matter) → wandb + flash-attn → VERIFY (nvidia-smi, torch CUDA+bf16,
+#   flash_attn, ruff, pytest -m "not slow") → READY banner (GPU name + VRAM).
 #
 # Usage (on the instance — see docs/cloud_runbook.md for the full sequence). The repo is PRIVATE,
 # so pass a short-lived read-only GitHub token via env (NEVER hard-code it):
@@ -25,8 +26,8 @@ REPO_URL="${REPO_URL:-https://github.com/${REPO_SLUG}.git}"
 TRIKAAL_BRANCH="${TRIKAAL_BRANCH:-real-data-slice}"
 TRIKAAL_COMMIT="${TRIKAAL_COMMIT:-}"          # exact sha to pin; empty → branch tip (warns)
 WORKDIR="${WORKDIR:-/workspace/trikaal}"      # /workspace = conventional persistent data dir (not /root)
-INSTALL_TORCH="${INSTALL_TORCH:-0}"           # 1 = pip-install CUDA torch if the image lacks it (e.g. py3.11 image w/o torch)
-TORCH_CUDA="${TORCH_CUDA:-cu124}"             # pytorch wheel index used only when INSTALL_TORCH=1
+# (INSTALL_TORCH/TORCH_CUDA knobs removed: torch now comes ONLY from the committed uv.lock —
+#  installing "latest" or floor-resolved torch is the exact drift failure mode this script had.)
 FLASH_ATTN="${FLASH_ATTN:-1}"                 # 0 = skip flash-attn (e.g. a quick smoke)
 FLASH_ATTN_WHEEL="${FLASH_ATTN_WHEEL:-}"      # prebuilt wheel URL → skips the ~30-60 min on-GPU compile
 MAX_JOBS="${MAX_JOBS:-}"                       # flash-attn build parallelism; empty → derived from RAM (OOM-safe)
@@ -69,39 +70,25 @@ else
 fi
 log "HEAD = $(git rev-parse HEAD)"
 
-# ----------------------------------------------------------------- 2. Python 3.11 (hard requirement)
-PY="$(command -v python3.11 || command -v python3 || true)"
-[ -n "$PY" ] || die "no python3 on PATH."
-PYV="$("$PY" -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
-case "$PYV" in
-  3.11 | 3.12 | 3.13) : ;;
-  *) die "python ${PYV} < 3.11 (project requires-python>=3.11). This is common: the official \
-pytorch/pytorch 2.0-2.4 images are py3.10. Fix: pick a py3.11 image (e.g. pytorch/pytorch:2.5.1-* or \
-vastai/pytorch), OR 'apt-get install -y python3.11 python3.11-venv' then re-run with INSTALL_TORCH=1." ;;
-esac
-log "python: ${PY} (${PYV})"
-
-# ----------------------------------------------------------------- 3. venv (inherits image CUDA torch)
-# --system-site-packages keeps the image's pre-built CUDA PyTorch visible (no multi-GB reinstall).
-[ -d .venv ] || "$PY" -m venv --system-site-packages .venv
+# ------------------------------------------- 2-4. pinned env from the COMMITTED LOCKFILE (uv.lock)
+# The env drifted TWICE under install-latest + floor pins (the Gate-A anchor incident). The box
+# must run the EXACT env the anchor was established under: uv installs the lockfile-resolved
+# versions (numpy==2.4.6, torch==2.12.1 — the PyPI linux torch wheel bundles CUDA 12.x, so the
+# image's preinstalled torch/python no longer matter; uv auto-provisions Python 3.11 if absent).
+command -v uv >/dev/null 2>&1 || {
+  log "installing uv"
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
+}
+log "uv $(uv --version 2>/dev/null | head -1) — syncing the committed lockfile (--locked)"
+[ -f uv.lock ] || die "uv.lock missing — the committed lockfile is required (never install floors)."
+uv sync --locked --extra data --extra dev || die "uv sync --locked failed — lockfile/pyproject mismatch."
 # shellcheck disable=SC1091
 source .venv/bin/activate
-python -m pip install -q -U pip wheel setuptools
 
-# ----------------------------------------------------------------- 4. torch + CUDA + bf16
-if ! python -c 'import torch' 2>/dev/null; then
-  if [ "$INSTALL_TORCH" = "1" ]; then
-    log "installing CUDA torch (${TORCH_CUDA})"
-    pip install -q torch --index-url "https://download.pytorch.org/whl/${TORCH_CUDA}"
-  else
-    die "no torch in env. Use a PyTorch CUDA image, or re-run with INSTALL_TORCH=1 TORCH_CUDA=cu124."
-  fi
-fi
-# torch must be >=2.2 (pyproject floor) so the editable install does NOT pull a CPU torch over it.
-python -c 'import torch,sys; v=tuple(map(int,torch.__version__.split("+")[0].split(".")[:2])); sys.exit(0 if v>=(2,2) else 1)' \
-  || die "image torch <2.2 — pip could clobber it with a CPU wheel; use a newer PyTorch image."
-python - <<'PY' || die "CUDA unavailable — wrong image or a CPU instance."
+python - <<'PY' || die "CUDA unavailable or torch != lockfile pin — wrong box or a drifted env."
 import torch
+assert torch.__version__.split("+")[0] == "2.12.1", f"torch {torch.__version__} != pinned 2.12.1"
 assert torch.cuda.is_available(), "torch.cuda.is_available() is False"
 p = torch.cuda.get_device_properties(0)
 bf16 = torch.cuda.is_bf16_supported()
@@ -110,17 +97,17 @@ if not bf16:
     print("WARN: bf16 not reported on device 0 — A100/H100 support it; check the GPU / training config.")
 PY
 
-# ----------------------------------------------------------------- 5. project deps + wandb + flash-attn
-log "installing project deps ([data,dev]) + wandb"
-pip install -q -e ".[data,dev]" wandb
+# ----------------------------------------------------------------- 5. wandb + flash-attn
+log "installing wandb (experiment tracking; outside the eval-replay pin surface)"
+uv pip install -q wandb
 if [ "$FLASH_ATTN" = "1" ]; then
   if ! python -c 'import flash_attn' 2>/dev/null; then
     # --no-build-isolation reuses the live venv, so flash-attn's setup.py needs these at build time:
-    pip install -q ninja packaging psutil
-    ninja --version >/dev/null 2>&1 || { pip uninstall -y -q ninja; pip install -q ninja; }
+    uv pip install -q ninja packaging psutil
+    ninja --version >/dev/null 2>&1 || { uv pip uninstall -q ninja; uv pip install -q ninja; }
     if [ -n "$FLASH_ATTN_WHEEL" ]; then
       log "installing flash-attn from prebuilt wheel (fast, no compile)"
-      pip install -q "$FLASH_ATTN_WHEEL" \
+      uv pip install -q "$FLASH_ATTN_WHEEL" \
         || die "prebuilt wheel failed — torch/cuda/py/abi must match (see runbook §4 detection one-liner)."
     else
       # Cap build parallelism to RAM: each nvcc/cicc worker eats ~5-8 GB; default MAX_JOBS=nproc OOM-kills.
@@ -129,7 +116,7 @@ if [ "$FLASH_ATTN" = "1" ]; then
       export MAX_JOBS NVCC_THREADS
       log "compiling flash-attn (--no-build-isolation, MAX_JOBS=${MAX_JOBS}) — typically 15-45 min, can"
       log "exceed 1h on low-vCPU boxes; this is NORMAL, do not interrupt. Prefer FLASH_ATTN_WHEEL (runbook §4)."
-      pip install -q flash-attn --no-build-isolation \
+      uv pip install -q flash-attn --no-build-isolation \
         || die "flash-attn build failed (usually RAM OOM) — set FLASH_ATTN_WHEEL (runbook §4) or lower MAX_JOBS."
     fi
   fi

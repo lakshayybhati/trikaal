@@ -1,0 +1,36 @@
+# CI gate (invariant 2's required enforcement — m6_design §6 item 11).
+# Installs from the COMMITTED lockfile (uv.lock) so CI runs the exact pinned env — the same
+# discipline that stopped the Gate-A anchor drift. The causal-safety / Gate-A tests run as an
+# explicit named step (the required check), then the full fast suite.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv (pinned)
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.11.3"
+
+      - name: Sync the pinned environment from the committed lockfile
+        run: uv sync --locked --extra data --extra dev
+
+      - name: Lint (ruff check + format)
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Causal-safety + Gate-A tests (the required gate — never weaken or skip)
+        run: uv run pytest tests/data/test_causal_safety.py tests/eval/test_gate_a.py -q
+
+      - name: Fast suite (everything not marked slow)
+        run: uv run pytest -m "not slow" -q
