@@ -52,16 +52,29 @@ evidence.
   netted at the flat **0.30 %/round-trip**, purged walk-forward + embargo E=120, computed by
   `eval/xsection.py` (the corrected §6-item-10 conventions: full calendar grid flat=0.0,
   time-aligned PBO, per-κ curve persisted).
-- **CI:** moving-block bootstrap over the pooled period series (block length ⌈√T⌉), pooling
-  across the ≥3 seeds per cell.
+- **CI (PAIRED — amendment v1.1):** moving-block bootstrap over the **paired per-period
+  difference series** Δr_p = r_p(Cell 4) − r_p(Cell 5) on the shared calendar grid — the SAME
+  resampled block indices apply to both cells (equivalently: resample blocks of Δr_p). Block
+  length ⌈√T⌉. Seeds enter as matched pairs (seed s of Cell 4 vs seed s of Cell 5; the seed-mean
+  Δ series is the resampled object). Cell 4 and Cell 5 share the draw, seeds, grid, and market
+  exposure by construction — the common component cancels in Δr_p, and the CI must reflect that
+  pairing; an unpaired CI would be wrongly wide.
 - **THE MICROSTRUCTURE LEG SURVIVES iff ALL of:**
-  1. the one-sided (1−α) CI lower bound of ΔIR_info > 0, AND
-  2. ΔIR_info ≥ **MDE_pooled = 3.209** (h=15, the primary horizon), AND
-  3. the DSR of Cell 4's headline survives the documented trial budget (5 cells × 3 seeds ×
+  1. the one-sided (1−α) CI lower bound of ΔIR_info > 0 (the paired CI above), AND
+  2. ΔIR_info ≥ **MDE_paired ≡ (z₀.₉₅ + z₀.₈₀) · SE_boot(ΔIR_info)** — where SE_boot is the
+     bootstrap SE from the SAME paired moving-block procedure as the CI (a variance/nuisance
+     quantity, never a function of the effect's sign or magnitude), AND
+  3. ΔIR_info ≥ **0.5 annualized IR** (the economic-materiality floor, fixed pre-data: an
+     after-cost gain below 0.5 is within seed-jitter scale at these horizons and would not
+     justify the added aggTrades data dependency — too small to claim even if significant), AND
+  4. the DSR of Cell 4's headline survives the documented trial budget (5 cells × 3 seeds ×
      4 horizons × 4 κ).
 - **Otherwise: the pre-committed NULL** — the microstructure leg is withdrawn and the
   contribution is FSQ-vs-BSQ on OHLCV alone (Cells 1–2). No re-thresholding, no horizon-shopping:
   h=15 is the primary; h=5/60 are reported as secondaries with their own MDEs above.
+- **Relation to the §2 table:** the tabled 3.209 is exactly MDE_paired evaluated at ρ₄₅ = 0
+  (cells independent) — the conservative ceiling, reported for power honesty. The operative
+  threshold uses the realized pairing; if the cells turn out uncorrelated, the two coincide.
 
 ## 4. The κ* / cost-stress headline rule (the env-drift lesson, locked)
 
@@ -84,3 +97,19 @@ marginal under FSQ [IR(4)−IR(2)] and BSQ [IR(3)−IR(1)]; the per-regime ΔIR_
 G-instrument-live (anchor `5eead7b6…`), G-parity, G-§8.C.3 (Kronos external validation of Cell 1),
 G-causal, G-determinism — all per m6_design §3. This document adds the numeric thresholds; it
 changes no gate.
+
+## 7. Amendment log
+
+- **v1.1 (2026-07-04, supervisor/research lead) — BEFORE any real training** (only the
+  meaningless-by-design SMOKE had run; no cell model existed beyond toy scale). Original v1.0
+  (commit `2c72fff`) rule 2 read: *"ΔIR_info ≥ MDE_pooled = 3.209 (h=15)"* — the UNPAIRED
+  (ρ₄₅ = 0) fixed threshold — and the CI clause did not specify pairing. Why amended: Cell 4 and
+  Cell 5 are paired by construction (identical draw/seeds/grid; they differ only in the micro
+  information), so the unpaired 3.209 as a decision threshold conflates a conservative power
+  bound with the operative materiality bar and would pre-commit the experiment to NULL for any
+  real-but-moderate effect — a detector that cannot detect. The amended rule keeps every
+  anti-p-hack property: thresholds are formulas over nuisance quantities (paired variance /
+  correlation) plus a fixed pre-data economic floor (0.5), none a function of the observed
+  effect. The unpaired 3.209 table stays in §2 as the honest conservative bound. Nothing else
+  changed. Locked from here; any further amendment requires its own dated log entry and is
+  illegitimate once a real cell has trained.
