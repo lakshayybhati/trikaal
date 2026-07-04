@@ -1,0 +1,18 @@
+# M6 garbage-detector tripwires (pre-flight Item 7 / m6_design §6 item 8).
+# COMMITTED thresholds — an obviously-broken run halts early, not after 15 GPU-days of nonsense.
+# The orchestrator checks these every step / eval and ABORTS THE WHOLE RUN on a trip.
+
+# (i) training loss not dropping over the first K steps: at step k_first_steps, the smoothed loss
+#     must sit below (1 + flat_loss_tol) x the initial loss — flat or rising trips.
+k_first_steps: 200
+flat_loss_tol: 0.02
+
+# (ii) NaN/Inf anywhere in loss or grad-norm → immediate trip (nan_check is not tunable-off).
+nan_check: true
+
+# (iii) degenerate eval: NaN eval metric, or |net-IR| beyond any sane magnitude.
+ir_abs_bound: 10000.0
+
+# (iv) a stalled cell: no step-progress heartbeat within this many seconds (the orchestrator's
+#      loop granularity; GPU-util collapse shows up as this locally / as nvidia-smi at toy-CUDA).
+heartbeat_timeout_s: 1800
