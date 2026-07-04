@@ -89,7 +89,20 @@ class MultiHeadSelfAttention(nn.Module):
         cos, sin = self.rope_cos[:length], self.rope_sin[:length]
         q, k = apply_rope(q, cos, sin), apply_rope(k, cos, sin)
         dropout_p = self.attn_dropout if self.training else 0.0
-        a = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal, dropout_p=dropout_p)
+        # backend selected per run via attention_mode.set_attention_backend (inv. 7: the mode is
+        # RECORDED; flash2 is the fast non-deterministic CUDA path, SDPA the bit-exact fallback)
+        if getattr(self, "attention_backend", None) == "flash2":  # pragma: no cover — CUDA only
+            from flash_attn import flash_attn_func
+
+            a = flash_attn_func(
+                q.transpose(1, 2),
+                k.transpose(1, 2),
+                v.transpose(1, 2),
+                dropout_p=dropout_p,
+                causal=self.causal,
+            ).transpose(1, 2)
+        else:
+            a = F.scaled_dot_product_attention(q, k, v, is_causal=self.causal, dropout_p=dropout_p)
         a = a.transpose(1, 2).reshape(b, length, self.d_model)
         return self.out(a)
 

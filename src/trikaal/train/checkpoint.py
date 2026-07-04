@@ -50,16 +50,28 @@ def artifact_hash(sd: dict[str, torch.Tensor], config: dict[str, Any]) -> str:
     return content_hash(state_dict_hash(sd), config)
 
 
-def save_checkpoint(path: str | Path, model: nn.Module, config: dict[str, Any]) -> str:
-    """Save ``{state_dict, config, hash}`` to ``path``; return the content hash.
+def save_checkpoint(
+    path: str | Path,
+    model: nn.Module,
+    config: dict[str, Any],
+    *,
+    meta: dict[str, Any] | None = None,
+) -> str:
+    """Save ``{state_dict, config, hash, meta}`` to ``path``; return the content hash.
 
     ``config`` must be the exact keyword arguments that reconstruct ``model`` via its class
-    constructor — pass ``model.get_config()`` so every architecture/behavior knob is captured."""
+    constructor — pass ``model.get_config()`` so every architecture/behavior knob is captured.
+    ``meta`` is run PROVENANCE (e.g. the invariant-7 determinism record: attention mode, seed,
+    device, env versions) — stored in the artifact but excluded from the content hash, like
+    ``built_at`` in the data manifests: two runs producing identical weights hash identically."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     sd = model.state_dict()
     h = artifact_hash(sd, config)
-    torch.save({"format": CKPT_FORMAT, "state_dict": sd, "config": config, "hash": h}, path)
+    payload = {"format": CKPT_FORMAT, "state_dict": sd, "config": config, "hash": h}
+    if meta is not None:
+        payload["meta"] = meta
+    torch.save(payload, path)
     return h
 
 
@@ -68,6 +80,7 @@ class LoadedCheckpoint:
     model: nn.Module
     config: dict[str, Any]
     hash: str
+    meta: dict[str, Any] | None = None  # run provenance (determinism record) — not hashed
 
 
 def load_checkpoint(
@@ -92,7 +105,7 @@ def load_checkpoint(
         raise ValueError(f"checkpoint hash mismatch on load: {rehash} != {ckpt['hash']}")
     if expect_hash is not None and rehash != expect_hash:
         raise ValueError(f"checkpoint is not the expected artifact: {rehash} != {expect_hash}")
-    return LoadedCheckpoint(model=model, config=ckpt["config"], hash=rehash)
+    return LoadedCheckpoint(model=model, config=ckpt["config"], hash=rehash, meta=ckpt.get("meta"))
 
 
 __all__ = [
