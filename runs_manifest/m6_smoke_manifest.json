@@ -1,0 +1,65 @@
+{
+  "artifacts": {
+    "cell1_bsq_ohlcv_seed0": {
+      "predictor_hash": "sha256:35a86d99fcbe08ac12bb0f75c6c419c642066fcfe98f075f3ba990a52255b5c8",
+      "tokenizer_hash": "sha256:37a4d974bb026d0ba0c35cdd5088c82ed06aa7eb32fae0415e5bce821e281a49"
+    },
+    "cell2_fsq_ohlcv_seed0": {
+      "predictor_hash": "sha256:8cc8c6711d26df240cfc80e9314d19259fe1e334d91a1b981ae1cfaf9c0ffaa2",
+      "tokenizer_hash": "sha256:44cbc57a9cc043a53da503c93f913b62bfcdc6b615109f9687a03e371cddca97"
+    },
+    "cell3_bsq_micro_seed0": {
+      "predictor_hash": "sha256:5a8548464be834e1650686cd2c3ccb309658e73eb66963cbc602f4b821912ea4",
+      "tokenizer_hash": "sha256:cc391068e9a6192cfedc26726a69115e62f7c7a6ac02c8c915478c186a956384"
+    },
+    "cell4_fsq_micro_seed0": {
+      "predictor_hash": "sha256:a8c37ff3e1baafd4af6d7b6f76e7af9279a5d8038155f87101cd1107cc6ae264",
+      "tokenizer_hash": "sha256:0472d6ea71b8171abce6dd6e4182d01473d828972c0b18c62015d3a8770a344f"
+    },
+    "cell5_fsq_micro_shuffled_seed0": {
+      "predictor_hash": "sha256:57da92fd47323709f23b3a829e958c7c0fb037006a038da64614a329bf1430d0",
+      "tokenizer_hash": "sha256:38d60e2bb9d6722143a9055361dbaba48cc4cf5e7877f387c74a112f5380f041"
+    }
+  },
+  "cell_ir_headline": {
+    "1": -2.9949574176914386,
+    "2": -7.137623208585548,
+    "3": -1.4885131519871266,
+    "4": -7.937331537245523,
+    "5": -11.108320381414863
+  },
+  "note": "NUMBERS MEANINGLESS BY DESIGN \u2014 tiny shells, minutes of training; the gate is that all 5 cells + the cross-sectional driver ran end-to-end on real lake symbols.",
+  "smoke": "m6_phase1",
+  "symbols": [
+    "BTCUSDT",
+    "KLAYUSDT",
+    "FRONTUSDT"
+  ],
+  "thin_coin": "FRONTUSDT",
+  "thin_coin_drawn_stage1": {
+    "cell1_bsq_ohlcv_seed0": 439,
+    "cell2_fsq_ohlcv_seed0": 439,
+    "cell3_bsq_micro_seed0": 439,
+    "cell4_fsq_micro_seed0": 439,
+    "cell5_fsq_micro_shuffled_seed0": 439
+  },
+  "verdict": {
+    "cell_ir": {
+      "1": -2.9949574176914386,
+      "2": -7.137623208585548,
+      "3": -1.4885131519871266,
+      "4": -7.937331537245523,
+      "5": -11.108320381414863
+    },
+    "delta_info": 3.17098884416934,
+    "delta_micro": -0.7997083286599747,
+    "delta_placebo": -3.970697172829315,
+    "fsq_effect_micro": -6.448818385258397,
+    "fsq_effect_ohlcv": -4.14266579089411,
+    "micro_exceeds_placebo": true,
+    "micro_marginal_bsq": 1.506444265704312,
+    "micro_marginal_fsq": -0.7997083286599747,
+    "note": "raw comparison only \u2014 DSR-margin test applied at M6 on the 5 trained cells"
+  },
+  "wall_s": 21.1
+}
