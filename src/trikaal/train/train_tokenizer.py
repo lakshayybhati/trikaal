@@ -9,6 +9,7 @@ generalizing-codebook training loop, not the single-batch overfit gate.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -16,6 +17,7 @@ import torch
 from trikaal.constants import FSQ_LEVELS
 from trikaal.tokenizer.model import TokenizerAE
 from trikaal.train.gates import cosine_warmup_lr
+from trikaal.train.train_state import autocast_ctx, load_train_state, save_train_state
 from trikaal.utils.seeding import set_determinism
 
 
@@ -84,14 +86,25 @@ def train_stage1(
     converge_patience: int = 3,
     device: str = "cpu",
     seed: int = 0,
+    model_kwargs: dict | None = None,
+    state_path: str | Path | None = None,
+    resume: bool = False,
+    state_every: int | None = None,
+    autocast_bf16: bool = False,
 ) -> Stage1Result:
     """Train the tokenizer to reconstruction convergence; return metrics history.
 
     ``converged_step`` = the first eval at which val recon-MAE improved by < ``converge_rel`` for
     ``converge_patience`` consecutive evals (the plateau).
+
+    Resumable (§6 item 9): with ``state_path`` set, the FULL train state (model+opt+step+RNG) is
+    atomically saved every ``state_every`` (default ``eval_every``) steps; ``resume=True`` restores
+    it and continues the exact trajectory. ``autocast_bf16`` is the CUDA-target precision knob
+    (off on MPS/CPU by default).
     """
     set_determinism(seed, deterministic_algorithms=False)  # MPS-friendly; convergence run, not G2
     dev = torch.device(device)
+    state_every = state_every or eval_every
     starts = build_window_index(segment_id, seq_len)
     if starts.size < batch_size + n_eval_windows:
         raise ValueError(f"too few windows ({starts.size}) for seq_len={seq_len}")
@@ -104,25 +117,34 @@ def train_stage1(
     vb = rng.choice(val_starts, size=min(n_eval_windows, val_starts.size), replace=False)
     xv, mv = _gather(x, vb, seq_len).to(dev), _gather(m, vb, seq_len).to(dev)
 
-    model = TokenizerAE(levels=levels, dropout=0.0).to(dev)
+    model = TokenizerAE(levels=levels, dropout=0.0, **(model_kwargs or {})).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.01, betas=(0.9, 0.95))
     warmup = int(warmup_frac * max_steps)
+
+    start_step = 0
+    if resume and state_path is not None and Path(state_path).exists():
+        st = load_train_state(state_path, model=model, optimizer=opt, np_rng=rng)
+        start_step = st["step"]
 
     history: list[dict] = []
     converged_step: int | None = None
     best = float("inf")
     stalls = 0
-    for step in range(1, max_steps + 1):
+    for step in range(start_step + 1, max_steps + 1):
         for g in opt.param_groups:
             g["lr"] = cosine_warmup_lr(step, peak_lr, warmup, max_steps)
         sb = rng.choice(train_starts, size=batch_size, replace=False)
         xb, mb = _gather(x, sb, seq_len).to(dev), _gather(m, sb, seq_len).to(dev)
         model.train()
         opt.zero_grad(set_to_none=True)
-        out = model(xb, mb)
+        with autocast_ctx(device, bf16=autocast_bf16):
+            out = model(xb, mb)
         out["loss"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
+
+        if state_path is not None and step % state_every == 0:
+            save_train_state(state_path, model=model, optimizer=opt, step=step, np_rng=rng)
 
         if step % eval_every == 0:
             model.eval()

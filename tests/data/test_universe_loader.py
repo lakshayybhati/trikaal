@@ -84,7 +84,9 @@ def test_calendar_boundary_and_blocks_are_deterministic_and_shared():
     blocks = eval_block_bounds_ms("2021-01-01", "2025-01-01", k=6)
     assert len(blocks) == 6
     assert blocks[0][0] == b  # forward region starts AT the boundary
-    for (_lo1, hi1), (lo2, _hi2) in zip(blocks, blocks[1:], strict=False):
+    from itertools import pairwise
+
+    for (_lo1, hi1), (lo2, _hi2) in pairwise(blocks):
         assert hi1 == lo2  # contiguous
     # the boundary is GLOBAL: any two symbols receive the same instant by construction
     # (it is a pure function of the window config — nothing per-symbol enters)

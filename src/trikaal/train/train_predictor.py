@@ -22,6 +22,7 @@ import torch
 from trikaal.model.predictor import TrikaalAR
 from trikaal.train.checkpoint import save_checkpoint
 from trikaal.train.gates import cosine_warmup_lr
+from trikaal.train.train_state import autocast_ctx, load_train_state, save_train_state
 from trikaal.train.train_tokenizer import _gather, build_window_index
 from trikaal.utils.seeding import set_determinism
 
@@ -97,6 +98,10 @@ def train_stage2(
     seed: int = 0,
     verbose: bool = False,
     ckpt_path: str | Path | None = None,
+    state_path: str | Path | None = None,
+    resume: bool = False,
+    state_every: int | None = None,
+    autocast_bf16: bool = False,
 ) -> Stage2Result:
     """Train the AR backbone on the token stream; return convergence history + baseline margins.
 
@@ -104,6 +109,10 @@ def train_stage2(
     training-window ``seq_len`` — so a short-window convergence smoke still produces a 512-context
     checkpoint. When ``ckpt_path`` is set, the best-val model is saved there on every improvement
     (crash-safe: a killed run keeps its best artifact); ``verbose`` prints a live per-eval line.
+
+    Resumable (§6 item 9): ``state_path`` + ``resume`` as in ``train_stage1`` — the full train
+    state (model+opt+step+RNG) is saved atomically every ``state_every`` steps and a resumed run
+    continues the exact trajectory. ``autocast_bf16`` = the CUDA bf16 precision knob.
     """
     set_determinism(seed, deterministic_algorithms=False)  # MPS-friendly convergence run, not G2
     assert seq_len <= model_max_len, f"seq_len {seq_len} exceeds model_max_len {model_max_len}"
@@ -130,13 +139,19 @@ def train_stage2(
     model = TrikaalAR(**mk).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.01, betas=(0.9, 0.95))
     warmup = int(warmup_frac * max_steps)
+    state_every = state_every or eval_every
+
+    start_step = 0
+    if resume and state_path is not None and Path(state_path).exists():
+        st = load_train_state(state_path, model=model, optimizer=opt, np_rng=rng)
+        start_step = st["step"]
 
     history: list[dict] = []
     converged_step: int | None = None
     ckpt_hash: str | None = None
     best, stalls = float("inf"), 0
     t0 = time.time()
-    for step in range(1, max_steps + 1):
+    for step in range(start_step + 1, max_steps + 1):
         for g in opt.param_groups:
             g["lr"] = cosine_warmup_lr(step, peak_lr, warmup, max_steps)
         sb = rng.choice(train_starts, size=batch_size, replace=False)
@@ -145,10 +160,14 @@ def train_stage2(
         xb_ts = _gather(ts, sb, seq_len).to(dev)
         model.train()
         opt.zero_grad(set_to_none=True)
-        out = model.compute_loss(xb_c, xb_f, xb_ts)
+        with autocast_ctx(device, bf16=autocast_bf16):
+            out = model.compute_loss(xb_c, xb_f, xb_ts)
         out["loss"].backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         opt.step()
+
+        if state_path is not None and step % state_every == 0:
+            save_train_state(state_path, model=model, optimizer=opt, step=step, np_rng=rng)
 
         if step % eval_every == 0:
             model.eval()
