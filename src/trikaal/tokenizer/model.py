@@ -10,6 +10,7 @@ import torch
 from torch import Tensor, nn
 
 from trikaal.constants import FSQ_LEVELS
+from trikaal.tokenizer.bsq import BSQQuantizer
 from trikaal.tokenizer.decoder import TokenizerDecoder
 from trikaal.tokenizer.encoder import TokenizerEncoder
 from trikaal.tokenizer.hierarchy import FSQQuantizer
@@ -17,12 +18,21 @@ from trikaal.tokenizer.losses import default_feature_weights, masked_mae, weight
 
 
 class TokenizerAE(nn.Module):
-    """Microstructure-aware FSQ tokenizer autoencoder."""
+    """Tokenizer autoencoder — FSQ (the contribution) or BSQ (the Cells-1/3 baseline) bottleneck.
+
+    The quantizer is the ONLY swap (spec §1190's symmetry guarantee): identical encoder/decoder
+    shells and ``d_model→D`` / ``D→d_model`` projections; the loss extra is arm-specific via
+    ``quant.aux_loss(z)`` — ``gamma_reg`` (NO commitment) for FSQ, ``λ·L_quant`` for BSQ.
+    ``n_features=7`` is the OHLCV-only ablation arm (input dims REMOVED, never zero-filled).
+    """
 
     def __init__(
         self,
         levels: tuple[int, ...] | list[int] = FSQ_LEVELS,
         *,
+        quantizer: str = "fsq",
+        bsq_bits: tuple[int, int] | list[int] = (10, 10),
+        bsq_lambda: float = 0.25,
         n_features: int = 16,
         d_model: int = 256,
         n_layers: int = 3,
@@ -36,8 +46,13 @@ class TokenizerAE(nn.Module):
         max_len: int = 512,
     ) -> None:
         super().__init__()
+        if quantizer not in ("fsq", "bsq"):
+            raise ValueError(f"quantizer must be 'fsq' or 'bsq', got {quantizer!r}")
         self._config = {
             "levels": list(levels),
+            "quantizer": quantizer,
+            "bsq_bits": list(bsq_bits),
+            "bsq_lambda": bsq_lambda,
             "n_features": n_features,
             "d_model": d_model,
             "n_layers": n_layers,
@@ -53,15 +68,20 @@ class TokenizerAE(nn.Module):
         self.encoder = TokenizerEncoder(
             n_features, d_model, n_layers, n_heads, d_ff, dropout, encoder_causal, max_len
         )
-        self.quant = FSQQuantizer(levels, per_stage_scale)
+        if quantizer == "bsq":
+            self.quant: nn.Module = BSQQuantizer(bsq_bits[0], bsq_bits[1], bsq_lambda)
+        else:
+            self.quant = FSQQuantizer(levels, per_stage_scale)
         self.w_in = nn.Linear(d_model, self.quant.dim, bias=True)
         self.w_out = nn.Linear(self.quant.dim, d_model, bias=True)
         self.decoder = TokenizerDecoder(
             n_features, d_model, n_layers, n_heads, d_ff, dropout, False, max_len
         )
         self.huber_delta = huber_delta
+        self.quantizer = quantizer
+        self.n_features = n_features
         self.v_c, self.v_f = self.quant.v_c, self.quant.v_f
-        self.register_buffer("w_feat", default_feature_weights(finance_weighted))
+        self.register_buffer("w_feat", default_feature_weights(finance_weighted, n_features))
 
     def get_config(self) -> dict:
         """The complete constructor kwargs — pass to ``save_checkpoint`` for a faithful reload."""
@@ -78,23 +98,34 @@ class TokenizerAE(nn.Module):
     def decode_latent(self, z_hat: Tensor) -> Tensor:
         return self.decoder(self.w_out(z_hat))
 
+    def _group_radix(self, group: list[int]) -> list[int]:
+        """Per-dim radices for a coarse/fine group: FSQ level counts, or 2 for every BSQ bit."""
+        if self.quantizer == "bsq":
+            return [2] * len(group)
+        return [self.quant.levels[i] for i in group]
+
     def decode_tokens(self, cidx: Tensor, fidx: Tensor) -> Tensor:
         """``(b_c, b_f) -> x_hat`` — inverse of ``encode_tokens`` (the AR rollout→features path).
 
-        Unflatten the mixed-radix coarse/fine ids back to per-dim FSQ codes, dequantize to the grid
-        value ``z_hat = code − (L_i−1)/2`` (exactly the STE forward value the decoder consumes), and
-        decode. ``decode_tokens(*encode_tokens(x, m))`` reproduces ``forward(x, m)["x_hat"]``.
+        Unflatten the mixed-radix coarse/fine ids back to per-dim codes, dequantize to the exact
+        STE forward value the decoder consumes — FSQ grid value ``code − (L_i−1)/2``; BSQ corner
+        ``(2·bit − 1)/√k`` — and decode. ``decode_tokens(*encode_tokens(x, m))`` reproduces
+        ``forward(x, m)["x_hat"]``.
         """
         q = self.quant
         codes = torch.zeros((*cidx.shape, q.dim), dtype=torch.long, device=cidx.device)
         for ids, group in ((cidx, q.coarse_idx), (fidx, q.fine_idx)):
+            radix = self._group_radix(list(group))
             rem = ids.clone()
             for pos in reversed(range(len(group))):  # big-endian mixed-radix unflatten
-                lvl = q.levels[group[pos]]
+                lvl = radix[pos]
                 codes[..., group[pos]] = rem % lvl
                 rem = rem // lvl
-        half = (q.levels_t - 1.0) / 2.0
-        z_hat = codes.to(q.levels_t.dtype) - half
+        if self.quantizer == "bsq":
+            z_hat = (2.0 * codes.to(torch.float32) - 1.0) / (float(q.dim) ** 0.5)
+        else:
+            half = (q.levels_t - 1.0) / 2.0
+            z_hat = codes.to(q.levels_t.dtype) - half
         return self.decode_latent(z_hat)
 
     def forward(self, x: Tensor, mask: Tensor) -> dict[str, Tensor]:
@@ -106,7 +137,9 @@ class TokenizerAE(nn.Module):
         keep = 1.0 - mask.to(x.dtype)
         loss_fine = weighted_masked_huber(x_hat, x, keep, self.w_feat, self.huber_delta)
         loss_coarse = weighted_masked_huber(x_hat_coarse, x, keep, self.w_feat, self.huber_delta)
-        loss = loss_coarse + loss_fine + self.quant.gamma_reg()  # NO commitment term (FSQ)
+        # arm-specific extra: FSQ → gamma_reg ONLY (NO commitment term — the headline
+        # simplification); BSQ → λ·L_quant (spec §1190)
+        loss = loss_coarse + loss_fine + self.quant.aux_loss(z)
 
         with torch.no_grad():
             recon_mae = masked_mae(x_hat, x, keep)

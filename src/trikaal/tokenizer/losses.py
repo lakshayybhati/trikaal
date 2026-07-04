@@ -29,10 +29,15 @@ def masked_mae(x_hat: Tensor, x: Tensor, keep: Tensor) -> Tensor:
     return num / keep.sum().clamp_min(1e-6)
 
 
-def default_feature_weights(finance_weighted: bool = False) -> Tensor:
-    """``w_feat`` [16]. Uniform by default (Training §2); optional 2× on the finance block (§c)."""
-    w = torch.ones(N_FEATURES)
+def default_feature_weights(finance_weighted: bool = False, n_features: int = N_FEATURES) -> Tensor:
+    """``w_feat`` [n_features]. Uniform by default (Training §2); optional 2× on the finance block.
+
+    ``n_features < 16`` is the OHLCV-only ablation arm (the ``OHLCV_ONLY_IDX`` prefix 0-6 — the
+    subset is contiguous, so arm feature *i* is original feature *i*). Finance weights apply only
+    to indices that exist in the arm (in-range members of ``FINANCE_WEIGHTED_IDX``)."""
+    w = torch.ones(n_features)
     if finance_weighted:
         for i in FINANCE_WEIGHTED_IDX:
-            w[i] = 2.0
+            if i < n_features:
+                w[i] = 2.0
     return w

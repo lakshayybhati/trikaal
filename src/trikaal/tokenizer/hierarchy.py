@@ -14,7 +14,7 @@ import torch
 import torch.nn.functional as F
 from torch import Tensor, nn
 
-from trikaal.constants import derive_coarse_fine, fsq_vocab_sizes
+from trikaal.constants import bits_per_token, derive_coarse_fine, fsq_vocab_sizes
 from trikaal.tokenizer.fsq import fsq_quantize, split_codes
 
 _INV_SOFTPLUS_1 = math.log(math.e - 1.0)  # rho such that softplus(rho) == 1.0
@@ -34,6 +34,11 @@ class FSQQuantizer(nn.Module):
             self.rho = nn.Parameter(torch.full((self.dim,), _INV_SOFTPLUS_1))
         else:
             self.register_parameter("rho", None)
+
+    @property
+    def bpt(self) -> float:
+        """Bits per token = Σ log2(L_i) — the G-parity control variable (canonical: 20.06)."""
+        return bits_per_token(self.levels)
 
     def gamma(self) -> Tensor | None:
         return None if self.rho is None else F.softplus(self.rho)
@@ -55,3 +60,9 @@ class FSQQuantizer(nn.Module):
         if g is None:
             return torch.zeros((), device=self.levels_t.device)
         return 1e-4 * (torch.log(g) ** 2).sum()
+
+    def aux_loss(self, z: Tensor) -> Tensor:
+        """The arm-specific loss extra. For FSQ this is ONLY ``gamma_reg`` — z-independent, with
+        **NO commitment term** (spec §984/§1833: the code is a deterministic function of ``z``, so
+        no λ·L_quant; its absence vs the BSQ arm is the headline simplification under test)."""
+        return self.gamma_reg()
