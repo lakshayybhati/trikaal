@@ -16,6 +16,7 @@ authors = [{ name = "Trikaal" }]
 dependencies = [
     "numpy==2.4.6",
     "torch==2.12.1",
+    "wandb==0.28.0",
 ]
 
 [project.optional-dependencies]
