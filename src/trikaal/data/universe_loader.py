@@ -165,7 +165,8 @@ def build_symbol_windows(
 ) -> SymbolWindows:
     """Pure-array core of :func:`load_symbol_windows` (unit-testable without a lake)."""
     if arm == ARM_MICRO_SHUFFLED:
-        x = shuffle_micro(x, mask, segment_id, symbol=symbol, seed=seed).astype(np.float32)
+        x, mask = shuffle_micro(x, mask, segment_id, symbol=symbol, seed=seed)
+        x = x.astype(np.float32)
     x_arm, m_arm = select_arm(np.asarray(x, dtype=np.float32), mask, arm)
     starts = fold_valid_starts(
         ts, segment_id, seq_len=seq_len, boundary_ms=boundary_ms, embargo_bars=embargo_bars

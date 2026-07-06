@@ -50,15 +50,18 @@ def cell5_seed(seed: int, symbol: str) -> int:
 
 def shuffle_micro(
     x: np.ndarray, mask: np.ndarray, segment_id: np.ndarray, *, symbol: str, seed: int
-) -> np.ndarray:
+) -> tuple[np.ndarray, np.ndarray]:
     """The Cell-5 transform: per-segment temporal block-permute of the micro channels.
 
-    Marginal distribution preserved, temporal information destroyed (the placebo). Deterministic
-    under ``(seed, symbol)``; the SAME call sits in the training loader and the eval driver.
-    The funding/OI tripwire runs first — if those dims ever activate, the shuffle-dim set
-    under-shuffles and MUST fail loudly (m6_design §6 item 10f)."""
+    Returns the shuffled ``(x, mask)`` — the (value, mask) pair moves together under one
+    per-segment permutation (2026-07-06 audit fix; values-only shuffling strands fill values
+    on mask-active bars, a one-directional Cell-5 handicap). Marginal distribution preserved,
+    temporal information destroyed (the placebo). Deterministic under ``(seed, symbol)``; the
+    SAME call sits in the training loader and the eval driver. The funding/OI tripwire runs
+    first — if those dims ever activate, the shuffle-dim set under-shuffles and MUST fail
+    loudly (m6_design §6 item 10f)."""
     assert_perp_dims_masked(mask)
-    return block_time_permute(x, segment_id, seed=cell5_seed(seed, symbol))
+    return block_time_permute(x, mask, segment_id, seed=cell5_seed(seed, symbol))
 
 
 def select_arm(x: np.ndarray, mask: np.ndarray, arm: str) -> tuple[np.ndarray, np.ndarray]:

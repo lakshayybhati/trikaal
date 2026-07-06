@@ -295,9 +295,9 @@ def _placebo_codepath(
     # this build masks them everywhere; if they ever ACTIVATE, the shuffle would silently
     # under-shuffle (real funding/OI info left aligned in a "shuffled-micro" cell) — fail loudly.
     assert_perp_dims_masked(lake["mask"])
-    x_surr = block_time_permute(lake["x"], lake["segment_id"], seed=0)
+    x_surr, m_surr = block_time_permute(lake["x"], lake["mask"], lake["segment_id"], seed=0)
     sc, sf = tokenize_features(
-        tok, x_surr, lake["mask"], lake["segment_id"], window=seq_len, device=device
+        tok, x_surr, m_surr, lake["segment_id"], window=seq_len, device=device
     )
     mu_pl = predict_mu(
         model, tok, sc, sf, lake["ts"], lake["sigma"], dec, h=h, seq_len=seq_len, device=device

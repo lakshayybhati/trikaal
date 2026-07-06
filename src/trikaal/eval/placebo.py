@@ -7,6 +7,10 @@ and cross-channel structure while **destroying temporal alignment** with OHLCV a
 
 * **block time-permutation** (primary): within each segment, permute the microstructure block as a
   unit across time — within-bar cross-channel structure kept, alignment to OHLCV/target destroyed.
+  The permutation moves each bar's **(value, mask) pair together** (2026-07-06 audit fix):
+  permuting values alone strands fill values on mask-active bars and real values on masked bars,
+  which *corrupts validity bookkeeping* instead of merely relocating information — a
+  one-directional handicap on Cell 5 that would fake a positive ΔIR(Cell4−Cell5).
 * **phase-randomized** (stricter alt): per channel, randomize Fourier phase preserving the power
   spectrum (Theiler surrogate) — keeps each channel's autocorrelation, destroys cross-correlation.
 
@@ -51,20 +55,31 @@ def assert_perp_dims_masked(mask: np.ndarray, *, perp_dims: tuple[int, ...] = PE
 
 def block_time_permute(
     x: np.ndarray,
+    mask: np.ndarray,
     segment_id: np.ndarray,
     *,
     micro_dims: tuple[int, ...] = MICRO_DIMS,
     seed: int = 0,
-) -> np.ndarray:
-    """Surrogate: within each segment, permute the microstructure block as a unit across time."""
+) -> tuple[np.ndarray, np.ndarray]:
+    """Surrogate: within each segment, permute the microstructure block as a unit across time.
+
+    Values AND mask bits move under the SAME per-segment permutation, so a (value, mask) pair
+    stays intact: a masked bar's fill value can never land on a mask-active bar and vice versa.
+    RNG consumption is unchanged from the pre-fix implementation — the value-side permutation
+    is bit-identical for a given (seed, segment layout)."""
     x = np.asarray(x, dtype=np.float64)
-    out = x.copy()
+    mask = np.asarray(mask)
+    if mask.shape != x.shape:
+        raise ValueError(f"mask shape {mask.shape} != x shape {x.shape}")
+    out_x = x.copy()
+    out_m = mask.copy()
     cols = list(micro_dims)
     for si, (s0, s1) in enumerate(segment_bounds(segment_id)):
         rng = np.random.default_rng((seed, si))  # per-segment, seed-pinned
         perm = rng.permutation(s1 - s0)
-        out[s0:s1, cols] = x[s0:s1, :][perm][:, cols]
-    return out
+        out_x[s0:s1, cols] = x[s0:s1, :][perm][:, cols]
+        out_m[s0:s1, cols] = mask[s0:s1, :][perm][:, cols]
+    return out_x, out_m
 
 
 def phase_randomize(
@@ -74,7 +89,11 @@ def phase_randomize(
     micro_dims: tuple[int, ...] = MICRO_DIMS,
     seed: int = 0,
 ) -> np.ndarray:
-    """Surrogate: per channel per segment, randomize Fourier phase preserving the power spectrum."""
+    """Surrogate: per channel per segment, randomize Fourier phase preserving the power spectrum.
+
+    Diagnostic alternative only — NOT the Cell-5 surrogate (`shuffle_micro` uses
+    :func:`block_time_permute`). It synthesizes new values, so no mask can travel with them;
+    if it is ever promoted to a cell transform, the mask-handling question must be re-opened."""
     x = np.asarray(x, dtype=np.float64)
     out = x.copy()
     for si, (s0, s1) in enumerate(segment_bounds(segment_id)):

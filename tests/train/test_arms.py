@@ -90,29 +90,44 @@ def test_f7_tokenizer_trains_cleanly():
 
 
 # --------------------------------------------------------- item 3: the Cell-5 training arm
+def _punch_micro_holes(x, m, frac=0.25, seed=5):
+    """Mask ~frac of micro entries so the (value, mask) pairing is observable in the shuffle."""
+    rng = np.random.default_rng(seed)
+    for d in MICRO_DIMS:
+        hole = rng.random(x.shape[0]) < frac
+        m[hole, d] = 1
+    return x, m
+
+
 def test_cell5_shuffle_deterministic_and_symbol_seeded():
-    x, m = _xm()
+    """KAT (c): determinism under (seed, symbol) — for the values AND the co-shuffled mask."""
+    x, m = _punch_micro_holes(*_xm())
     seg = np.zeros(240, dtype=np.int64)
     seg[120:] = 1  # two segments
-    s1 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
-    s2 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
-    np.testing.assert_array_equal(s1, s2)  # deterministic under (seed, symbol)
-    s3 = shuffle_micro(x, m, seg, symbol="ETHUSDT", seed=0)
-    s4 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=1)
-    assert not np.array_equal(s1, s3) and not np.array_equal(s1, s4)
+    x1, m1 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
+    x2, m2 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
+    np.testing.assert_array_equal(x1, x2)  # deterministic under (seed, symbol)
+    np.testing.assert_array_equal(m1, m2)  # ... including the mask
+    x3, m3 = shuffle_micro(x, m, seg, symbol="ETHUSDT", seed=0)
+    x4, m4 = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=1)
+    assert not np.array_equal(x1, x3) and not np.array_equal(x1, x4)
+    assert not np.array_equal(m1, m3) and not np.array_equal(m1, m4)
     assert cell5_seed(0, "BTCUSDT") != cell5_seed(0, "ETHUSDT") != cell5_seed(1, "ETHUSDT")
 
 
 def test_cell5_shuffle_preserves_marginals_destroys_alignment_leaves_ohlcv():
-    x, m = _xm()
+    x, m = _punch_micro_holes(*_xm())
     seg = np.zeros(240, dtype=np.int64)
-    s = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
+    s, ms = shuffle_micro(x, m, seg, symbol="BTCUSDT", seed=0)
     micro = list(MICRO_DIMS)
     ohlcv = list(range(7))
     np.testing.assert_array_equal(s[:, ohlcv], x[:, ohlcv].astype(np.float64))  # OHLCV untouched
-    for d in micro:  # marginal preserved per channel (a permutation)
+    np.testing.assert_array_equal(ms[:, ohlcv], m[:, ohlcv])
+    for d in micro:  # marginal preserved per channel (a permutation) — values and mask bits
         np.testing.assert_allclose(np.sort(s[:, d]), np.sort(x[:, d].astype(np.float64)))
+        assert ms[:, d].sum() == m[:, d].sum()
     assert not np.array_equal(s[:, micro], x[:, micro])  # alignment destroyed
+    assert not np.array_equal(ms[:, micro], m[:, micro])  # the mask moved with it
 
 
 def test_cell5_training_path_carries_the_perp_tripwire():

@@ -146,10 +146,10 @@ def score_cell(
     # per-symbol arm transform (Cell-5: the SAME shuffle as training) + tokenize + labels
     prepared: dict[str, dict] = {}
     for se in symbols:
-        x = se.x
+        x, mask = se.x, se.mask
         if arm == ARM_MICRO_SHUFFLED:
-            x = shuffle_micro(x, se.mask, se.segment_id, symbol=se.symbol, seed=cfg.seed)
-        x_arm, m_arm = select_arm(np.asarray(x, np.float32), se.mask, arm)
+            x, mask = shuffle_micro(x, se.mask, se.segment_id, symbol=se.symbol, seed=cfg.seed)
+        x_arm, m_arm = select_arm(np.asarray(x, np.float32), mask, arm)
         b_c, b_f = tokenize_features(
             tok, x_arm, m_arm, se.segment_id, window=cfg.seq_len, device=cfg.device
         )
