@@ -27,19 +27,27 @@ anchored 0.7 calendar split. Raw inputs + all rows: `runs_manifest/m6_mde_inputs
 Mechanics (per `scripts/m6_prereg.py`, locked): MDE = (z₀.₉₅ + z₀.₈₀) · √(2/T_eff) ·
 √(periods_per_year(h)), with T_eff temporally deflated and ρ₄₅ conservatively set to 0 (the two
 cells share the eval grid, so the true SE of ΔIR is smaller — this errs toward LARGER MDE).
+**Basis (recomputed 2026-07-06 per §3a, audit item 5): the PINNED primary region = forward
+blocks 1–5 of k=6 (VAL block 0 excluded), i.e. 2024-01-01T18:00Z → 2025-01-01.** The v1/v1.1
+table (3.209 / 3.209 / 3.313) was computed on the full forward region including block 0 and is
+superseded by this table — the nuisance-basis correction §3a disclosed (T shrinks ~1/6; git
+history of `runs_manifest/m6_mde_inputs.json` preserves the old rows).
 
 | Slice | h=5 | h=15 | h=60 |
 |---|---|---|---|
-| **Pooled (the primary)** | **3.209** | **3.209** | **3.313** |
-| 2024 (OOS regime) | 3.532 | 3.512 | 3.669 |
-| 2023 OOS tail (Oct–Dec) | 7.901 | 7.901 | 7.899 |
+| **Pooled blocks 1–5 (the primary)** | **3.515** | **3.518** | **3.533** |
+| 2024 (OOS regime) | 3.515 | 3.518 | 3.533 |
 
-(Annualized net-IR units. T at h=15: pooled 42,076 periods; 2024 35,135; 2023-tail 6,941.)
+(Annualized net-IR units. T at h=15: 35,063 periods, T_eff 35,002. Blocks 1–5 coincide almost
+exactly with calendar 2024, so the 2024 regime row now equals the pooled primary; the 2023 OOS
+tail (Oct–Dec) lies inside VAL block 0 and is therefore no longer a headline-region slice — it
+remains VAL/κ territory only.)
 
-**Honest reading:** ~1.2 years of OOS at these horizons can only power-detect a ΔIR_info of
-**≥ ~3.2 annualized IR units** at the pre-registered α/power. Smaller true effects will read as
-CI-includes-zero → the pre-committed NULL. This is the cost of the anchored train-once design and
-is accepted, not negotiated after the fact.
+**Honest reading:** ~1 year of headline-region OOS at these horizons can only power-detect a
+ΔIR_info of **≥ ~3.5 annualized IR units** at the pre-registered α/power — under the
+conservative unpaired (ρ₄₅ = 0) reference; the operative paired threshold is §3's MDE_paired.
+Smaller true effects will read as CI-includes-zero → the pre-committed NULL. This is the cost of
+the anchored train-once design and is accepted, not negotiated after the fact.
 
 **Per-regime scope (recorded honestly):** under the anchored 0.7 split, only late-2023 + 2024 are
 out-of-sample; 2021 (bull) and 2022 (bear+FTX) lie INSIDE the train region, so their per-regime

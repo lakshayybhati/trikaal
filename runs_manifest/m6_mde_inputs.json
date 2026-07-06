@@ -1,94 +1,70 @@
 {
-  "h15_2023_oos_tail": {
-    "MDE_annualized_IR": 7.901,
-    "N_breadth_eff": 1.8,
-    "T": 6941,
-    "T_eff": 6941.0,
-    "ac1_pooled": 0.0,
-    "avg_breadth": 40.0,
-    "rho_bar_raw": 0.5425,
-    "rho_bar_residual": -0.0216
-  },
+  "basis": "forward blocks 1-5 of k=6 (VAL block 0 EXCLUDED) \u2014 the prereg \u00a73a primary region; recomputed on this basis 2026-07-06 (audit item 5). The original v1 table (git history of this file) used the full forward region incl. block 0.",
   "h15_2024": {
-    "MDE_annualized_IR": 3.512,
+    "MDE_annualized_IR": 3.518,
     "N_breadth_eff": 1.5,
-    "T": 35135,
-    "T_eff": 35135.0,
-    "ac1_pooled": 0.0,
+    "T": 35063,
+    "T_eff": 35002.3,
+    "ac1_pooled": 0.0009,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.6407,
-    "rho_bar_residual": -0.0238
+    "rho_bar_raw": 0.6387,
+    "rho_bar_residual": -0.0239
   },
   "h15_pooled": {
-    "MDE_annualized_IR": 3.209,
-    "N_breadth_eff": 1.6,
-    "T": 42076,
-    "T_eff": 42076.0,
-    "ac1_pooled": 0.0,
+    "MDE_annualized_IR": 3.518,
+    "N_breadth_eff": 1.5,
+    "T": 35063,
+    "T_eff": 35002.3,
+    "ac1_pooled": 0.0009,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.622,
+    "rho_bar_raw": 0.6387,
     "rho_bar_residual": -0.0239
-  },
-  "h5_2023_oos_tail": {
-    "MDE_annualized_IR": 7.901,
-    "N_breadth_eff": 1.7,
-    "T": 20823,
-    "T_eff": 20823.0,
-    "ac1_pooled": 0.0,
-    "avg_breadth": 40.0,
-    "rho_bar_raw": 0.5687,
-    "rho_bar_residual": -0.0226
   },
   "h5_2024": {
-    "MDE_annualized_IR": 3.532,
+    "MDE_annualized_IR": 3.515,
     "N_breadth_eff": 1.5,
-    "T": 105407,
-    "T_eff": 104174.9,
-    "ac1_pooled": 0.0059,
+    "T": 105191,
+    "T_eff": 105191.0,
+    "ac1_pooled": 0.0,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.6371,
-    "rho_bar_residual": -0.0239
+    "rho_bar_raw": 0.6529,
+    "rho_bar_residual": -0.024
   },
   "h5_pooled": {
-    "MDE_annualized_IR": 3.209,
-    "N_breadth_eff": 1.6,
-    "T": 126230,
-    "T_eff": 126230.0,
+    "MDE_annualized_IR": 3.515,
+    "N_breadth_eff": 1.5,
+    "T": 105191,
+    "T_eff": 105191.0,
     "ac1_pooled": 0.0,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.6227,
-    "rho_bar_residual": -0.0241
-  },
-  "h60_2023_oos_tail": {
-    "MDE_annualized_IR": 7.899,
-    "N_breadth_eff": 1.8,
-    "T": 1736,
-    "T_eff": 1736.0,
-    "ac1_pooled": 0.0,
-    "avg_breadth": 40.0,
-    "rho_bar_raw": 0.5388,
-    "rho_bar_residual": -0.0211
+    "rho_bar_raw": 0.6529,
+    "rho_bar_residual": -0.024
   },
   "h60_2024": {
-    "MDE_annualized_IR": 3.669,
+    "MDE_annualized_IR": 3.533,
     "N_breadth_eff": 1.5,
-    "T": 8783,
-    "T_eff": 8044.4,
-    "ac1_pooled": 0.0439,
+    "T": 8765,
+    "T_eff": 8678.6,
+    "ac1_pooled": 0.005,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.6429,
-    "rho_bar_residual": -0.0238
+    "rho_bar_raw": 0.6488,
+    "rho_bar_residual": -0.0236
   },
   "h60_pooled": {
-    "MDE_annualized_IR": 3.313,
-    "N_breadth_eff": 1.6,
-    "T": 10519,
-    "T_eff": 9866.0,
-    "ac1_pooled": 0.032,
+    "MDE_annualized_IR": 3.533,
+    "N_breadth_eff": 1.5,
+    "T": 8765,
+    "T_eff": 8678.6,
+    "ac1_pooled": 0.005,
     "avg_breadth": 40.0,
-    "rho_bar_raw": 0.6223,
-    "rho_bar_residual": -0.0239
+    "rho_bar_raw": 0.6488,
+    "rho_bar_residual": -0.0236
   },
+  "n_blocks": 6,
+  "primary_region_ms": [
+    1704132000000,
+    1735689600000
+  ],
   "symbols_sampled": [
     "1INCHUSDT",
     "AAVEUSDT",

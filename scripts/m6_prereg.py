@@ -6,7 +6,9 @@ Pre-registration mechanics (m6_design §2 — computed from the DATA's covarianc
 design, NEVER from any treatment comparison; no M6 model exists when this runs):
 
 * The primary test statistic is ΔIR_info = IR(Cell 4) − IR(Cell 5) on the POOLED cross-sectional
-  portfolio period series over the forward (eval) region.
+  portfolio period series over the PINNED primary region: forward blocks 1-5 of the k=6 plan —
+  block 0 is VAL (κ territory) and is EXCLUDED (prereg §3a; recomputed on this basis 2026-07-06,
+  audit item 5 — the original v1 table used the full forward region including block 0).
 * SE mechanics: an IR estimated on T_eff independent periods has SE ≈ √(1/T_eff) in per-period
   Sharpe units; two cells scored on the same grid, conservatively treated as independent
   (ρ₄₅ = 0 → the true SE is smaller), give SE(Δ) = √(2/T_eff).
@@ -30,7 +32,11 @@ from pathlib import Path
 
 import numpy as np
 
-from trikaal.data.universe_loader import calendar_boundary_ms, connect_lake
+from trikaal.data.universe_loader import (
+    calendar_boundary_ms,
+    connect_lake,
+    eval_block_bounds_ms,
+)
 from trikaal.eval.dsr import norm_ppf
 from trikaal.eval.metrics import periods_per_year
 
@@ -38,6 +44,7 @@ LAKE = Path("processed/universe_bars")
 WINDOW = ("2021-01-01", "2025-01-01")
 TRAIN_FRAC = 0.7
 BAR_MS = 60_000
+N_BLOCKS = 6  # the k=6 forward plan; primary region = blocks 1-5 (block 0 = VAL, excluded)
 
 
 def load_period_returns(con, symbol: str, grid: np.ndarray, h: int) -> np.ndarray:
@@ -130,13 +137,13 @@ def main() -> int:
             [args.n_symbols],
         ).fetchall()
     ]
-    boundary = calendar_boundary_ms(*WINDOW, TRAIN_FRAC)
-    end_ms = calendar_boundary_ms(*WINDOW, 1.0)
-    print(f"[prereg] {len(syms)} symbols; eval region {boundary} → {end_ms}")
+    blocks = eval_block_bounds_ms(*WINDOW, train_frac=TRAIN_FRAC, k=N_BLOCKS)
+    lo_ms, end_ms = blocks[1][0], blocks[N_BLOCKS - 1][1]  # §3a: blocks 1-5, VAL excluded
+    print(f"[prereg] {len(syms)} symbols; primary region (blocks 1-5) {lo_ms} → {end_ms}")
 
     results: dict[str, dict] = {}
     for h in horizons:
-        grid = np.arange(boundary, end_ms, h * BAR_MS, dtype=np.int64)
+        grid = np.arange(lo_ms, end_ms, h * BAR_MS, dtype=np.int64)
         mat = np.column_stack([load_period_returns(con, s, grid, h) for s in syms])
         results[f"h{h}_pooled"] = analyze(mat, h)
         # per-regime: the OOS forward region only contains late-2023 + 2024
@@ -151,7 +158,19 @@ def main() -> int:
                 results[f"h{h}_{year}"] = analyze(mat[sel], h)
         print(f"[prereg] h={h}: {results[f'h{h}_pooled']}")
 
-    out = {"symbols_sampled": syms, "window": WINDOW, "train_frac": TRAIN_FRAC, **results}
+    out = {
+        "symbols_sampled": syms,
+        "window": WINDOW,
+        "train_frac": TRAIN_FRAC,
+        "basis": (
+            "forward blocks 1-5 of k=6 (VAL block 0 EXCLUDED) — the prereg §3a primary "
+            "region; recomputed on this basis 2026-07-06 (audit item 5). The original v1 "
+            "table (git history of this file) used the full forward region incl. block 0."
+        ),
+        "primary_region_ms": [int(lo_ms), int(end_ms)],
+        "n_blocks": N_BLOCKS,
+        **results,
+    }
     Path("runs_manifest").mkdir(exist_ok=True)
     p = Path("runs_manifest/m6_mde_inputs.json")
     import json
