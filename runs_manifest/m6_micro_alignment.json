@@ -1,0 +1,782 @@
+{
+  "audit": "m6_micro_alignment (item 6)",
+  "part_a": {
+    "margin_floor": 0.02,
+    "n_samples": 59,
+    "rows": [
+      {
+        "margin": 0.3419,
+        "month": "2021-02",
+        "n_pairs": 40129,
+        "pass": true,
+        "r_lag0": 0.911,
+        "r_lag_minus1": 0.5691,
+        "r_lag_plus1": 0.5422,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.3276,
+        "month": "2021-09",
+        "n_pairs": 42866,
+        "pass": true,
+        "r_lag0": 0.9687,
+        "r_lag_minus1": 0.6411,
+        "r_lag_plus1": 0.6275,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.3001,
+        "month": "2022-06",
+        "n_pairs": 42807,
+        "pass": true,
+        "r_lag0": 0.9228,
+        "r_lag_minus1": 0.6227,
+        "r_lag_plus1": 0.5926,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.1873,
+        "month": "2022-11",
+        "n_pairs": 39814,
+        "pass": true,
+        "r_lag0": 0.8366,
+        "r_lag_minus1": 0.6485,
+        "r_lag_plus1": 0.6493,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.2752,
+        "month": "2023-05",
+        "n_pairs": 42674,
+        "pass": true,
+        "r_lag0": 0.9043,
+        "r_lag_minus1": 0.6291,
+        "r_lag_plus1": 0.6215,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.2666,
+        "month": "2023-10",
+        "n_pairs": 43805,
+        "pass": true,
+        "r_lag0": 0.951,
+        "r_lag_minus1": 0.6844,
+        "r_lag_plus1": 0.6707,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.2648,
+        "month": "2024-03",
+        "n_pairs": 43520,
+        "pass": true,
+        "r_lag0": 0.9334,
+        "r_lag_minus1": 0.6686,
+        "r_lag_plus1": 0.6534,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.2642,
+        "month": "2024-08",
+        "n_pairs": 44057,
+        "pass": true,
+        "r_lag0": 0.9512,
+        "r_lag_minus1": 0.687,
+        "r_lag_plus1": 0.6792,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.2881,
+        "month": "2024-12",
+        "n_pairs": 44119,
+        "pass": true,
+        "r_lag0": 0.9468,
+        "r_lag_minus1": 0.6588,
+        "r_lag_plus1": 0.6473,
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "margin": 0.3237,
+        "month": "2021-02",
+        "n_pairs": 40023,
+        "pass": true,
+        "r_lag0": 0.9219,
+        "r_lag_minus1": 0.5982,
+        "r_lag_plus1": 0.5782,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.3306,
+        "month": "2021-09",
+        "n_pairs": 42980,
+        "pass": true,
+        "r_lag0": 0.9642,
+        "r_lag_minus1": 0.6335,
+        "r_lag_plus1": 0.6227,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.3104,
+        "month": "2022-06",
+        "n_pairs": 42845,
+        "pass": true,
+        "r_lag0": 0.925,
+        "r_lag_minus1": 0.6146,
+        "r_lag_plus1": 0.5991,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.2013,
+        "month": "2022-11",
+        "n_pairs": 39952,
+        "pass": true,
+        "r_lag0": 0.8272,
+        "r_lag_minus1": 0.6259,
+        "r_lag_plus1": 0.6256,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.313,
+        "month": "2023-05",
+        "n_pairs": 33337,
+        "pass": true,
+        "r_lag0": 0.929,
+        "r_lag_minus1": 0.616,
+        "r_lag_plus1": 0.6152,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.3368,
+        "month": "2023-10",
+        "n_pairs": 44032,
+        "pass": true,
+        "r_lag0": 0.9643,
+        "r_lag_minus1": 0.6275,
+        "r_lag_plus1": 0.6199,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.2821,
+        "month": "2024-03",
+        "n_pairs": 43753,
+        "pass": true,
+        "r_lag0": 0.9485,
+        "r_lag_minus1": 0.6664,
+        "r_lag_plus1": 0.6518,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.2831,
+        "month": "2024-08",
+        "n_pairs": 44164,
+        "pass": true,
+        "r_lag0": 0.9511,
+        "r_lag_minus1": 0.668,
+        "r_lag_plus1": 0.6587,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.2946,
+        "month": "2024-12",
+        "n_pairs": 44216,
+        "pass": true,
+        "r_lag0": 0.9644,
+        "r_lag_minus1": 0.6698,
+        "r_lag_plus1": 0.6624,
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "margin": 0.4326,
+        "month": "2021-02",
+        "n_pairs": 40236,
+        "pass": true,
+        "r_lag0": 0.8681,
+        "r_lag_minus1": 0.4355,
+        "r_lag_plus1": 0.4265,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.2839,
+        "month": "2021-09",
+        "n_pairs": 43076,
+        "pass": true,
+        "r_lag0": 0.9091,
+        "r_lag_minus1": 0.6252,
+        "r_lag_plus1": 0.603,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.3575,
+        "month": "2022-06",
+        "n_pairs": 42624,
+        "pass": true,
+        "r_lag0": 0.9565,
+        "r_lag_minus1": 0.599,
+        "r_lag_plus1": 0.5869,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.2,
+        "month": "2022-11",
+        "n_pairs": 40043,
+        "pass": true,
+        "r_lag0": 0.8294,
+        "r_lag_minus1": 0.6279,
+        "r_lag_plus1": 0.6294,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.384,
+        "month": "2023-05",
+        "n_pairs": 43000,
+        "pass": true,
+        "r_lag0": 0.8978,
+        "r_lag_minus1": 0.5138,
+        "r_lag_plus1": 0.511,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.3305,
+        "month": "2023-10",
+        "n_pairs": 44427,
+        "pass": true,
+        "r_lag0": 0.9107,
+        "r_lag_minus1": 0.5802,
+        "r_lag_plus1": 0.5653,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.304,
+        "month": "2024-03",
+        "n_pairs": 44327,
+        "pass": true,
+        "r_lag0": 0.8473,
+        "r_lag_minus1": 0.5433,
+        "r_lag_plus1": 0.5155,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.3049,
+        "month": "2024-08",
+        "n_pairs": 44246,
+        "pass": true,
+        "r_lag0": 0.9143,
+        "r_lag_minus1": 0.6095,
+        "r_lag_plus1": 0.5962,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.3087,
+        "month": "2024-12",
+        "n_pairs": 44347,
+        "pass": true,
+        "r_lag0": 0.9617,
+        "r_lag_minus1": 0.653,
+        "r_lag_plus1": 0.649,
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "margin": 0.2867,
+        "month": "2021-02",
+        "n_pairs": 40144,
+        "pass": true,
+        "r_lag0": 0.8382,
+        "r_lag_minus1": 0.5516,
+        "r_lag_plus1": 0.5387,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.3518,
+        "month": "2021-09",
+        "n_pairs": 42891,
+        "pass": true,
+        "r_lag0": 0.9289,
+        "r_lag_minus1": 0.5771,
+        "r_lag_plus1": 0.5543,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.3838,
+        "month": "2022-06",
+        "n_pairs": 43010,
+        "pass": true,
+        "r_lag0": 0.9508,
+        "r_lag_minus1": 0.567,
+        "r_lag_plus1": 0.5585,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.1922,
+        "month": "2022-11",
+        "n_pairs": 40118,
+        "pass": true,
+        "r_lag0": 0.7494,
+        "r_lag_minus1": 0.5563,
+        "r_lag_plus1": 0.5572,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.4207,
+        "month": "2023-05",
+        "n_pairs": 43026,
+        "pass": true,
+        "r_lag0": 0.8959,
+        "r_lag_minus1": 0.4752,
+        "r_lag_plus1": 0.4752,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.4445,
+        "month": "2023-10",
+        "n_pairs": 44428,
+        "pass": true,
+        "r_lag0": 0.9505,
+        "r_lag_minus1": 0.5059,
+        "r_lag_plus1": 0.5052,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.2978,
+        "month": "2024-03",
+        "n_pairs": 44361,
+        "pass": true,
+        "r_lag0": 0.9088,
+        "r_lag_minus1": 0.6111,
+        "r_lag_plus1": 0.598,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.3206,
+        "month": "2024-08",
+        "n_pairs": 44073,
+        "pass": true,
+        "r_lag0": 0.9716,
+        "r_lag_minus1": 0.6507,
+        "r_lag_plus1": 0.6511,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.2889,
+        "month": "2024-12",
+        "n_pairs": 44240,
+        "pass": true,
+        "r_lag0": 0.9529,
+        "r_lag_minus1": 0.6641,
+        "r_lag_plus1": 0.6578,
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      },
+      {
+        "margin": 0.3035,
+        "month": "2021-02",
+        "n_pairs": 40065,
+        "pass": true,
+        "r_lag0": 0.9228,
+        "r_lag_minus1": 0.6192,
+        "r_lag_plus1": 0.6122,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.3157,
+        "month": "2021-09",
+        "n_pairs": 42923,
+        "pass": true,
+        "r_lag0": 0.964,
+        "r_lag_minus1": 0.6482,
+        "r_lag_plus1": 0.6397,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.3885,
+        "month": "2022-06",
+        "n_pairs": 42900,
+        "pass": true,
+        "r_lag0": 0.9483,
+        "r_lag_minus1": 0.5598,
+        "r_lag_plus1": 0.5496,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.2878,
+        "month": "2022-11",
+        "n_pairs": 40055,
+        "pass": true,
+        "r_lag0": 0.8139,
+        "r_lag_minus1": 0.5244,
+        "r_lag_plus1": 0.526,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.4586,
+        "month": "2023-05",
+        "n_pairs": 43013,
+        "pass": true,
+        "r_lag0": 0.9225,
+        "r_lag_minus1": 0.4639,
+        "r_lag_plus1": 0.4639,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.4695,
+        "month": "2023-10",
+        "n_pairs": 44454,
+        "pass": true,
+        "r_lag0": 0.9389,
+        "r_lag_minus1": 0.469,
+        "r_lag_plus1": 0.4694,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.3219,
+        "month": "2024-03",
+        "n_pairs": 44189,
+        "pass": true,
+        "r_lag0": 0.9556,
+        "r_lag_minus1": 0.6337,
+        "r_lag_plus1": 0.6311,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.3838,
+        "month": "2024-08",
+        "n_pairs": 44502,
+        "pass": true,
+        "r_lag0": 0.9744,
+        "r_lag_minus1": 0.5907,
+        "r_lag_plus1": 0.5902,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "margin": 0.2932,
+        "month": "2024-12",
+        "n_pairs": 44333,
+        "pass": true,
+        "r_lag0": 0.9687,
+        "r_lag_minus1": 0.6755,
+        "r_lag_plus1": 0.6734,
+        "status": "ok",
+        "symbol": "ADAUSDT"
+      },
+      {
+        "month": "2021-02",
+        "status": "absent",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.3446,
+        "month": "2021-09",
+        "n_pairs": 17684,
+        "pass": true,
+        "r_lag0": 0.9244,
+        "r_lag_minus1": 0.5799,
+        "r_lag_plus1": 0.5581,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.3908,
+        "month": "2022-06",
+        "n_pairs": 42999,
+        "pass": true,
+        "r_lag0": 0.9476,
+        "r_lag_minus1": 0.5568,
+        "r_lag_plus1": 0.5431,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.2989,
+        "month": "2022-11",
+        "n_pairs": 40141,
+        "pass": true,
+        "r_lag0": 0.7712,
+        "r_lag_minus1": 0.4672,
+        "r_lag_plus1": 0.4723,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.4223,
+        "month": "2023-05",
+        "n_pairs": 43035,
+        "pass": true,
+        "r_lag0": 0.9251,
+        "r_lag_minus1": 0.5023,
+        "r_lag_plus1": 0.5028,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.4261,
+        "month": "2023-10",
+        "n_pairs": 44371,
+        "pass": true,
+        "r_lag0": 0.942,
+        "r_lag_minus1": 0.5158,
+        "r_lag_plus1": 0.5144,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.3167,
+        "month": "2024-03",
+        "n_pairs": 44345,
+        "pass": true,
+        "r_lag0": 0.922,
+        "r_lag_minus1": 0.6053,
+        "r_lag_plus1": 0.5989,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.3847,
+        "month": "2024-08",
+        "n_pairs": 44526,
+        "pass": true,
+        "r_lag0": 0.9768,
+        "r_lag_minus1": 0.5921,
+        "r_lag_plus1": 0.5903,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "margin": 0.3258,
+        "month": "2024-12",
+        "n_pairs": 44340,
+        "pass": true,
+        "r_lag0": 0.9748,
+        "r_lag_minus1": 0.6491,
+        "r_lag_plus1": 0.6477,
+        "status": "ok",
+        "symbol": "GALAUSDT"
+      },
+      {
+        "month": "2021-02",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2021-09",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2022-06",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2022-11",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2023-05",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "margin": 0.4483,
+        "month": "2023-10",
+        "n_pairs": 44452,
+        "pass": true,
+        "r_lag0": 0.9231,
+        "r_lag_minus1": 0.4747,
+        "r_lag_plus1": 0.4718,
+        "status": "ok",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "margin": 0.2932,
+        "month": "2024-03",
+        "n_pairs": 44559,
+        "pass": true,
+        "r_lag0": 0.8592,
+        "r_lag_minus1": 0.566,
+        "r_lag_plus1": 0.5612,
+        "status": "ok",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "margin": 0.3759,
+        "month": "2024-08",
+        "n_pairs": 32136,
+        "pass": true,
+        "r_lag0": 0.9532,
+        "r_lag_minus1": 0.5773,
+        "r_lag_plus1": 0.5769,
+        "status": "ok",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2024-12",
+        "status": "absent",
+        "symbol": "FRONTUSDT"
+      },
+      {
+        "month": "2021-02",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "month": "2021-09",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "month": "2022-06",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "month": "2022-11",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "month": "2023-05",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "month": "2023-10",
+        "status": "absent",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "margin": 0.2743,
+        "month": "2024-03",
+        "n_pairs": 44507,
+        "pass": true,
+        "r_lag0": 0.8098,
+        "r_lag_minus1": 0.5354,
+        "r_lag_plus1": 0.5253,
+        "status": "ok",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "margin": 0.3714,
+        "month": "2024-08",
+        "n_pairs": 44504,
+        "pass": true,
+        "r_lag0": 0.9525,
+        "r_lag_minus1": 0.5811,
+        "r_lag_plus1": 0.5761,
+        "status": "ok",
+        "symbol": "1000BONKUSDT"
+      },
+      {
+        "margin": 0.362,
+        "month": "2024-12",
+        "n_pairs": 44509,
+        "pass": true,
+        "r_lag0": 0.9486,
+        "r_lag_minus1": 0.5866,
+        "r_lag_plus1": 0.5814,
+        "status": "ok",
+        "symbol": "1000BONKUSDT"
+      }
+    ]
+  },
+  "part_b": {
+    "atol": 2e-06,
+    "n_days": 4,
+    "rows": [
+      {
+        "day": "2021-06-15",
+        "max_abs_diff_count_imb": "1.49e-08",
+        "max_abs_diff_tfi": "2.78e-08",
+        "n_minutes_compared": 1439,
+        "pass": true,
+        "r_lag0": 1.0,
+        "r_lag_minus1": 0.0493,
+        "r_lag_plus1": 0.0493,
+        "sha256": "1bf901e1cc8dd5653f14c124fe9d17ba2a99459a241b1c164a224e2e359c528b",
+        "status": "ok",
+        "symbol": "BTCUSDT"
+      },
+      {
+        "day": "2022-11-09",
+        "max_abs_diff_count_imb": "1.44e-08",
+        "max_abs_diff_tfi": "1.95e-08",
+        "n_minutes_compared": 1439,
+        "pass": true,
+        "r_lag0": 1.0,
+        "r_lag_minus1": 0.1151,
+        "r_lag_plus1": 0.1151,
+        "sha256": "0bc1bac799c04ad623c1c25aed0375d93ae6a3fa642ca85f1a9fe494e9047672",
+        "status": "ok",
+        "symbol": "ETHUSDT"
+      },
+      {
+        "day": "2023-12-01",
+        "max_abs_diff_count_imb": "2.91e-08",
+        "max_abs_diff_tfi": "2.97e-08",
+        "n_minutes_compared": 1438,
+        "pass": true,
+        "r_lag0": 1.0,
+        "r_lag_minus1": 0.0618,
+        "r_lag_plus1": 0.0618,
+        "sha256": "c61302961200e5957bba0b60b4bc264c5759d72ab8c2150da055f4494ca498c1",
+        "status": "ok",
+        "symbol": "SOLUSDT"
+      },
+      {
+        "day": "2024-06-03",
+        "max_abs_diff_count_imb": "2.96e-08",
+        "max_abs_diff_tfi": "2.96e-08",
+        "n_minutes_compared": 1424,
+        "pass": true,
+        "r_lag0": 1.0,
+        "r_lag_minus1": 0.0465,
+        "r_lag_plus1": 0.0465,
+        "sha256": "30f3ebe5e038ba3dd1198c4bc5731dfa5047c59ddb050571badbba389c3fe0c0",
+        "status": "ok",
+        "symbol": "DOGEUSDT"
+      }
+    ]
+  },
+  "verdict": "PASS"
+}
