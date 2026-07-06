@@ -46,7 +46,9 @@ class XSectionConfig:
     train_frac: float = 0.7
     h: int = 15
     seq_len: int = 128
-    cap_per_symbol: int = 200  # decisions per (symbol, block) — dev-bounded like M5's cap
+    # decisions per (symbol, grid) — a DEV bound (like M5's cap). None = no cap; money mode
+    # REQUIRES None (§3a pins the full primary region, uncapped — conformance-gated).
+    cap_per_symbol: int | None = 200
     kappas: tuple[float, ...] = KAPPAS
     headline_cost: float = HEADLINE_COST
     val_block: int = 0
@@ -57,6 +59,20 @@ class XSectionConfig:
     # per-symbol spread deciles from TRAIN-REGION liquidity (audit item 4). None = the flat
     # "major" dev fallback — the money run REQUIRES the committed decile map (conformance-gated).
     spread_frac_by_symbol: dict[str, float] | None = None
+    # MONEY MODE (§3a): the headline is ONE continuous stride grid over forward blocks 1..5
+    # (VAL block 0 excluded) — the exact MDE-recompute basis — with no dev cap and per-symbol
+    # deciles mandatory. Dev/smoke mode (money=False) keeps the single-block headline.
+    money: bool = False
+
+    def __post_init__(self) -> None:
+        if self.money:
+            if self.cap_per_symbol is not None:
+                raise ValueError("money mode forbids cap_per_symbol (§3a: uncapped primary)")
+            if self.spread_frac_by_symbol is None:
+                raise ValueError(
+                    "money mode requires per-symbol spread deciles "
+                    "(runs_manifest/m6_spread_deciles.json via costs.load_spread_deciles)"
+                )
 
 
 @dataclass
@@ -92,6 +108,18 @@ def global_decision_grid_ms(cfg: XSectionConfig, block: int) -> np.ndarray:
     lo, hi = eval_block_bounds_ms(
         cfg.window_start, cfg.window_end, train_frac=cfg.train_frac, k=cfg.n_blocks
     )[block]
+    return np.arange(lo, hi, cfg.h * BAR_MS, dtype=np.int64)
+
+
+def primary_region_grid_ms(cfg: XSectionConfig) -> np.ndarray:
+    """The §3a PRIMARY-REGION grid: ONE continuous stride-h grid over forward blocks 1..k−1
+    (VAL block 0 excluded) — the exact basis `scripts/m6_prereg.py` computed the MDE on.
+    A per-block concatenation would re-anchor the stride phase at every block edge (the edges
+    are not stride multiples); the money headline uses THIS grid, never a concatenation."""
+    bounds = eval_block_bounds_ms(
+        cfg.window_start, cfg.window_end, train_frac=cfg.train_frac, k=cfg.n_blocks
+    )
+    lo, hi = bounds[1][0], bounds[cfg.n_blocks - 1][1]
     return np.arange(lo, hi, cfg.h * BAR_MS, dtype=np.int64)
 
 
@@ -169,13 +197,12 @@ def score_cell(
         y = forward_log_returns(se.raw_ret_close, se.segment_id, cfg.h)
         prepared[se.symbol] = {"b_c": b_c, "b_f": b_f, "y": y, "se": se}
 
-    def block_series(
-        block: int,
+    def grid_series(
+        grid: np.ndarray,
     ) -> tuple[dict[float, np.ndarray], dict[float, np.ndarray], dict[str, int], int]:
-        """Per-κ pooled FULL-grid calendar series for one forward block, netted BOTH ways:
+        """Per-κ pooled FULL-grid calendar series for one decision grid, netted BOTH ways:
         at the flat pre-registered headline cost AND at the modeled per-decision cost (the
         named secondary, §6 item 10a). Positions come from θ = κ·c_modeled in both."""
-        grid = global_decision_grid_ms(cfg, block)
         n_periods = grid.shape[0]
         nets_flat: dict[float, dict[str, tuple[np.ndarray, np.ndarray]]] = {
             k: {} for k in cfg.kappas
@@ -187,7 +214,7 @@ def score_cell(
         for sym, d in prepared.items():
             se = d["se"]
             dec = symbol_decisions(se, grid, cfg)
-            if dec.size > cfg.cap_per_symbol:
+            if cfg.cap_per_symbol is not None and dec.size > cfg.cap_per_symbol:
                 dec = np.sort(rng.choice(dec, size=cfg.cap_per_symbol, replace=False))
             finite = np.isfinite(d["y"][dec])
             dec = dec[finite]
@@ -222,7 +249,7 @@ def score_cell(
         return series, series_mod, n_dec, n_periods
 
     # κ* on the pooled VAL block; per-κ curve persisted; time-aligned PBO over the κ configs
-    val_series, _val_mod, _, _ = block_series(cfg.val_block)
+    val_series, _val_mod, _, _ = grid_series(global_decision_grid_ms(cfg, cfg.val_block))
     val_ir = {k: information_ratio(val_series[k], cfg.h) for k in cfg.kappas}
     finite_ir = {k: v for k, v in val_ir.items() if np.isfinite(v)}
     kappa_star = max(finite_ir, key=finite_ir.get) if finite_ir else cfg.kappas[0]
@@ -230,8 +257,15 @@ def score_cell(
     if val_series[kappa_star].shape[0] >= 16:
         pbo = pbo_cscv(time_aligned_pbo_matrix(val_series), n_splits=8)
 
-    # HEADLINE block at κ*: pooled, netted at the flat 0.30 %; modeled-cost secondary + stress
-    hd_series, hd_mod, n_dec, _ = block_series(cfg.headline_block)
+    # HEADLINE at κ*: pooled, netted at the flat 0.30 %; modeled-cost secondary + stress.
+    # Money mode (§3a): ONE continuous grid over blocks 1..5 — the MDE-recompute basis;
+    # dev/smoke mode: the single headline block (the historical M5-style read).
+    hd_grid = (
+        primary_region_grid_ms(cfg)
+        if cfg.money
+        else global_decision_grid_ms(cfg, cfg.headline_block)
+    )
+    hd_series, hd_mod, n_dec, _ = grid_series(hd_grid)
     head = hd_series[kappa_star]
     ir_headline = information_ratio(head, cfg.h)
     ir_modeled = information_ratio(hd_mod[kappa_star], cfg.h)
@@ -288,6 +322,7 @@ __all__ = [
     "XSectionConfig",
     "ablation_verdict",
     "global_decision_grid_ms",
+    "primary_region_grid_ms",
     "score_cell",
     "symbol_decisions",
 ]

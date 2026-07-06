@@ -1,0 +1,53 @@
+{
+  "checks_run": [
+    "window+train_frac vs m6_mde_inputs.json",
+    "money mode + blocks-1-5 continuous headline grid == primary_region_ms (VAL excluded)",
+    "40-symbol set == symbols_sampled @ sha256 60e24f598de96012\u2026",
+    "kappa grid == (1.0, 1.5, 2.0, 3.0)",
+    "seeds == (0, 1, 2)",
+    "cap_per_symbol ABSENT",
+    "per-symbol spread deciles in use, == committed artifact, non-flat",
+    "shuffle_micro train/eval seed-threading bit-identical (seeds 0,1,2 probed)",
+    "headline cost 0.30%",
+    "bootstrap constants B=10000 / seed=20260704 / alpha=0.05"
+  ],
+  "conformance": "PASS",
+  "surface": {
+    "bootstrap": {
+      "B": 10000,
+      "alpha": 0.05,
+      "ci": "percentile",
+      "seed": 20260704
+    },
+    "cap_per_symbol": null,
+    "headline_cost": 0.003,
+    "headline_grid": {
+      "end_ms_excl": 1735689600000,
+      "n_periods_h15": 35064,
+      "start_ms": 1704132000000
+    },
+    "kappas": [
+      1.0,
+      1.5,
+      2.0,
+      3.0
+    ],
+    "n_symbols": 40,
+    "primary_region_ms": [
+      1704132000000,
+      1735689600000
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "spread_deciles": "per-symbol (runs_manifest/m6_spread_deciles.json)",
+    "symbols_sha256": "60e24f598de9601260099e3f11e537814385df23c837073035b9f7ce4dc32631",
+    "train_frac": 0.7,
+    "window": [
+      "2021-01-01",
+      "2025-01-01"
+    ]
+  }
+}
