@@ -1,6 +1,6 @@
 # M6 Pre-Flight Gate — Zero First-Time Events Before the 15-GPU-Day Run
 
-**Author:** Supervisor · **Date:** 2026-06-23 · **Status:** OPEN — all 7 items must be GREEN (with the stated evidence committed) before any **full-budget** spend.
+**Author:** Supervisor · **Date:** 2026-06-23 (Item 8 added 2026-07-06) · **Status:** OPEN — all **8** items must be GREEN (with the stated evidence committed) before any **full-budget** spend.
 
 ## The principle (non-negotiable)
 The 15-GPU-day M6 run is **one-shot and expensive**. It must contain **zero first-time events** — everything it will do must have already happened once, **small, on the real hardware, and been watched**. Anything that happens for the first time during the real run is what kills it at hour 200. This gate leaves nothing unrehearsed.
@@ -15,7 +15,7 @@ The 15-GPU-day M6 run is **one-shot and expensive**. It must contain **zero firs
 - **The 15-day full run:** the big spend (~$150–450), authorized ONLY when all 7 are GREEN.
 
 ## Green-light rule
-The 15-day run is authorized **only** when all 7 items are confirmed GREEN with the evidence committed to the repo. Each closes on **testable evidence — an artifact, a hash, a measured number, a passing check — not "done."**
+The 15-day run is authorized **only** when all **8** items are confirmed GREEN with the evidence committed to the repo. Each closes on **testable evidence — an artifact, a hash, a measured number, a passing check — not "done."**
 
 ---
 
@@ -39,7 +39,19 @@ The entire 5-cell arc runs start-to-finish, once, small, on the **actual rented 
 - **The eval harness scored all 5 toy models** — 5 net-IR numbers via the cross-sectional driver over the toy universe.
 - **The Cell-5 placebo computed** — ΔIR(Cell4−Cell5) produced; the shuffled-micro arm verifiably trained on *permuted* micro (not real).
 - **W&B logged throughout** — one run URL with all 5 cells' loss curves + the eval metrics.
-- **Artifact:** the single continuous run log + 5 checkpoint hashes + the eval verdict + the W&B URL, content-hashed. If any stage needed a manual fix, that fix lands and the toy run is re-run clean — the gate is "ran start-to-finish unattended."
+- **The two-arm CANARY (added 2026-07-06 — Item 2 proves the machine RUNS; this proves it MEASURES):**
+  (a) **planted-signal arm:** a synthetic toy lake where one micro channel carries a known causal
+  relationship to the target → the 5-cell toy must yield ΔIR_info > 0 **and** IR(5) ≈ IR(2)
+  (the placebo tracks the OHLCV-only counterfactual when no exploitable info exists in the
+  shuffle); (b) **pure-noise arm:** micro = noise → ΔIR_info must NOT fire and |IR(5) − IR(2)|
+  must be small vs the toy spread (measured placebo neutrality — the direct check on the
+  "placebo is a victim" failure mode). Plus: assert **non-degenerate per-dim reconstruction
+  contribution of micro dims 7–12 through Cell 4's tokenizer** (kills the silent-micro-suppression
+  false-NULL) and record the **attention-mode decision** (prereg §3a: the one headline mode is
+  fixed here, before any real cell).
+- **Artifact:** the single continuous run log + 5 checkpoint hashes + the eval verdict + both
+  canary verdicts + the W&B URL, content-hashed. If any stage needed a manual fix, that fix lands
+  and the toy run is re-run clean — the gate is "ran start-to-finish unattended."
 
 ## Item 3 — Checkpoint-and-resume, actually tested (kill it on purpose)
 Prove resume by **rehearsing the disaster**, not assuming it.
@@ -78,10 +90,29 @@ An obviously-broken run halts early, not after 15 days of nonsense.
 - A **wired stop-rule:** the orchestrator checks the tripwires each cell/checkpoint and **aborts the run** on a trip.
 - **Artifact:** the committed thresholds + a **tested halt** — inject a NaN / a flat-loss cell → confirm the monitor stops the run.
 
+## Item 8 — The analysis that decides the outcome exists, is calibrated, and cannot drift from the lock  *(added 2026-07-06)*
+Item 6 locks the prose; Item 8 locks the MATH. The paired bootstrap must exist and be calibrated
+BEFORE any real number it could judge; the money-run config must be machine-checked against the
+pre-registered surface (a lock is worthless if the computed quantity can drift from the locked one).
+**Closes on:**
+- The **paired moving-block bootstrap** (prereg §3/§3a recipe: Δr_p resampling, ⌈√T⌉ blocks,
+  B=10,000, seed 20260704, percentile CI, SE_boot) implemented in `src/trikaal/eval/` — and
+  **calibration-KAT'd on synthetic paired series:** null Δ → rejection rate ≈ α (0.05); planted
+  Δ = MDE_paired → power ≈ 0.80 (both within Monte-Carlo tolerance, tolerances stated in the KAT).
+- A **conformance script** that asserts the money-run analysis config **equals the pre-registered
+  surface**: window + train_frac vs `runs_manifest/m6_mde_inputs.json`, primary region = forward
+  blocks 1–5, the hashed 40-symbol list (`60e24f598de96012…`), κ grid {1.0,1.5,2.0,3.0}, seeds
+  {0,1,2}, **no `cap_per_symbol` dev bound**, per-symbol spread deciles (not flat "major"), and
+  seed-threading of `shuffle_micro` at eval — **fails loudly on ANY diff**. Runs as a hard gate at
+  the start of the real eval.
+- The §2 MDE table **recomputed on the pinned blocks-1–5 region** (per §3a) and committed.
+- **Artifact:** the calibration-KAT results + the conformance script + one committed passing run
+  of it against the real run-config.
+
 ---
 
 ## Sequence
 - **Foundation:** Item 1 (Step 0 under the pin) — nothing proceeds until green.
-- **The real-CUDA rehearsal (centerpiece):** Items 2 → 3 → 4 → 5 — all proven in/around ONE short toy run on the actual GPU type. This is where "zero first-time events" is earned.
-- **Locked-before-spend:** Items 6 (prereg) + 7 (tripwire) — committed before the full run starts.
-- **GREEN-LIGHT:** all 7 GREEN with evidence committed → the 15-GPU-day run is authorized. Not before.
+- **Locked-before-rehearsal:** Items 6 (prereg incl. v1.2) + 8 (the analysis math + conformance) + 7 (tripwire) — the instrument and its lock are finished BEFORE the rehearsal exercises them.
+- **The real-CUDA rehearsal (centerpiece):** Items 2 (incl. the canary) → 3 → 4 → 5 — all proven in/around ONE short toy run on the actual GPU type. This is where "zero first-time events" is earned.
+- **GREEN-LIGHT:** all **8** GREEN with evidence committed → the 15-GPU-day run is authorized. Not before.
