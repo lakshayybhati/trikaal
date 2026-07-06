@@ -28,6 +28,39 @@ SPREAD_DECILE_FRAC: dict[str, float] = {
     "tail": 1e-3,  # long tail — 10 bp
 }
 
+# §8.B.2 defines the "major" tier BY NAME (BTC/ETH 1bp) — a pre-data spec constant, not a
+# data-derived rank. The remaining tiers are ranked from TRAIN-REGION liquidity (2026-07-06
+# audit item 4: the flat "major" for every symbol under-costed the tail by ~9bp of half-spread).
+MAJOR_SYMBOLS: tuple[str, ...] = ("BTCUSDT", "ETHUSDT")
+TOP_TIER_N = 20  # majors + next (20 − len(majors)) by rank form the 3bp tier
+
+
+def assign_spread_deciles(train_stats: dict[str, tuple[float, int]]) -> dict[str, str]:
+    """``{symbol: (train_liquidity_proxy, n_bars_train)}`` → ``{symbol: decile label}``.
+
+    Majors are the §8.B.2 spec constants; the rest rank by the CAUSAL train-region proxy
+    (higher = more liquid), ties broken by train bar count then symbol name — fully
+    deterministic. Ranks 1..(TOP_TIER_N − |majors|) → "top20"; the rest → "tail"."""
+    majors = [s for s in MAJOR_SYMBOLS if s in train_stats]
+    rest = sorted(
+        (s for s in train_stats if s not in MAJOR_SYMBOLS),
+        key=lambda s: (-train_stats[s][0], -train_stats[s][1], s),
+    )
+    n_top = max(0, TOP_TIER_N - len(majors))
+    out = {s: "major" for s in majors}
+    out.update({s: "top20" for s in rest[:n_top]})
+    out.update({s: "tail" for s in rest[n_top:]})
+    return out
+
+
+def load_spread_deciles(path) -> dict[str, float]:
+    """Read the committed decile artifact → ``{symbol: spread_frac}`` (the eval driver's input)."""
+    import json
+    from pathlib import Path
+
+    doc = json.loads(Path(path).read_text())
+    return {s: float(rec["spread_frac"]) for s, rec in doc["deciles"].items()}
+
 
 @dataclass(frozen=True)
 class CostModel:
@@ -72,4 +105,12 @@ def funding_cost(side: int, funding_rates_in_window: np.ndarray | list[float]) -
     return float(side) * float(r.sum()) if r.size else 0.0
 
 
-__all__ = ["SPREAD_DECILE_FRAC", "CostModel", "funding_cost"]
+__all__ = [
+    "MAJOR_SYMBOLS",
+    "SPREAD_DECILE_FRAC",
+    "TOP_TIER_N",
+    "CostModel",
+    "assign_spread_deciles",
+    "funding_cost",
+    "load_spread_deciles",
+]

@@ -242,6 +242,51 @@ def connect_lake(root: str | Path = "processed/universe_bars"):
     return connect(Path(root))
 
 
+def train_region_liquidity_stats(
+    con, boundary_ms: int, *, lookback_days: int = 180
+) -> dict[str, tuple[float, int]]:
+    """Per-symbol TRAIN-REGION liquidity proxy: ``{symbol: (active_minute_share, n_bars_train)}``.
+
+    CAUSAL BY CONSTRUCTION: the query reads ``bar_open_ms < boundary_ms`` only, and the causality
+    receipt is asserted (max timestamp touched < boundary). The proxy is the **active-minute
+    share over a calendar-COMMON window** — the train region's final ``lookback_days`` days,
+    denominator = the window's full calendar minute count, numerator = the symbol's present,
+    non-stale, non-zero-volume bars in it (``is_stale`` is strictly trailing → causal; QA-only
+    in the TRAINING path, legitimately read here on the eval/cost side; ``m_5 = 0`` excludes
+    zero-volume minutes and, at in-window segment heads, warm-up bars — a data-gap penalty):
+
+    * a calendar-common window is REQUIRED for era fairness — the full-train-region usable
+      share ranked 2023 listings above 2021 majors (weeks of pristine modern coverage beat
+      years containing archive-era gaps): a data-era artifact, not liquidity;
+    * absent minutes count as non-traded (not listed = not tradable), so late listings and
+      pre-window delistings rank low — economically correct;
+    * zero-volume minutes are the top-cluster discriminator (measured: 155 symbols tie on
+      stale-free coverage alone; only 8 tie once no-trade minutes count, and the resulting
+      order is the recognizable liquidity order — XRP/SOL/ADA/BNB/... — not the alphabet);
+    * raw ADV is NOT reconstructible in-lake (features are causally z-scored per symbol);
+      this is the strongest liquidity ordering the lake itself supports. Tier assignment
+      from these stats lives in ``eval/costs.py`` (majors pinned per spec §8.B.2).
+
+    Symbols with zero train-region bars do not appear; the decile builder assigns them the
+    conservative "tail" via ``(0.0, 0)`` defaults."""
+    lo = int(boundary_ms) - int(lookback_days) * 86_400_000
+    window_minutes = int(lookback_days) * 1440
+    rows = con.execute(
+        "SELECT symbol, count(*) AS n_bars, "
+        "sum(CASE WHEN bar_open_ms >= ? AND is_stale = 0 AND m_5 = 0 THEN 1 ELSE 0 END) "
+        "AS active_win, "
+        "max(bar_open_ms) AS max_ms "
+        "FROM bars WHERE bar_open_ms < ? GROUP BY symbol ORDER BY symbol",
+        [lo, int(boundary_ms)],
+    ).fetchall()
+    out: dict[str, tuple[float, int]] = {}
+    for symbol, n_bars, active_win, max_ms in rows:
+        if int(max_ms) >= int(boundary_ms):  # the causality receipt — structurally impossible
+            raise AssertionError(f"{symbol}: train-region query touched ts {max_ms} >= boundary")
+        out[str(symbol)] = (float(int(active_win or 0) / window_minutes), int(n_bars))
+    return out
+
+
 __all__ = [
     "EMBARGO_BARS_DEFAULT",
     "MultiSymbolWindowSampler",
@@ -252,4 +297,5 @@ __all__ = [
     "eval_block_bounds_ms",
     "fold_valid_starts",
     "load_symbol_windows",
+    "train_region_liquidity_stats",
 ]

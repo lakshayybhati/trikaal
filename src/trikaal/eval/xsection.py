@@ -54,6 +54,9 @@ class XSectionConfig:
     n_blocks: int = 6
     device: str = "cpu"
     seed: int = 0
+    # per-symbol spread deciles from TRAIN-REGION liquidity (audit item 4). None = the flat
+    # "major" dev fallback — the money run REQUIRES the committed decile map (conformance-gated).
+    spread_frac_by_symbol: dict[str, float] | None = None
 
 
 @dataclass
@@ -141,7 +144,17 @@ def score_cell(
     """Score ONE trained (cell, seed) model cross-sectionally: VAL κ-search → pooled headline."""
     cost = CostModel()
     rng = np.random.default_rng(cfg.seed)
-    spread = SPREAD_DECILE_FRAC["major"]
+
+    def spread_for(sym: str) -> float:
+        """The symbol's train-region liquidity decile (audit item 4); flat dev fallback if unset."""
+        if cfg.spread_frac_by_symbol is None:
+            return SPREAD_DECILE_FRAC["major"]
+        if sym not in cfg.spread_frac_by_symbol:
+            raise KeyError(
+                f"no spread decile for {sym} — regenerate runs_manifest/m6_spread_deciles.json "
+                "(scripts/m6_spread_deciles.py) to cover every evaluated symbol"
+            )
+        return float(cfg.spread_frac_by_symbol[sym])
 
     # per-symbol arm transform (Cell-5: the SAME shuffle as training) + tokenize + labels
     prepared: dict[str, dict] = {}
@@ -194,7 +207,7 @@ def score_cell(
                 device=cfg.device,
             )
             y_d = d["y"][dec]
-            c_mod = _per_bar_cost(cost, se.sigma, dec, spread)
+            c_mod = _per_bar_cost(cost, se.sigma, dec, spread_for(sym))
             pidx = np.searchsorted(grid, se.ts[dec])  # the decision's global period id
             for k in cfg.kappas:
                 s = positions(mu, k * c_mod)

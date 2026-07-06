@@ -134,3 +134,16 @@ def test_score_cell_and_ablation_verdict_end_to_end():
     assert v["fsq_effect_ohlcv"] == pytest.approx(0.1)
     assert v["micro_marginal_fsq"] == pytest.approx(0.3)
     assert v["micro_exceeds_placebo"] is True  # Δ_micro (0.3) > Δ_placebo (0.1)
+    # audit item 4: per-symbol spread deciles thread through θ + the modeled cost end-to-end
+    cfg_dec = _cfg(spread_frac_by_symbol={"AAAUSDT": 1e-4, "BBBUSDT": 1e-3})
+    s4d = score_cell("cell4_deciles", model, tok, ARM_MICRO, symbols, cfg_dec)
+    assert set(s4d.per_symbol_decisions) == {"AAAUSDT", "BBBUSDT"}
+    with pytest.raises(KeyError, match="no spread decile for BBBUSDT"):
+        score_cell(
+            "cell4_bad",
+            model,
+            tok,
+            ARM_MICRO,
+            symbols,
+            _cfg(spread_frac_by_symbol={"AAAUSDT": 1e-4}),
+        )
