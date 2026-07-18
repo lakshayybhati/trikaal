@@ -27,6 +27,7 @@ import numpy as np
 
 from trikaal.data.universe_loader import calendar_boundary_ms, eval_block_bounds_ms
 from trikaal.eval.costs import SPREAD_DECILE_FRAC, CostModel
+from trikaal.eval.diagnostics import cell_codebook_diagnostic
 from trikaal.eval.dsr import pbo_cscv, time_aligned_pbo_matrix
 from trikaal.eval.harness import HEADLINE_COST, KAPPAS, _per_bar_cost, forward_log_returns
 from trikaal.eval.metrics import break_even_cost, information_ratio
@@ -101,6 +102,9 @@ class CellScore:
     activity: float
     n_decisions: int
     per_symbol_decisions: dict[str, int] = field(default_factory=dict)
+    # non-gating referee-preempt diagnostic (CO2 item 5): per-cell codebook utilization +
+    # empirical code entropy (effective bits) for coarse and fine, over the evaluated streams
+    codebook: dict = field(default_factory=dict)
 
 
 def global_decision_grid_ms(cfg: XSectionConfig, block: int) -> np.ndarray:
@@ -196,6 +200,15 @@ def score_cell(
         )
         y = forward_log_returns(se.raw_ret_close, se.segment_id, cfg.h)
         prepared[se.symbol] = {"b_c": b_c, "b_f": b_f, "y": y, "se": se}
+
+    # non-gating codebook diagnostic over the cell's FULL evaluated token streams (all symbols):
+    # utilization + empirical code entropy in bits, coarse and fine (CO2 item 5, referee-preempt)
+    codebook = cell_codebook_diagnostic(
+        np.concatenate([d["b_c"] for d in prepared.values()]),
+        np.concatenate([d["b_f"] for d in prepared.values()]),
+        v_c=tok.v_c,
+        v_f=tok.v_f,
+    )
 
     def grid_series(
         grid: np.ndarray,
@@ -294,6 +307,7 @@ def score_cell(
         activity=activity,
         n_decisions=int(sum(n_dec.values())),
         per_symbol_decisions=n_dec,
+        codebook=codebook,
     )
 
 

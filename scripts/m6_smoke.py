@@ -183,6 +183,14 @@ def main() -> int:
             f"[eval]  {run_name}: IR@0.30%={sc.ir_headline:+.2f} κ*={sc.kappa_chosen} "
             f"activity={sc.activity:.2f} decisions={sc.n_decisions} (thin {THIN}: {thin_n})"
         )
+        cb = sc.codebook
+        print(
+            f"[codebook] {run_name}: coarse use {cb['coarse']['utilization']:.1%} "
+            f"H={cb['coarse']['entropy_bits']:.2f}b, fine use {cb['fine']['utilization']:.1%} "
+            f"H={cb['fine']['entropy_bits']:.2f}b, effective "
+            f"{cb['effective_bits_per_token']:.2f}/{cb['capacity_bits_per_token']:.2f} bpt "
+            "(non-gating diagnostic)"
+        )
 
     verdict = ablation_verdict(cell_ir)
     print(
@@ -207,6 +215,7 @@ def main() -> int:
         },
         "artifacts": top["artifacts"],
         "cell_ir_headline": {str(k): v for k, v in cell_ir.items()},
+        "codebook_by_run": {run: sc.codebook for run, sc in scores.items()},
         "verdict": verdict,
         "wall_s": round(time.time() - t0, 1),
         "note": "NUMBERS MEANINGLESS BY DESIGN — tiny shells, minutes of training; the gate is "

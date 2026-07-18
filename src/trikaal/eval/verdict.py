@@ -84,6 +84,7 @@ def write_cell_eval_artifact(
     headline_series: np.ndarray,
     kappa_star_by_h: dict[int, float],
     val_ir_by_kappa_by_h: dict[int, dict[float, float]],
+    codebook: dict | None = None,
     meta: dict | None = None,
 ) -> tuple[str, str]:
     """Write ONE per-(cell, seed) eval artifact; returns ``(name, sha256)``.
@@ -111,6 +112,9 @@ def write_cell_eval_artifact(
             for h, by_k in val_ir_by_kappa_by_h.items()
         },
         "headline_series": [float(v) for v in np.asarray(headline_series, dtype=np.float64)],
+        # non-gating codebook-usage diagnostic (CO2 item 5): score_cell's CellScore.codebook —
+        # per-cell utilization + effective bits, reported in the paper, never thresholded
+        "codebook": codebook or {},
         "meta": meta or {},
     }
     name = f"cell{cell_id}_seed{seed}_eval.json"

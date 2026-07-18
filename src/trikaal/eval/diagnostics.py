@@ -34,6 +34,56 @@ def vol_mae_r2(
     return out
 
 
+def codebook_usage(tokens: np.ndarray, vocab: int) -> dict[str, float]:
+    """Utilization + empirical code entropy (bits) of one token stream against its codebook.
+
+    Referee-preempt (non-gating, CO2 item 5): FSQ-vs-BSQ *effective rates* differ in the
+    literature (FSQ ≈ 100 % codebook utilization vs BSQ-style learned codebooks ≈ 94 %), so we
+    report ours per cell instead of being asked. ``entropy_bits`` is the Shannon entropy of the
+    empirical token distribution — the stream's effective bits/subtoken; ``capacity_bits`` is
+    log2(vocab) (the G-parity bpt component); ``perplexity`` = 2^entropy_bits."""
+    t = np.asarray(tokens)
+    if t.size == 0:
+        raise ValueError("codebook_usage needs a non-empty token stream")
+    if not np.issubdtype(t.dtype, np.integer):
+        raise ValueError(f"tokens must be integer ids, got dtype {t.dtype}")
+    if int(t.min()) < 0 or int(t.max()) >= vocab:
+        raise ValueError(f"token ids outside [0, {vocab}): min={t.min()}, max={t.max()}")
+    counts = np.bincount(t.ravel(), minlength=int(vocab)).astype(np.float64)
+    p = counts / counts.sum()
+    nz = p[p > 0.0]
+    h_bits = float(-(nz * np.log2(nz)).sum())
+    return {
+        "vocab": int(vocab),
+        "n_tokens": int(t.size),
+        "n_used": int((counts > 0).sum()),
+        "utilization": float((counts > 0).mean()),
+        "entropy_bits": h_bits,
+        "capacity_bits": float(np.log2(vocab)),
+        "efficiency": h_bits / float(np.log2(vocab)),
+        "perplexity": float(2.0**h_bits),
+    }
+
+
+def cell_codebook_diagnostic(
+    b_c: np.ndarray, b_f: np.ndarray, *, v_c: int, v_f: int
+) -> dict[str, object]:
+    """Per-cell coarse+fine codebook diagnostic over the full evaluated token streams.
+
+    ``effective_bits_per_token`` = H(coarse) + H(fine) is directly comparable to the G-parity
+    bits-per-token capacity (FSQ 20.06 / BSQ 20.00 — invariant 6): the gap is how much of the
+    matched budget each quantizer actually spends on real data. Non-gating — reported in every
+    cell eval artifact and the smoke output, never thresholded."""
+    c = codebook_usage(b_c, v_c)
+    f = codebook_usage(b_f, v_f)
+    return {
+        "coarse": c,
+        "fine": f,
+        "effective_bits_per_token": c["entropy_bits"] + f["entropy_bits"],
+        "capacity_bits_per_token": c["capacity_bits"] + f["capacity_bits"],
+    }
+
+
 def pinball_loss(y: np.ndarray, q_pred: np.ndarray, q_level: float) -> float:
     """Mean pinball (quantile) loss at level ``q``: q·(y−ŷ) if y≥ŷ else (1−q)·(ŷ−y)."""
     y = np.asarray(y, dtype=np.float64)
@@ -124,6 +174,8 @@ def tstr_trtr(
 
 __all__ = [
     "calibration_error",
+    "cell_codebook_diagnostic",
+    "codebook_usage",
     "discriminative_score",
     "mean_pinball",
     "picp_mpiw",

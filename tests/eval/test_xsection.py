@@ -129,6 +129,11 @@ def test_score_cell_and_ablation_verdict_end_to_end():
         assert isinstance(float(s.ir_headline), float) and isinstance(
             float(s.ir_modeled_cost), float
         )
+        # CO2 item 5: the non-gating codebook diagnostic rides every CellScore
+        cb = s.codebook
+        assert cb["coarse"]["vocab"] == tok.v_c and cb["fine"]["vocab"] == tok.v_f
+        assert 0.0 < cb["coarse"]["utilization"] <= 1.0
+        assert 0.0 <= cb["effective_bits_per_token"] <= cb["capacity_bits_per_token"]
     v = ablation_verdict({1: 0.1, 2: 0.2, 3: 0.15, 4: 0.5, 5: 0.3})
     assert v["delta_info"] == pytest.approx(0.2)  # IR(4) − IR(5)
     assert v["fsq_effect_ohlcv"] == pytest.approx(0.1)
