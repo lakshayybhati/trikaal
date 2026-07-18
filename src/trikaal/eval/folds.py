@@ -10,8 +10,10 @@ retraining). Leakage is controlled at the one train→eval boundary by:
   (``E = H_max + L_corr = 120`` bars) to absorb serial correlation past the label horizon. Since
   ``E > H_max`` the embargo binds, leaving valid train anchors ``t < train_end − E``.
 
-Q1–Q4 (§A.5) cross symbol-holdout × time-holdout; Q4 (held-out symbols × future block) is the
-headline. The embargo **flatness check** (IR stable as E grows past 120) is the leakage gate.
+Q1–Q4 (§A.5) cross symbol-holdout × time-holdout. The M6 PRIMARY is **train-universe symbols ×
+future blocks 1–5** (prereg §3a: the pinned 40-symbol set, VAL block 0 excluded) — Q2 territory;
+"Q4 is the headline" was the M5-era label, and Q3/Q4 (held-out symbols) are secondary robustness
+reads. The embargo **flatness check** (IR stable as E grows past 120) is the leakage gate.
 Known-answer-tested in ``tests/eval/test_folds.py``.
 """
 
@@ -71,8 +73,9 @@ def make_fold_plan(
 
 
 def quadrant(symbol_in_train: bool, time_in_train: bool) -> str:
-    """§A.5 two-axis label. Q1 in-sample sanity; Q2 temporal-OOS; Q3 cross-sectional-OOS; Q4 (held-
-    out symbols × future block) the HEADLINE."""
+    """§A.5 two-axis label. Q1 in-sample sanity; Q2 temporal-OOS (the M6 primary region lives
+    here, prereg §3a); Q3 cross-sectional-OOS; Q4 held-out symbols × future block (a secondary
+    robustness read — its M5-era "headline" label is superseded)."""
     if symbol_in_train and time_in_train:
         return "Q1"
     if symbol_in_train and not time_in_train:

@@ -89,7 +89,7 @@ Matched fairness is at the **token** level (bits-per-token), not the input level
 
 **SMOKE gate (end of Phase 1, local):** all 5 cells instantiate, train a few steps on 2–3 symbols, checkpoint, and the cross-sectional eval driver emits a (meaningless-by-design) 5-model + placebo verdict. Full suite green + ruff clean + the causal sweep green on the **multi-symbol** path. **Compute + COMMIT `MDE_prereg` here — locked before any real training.**
 
-**Between Phase 1 and Phase 2 sits the 7-item PRE-FLIGHT GATE (`docs/m6_preflight.md`)** — including the toy-CUDA rehearsal (full 5-cell toy run + kill-resume on the real GPU type, ~$5–20). The full-budget run is authorized only when all 7 items are green with committed evidence. `setup_cloud.sh` must install from the **committed lockfile** (today it installs latest-torch + floors — reproducing the drift failure mode on the rented box).
+**Between Phase 1 and Phase 2 sits the 8-item PRE-FLIGHT GATE (`docs/m6_preflight.md`)** — including the toy-CUDA rehearsal (full 5-cell toy run + kill-resume on the real GPU type, ~$5–20). The full-budget run is authorized only when all 8 items are green with committed evidence. `setup_cloud.sh` must install from the **committed lockfile** (done: it now runs `uv sync --locked` from the committed `uv.lock`; it previously installed latest-torch + floors — the exact drift failure mode).
 
 **Phase 2 — CLOUD, M6 proper (the real run):** provision the GPU (cloud Phase B), transfer the compacted lake, run the 5-cell × ≥3-seed training + the cross-sectional eval → the headline, under recorded determinism mode. Verify G-§8.C.3 (Kronos parity) as the first cloud check.
 
