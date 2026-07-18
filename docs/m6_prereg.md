@@ -6,8 +6,10 @@ training run** — that timestamp is the proof the decision rule existed before 
 valid and pre-committed (m6_design §0).
 
 **Inputs (computed, not assumed):** `scripts/m6_prereg.py` over the compacted universe lake
-(anchor `5dfd667d…`), 40 deepest symbols, forward (eval) region 2023-10-14 → 2025-01-01 under the
-anchored 0.7 calendar split. Raw inputs + all rows: `runs_manifest/m6_mde_inputs.json` (committed).
+(anchor `5dfd667d…`), 40 deepest symbols, full forward region 2023-10-20T16:48Z (the exact 0.7
+calendar boundary) → 2025-01-01 — of which the §3a **primary** region is forward blocks 1–5
+(≈ calendar 2024; block 0 = VAL, excluded). Raw inputs + all rows:
+`runs_manifest/m6_mde_inputs.json` (committed; `basis` field states the region).
 
 ---
 
@@ -73,7 +75,7 @@ evidence.
   2. ΔIR_info ≥ **MDE_paired ≡ (z₀.₉₅ + z₀.₈₀) · SE_boot(ΔIR_info)** — where SE_boot is the
      standard deviation of the bootstrap ΔIR replicates from the SAME paired procedure as the CI
      (a variance/nuisance quantity, never a function of the effect's sign or magnitude). **No
-     ceiling appeal:** if the realized SE_boot makes MDE_paired > the §2 table's 3.209, the
+     ceiling appeal:** if the realized SE_boot makes MDE_paired > the §2 tabled value, the
      larger bound applies, AND
   3. **placebo-validity (v1.2):** the one-sided paired CI lower bound of **IR(Cell 4) − IR(Cell 2)
      > 0** — micro must beat OHLCV-only *at all* for a micro-information claim; this clause is
@@ -98,9 +100,10 @@ evidence.
   contribution is FSQ-vs-BSQ on OHLCV alone (Cells 1–2), governed by §5's fallback rule (v1.2).
   No re-thresholding, no horizon-shopping: h=15 is the primary; h=5/60 are reported as
   secondaries with their own MDEs above.
-- **Relation to the §2 table:** the tabled 3.209 is exactly MDE_paired evaluated at ρ₄₅ = 0
-  (cells independent) — the conservative reference, reported for power honesty. The operative
-  threshold uses the realized pairing, in **either** direction (see clause 2's no-ceiling rule).
+- **Relation to the §2 table:** the tabled value (3.518 at h=15 on the pinned blocks-1–5 basis)
+  is exactly MDE_paired evaluated at ρ₄₅ = 0 (cells independent) — the conservative reference,
+  reported for power honesty. The operative threshold uses the realized pairing, in **either**
+  direction (see clause 2's no-ceiling rule).
 
 ### 3a. Pinned analysis surface (v1.2 — every previously-free choice, fixed before training)
 
@@ -187,6 +190,13 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.2.1 (2026-07-06, supervisor — EDITORIAL ONLY, no rule changed):** after the audit item-5
+  recompute of the §2 table on the pinned blocks-1–5 basis (MDE h=15: 3.209 → 3.518, T 42,076 →
+  35,063), §3's two literal "3.209" mentions were updated to reference "the §2 tabled value"
+  (clause 2's no-ceiling sentence and the Relation note), and §1's forward-region date was made
+  exact (2023-10-20T16:48Z, the true 0.7 boundary; the earlier "2023-10-14" was imprecise
+  prose — the operative region was always the formula, now conformance-gated). §1's "ρ̄ ≈"
+  approximations remain approximate by design; exact values live in the committed JSON.
 - **v1.2 (2026-07-06, supervisor/research lead) — BEFORE any real training** (still nothing
   beyond the meaningless-by-design SMOKE). Trigger: two independent external audits (a run
   pre-mortem and a prereg cold-read), each finding supervisor-verified against the repo before

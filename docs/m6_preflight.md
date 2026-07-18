@@ -7,12 +7,12 @@ The 15-GPU-day M6 run is **one-shot and expensive**. It must contain **zero firs
 
 ## Two framings that govern this gate
 1. **"Everything must work" means the MACHINERY, not the OUTCOME.** The run can be a complete success and the answer can be *"microstructure does not beat the placebo after costs."* That is a **publishable win, not a failed run.** The expense makes us rigorous about the instrument and **genuinely indifferent to which way the result breaks.** One-shot cost pressure must not bleed into needing the answer to be "yes" — that would be the result-before-evidence drift mode (and invariant 3).
-2. **Pre-flight de-risks the KNOWABLE; checkpointing contains the UNKNOWABLE.** Even with all 7 green, something can still surprise at scale (a CUDA-specific numeric issue, an untested edge). That residual is handled by **Item 3**: if it breaks on day 6, we resume from day 5, not zero. The toy run kills the known failure modes; checkpoint discipline contains the rest. Together = the maximum certainty available before spend.
+2. **Pre-flight de-risks the KNOWABLE; checkpointing contains the UNKNOWABLE.** Even with all 8 green, something can still surprise at scale (a CUDA-specific numeric issue, an untested edge). That residual is handled by **Item 3**: if it breaks on day 6, we resume from day 5, not zero. The toy run kills the known failure modes; checkpoint discipline contains the rest. Together = the maximum certainty available before spend.
 
 ## Spend tiers (read this)
 - **Phase A prep:** $0 (local).
 - **Pre-flight toy run (Items 2–5):** a SHORT real-CUDA rental (~hours, ~$5–20) — this *is* the rehearsal; a small, gated spend, NOT the full budget.
-- **The 15-day full run:** the big spend (~$150–450), authorized ONLY when all 7 are GREEN.
+- **The 15-day full run:** the big spend (~$150–450), authorized ONLY when all 8 are GREEN.
 
 ## Green-light rule
 The 15-day run is authorized **only** when all **8** items are confirmed GREEN with the evidence committed to the repo. Each closes on **testable evidence — an artifact, a hash, a measured number, a passing check — not "done."**
