@@ -206,8 +206,14 @@ def run_harness(
     stress = cost_stress_curve(mu_hd, y_hd, c_hd, h, kappa_star)
     c_break = break_even_cost(np.array(FLAT_COSTS), np.array([stress[c] for c in FLAT_COSTS]))
 
-    # DSR over the multiple-testing trial budget; PBO via CSCV on the κ-config matrix (VAL)
-    n_trials = 5 * 3 * 4 * len(KAPPAS)  # M6: 5 cells × 3 seeds × 4 horizons × 4 κ (documented)
+    # DSR over the multiple-testing trial budget; PBO via CSCV on the κ-config matrix (VAL).
+    # n_trials=240 here is the HISTORICAL M5 budget, kept numerically because run_harness is the
+    # M5 machine-validation instrument frozen under the Gate-A anchor (5eead7b6…) — it is NOT the
+    # M6 decision path and its DSR is never quoted as the M6 outcome. The governing recipe is
+    # prereg §3 clause 5: N=180 ENUMERATED trials (5 cells × 3 seeds × horizons {5,15,60} × 4 κ;
+    # h=1 is not evaluated in M6), computed ONLY by scripts/m6_verdict.py under the
+    # conformance.PINNED_DSR pin.
+    n_trials = 5 * 3 * 4 * len(KAPPAS)
     # cross-trial variance of the per-period (de-annualized) Sharpe across the κ configs
     ppy = periods_per_year(h)
     var_sr = float(np.var([ir_val[k] / np.sqrt(ppy) for k in KAPPAS])) + 1e-12
