@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from trikaal.data.config import BAR_MS
 from trikaal.eval.predict import predict_mu, sigma_hat
@@ -52,3 +53,34 @@ def test_predict_mu_excludes_t_to_t1_move():
 
 def test_sigma_hat_random_walk():
     assert np.allclose(sigma_hat(np.array([0.01, 0.02]), 4), [0.02, 0.04])  # σ_t·√h
+
+
+def test_predict_mu_chunking_contract():
+    """Decision-chunking caps KV-cache memory (~35k uncapped money-grid decisions/symbol would
+    be tens of GB unchunked). Contract, honestly scoped: (a) at a FIXED chunk size replay is
+    bit-exact — chunk is a recorded recipe constant, never varied inside a run; (b) across
+    DIFFERENT chunk sizes agreement is approximate only (GEMM kernels are batch-shape-dependent
+    at the ULP level, and an argmax near-tie could amplify that — same class as the recorded
+    attention-mode nondeterminism, handled by fixing the constant, not by claiming exactness)."""
+    model, tok, b_c, b_f, ts = _tiny()
+    sigma = np.full(80, 0.01)
+    dec = np.arange(20, 70, 3, dtype=np.int64)  # 17 decisions
+    ref = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, chunk=10_000)
+    for chunk in (1, 7, 16):
+        a = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, chunk=chunk)
+        b = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, chunk=chunk)
+        assert np.array_equal(a, b), f"fixed chunk={chunk} must replay bit-exactly"
+        np.testing.assert_allclose(a, ref, rtol=1e-4, atol=1e-6)  # cross-size: approximate
+
+
+def test_predict_mu_refuses_a_rollout_past_the_rope_cache():
+    """seq_len + h − 1 > max_len would index past the RoPE cos/sin cache mid-eval (the money
+    config's seq 512 + h=60 reaches position 571 vs the 512 default — caught at rehearsal
+    sizing). The guard must fail LOUDLY up front, naming the fix."""
+    model, tok, b_c, b_f, ts = _tiny()  # max_len=64
+    sigma = np.full(80, 0.01)
+    with pytest.raises(ValueError, match="max_len"):
+        predict_mu(model, tok, b_c, b_f, ts, sigma, np.array([70]), h=10, seq_len=60)
+    # at the boundary (seq_len + h - 1 == max_len) it must run
+    mu = predict_mu(model, tok, b_c, b_f, ts, sigma, np.array([60]), h=5, seq_len=60)
+    assert mu.shape == (1,) and np.isfinite(mu).all()

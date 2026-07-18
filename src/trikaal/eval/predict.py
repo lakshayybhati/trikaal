@@ -35,19 +35,74 @@ def predict_mu(
     h: int,
     seq_len: int = 128,
     device: str = "cpu",
+    chunk: int = 512,
 ) -> np.ndarray:
     """Greedy rollout μ̂_{t,h} (raw cumulative log-return) for each decision bar in ``decisions``.
 
     Each decision ``t`` must have ``t − seq_len + 1 ≥ 0`` and ``t + h`` in range. Returns
     ``μ̂[len(decisions)]``. Deterministic (greedy argmax), so trivially seed-stable.
+
+    ``chunk`` bounds the KV-cache batch (the uncapped money grid is ~35k decisions/symbol; an
+    unchunked cache at seq 512 would be tens of GB — the M5 cap=400 hid this, surfaced by the
+    toy-rehearsal sizing and fixed pre-CUDA). Each decision's rollout is mathematically
+    row-independent, but GEMM kernels are batch-SHAPE-dependent (ULP-level differences that an
+    argmax near-tie could amplify), so bit-exactness across DIFFERENT chunk sizes is NOT
+    claimed. The contract instead: ``chunk`` is a FIXED recorded constant of the recipe
+    (default 512, never varied inside a run), under which replay is deterministic; cross-size
+    agreement is KAT'd as approximate.
     """
     model.eval()
     tok.eval()
-    dev = torch.device(device)
-    d = np.asarray(decisions, dtype=np.int64)
-    n = d.shape[0]
-    if n == 0:
+    max_len = int(getattr(model, "_config", {}).get("max_len", 0))
+    if max_len and seq_len + h - 1 > max_len:
+        # the rollout steps positions up to seq_len-1 + h-1; the RoPE cos/sin cache is built at
+        # max_len, so exceeding it is an index crash (or silent garbage) at eval time. M5's
+        # seq_len=128 never reached it; the money config (seq 512, h=60 → position 571) DOES —
+        # caught at rehearsal sizing. RoPE caches are buffers, not params: raising max_len at
+        # construction changes NO parameter count.
+        raise ValueError(
+            f"rollout needs positions up to {seq_len + h - 1} but the model was built with "
+            f"max_len={max_len} — construct it with max_len >= seq_len + h (e.g. "
+            f"backbone_kwargs={{'max_len': {seq_len + 64}}})"
+        )
+    d_all = np.asarray(decisions, dtype=np.int64)
+    if d_all.shape[0] == 0:
         return np.array([], dtype=np.float64)
+    parts = [
+        _predict_mu_batch(
+            model,
+            tok,
+            b_c,
+            b_f,
+            ts,
+            sigma,
+            d_all[c0 : c0 + chunk],
+            h=h,
+            seq_len=seq_len,
+            device=device,
+        )
+        for c0 in range(0, d_all.shape[0], chunk)
+    ]
+    return np.concatenate(parts)
+
+
+@torch.no_grad()
+def _predict_mu_batch(
+    model: TrikaalAR,
+    tok: TokenizerAE,
+    b_c: np.ndarray,
+    b_f: np.ndarray,
+    ts: np.ndarray,
+    sigma: np.ndarray,
+    d: np.ndarray,
+    *,
+    h: int,
+    seq_len: int,
+    device: str,
+) -> np.ndarray:
+    """One chunk of decisions through the KV-cache rollout (the original unchunked body)."""
+    dev = torch.device(device)
+    n = d.shape[0]
     # context windows [n, L] ending at each decision bar
     offs = np.arange(-seq_len + 1, 1)  # [-L+1 .. 0]
     idx = d[:, None] + offs[None, :]

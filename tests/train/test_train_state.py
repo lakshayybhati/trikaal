@@ -3,9 +3,15 @@
 The load-bearing test: train a tiny tokenizer to 2N uninterrupted → reference weights hash;
 train the same config in a SUBPROCESS, SIGKILL it (hard, not graceful) mid-run at ~step N;
 resume from its last atomic train-state and continue to 2N → the resumed weights hash must equal
-the uninterrupted reference BIT-EXACTLY (CPU deterministic path). A match proves optimizer state,
-LR-schedule position, RNG streams, and the step counter were ALL restored — any miss diverges.
-This is the local twin of pre-flight Item 3."""
+the uninterrupted reference BIT-EXACTLY. A match proves optimizer state, LR-schedule position,
+RNG streams, and the step counter were ALL restored — any miss diverges.
+
+Device: cpu locally (the Item-3 local twin). At the toy-CUDA rehearsal, Item 3 re-runs THIS
+test on the real GPU: ``TRIKAAL_KILL_RESUME_DEVICE=cuda pytest tests/train/test_train_state.py
+-m slow`` — under the deterministic-SDPA path + forced deterministic algorithms the bit-exact
+assert is REQUIRED to hold (inv. 7); under flash2 (if chosen by the bench) the realized
+tolerance is documented instead, by a separate on-box comparison, never by weakening this
+test."""
 
 from __future__ import annotations
 
@@ -35,6 +41,14 @@ N_BARS, SEQ_LEN, BATCH, N_EVAL = 1200, 32, 32, 8
 TWO_N = 200  # total steps; the kill lands in [N, 2N)
 TOK_KW = dict(n_features=16, d_model=64, n_layers=1, n_heads=2, d_ff=128)
 DATA_SEED, RUN_SEED = 123, 0
+# cpu locally; "cuda" at the toy rehearsal (pre-flight Item 3 on the real GPU type)
+DEVICE = os.environ.get("TRIKAAL_KILL_RESUME_DEVICE", "cpu")
+_DET_PRELUDE = (
+    "from trikaal.utils.seeding import set_determinism\n"
+    f"set_determinism({RUN_SEED}, deterministic_algorithms=True)\n"
+    if DEVICE.startswith("cuda")
+    else ""
+)
 
 
 def _data():
@@ -45,6 +59,14 @@ def _data():
 
 
 def _train(max_steps: int, state_path=None, resume=False):
+    if DEVICE.startswith("cuda"):
+        if not torch.cuda.is_available():
+            pytest.skip("TRIKAAL_KILL_RESUME_DEVICE=cuda but no CUDA device present")
+        # the bit-exact claim on CUDA needs forced-deterministic kernels (inv. 7); the stage-1
+        # trainer's own set_determinism(…, deterministic_algorithms=False) does not undo this
+        from trikaal.utils.seeding import set_determinism
+
+        set_determinism(RUN_SEED, deterministic_algorithms=True)
     x, m, seg = _data()
     return train_stage1(
         x,
@@ -55,7 +77,7 @@ def _train(max_steps: int, state_path=None, resume=False):
         max_steps=max_steps,
         eval_every=10,
         n_eval_windows=N_EVAL,
-        device="cpu",
+        device=DEVICE,
         seed=RUN_SEED,
         model_kwargs=TOK_KW,
         state_path=state_path,
@@ -93,13 +115,13 @@ def _spawn_and_kill_midflight(state_path: Path) -> int | None:
     caller retries — SIGKILL timing is inherently racy; the retry makes the test deterministic)."""
     code = f"""
 import numpy as np
-from trikaal.train.train_tokenizer import train_stage1
+{_DET_PRELUDE}from trikaal.train.train_tokenizer import train_stage1
 rng = np.random.default_rng({DATA_SEED})
 x = rng.standard_normal(({N_BARS}, 16)).astype(np.float32)
 m = np.zeros(({N_BARS}, 16), dtype=np.uint8)
 seg = np.zeros({N_BARS}, dtype=np.int64)
 train_stage1(x, m, seg, seq_len={SEQ_LEN}, batch_size={BATCH}, max_steps={TWO_N},
-             eval_every=50, n_eval_windows={N_EVAL}, device="cpu", seed={RUN_SEED},
+             eval_every=50, n_eval_windows={N_EVAL}, device={DEVICE!r}, seed={RUN_SEED},
              model_kwargs={TOK_KW!r}, state_path={str(state_path)!r}, state_every=1)
 print("FINISHED_UNKILLED")
 """

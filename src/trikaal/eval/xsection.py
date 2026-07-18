@@ -105,6 +105,10 @@ class CellScore:
     # non-gating referee-preempt diagnostic (CO2 item 5): per-cell codebook utilization +
     # empirical code entropy (effective bits) for coarse and fine, over the evaluated streams
     codebook: dict = field(default_factory=dict)
+    # the pooled FULL-calendar headline series itself (flat periods = 0.0) — what the verdict
+    # artifacts persist (verdict.write_cell_eval_artifact) and the paired bootstrap resamples.
+    # None under val_only (no headline grid was scored).
+    headline_series: np.ndarray | None = None
 
 
 def global_decision_grid_ms(cfg: XSectionConfig, block: int) -> np.ndarray:
@@ -172,8 +176,15 @@ def score_cell(
     arm: str,
     symbols: list[SymbolEval],
     cfg: XSectionConfig,
+    *,
+    val_only: bool = False,
 ) -> CellScore:
-    """Score ONE trained (cell, seed) model cross-sectionally: VAL κ-search → pooled headline."""
+    """Score ONE trained (cell, seed) model cross-sectionally: VAL κ-search → pooled headline.
+
+    ``val_only=True`` stops after the VAL block (the per-κ curve + κ*): the verdict artifacts
+    need the h∈{5,60} secondary horizons ONLY as VAL trial entries (prereg §3 clause 5), and
+    the headline grid at those horizons would be wasted rollout compute. Headline fields come
+    back NaN/None and must never be read from a val_only score."""
     cost = CostModel()
     rng = np.random.default_rng(cfg.seed)
 
@@ -270,6 +281,23 @@ def score_cell(
     if val_series[kappa_star].shape[0] >= 16:
         pbo = pbo_cscv(time_aligned_pbo_matrix(val_series), n_splits=8)
 
+    if val_only:
+        return CellScore(
+            run=run,
+            kappa_chosen=float(kappa_star),
+            ir_headline=float("nan"),
+            ir_modeled_cost=float("nan"),
+            val_ir_by_kappa={float(k): float(v) for k, v in val_ir.items()},
+            cost_stress={},
+            break_even=float("nan"),
+            pbo=float(pbo),
+            activity=float("nan"),
+            n_decisions=0,
+            per_symbol_decisions={},
+            codebook=codebook,
+            headline_series=None,
+        )
+
     # HEADLINE at κ*: pooled, netted at the flat 0.30 %; modeled-cost secondary + stress.
     # Money mode (§3a): ONE continuous grid over blocks 1..5 — the MDE-recompute basis;
     # dev/smoke mode: the single headline block (the historical M5-style read).
@@ -308,6 +336,7 @@ def score_cell(
         n_decisions=int(sum(n_dec.values())),
         per_symbol_decisions=n_dec,
         codebook=codebook,
+        headline_series=head,
     )
 
 

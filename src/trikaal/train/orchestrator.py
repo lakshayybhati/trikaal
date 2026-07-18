@@ -72,6 +72,7 @@ class OrchestratorConfig:
     state_every: int = 50
     wandb_mode: str = "disabled"  # "disabled" | "offline" | "online"
     wandb_project: str = "trikaal-m6"
+    wandb_group: str | None = None  # one group = one W&B page holding all 15 cell-runs' curves
 
 
 def _wandb_run(cfg: OrchestratorConfig, name: str, run_config: dict):
@@ -79,7 +80,13 @@ def _wandb_run(cfg: OrchestratorConfig, name: str, run_config: dict):
         return None
     import wandb  # lazy — a pinned dep, but only touched when logging is on
 
-    return wandb.init(project=cfg.wandb_project, name=name, mode=cfg.wandb_mode, config=run_config)
+    return wandb.init(
+        project=cfg.wandb_project,
+        name=name,
+        group=cfg.wandb_group,
+        mode=cfg.wandb_mode,
+        config=run_config,
+    )
 
 
 def _log(run, metrics: dict, step: int) -> None:

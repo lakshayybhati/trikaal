@@ -152,3 +152,36 @@ def test_score_cell_and_ablation_verdict_end_to_end():
             symbols,
             _cfg(spread_frac_by_symbol={"AAAUSDT": 1e-4}),
         )
+
+
+def test_val_only_matches_full_val_curve_and_headline_series_is_the_ir_basis():
+    """val_only skips the headline grid (secondary-horizon VAL trials, prereg §3 clause 5) but
+    must reproduce the FULL call's per-κ VAL curve + κ* exactly; the full call's new
+    headline_series must BE the series ir_headline was computed on."""
+    from trikaal.eval.metrics import information_ratio
+
+    set_determinism(0)
+    cfg = _cfg()
+    kw = dict(d_model=16, n_layers=1, n_heads=2, d_ff=32, max_len=64)
+    tok = TokenizerAE(**kw).eval()
+    model = TrikaalAR(
+        n_layers=1,
+        d_model=16,
+        d_ff=32,
+        n_heads=2,
+        mtp_depths=0,
+        max_len=64,
+        ffn_dropout=0.0,
+        resid_dropout=0.0,
+        attn_dropout=0.0,
+        token_dropout=0.0,
+    ).eval()
+    symbols = [_sym("AAAUSDT", seed=1), _sym("BBBUSDT", seed=2)]
+    full = score_cell("cell4", model, tok, ARM_MICRO, symbols, cfg)
+    vo = score_cell("cell4_vo", model, tok, ARM_MICRO, symbols, cfg, val_only=True)
+    assert vo.val_ir_by_kappa == full.val_ir_by_kappa
+    assert vo.kappa_chosen == full.kappa_chosen
+    assert vo.headline_series is None and np.isnan(vo.ir_headline) and vo.n_decisions == 0
+    assert vo.codebook["coarse"]["vocab"] == tok.v_c  # diagnostic still rides val_only scores
+    assert full.headline_series is not None
+    assert information_ratio(full.headline_series, cfg.h) == pytest.approx(full.ir_headline)
