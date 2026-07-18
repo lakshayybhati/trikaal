@@ -56,8 +56,13 @@ from trikaal.train.orchestrator import OrchestratorConfig, run_all_cells
 from trikaal.train.tripwire import TripwireConfig, TripwireMonitor
 
 SYMBOLS = ("SYNAUSDT", "SYNBUSDT", "SYNCUSDT")
-N_BARS = 26_000  # ≈18 days of 1-min bars per symbol
-WINDOW = ("2024-01-01", "2024-01-19")
+# Sized to STARVE MEMORIZATION (measured, 2026-07-19): at 26k bars oversampled ~30x, the toy
+# AR memorized window content (in-range CE 11.7 vs out-of-range 13.5, uniform 13.9; ts-shift
+# +0.22 only) and generalized nothing — detection could not fire. At 200k bars the 2000-step
+# draw sees each bar <1x on average, so the ONLY transferable CE reduction is the planted
+# circuit + marginals; the eval grid also grows ~8x (T≈4,000), tightening the paired CI ~2.8x.
+N_BARS = 200_000  # ≈139 days of 1-min bars per symbol
+WINDOW = ("2024-01-01", "2024-05-19")
 TRAIN_FRAC = 0.7
 SEQ_LEN = 32
 SIGMA = 0.01  # constant per-bar vol → x0 = r/σ (standardized ret_close)
@@ -144,6 +149,10 @@ def run_arm(arm_name: str, *, planted: bool, args, boundary: int) -> dict:
         batch_size=32,
         steps_stage1=args.steps,
         steps_stage2=args.steps,
+        # TOY-ONLY lr (supervisor, §7-v1.3 adjudication): the tiny AR measurably stalls at the
+        # default 3e-4 within canary step budgets; the REAL run's schedule stays the
+        # orchestrator default, identical across cells — this knob never leaves the canary.
+        peak_lr_stage2=1e-3,
         tok_kwargs=TOK_KW,
         backbone_kwargs=BB_KW,
         expect_backbone_params=None,

@@ -38,6 +38,28 @@ PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 DECILES = Path("runs_manifest/m6_spread_deciles.json")
 
+# ---- the §7-v1.3 causal-encoder pin (the token-causality adjudication) -----------------------
+# every M6 cell tokenizer — train side and the eval-loaded checkpoint alike — must report
+# encoder_causal=True; bidirectional encoding puts future-bar content into the pre-tokenized
+# eval context (measured 41.8%/28.3% real-lake past-token flips) and invariant 2 binds inputs.
+PINNED_ENCODER_CAUSAL = True
+
+
+def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:
+    """Divergences between one cell tokenizer's config and the §7-v1.3 pin (empty = OK).
+
+    ``tok_config`` is ``TokenizerAE.get_config()`` of the constructed (train) or
+    checkpoint-loaded (eval) cell tokenizer. A bidirectional cell config is a NAMED failure —
+    the eval driver hard-stops on it before scoring anything."""
+    got = tok_config.get("encoder_causal")
+    if got is not PINNED_ENCODER_CAUSAL:
+        return [
+            f"{run}: tokenizer encoder_causal={got!r} != pinned {PINNED_ENCODER_CAUSAL} "
+            "(prereg §7 v1.3 — bidirectional tokens carry future-bar content into eval inputs)"
+        ]
+    return []
+
+
 # ---- the §3-clause-5 DSR pins (the verdict path's recipe — an INDEPENDENT statement of the
 # prereg constants; trikaal/eval/verdict.py carries its own literals and the two must agree,
 # so an edit to either side is caught before any DSR is computed) ------------------------------
@@ -285,6 +307,7 @@ __all__ = [
     "DECILES",
     "MDE_INPUTS",
     "PINNED_DSR",
+    "PINNED_ENCODER_CAUSAL",
     "PINNED_HEADLINE_COST",
     "PINNED_KAPPAS",
     "PINNED_SEEDS",

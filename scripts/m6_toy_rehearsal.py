@@ -36,7 +36,7 @@ import numpy as np
 
 from trikaal.constants import N_FEATURES
 from trikaal.data.universe_loader import build_symbol_windows, calendar_boundary_ms, connect_lake
-from trikaal.eval.conformance import DECILES
+from trikaal.eval.conformance import DECILES, cell_tokenizer_failures
 from trikaal.eval.costs import load_spread_deciles
 from trikaal.eval.verdict import (
     DSR_HORIZONS,
@@ -332,6 +332,11 @@ def main() -> int:
             tok = load_checkpoint(rd / "tokenizer.pt", TokenizerAE, map_location=args.device)
             pred = load_checkpoint(rd / "predictor.pt", TrikaalAR, map_location=args.device)
             model, tokm = pred.model.to(args.device).eval(), tok.model.to(args.device).eval()
+            # §7 v1.3 conformance: the eval-loaded tokenizer must BE causal — hard stop
+            fails = cell_tokenizer_failures(tokm.get_config(), run=f"{spec.name}_seed{seed}")
+            if fails:
+                print("EVAL REFUSED — " + "; ".join(fails), file=sys.stderr)
+                return 1
             val_by_h, kappa_by_h, head_score = {}, {}, None
             for h in DSR_HORIZONS:
                 sc = score_cell(

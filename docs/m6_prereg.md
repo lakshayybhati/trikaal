@@ -190,6 +190,20 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.3 (2026-07-19, supervisor adjudication of the builder's halt-finding) —
+  BEFORE any real training: the pre-tokenized eval context carried future-bar
+  information (bidirectional encoder within fixed tokenization chunks; measured on
+  the real lake: 41.8%/28.3% coarse/fine past-token flips under future-bar-only
+  mutation; probe artifact runs_manifest/m6_token_causality_probe.json). Invariant
+  2 binds eval INPUTS, not only training labels. DECISION: encoder_causal=True for
+  ALL five cells, train and eval — symmetric across cells, so bits-per-token
+  fairness and the paired design are unaffected; structurally closes the channel
+  (measured 0.0%); enforced by a CI flip-KAT and a conformance pin. Rejected
+  alternatives: eval-time re-tokenization (train/eval token-distribution mismatch);
+  disclosure alone (indefensible at 41.8%). Comparability note, binding on the
+  paper and on G-§8.C.3 reporting: Kronos-style tokenizers are bidirectional AEs;
+  Trikaal's cells use the causal variant the blueprint pre-committed as 'maximally
+  defensible' — stated wherever Cell 1 is compared to published Kronos-small.**
 - **v1.2.1 (2026-07-06, supervisor — EDITORIAL ONLY, no rule changed):** after the audit item-5
   recompute of the §2 table on the pinned blocks-1–5 basis (MDE h=15: 3.209 → 3.518, T 42,076 →
   35,063), §3's two literal "3.209" mentions were updated to reference "the §2 tabled value"

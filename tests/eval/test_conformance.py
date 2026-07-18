@@ -217,3 +217,25 @@ def test_verdict_dsr_wrong_ddof_and_threshold_are_caught():
     assert any("wrong source" in f or "ddof" in f for f in fails)
     fails2 = verdict_dsr_failures(n_trials=180, threshold=0.90, trials=t, var_sr=_var0(t))
     assert any("threshold 0.9" in f for f in fails2)
+
+
+# ------------------------------------------------------------------ the §7-v1.3 causal pin
+def test_cell_tokenizer_causal_pin_and_mutations():
+    """Every M6 cell tokenizer must report encoder_causal=True; a bidirectional config is a
+    NAMED failure (the token-causality adjudication — invariant 2 binds eval inputs)."""
+    from trikaal.eval.conformance import cell_tokenizer_failures
+    from trikaal.tokenizer.model import TokenizerAE
+    from trikaal.train.cells import CELLS, build_cell_tokenizer
+
+    tiny = dict(d_model=32, n_layers=1, n_heads=2, d_ff=64, max_len=64)
+    # the real construction path passes
+    tok = build_cell_tokenizer(CELLS[3], **tiny)
+    assert cell_tokenizer_failures(tok.get_config(), run="cell4_seed0") == []
+    # a bidirectional checkpoint config is caught, by name
+    bidi = TokenizerAE(encoder_causal=False, **tiny)
+    fails = cell_tokenizer_failures(bidi.get_config(), run="cell4_seed0")
+    assert len(fails) == 1 and "encoder_causal=False" in fails[0] and "v1.3" in fails[0]
+    # a doctored/absent flag is also caught (an old-schema checkpoint cannot slip through)
+    cfg = dict(tok.get_config())
+    del cfg["encoder_causal"]
+    assert any("encoder_causal=None" in f for f in cell_tokenizer_failures(cfg, run="r"))
