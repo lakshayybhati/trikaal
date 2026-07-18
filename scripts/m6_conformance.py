@@ -19,31 +19,17 @@ import sys
 from pathlib import Path
 
 from trikaal.eval.conformance import (
-    DECILES,
     MDE_INPUTS,
     PINNED_KAPPAS,
     PINNED_SEEDS,
     PINNED_SYMBOLS_SHA256,
     conformance_failures,
+    money_config,
     symbols_sha256,
 )
-from trikaal.eval.costs import load_spread_deciles
-from trikaal.eval.xsection import XSectionConfig, primary_region_grid_ms
+from trikaal.eval.xsection import primary_region_grid_ms
 
 OUT = Path("runs_manifest/m6_conformance_run.json")
-
-
-def money_config(h: int = 15, *, seq_len: int = 512, device: str = "cpu", seed: int = 0):
-    """The money-run XSectionConfig — the ONE way the real driver builds it."""
-    return XSectionConfig(
-        h=h,
-        seq_len=seq_len,
-        cap_per_symbol=None,
-        device=device,
-        seed=seed,
-        spread_frac_by_symbol=load_spread_deciles(DECILES),
-        money=True,
-    )
 
 
 def main() -> int:

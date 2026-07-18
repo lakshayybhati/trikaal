@@ -43,6 +43,24 @@ class ConformanceError(AssertionError):
     """The money-run config diverged from the pre-registered §3a surface."""
 
 
+def money_config(h: int = 15, *, seq_len: int = 512, device: str = "cpu", seed: int = 0):
+    """The money-run :class:`XSectionConfig` — the ONE way any driver builds it.
+
+    Both real drivers (`scripts/m6_conformance.py`, `scripts/m6_verdict.py`) construct the
+    surface through this function so the gated config and the decided config cannot diverge."""
+    from trikaal.eval.costs import load_spread_deciles
+
+    return XSectionConfig(
+        h=h,
+        seq_len=seq_len,
+        cap_per_symbol=None,
+        device=device,
+        seed=seed,
+        spread_frac_by_symbol=load_spread_deciles(DECILES),
+        money=True,
+    )
+
+
 def symbols_sha256(symbols: list[str]) -> str:
     """The pinned convention: sha256 of ``json.dumps(sorted(symbols))``."""
     return hashlib.sha256(json.dumps(sorted(symbols)).encode()).hexdigest()
@@ -213,5 +231,6 @@ __all__ = [
     "ConformanceError",
     "assert_conformance",
     "conformance_failures",
+    "money_config",
     "symbols_sha256",
 ]
