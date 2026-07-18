@@ -38,6 +38,20 @@ PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 DECILES = Path("runs_manifest/m6_spread_deciles.json")
 
+# ---- the §3-clause-5 DSR pins (the verdict path's recipe — an INDEPENDENT statement of the
+# prereg constants; trikaal/eval/verdict.py carries its own literals and the two must agree,
+# so an edit to either side is caught before any DSR is computed) ------------------------------
+PINNED_DSR = {
+    "n_trials": 180,  # 5 cells × 3 seeds × 3 horizons × 4 κ — ENUMERATED, never assumed
+    "cells": (1, 2, 3, 4, 5),
+    "seeds": PINNED_SEEDS,
+    "horizons": (5, 15, 60),  # h=1 is not evaluated anywhere in M6 (the old 240 was an error)
+    "kappas": PINNED_KAPPAS,
+    "threshold": 0.95,
+    "var_sr": "population variance (ddof=0) of the 180 de-annualized per-trial VAL IRs",
+    "statistic": "Cell 4's seed-mean pooled headline series at the 0.30% flat netting",
+}
+
 
 class ConformanceError(AssertionError):
     """The money-run config diverged from the pre-registered §3a surface."""
@@ -195,6 +209,52 @@ def conformance_failures(
     return fails
 
 
+def verdict_dsr_failures(
+    *,
+    n_trials: int,
+    threshold: float,
+    trials: dict[tuple[int, int, int, float], float],
+    var_sr: float,
+) -> list[str]:
+    """Divergences between the verdict path's DSR inputs and the §3-clause-5 pins (empty = OK).
+
+    ``trials`` is the ACTUAL enumerated trial set — ``{(cell_id, seed, h, κ): de-annualized VAL
+    IR}`` — not a self-declared count: a 240-trial budget (a 4th horizon), a 4-κ-only var_sr
+    basis (the M5 ``run_harness`` convention, which is NOT the M6 decision path), or a missing
+    cell/seed all fail the cross-product check. ``var_sr`` must equal the ddof=0 variance of the
+    key-sorted trial values BIT-EXACTLY — the same construction the verdict uses — so a wrong
+    ddof or a subset-variance is caught even when the key set is right."""
+    fails: list[str] = []
+    if int(n_trials) != PINNED_DSR["n_trials"]:
+        fails.append(f"DSR n_trials {n_trials} != pinned {PINNED_DSR['n_trials']} (§3 clause 5)")
+    if float(threshold) != PINNED_DSR["threshold"]:
+        fails.append(f"DSR threshold {threshold} != pinned {PINNED_DSR['threshold']}")
+    want = {
+        (c, s, h, k)
+        for c in PINNED_DSR["cells"]
+        for s in PINNED_DSR["seeds"]
+        for h in PINNED_DSR["horizons"]
+        for k in PINNED_DSR["kappas"]
+    }
+    got = set(trials)
+    if got != want:
+        extra, missing = got - want, want - got
+        fails.append(
+            f"DSR trial set is not the pinned {len(want)}-trial cross product: {len(got)} "
+            f"trials ({len(missing)} missing, {len(extra)} outside the pin"
+            + (f"; e.g. extra {sorted(extra)[:2]}" if extra else "")
+            + (f"; e.g. missing {sorted(missing)[:2]}" if missing else "")
+            + ")"
+        )
+    expected_var = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+    if float(var_sr) != expected_var:
+        fails.append(
+            f"var_sr {var_sr!r} != the ddof=0 variance of the enumerated trial values "
+            f"({expected_var!r}) — wrong source (subset?) or wrong ddof"
+        )
+    return fails
+
+
 def assert_conformance(
     cfg: XSectionConfig,
     *,
@@ -224,6 +284,7 @@ def assert_conformance(
 __all__ = [
     "DECILES",
     "MDE_INPUTS",
+    "PINNED_DSR",
     "PINNED_HEADLINE_COST",
     "PINNED_KAPPAS",
     "PINNED_SEEDS",
@@ -233,4 +294,5 @@ __all__ = [
     "conformance_failures",
     "money_config",
     "symbols_sha256",
+    "verdict_dsr_failures",
 ]

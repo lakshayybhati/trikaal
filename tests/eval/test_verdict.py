@@ -243,3 +243,16 @@ def test_script_refuses_a_toy_grid_without_the_flag(planted_dir, tmp_path):
     assert r.returncode == 1
     assert "not the pinned §3a money grid" in r.stderr
     assert not (tmp_path / "v.json").exists()  # refused runs write nothing
+
+
+def test_doctored_verdict_n_trials_is_caught_by_the_conformance_pin(planted_dir, monkeypatch):
+    """CO2 item 3: the verdict module's own recipe literals are asserted against
+    conformance.PINNED_DSR (an independent statement) — editing either side to 240 is caught
+    before any DSR is computed."""
+    import trikaal.eval.verdict as vd
+    from trikaal.eval.conformance import ConformanceError
+
+    monkeypatch.setattr(vd, "DSR_N_TRIALS", 240)
+    evals, shas = load_cell_evals(planted_dir)
+    with pytest.raises(ConformanceError, match="n_trials 240"):
+        vd.assemble_verdict(evals, shas, tabled_mde_h15=3.518)

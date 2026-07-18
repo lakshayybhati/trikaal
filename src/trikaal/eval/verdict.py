@@ -37,6 +37,7 @@ from pathlib import Path
 
 import numpy as np
 
+from trikaal.eval.conformance import ConformanceError, verdict_dsr_failures
 from trikaal.eval.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from trikaal.eval.metrics import information_ratio, periods_per_year
 from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
@@ -254,21 +255,20 @@ def assemble_verdict(
     pb42 = paired_delta_ir_bootstrap(s[4], s[2], h=PRIMARY_H)
     pb52 = paired_delta_ir_bootstrap(s[5], s[2], h=PRIMARY_H)
 
-    # clause 5: the pinned DSR recipe over the ENUMERATED N=180 trial set
+    # clause 5: the pinned DSR recipe over the ENUMERATED N=180 trial set. The recipe is
+    # asserted against conformance.PINNED_DSR — an INDEPENDENT statement of the §3-clause-5
+    # constants — before any DSR is computed; var_sr uses the key-sorted ddof=0 construction
+    # the pin re-derives bit-exactly (a subset-variance or a ddof drift cannot pass).
     trials = enumerate_dsr_trials(evals)
-    want_keys = {
-        (c.cell_id, sd, h, k)
-        for c in CELLS
-        for sd in DSR_SEEDS
-        for h in DSR_HORIZONS
-        for k in DSR_KAPPAS
-    }
-    if set(trials) != want_keys or len(trials) != DSR_N_TRIALS:
-        raise VerdictInputError(
-            f"DSR trial enumeration is not the pinned {DSR_N_TRIALS}-trial cross product "
-            f"(got {len(trials)} trials) — §3 clause 5 forbids any other budget"
+    var_sr = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+    recipe_fails = verdict_dsr_failures(
+        n_trials=DSR_N_TRIALS, threshold=DSR_THRESHOLD, trials=trials, var_sr=var_sr
+    )
+    if recipe_fails:
+        raise ConformanceError(
+            "verdict DSR recipe diverges from the §3-clause-5 pins:\n  - "
+            + "\n  - ".join(recipe_fails)
         )
-    var_sr = float(np.var(np.array(list(trials.values()), dtype=np.float64)))  # ddof=0
     sr0 = float(expected_max_sharpe(var_sr, DSR_N_TRIALS))
     dsr = float(deflated_sharpe_ratio(s[4], n_trials=DSR_N_TRIALS, var_sr=var_sr))
 

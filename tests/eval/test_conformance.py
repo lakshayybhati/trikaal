@@ -18,6 +18,7 @@ from trikaal.eval.conformance import (
     assert_conformance,
     conformance_failures,
     symbols_sha256,
+    verdict_dsr_failures,
 )
 from trikaal.eval.xsection import XSectionConfig, primary_region_grid_ms
 
@@ -153,3 +154,66 @@ def test_shuffle_threading_probe_has_teeth(monkeypatch):
     monkeypatch.setattr(conf, "shuffle_micro", drifted)
     fails = conf.conformance_failures(_money_cfg(), symbols=_symbols(), seeds=(0, 1, 2))
     assert sum("threading DIVERGES" in f for f in fails) == 3  # every pinned seed caught
+
+
+# ------------------------------------------------------------------ the §3-clause-5 DSR pins
+def _true_trials() -> dict[tuple[int, int, int, float], float]:
+    """The exact pinned 180-trial enumeration with deterministic small values."""
+    return {
+        (c, s, h, k): 1e-3 * ((c * 7 + s * 3 + int(h) + int(2 * k)) % 5)
+        for c in (1, 2, 3, 4, 5)
+        for s in (0, 1, 2)
+        for h in (5, 15, 60)
+        for k in (1.0, 1.5, 2.0, 3.0)
+    }
+
+
+def _var0(trials: dict) -> float:
+    return float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+
+
+def test_verdict_dsr_pins_pass_on_the_true_recipe():
+    t = _true_trials()
+    assert verdict_dsr_failures(n_trials=180, threshold=0.95, trials=t, var_sr=_var0(t)) == []
+
+
+def test_verdict_dsr_doctored_n_trials_240_is_caught():
+    t = _true_trials()
+    fails = verdict_dsr_failures(n_trials=240, threshold=0.95, trials=t, var_sr=_var0(t))
+    assert any("n_trials 240" in f for f in fails)
+
+
+def test_verdict_dsr_fourth_horizon_budget_is_caught():
+    """The old '4 horizons / 240' bookkeeping error: h=1 trials must fail the cross product."""
+    t = _true_trials()
+    for c in (1, 2, 3, 4, 5):
+        for s in (0, 1, 2):
+            for k in (1.0, 1.5, 2.0, 3.0):
+                t[(c, s, 1, k)] = 1e-3
+    fails = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=t, var_sr=_var0(t))
+    assert any("cross product" in f and "outside the pin" in f for f in fails)
+
+
+def test_verdict_dsr_four_kappa_only_var_basis_is_caught():
+    """The M5 run_harness convention (var over ONE cell's 4 κ VAL IRs) is NOT the M6 recipe —
+    both the shrunken trial set and the subset-variance must be named."""
+    full = _true_trials()
+    subset = {
+        key: v for key, v in full.items() if key[:3] == (4, 0, 15)
+    }  # the 4 κ of one trial row
+    fails = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=subset, var_sr=_var0(subset))
+    assert any("cross product" in f and "176 missing" in f for f in fails)
+    # and: right keys, but var_sr computed over a 4-κ subset → the bit-exact re-derivation fails
+    fails2 = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=full, var_sr=_var0(subset))
+    assert any("var_sr" in f and "wrong source" in f for f in fails2)
+
+
+def test_verdict_dsr_wrong_ddof_and_threshold_are_caught():
+    t = _true_trials()
+    vals = np.array([t[k] for k in sorted(t)], dtype=np.float64)
+    fails = verdict_dsr_failures(
+        n_trials=180, threshold=0.95, trials=t, var_sr=float(np.var(vals, ddof=1))
+    )
+    assert any("wrong source" in f or "ddof" in f for f in fails)
+    fails2 = verdict_dsr_failures(n_trials=180, threshold=0.90, trials=t, var_sr=_var0(t))
+    assert any("threshold 0.9" in f for f in fails2)
