@@ -57,13 +57,21 @@ Expected: conformance gate PASS first, 15 artifacts content-verified, all five �
 evaluated on garbage toy numbers WITHOUT crashing, manifest written with `grid_pinned: false`
 (loud — a toy manifest is never quotable as the M6 outcome).
 
-## 3. Item 2 canary — the machine MEASURES (synthetic two-arm)
+## 3. Item 2 canary — the machine MEASURES (supervisor ruling 2026-07-19, option (i))
 ```bash
-PYTHONPATH=src python3 scripts/m6_canary.py --device cuda --steps 600
+PYTHONPATH=src python3 scripts/m6_canary.py --device cuda
 ```
-PASS = planted fires + placebo neutral (both arms) + signal-dim/block recon non-degenerate +
-both codebooks non-collapsed (validated locally on cpu first; the box re-run is the Item-2
-evidence on the real GPU type). Commit `runs/m6_canary/canary_manifest.json` verdicts.
+REAL canonical dims (d512 backbone, canonical vocabs), ≥200k-bar stream (the 26k toy's
+median-1 joint-id sparsity was a measured confound), CONVERGENCE-BASED stopping (val-loss
+improvement < ε=0.005 nats over K=5 consecutive evals, evals every 200 steps, hard cap
+20,000; overridable flags — the values used are stated in the log + manifest), toy lr
+(TOY-ONLY; the real run's schedule stays the orchestrator default, identical across cells).
+Every eval logs the committed probes (teacher-forced corr + h=2 rollout corr) — the
+TRAJECTORY discriminates under-convergence from inability. PASS = planted fires (probe corr
+rises materially + ΔIR ordering + paired CI clears) + placebo neutral both arms + recon/
+codebook non-degenerate. **IF DETECTION FAILS WITH CONVERGED CURVES AT REAL DIMS: FULL STOP —
+ship the probe trajectories; nothing further runs (pre-spend architectural finding; the
+15-day run cannot be authorized over it).** Commit `runs/m6_canary/canary_manifest.json`.
 
 ## 4. The §3a attention-mode decision
 ```bash
