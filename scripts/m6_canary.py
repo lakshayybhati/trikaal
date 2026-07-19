@@ -75,7 +75,9 @@ SIGNAL_LAG = 2  # state_t first touches r at t+2 — inside y[t], outside the OH
 C_SIGNAL = 3.0  # r_{t+2} = C·σ·state_t + σ·eps — per-bar corr(x0_{t+2}, state_t) ≈ 0.95
 T0_MS = 1_704_067_200_000  # 2024-01-01 UTC
 TRAIN_HOLD_BAR = 130_000  # train draw < here; [here, true boundary) = the held-out VAL slice
-TOY_LR = 1e-3  # TOY-ONLY (supervisor): the real run keeps the orchestrator default schedule
+STAGE2_LR = 3e-4  # the ORCHESTRATOR DEFAULT (peak_lr_stage2) — the d48-tuned toy-lr 1e-3
+# measurably wrecked canonical d512 optimization (val RISING while "plateaued"; canonical
+# cells stopped ABOVE the d48 toys' loss). Overridable via --lr, stated in log+manifest.
 
 TOY_TOK_KW = dict(d_model=48, n_layers=1, n_heads=2, d_ff=96, max_len=64)
 TOY_BB_KW = dict(
@@ -175,7 +177,7 @@ def train_cell_convergent(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> 
     sampler = MultiSymbolWindowSampler(per_symbol, alpha=0.5, seed=args.seed)
 
     # ---- stage 1: tokenizer, fixed steps (recon convergence is fast; fidelity is checked) --
-    opt = torch.optim.AdamW(tok.parameters(), lr=TOY_LR)
+    opt = torch.optim.AdamW(tok.parameters(), lr=args.lr)
     for step in range(1, args.stage1_steps + 1):
         xb, mb, _ = sampler.sample_batch(args.batch, SEQ_LEN)
         xt = torch.from_numpy(xb).to(dev)
@@ -205,7 +207,7 @@ def train_cell_convergent(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> 
         max_len=SEQ_LEN + 64,
         **bb_kw,
     ).to(dev)
-    opt = torch.optim.AdamW(model.parameters(), lr=TOY_LR, weight_decay=0.01, betas=(0.9, 0.95))
+    opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.01, betas=(0.9, 0.95))
     warmup = 200
     rng = sampler._rng
     d0 = raw[SYMBOLS[0]]
@@ -234,7 +236,7 @@ def train_cell_convergent(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> 
     t0 = time.time()
     while step < args.max_steps:
         for g in opt.param_groups:
-            g["lr"] = TOY_LR * min(1.0, (step + 1) / warmup)
+            g["lr"] = args.lr * min(1.0, (step + 1) / warmup)
         bc, bf, ts = _batches_from(sampler, sym_tokens, args.batch, SEQ_LEN, rng)
         model.train()
         opt.zero_grad(set_to_none=True)
@@ -281,7 +283,7 @@ def train_cell_convergent(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> 
             "k_plateau": args.k_plateau,
             "eval_every": args.eval_every,
             "max_steps": args.max_steps,
-            "toy_lr": TOY_LR,
+            "lr": args.lr,
         },
     }
 
@@ -427,6 +429,7 @@ def main() -> int:
     ap.add_argument("--eval-every", type=int, default=200)
     ap.add_argument("--epsilon", type=float, default=0.005, help="plateau epsilon (nats)")
     ap.add_argument("--k-plateau", type=int, default=5, help="consecutive non-improving evals")
+    ap.add_argument("--lr", type=float, default=STAGE2_LR)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="runs/m6_canary")
@@ -442,7 +445,7 @@ def main() -> int:
     print(
         f"stopping: val-loss improvement < {args.epsilon} nats over {args.k_plateau} "
         f"consecutive evals (every {args.eval_every} steps), cap {args.max_steps}; "
-        f"toy lr {TOY_LR} (TOY-ONLY)"
+        f"lr {args.lr} (orchestrator default 3e-4)"
     )
     if args.canonical:
         parity = assert_cells_parity()

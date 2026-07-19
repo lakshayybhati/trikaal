@@ -190,6 +190,16 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **Attention mode FIXED (2026-07-19, toy-CUDA rehearsal — the §3a one-mode rule; entry
+  pre-authorized in the rehearsal instruction): sdpa_deterministic** for all 15 real runs and
+  the headline. Evidence (`runs/m6_attention_bench.json`; RTX 4090, canonical 21,301,248-param
+  backbone, bf16 autocast, batch 32 × seq 512): sdpa stable at 2.882 steps/s over the matched
+  segment; flash2 UNAVAILABLE on the rehearsal box — no prebuilt wheel exists for torch 2.12
+  (30 releases searched) and the source build is refused by the image's CUDA 12.4 toolkit vs
+  torch's cu130 (compile-time version check, error captured in the rehearsal log).
+  sdpa_deterministic additionally carries the bit-exact kill-resume claim, re-proven on CUDA in
+  this same rehearsal (inv. 7). Switching modes would require a new dated entry BEFORE any real
+  cell trains; the mode is otherwise fixed here.
 - **v1.3 (2026-07-19, supervisor adjudication of the builder's halt-finding) —
   BEFORE any real training: the pre-tokenized eval context carried future-bar
   information (bidirectional encoder within fixed tokenization chunks; measured on

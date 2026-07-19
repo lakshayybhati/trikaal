@@ -1,0 +1,369 @@
+{
+  "bundle_sha256": "1393d586eefb26c4351f7c644a1f057326ba0b971cbbef5383af9fc57410d396",
+  "canonical_dims": true,
+  "cell5_permuted_micro": {
+    "BTCUSDT": {
+      "marginals_preserved": true,
+      "micro_permuted": true
+    },
+    "ETHUSDT": {
+      "marginals_preserved": true,
+      "micro_permuted": true
+    },
+    "FRONTUSDT": {
+      "marginals_preserved": true,
+      "micro_permuted": true
+    },
+    "KLAYUSDT": {
+      "marginals_preserved": true,
+      "micro_permuted": true
+    },
+    "SOLUSDT": {
+      "marginals_preserved": true,
+      "micro_permuted": true
+    }
+  },
+  "checkpoints": {
+    "cell1_bsq_ohlcv_seed0": {
+      "predictor_hash": "sha256:62350df3521f4528c1b932ed579e431dc0adbcda9e0cb9621e1eb3d46587710e",
+      "tokenizer_hash": "sha256:65f0393c36d603091f16bf20246b5aff1a9bb6c4e9d735f039198ad3d6e3df11"
+    },
+    "cell1_bsq_ohlcv_seed1": {
+      "predictor_hash": "sha256:0e89efe08201a9b7a05519b4a6f262b3c8c51f9d18aad75e0d01d87b3f9eaf72",
+      "tokenizer_hash": "sha256:932d79b011acccfb907493361cc5b9204255e0b5e728ea27e883d53f52bb5f02"
+    },
+    "cell1_bsq_ohlcv_seed2": {
+      "predictor_hash": "sha256:b3394dc66946604b14536b3ea084652104dd5459660ae068048d4f8d6e38c684",
+      "tokenizer_hash": "sha256:2dae22e74f134dd76f6cd002194a46fd86478ef911ef1b8a8f7254e83a508f85"
+    },
+    "cell2_fsq_ohlcv_seed0": {
+      "predictor_hash": "sha256:f78208769cd5078eec43de37683c2dcb93099cf0608b9db38848ae2aac0f4115",
+      "tokenizer_hash": "sha256:e9f407a608d22d7903cce49b2b8610d464dca49a3d3e5bb7c048ed99168d6f50"
+    },
+    "cell2_fsq_ohlcv_seed1": {
+      "predictor_hash": "sha256:87e3d4af8682d0ea89b84a019fb7204f30a7c8ebc628959de253126e68b90990",
+      "tokenizer_hash": "sha256:b25d056b100574114ab1f8e47ea8ffe53f85f8bc2fe38899c4409c512bffa758"
+    },
+    "cell2_fsq_ohlcv_seed2": {
+      "predictor_hash": "sha256:feb0d0c0406560a3de69431b40a4255c13ed4ee4192005c32044687389f29ebe",
+      "tokenizer_hash": "sha256:33acaa6c2359461b6786ddd115da3ddd05202023380f90f03d07d3e70523411c"
+    },
+    "cell3_bsq_micro_seed0": {
+      "predictor_hash": "sha256:c48de07a2b11804ab52a1e1885d0d3f1aec3482b4631e2b882d347bea53fc414",
+      "tokenizer_hash": "sha256:adb67094a2ead33a53159fc2aade99367e44c04acf0b38f4a6799ae795ba99e9"
+    },
+    "cell3_bsq_micro_seed1": {
+      "predictor_hash": "sha256:d4071d54383cfd551f1541db7d05f81935f9697e0b2d0915f0093a62ebc0d4c5",
+      "tokenizer_hash": "sha256:6bbf20435c181c3862899ad34437971d6aa60b1bb6de3981ceebf38c71b2c625"
+    },
+    "cell3_bsq_micro_seed2": {
+      "predictor_hash": "sha256:45ab7e24eeac4d64af1367d8fc9c719d2bd4dcde9c0c79fcccbebc85b46ee62c",
+      "tokenizer_hash": "sha256:34f2013ccde3ec72175cbd8899b72f7fd2111a3c3258b25f27efc627a54b3b16"
+    },
+    "cell4_fsq_micro_seed0": {
+      "predictor_hash": "sha256:ea616e3eae9d2942cd9c866c6ba109f93a735e2797de6d8e2963aaf1d250936c",
+      "tokenizer_hash": "sha256:82fa4dcc79b61f075160b1a15254506a5562f1a3c4b52d740b65e2324abeaf21"
+    },
+    "cell4_fsq_micro_seed1": {
+      "predictor_hash": "sha256:0e7a67a7f4bd39e72c19b0133aed228fbd3219f588a52f756a71bef387c2fa34",
+      "tokenizer_hash": "sha256:756d2ba27136cf2b903dac3abf6733f474be7167bfe6ea017ff7ccdfd2f4c111"
+    },
+    "cell4_fsq_micro_seed2": {
+      "predictor_hash": "sha256:a6bfc1090f280137075bf7405d129a72fecfff00d470536d8d5ebd8ac1d98a1b",
+      "tokenizer_hash": "sha256:8ff235775d7b294a76a434eac759d3f4ad69033af827936fde0174df525d8fc3"
+    },
+    "cell5_fsq_micro_shuffled_seed0": {
+      "predictor_hash": "sha256:da2b6153bda2c64ffed7ef5c7d62dce2ca492674dc6b1b5339fd8ddcc9b16486",
+      "tokenizer_hash": "sha256:4e001759164d0beea6b850724ed2b7e162729a9e8c7a845a718c859bf80dcc00"
+    },
+    "cell5_fsq_micro_shuffled_seed1": {
+      "predictor_hash": "sha256:b62a1ed2c660860992458556ddad45a8e8f9740413252eae937a1f425167bc28",
+      "tokenizer_hash": "sha256:1068e1974562cc5d8c552afe9bbf0869e16b9831457f4a1a387ac5c5ddbd93c2"
+    },
+    "cell5_fsq_micro_shuffled_seed2": {
+      "predictor_hash": "sha256:2e5f30394d448eb1e796e6de00e99b25f50fa85ae699c6bd2fb12f7ac8db22a9",
+      "tokenizer_hash": "sha256:68ff46bd48d9c2acb317ea4cb144d3e41e8193c4b67ef0ef47dafbf7ecf2b4b6"
+    }
+  },
+  "config": {
+    "backbone_max_len": 576,
+    "batch": 32,
+    "eval_only_rerun": true,
+    "eval_window": [
+      "2024-11-15",
+      "2025-01-01"
+    ],
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "seq_len": 512,
+    "steps_per_stage": 300,
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "KLAYUSDT",
+      "FRONTUSDT"
+    ],
+    "thin_coin": "FRONTUSDT",
+    "train_window": [
+      "2021-01-01",
+      "2025-01-01"
+    ],
+    "wandb": {
+      "group": "m6_toy_rehearsal",
+      "mode": "offline",
+      "project": "trikaal-m6"
+    }
+  },
+  "determinism_by_run": {
+    "cell1_bsq_ohlcv_seed0": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 0
+    },
+    "cell1_bsq_ohlcv_seed1": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 1
+    },
+    "cell1_bsq_ohlcv_seed2": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 2
+    },
+    "cell2_fsq_ohlcv_seed0": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 0
+    },
+    "cell2_fsq_ohlcv_seed1": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 1
+    },
+    "cell2_fsq_ohlcv_seed2": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 2
+    },
+    "cell3_bsq_micro_seed0": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 0
+    },
+    "cell3_bsq_micro_seed1": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 1
+    },
+    "cell3_bsq_micro_seed2": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 2
+    },
+    "cell4_fsq_micro_seed0": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 0
+    },
+    "cell4_fsq_micro_seed1": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 1
+    },
+    "cell4_fsq_micro_seed2": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 2
+    },
+    "cell5_fsq_micro_shuffled_seed0": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 0
+    },
+    "cell5_fsq_micro_shuffled_seed1": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 1
+    },
+    "cell5_fsq_micro_shuffled_seed2": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.10",
+        "torch": "2.12.1+cu130"
+      },
+      "seed": 2
+    }
+  },
+  "device": "cuda",
+  "draw_thin_coin_stage1": {
+    "cell1_bsq_ohlcv_seed0": 944,
+    "cell1_bsq_ohlcv_seed1": 967,
+    "cell1_bsq_ohlcv_seed2": 951,
+    "cell2_fsq_ohlcv_seed0": 944,
+    "cell2_fsq_ohlcv_seed1": 967,
+    "cell2_fsq_ohlcv_seed2": 951,
+    "cell3_bsq_micro_seed0": 944,
+    "cell3_bsq_micro_seed1": 967,
+    "cell3_bsq_micro_seed2": 951,
+    "cell4_fsq_micro_seed0": 944,
+    "cell4_fsq_micro_seed1": 967,
+    "cell4_fsq_micro_seed2": 951,
+    "cell5_fsq_micro_shuffled_seed0": 944,
+    "cell5_fsq_micro_shuffled_seed1": 967,
+    "cell5_fsq_micro_shuffled_seed2": 951
+  },
+  "eval_artifacts": {
+    "cell1_seed0_eval.json": "1acba36d73644f8f3506abba6c3fef60c819187346aa4f2e02dd94f1ef6d5a9e",
+    "cell1_seed1_eval.json": "962d0097f8fa2d633296b985d3b807e7252a49285627d5583078a36167f03539",
+    "cell1_seed2_eval.json": "db9b98c406a113861b09cf5b4ecc93ae8053f8dda97c347ca9214d3526f51565",
+    "cell2_seed0_eval.json": "65c96557f188f4d88959521f5a070a3dd34caf544573466732fa32e8f111be9a",
+    "cell2_seed1_eval.json": "011a6eecaaf688154acf079d73cade307183c88904f5a9ec2448df2c2c0bffd6",
+    "cell2_seed2_eval.json": "5321746b4a9d72055b30db29c87365e6544f596375f9d5d1cfda0301a77c3c4a",
+    "cell3_seed0_eval.json": "5718c2f998bf9e90bf9b000649266d0b4c90c8585a4eac195674ee30c9a1f168",
+    "cell3_seed1_eval.json": "3710b648a7c1e5616206338d05d78f4ec4399ec8fedf559acdbaf68660eabead",
+    "cell3_seed2_eval.json": "84f7d38c921c9391583913f4cc0f680f40e722aae22e8c94bd43fd963b387837",
+    "cell4_seed0_eval.json": "e93cde6b19bccf50491696dcd0227eeae75cbd36a840b66f31fdb7f22325a7e0",
+    "cell4_seed1_eval.json": "0332e7a8dd2f2ca5be1de69898c3f15e1984ec2c865b4f933376e5bae99eecba",
+    "cell4_seed2_eval.json": "40100d2635187513bb9d7ae7a1f32fd12d1e9086a5f26edbefcc1bdf82220b0c",
+    "cell5_seed0_eval.json": "8d65a9acc5ca4e8e44b324f2aed413505c0720a802b1714cc83a3ae585827d1f",
+    "cell5_seed1_eval.json": "0d0f0c22dd529c7e6d6590beac871f5028a44d18f7cc33c0de4f2804013d381c",
+    "cell5_seed2_eval.json": "571fb64aec676e4208b34a941ee1e19f582065c8afbc784ad73049187863aeed"
+  },
+  "eval_grid": {
+    "h": 15,
+    "n_periods": 1128,
+    "start_ms": 1734674400000
+  },
+  "gpu_sampler": {
+    "mem_used_mb_max": null,
+    "n_samples": 0,
+    "util_max": null,
+    "util_mean": null
+  },
+  "note": "NUMBERS MEANINGLESS BY DESIGN \u2014 the gate is the machinery, end-to-end, unattended, on the real GPU type (m6_preflight Item 2).",
+  "nvidia_smi": "Sun Jul 19 10:24:06 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 590.48.01              Driver Version: 590.48.01      CUDA Version: 13.1     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4090        On  |   00000000:05:00.0 Off |                  Off |\n| 30%   24C    P8             22W /  450W |       0MiB /  24564MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+\n\n+-----------------------------------------------------------------------------------------+\n| Processes:                                                                              |\n|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |\n|        ID   ID                                                               Usage      |\n|=========================================================================================|\n|  No running processes found                                                             |\n+-----------------------------------------------------------------------------------------+",
+  "parity": {
+    "bpt_a": 20.05784765541185,
+    "bpt_b": 20.0,
+    "d_bpt": 0.05784765541185166,
+    "param_frac": 0.0016830423504184111,
+    "params_a": 3951646,
+    "params_b": 3958308
+  },
+  "rehearsal": "m6_preflight_item2",
+  "throughput": {
+    "bars_per_s_into_gpu": NaN,
+    "note": "bars/s = steps/s x batch x seq_len (both stages pooled); Item-4 arithmetic vs the \u00a74 budget is computed in the report from these numbers. Under --eval-only these training fields are NaN/empty: training happened in the prior invocation; the canonical training steps/s for Item 4 comes from the attention bench (identical geometry: canonical backbone, batch, seq, bf16).",
+    "per_run_wall_s": {},
+    "steps_per_s": NaN,
+    "total_train_steps": 9000,
+    "train_wall_s": 0
+  },
+  "wall_s_total": 2180.8
+}

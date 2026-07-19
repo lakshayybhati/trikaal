@@ -1,0 +1,245 @@
+{
+  "artifact_sha256": {
+    "cell1_seed0_eval.json": "1acba36d73644f8f3506abba6c3fef60c819187346aa4f2e02dd94f1ef6d5a9e",
+    "cell1_seed1_eval.json": "962d0097f8fa2d633296b985d3b807e7252a49285627d5583078a36167f03539",
+    "cell1_seed2_eval.json": "db9b98c406a113861b09cf5b4ecc93ae8053f8dda97c347ca9214d3526f51565",
+    "cell2_seed0_eval.json": "65c96557f188f4d88959521f5a070a3dd34caf544573466732fa32e8f111be9a",
+    "cell2_seed1_eval.json": "011a6eecaaf688154acf079d73cade307183c88904f5a9ec2448df2c2c0bffd6",
+    "cell2_seed2_eval.json": "5321746b4a9d72055b30db29c87365e6544f596375f9d5d1cfda0301a77c3c4a",
+    "cell3_seed0_eval.json": "5718c2f998bf9e90bf9b000649266d0b4c90c8585a4eac195674ee30c9a1f168",
+    "cell3_seed1_eval.json": "3710b648a7c1e5616206338d05d78f4ec4399ec8fedf559acdbaf68660eabead",
+    "cell3_seed2_eval.json": "84f7d38c921c9391583913f4cc0f680f40e722aae22e8c94bd43fd963b387837",
+    "cell4_seed0_eval.json": "e93cde6b19bccf50491696dcd0227eeae75cbd36a840b66f31fdb7f22325a7e0",
+    "cell4_seed1_eval.json": "0332e7a8dd2f2ca5be1de69898c3f15e1984ec2c865b4f933376e5bae99eecba",
+    "cell4_seed2_eval.json": "40100d2635187513bb9d7ae7a1f32fd12d1e9086a5f26edbefcc1bdf82220b0c",
+    "cell5_seed0_eval.json": "8d65a9acc5ca4e8e44b324f2aed413505c0720a802b1714cc83a3ae585827d1f",
+    "cell5_seed1_eval.json": "0d0f0c22dd529c7e6d6590beac871f5028a44d18f7cc33c0de4f2804013d381c",
+    "cell5_seed2_eval.json": "571fb64aec676e4208b34a941ee1e19f582065c8afbc784ad73049187863aeed"
+  },
+  "bootstrap": {
+    "delta_4_minus_2": {
+      "alpha": 0.05,
+      "b": 10000,
+      "block_len": 34,
+      "ci_lower": 51.41008406629483,
+      "ci_upper": 107.99367589624462,
+      "delta_ir": 72.68224142347407,
+      "mde_paired": 42.76464507528137,
+      "passes_ci": true,
+      "passes_mde": true,
+      "se_boot": 17.19890508447834,
+      "seed": 20260704,
+      "t": 1128
+    },
+    "delta_4_minus_5": {
+      "alpha": 0.05,
+      "b": 10000,
+      "block_len": 34,
+      "ci_lower": -94.36501965178627,
+      "ci_upper": -64.31617759694471,
+      "delta_ir": -80.76286974856492,
+      "mde_paired": 22.798088430692626,
+      "passes_ci": false,
+      "passes_mde": false,
+      "se_boot": 9.168839314269613,
+      "seed": 20260704,
+      "t": 1128
+    },
+    "delta_5_minus_2": {
+      "alpha": 0.05,
+      "b": 10000,
+      "block_len": 34,
+      "ci_lower": 133.59033665978689,
+      "ci_upper": 185.26844042186391,
+      "delta_ir": 153.445111172039,
+      "mde_paired": 38.8658160858654,
+      "passes_ci": true,
+      "passes_mde": true,
+      "se_boot": 15.630890440336302,
+      "seed": 20260704,
+      "t": 1128
+    }
+  },
+  "cells": {
+    "1": {
+      "ir_seed_mean_h15": -52.927500943897535,
+      "kappa_star_by_h": {
+        "15": 3.0,
+        "5": 3.0,
+        "60": 3.0
+      },
+      "per_seed_ir_h15": {
+        "0": -40.56933771063676,
+        "1": -25.41713634122064,
+        "2": -34.21667271371145
+      }
+    },
+    "2": {
+      "ir_seed_mean_h15": -208.0136191520789,
+      "kappa_star_by_h": {
+        "15": 3.0,
+        "5": 3.0,
+        "60": 2.0
+      },
+      "per_seed_ir_h15": {
+        "0": -75.81319731158,
+        "1": -161.3729103035123,
+        "2": -100.02029731709159
+      }
+    },
+    "3": {
+      "ir_seed_mean_h15": -170.1118974359722,
+      "kappa_star_by_h": {
+        "15": 3.0,
+        "5": 3.0,
+        "60": 3.0
+      },
+      "per_seed_ir_h15": {
+        "0": -80.70317260212958,
+        "1": -78.00298736792867,
+        "2": -104.40522328121514
+      }
+    },
+    "4": {
+      "ir_seed_mean_h15": -135.33137772860482,
+      "kappa_star_by_h": {
+        "15": 3.0,
+        "5": 3.0,
+        "60": 1.0
+      },
+      "per_seed_ir_h15": {
+        "0": -89.76653460632821,
+        "1": -27.890609360267213,
+        "2": -49.09150709310542
+      }
+    },
+    "5": {
+      "ir_seed_mean_h15": -54.5685079800399,
+      "kappa_star_by_h": {
+        "15": 3.0,
+        "5": 3.0,
+        "60": 3.0
+      },
+      "per_seed_ir_h15": {
+        "0": -31.784665849791864,
+        "1": -30.182757557020736,
+        "2": -31.732559433531122
+      }
+    }
+  },
+  "clauses": {
+    "1_paired_ci": {
+      "ci_lower": -94.36501965178627,
+      "pass": false,
+      "rule": "one-sided paired CI lower bound of \u0394IR_info(4-5) > 0"
+    },
+    "2_mde_paired": {
+      "delta_ir": -80.76286974856492,
+      "mde_paired": 22.798088430692626,
+      "mde_paired_exceeds_tabled": true,
+      "pass": false,
+      "rule": "\u0394IR_info \u2265 MDE_paired = (z0.95+z0.80)\u00b7SE_boot; no ceiling appeal \u2014 the operative threshold is the realized MDE_paired in either direction vs \u00a72's table",
+      "tabled_mde_h15": 3.518
+    },
+    "3_placebo_validity": {
+      "ci_lower": 51.41008406629483,
+      "health_diagnostic_5_minus_2": {
+        "ci_lower": 133.59033665978689,
+        "ci_upper": 185.26844042186391,
+        "delta_ir": 153.445111172039,
+        "note": "ci_upper < 0 \u21d2 the shuffle demonstrably harmed training below the OHLCV-only counterfactual \u2014 disclosed prominently, never gating (\u00a73 clause 3)",
+        "shuffle_harmed": false
+      },
+      "pass": true,
+      "rule": "one-sided paired CI lower bound of IR(4)-IR(2) > 0 (placebo-independent)"
+    },
+    "4_economic_floor": {
+      "delta_ir": -80.76286974856492,
+      "floor": 0.5,
+      "pass": false,
+      "rule": "\u0394IR_info \u2265 0.5 annualized IR (fixed pre-data)"
+    },
+    "5_dsr": {
+      "dsr": 0.0,
+      "n_trials": 180,
+      "pass": false,
+      "rule": "DSR \u2265 0.95; statistic = Cell 4's seed-mean pooled headline series; SR0 from N=180 enumerated trials; var_sr over the 180 de-annualized VAL IRs (ddof=0)",
+      "sr0": 0.6276435210078574,
+      "threshold": 0.95,
+      "var_sr": 0.052821905816472746
+    }
+  },
+  "conformance": "PASS",
+  "content_hash": "sha256:260cac7a890268e42a3d07d13626ad869972d1bbf151c760972455374d368692",
+  "grid": {
+    "h": 15,
+    "n_periods": 1128,
+    "start_ms": 1734674400000
+  },
+  "grid_pinned": false,
+  "point_diagnostics": {
+    "delta_info": -80.76286974856492,
+    "delta_micro": 72.68224142347407,
+    "delta_placebo": 153.445111172039,
+    "fsq_effect_micro": 34.780519707367375,
+    "fsq_effect_ohlcv": -155.08611820818135,
+    "micro_exceeds_placebo": false,
+    "micro_marginal_bsq": -117.18439649207465,
+    "micro_marginal_fsq": 72.68224142347407,
+    "note": "raw comparison only \u2014 DSR-margin test applied at M6 on the 5 trained cells"
+  },
+  "prereg": "docs/m6_prereg.md \u00a73 (five conjunctive clauses), \u00a73a (pinned surface), \u00a75",
+  "prereg_sha256": "ad91046d23d878597e79a1d4ee9524d66098a51bff2aac548c487226f07f1b34",
+  "primary_h": 15,
+  "schema": "m6_verdict_v1",
+  "verdict": {
+    "double_null": true,
+    "failing_clauses": [
+      "1_paired_ci",
+      "2_mde_paired",
+      "4_economic_floor",
+      "5_dsr"
+    ],
+    "fallback": {
+      "bootstrap_2_minus_1": {
+        "alpha": 0.05,
+        "b": 10000,
+        "block_len": 34,
+        "ci_lower": -186.46883667962132,
+        "ci_upper": -134.20554778120675,
+        "delta_ir": -155.08611820818135,
+        "mde_paired": 39.13858651388782,
+        "passes_ci": false,
+        "passes_mde": false,
+        "se_boot": 15.740592103781694,
+        "seed": 20260704,
+        "t": 1128
+      },
+      "clauses": {
+        "ci": {
+          "ci_lower": -186.46883667962132,
+          "pass": false
+        },
+        "dsr": {
+          "dsr": 0.0,
+          "pass": false,
+          "statistic": "cell2_seed_mean_headline_series",
+          "threshold": 0.95
+        },
+        "floor": {
+          "delta_ir": -155.08611820818135,
+          "floor": 0.5,
+          "pass": false
+        },
+        "mde": {
+          "delta_ir": -155.08611820818135,
+          "mde_paired": 39.13858651388782,
+          "pass": false
+        }
+      },
+      "rule": "\u00a75: IR(2)-IR(1) claimable ONLY under the identical paired rule (CI > 0, \u2265 its own MDE_paired, \u2265 the 0.5 floor, DSR \u2265 0.95, same N=180 budget)",
+      "word": "DESCRIPTIVE_ONLY"
+    },
+    "primary": "NULL"
+  }
+}
