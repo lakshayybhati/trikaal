@@ -176,8 +176,23 @@ def main() -> int:
         action="store_true",
         help="cpu validation of THIS SCRIPT: tiny shells, short steps, wandb disabled",
     )
+    ap.add_argument(
+        "--eval-only",
+        action="store_true",
+        help="reuse the 15 already-trained checkpoints in --out; skip training (the eval-cost "
+        "fix: full-window sdpa rollouts measured ~40 min/(cell,seed) on the 4090 — the money "
+        "CODE PATH needs exercising, not the toy window's length)",
+    )
+    ap.add_argument(
+        "--eval-window",
+        nargs=2,
+        default=None,
+        metavar=("START", "END"),
+        help="override the toy eval window (default EVAL_WINDOW)",
+    )
     args = ap.parse_args()
     t_start = time.time()
+    eval_window = tuple(args.eval_window) if args.eval_window else EVAL_WINDOW
 
     if args.local_smoke:
         args.device, args.steps, args.batch = "cpu", 30, 16
@@ -243,7 +258,9 @@ def main() -> int:
             for arm in ARMS
         }
 
-    per_seed_windows = {seed: windows_for_seed(seed) for seed in SEEDS}
+    per_seed_windows = {
+        seed: windows_for_seed(seed) for seed in (SEEDS if not args.eval_only else SEEDS[:1])
+    }
     cell5_check = assert_cell5_trains_on_permuted_micro(per_seed_windows[SEEDS[0]])
     print(f"[cell5] permuted-micro training input verified for {len(cell5_check)} symbols")
     for sw in per_seed_windows[SEEDS[0]][ARM_MICRO]:
@@ -275,7 +292,13 @@ def main() -> int:
         sampler.start()
     run_walls: dict[str, float] = {}
     manifests = {}
-    for spec in CELLS:
+    if args.eval_only:
+        for spec in CELLS:
+            for seed in SEEDS:
+                mp = Path(cfg.out_dir) / f"{spec.name}_seed{seed}" / "run_manifest.json"
+                manifests[f"{spec.name}_seed{seed}"] = json.loads(mp.read_text())
+        print(f"[eval-only] reusing {len(manifests)} trained runs from {cfg.out_dir}")
+    for spec in CELLS if not args.eval_only else []:
         for seed in SEEDS:
             t0 = time.time()
             m = run_cell(spec, seed, per_seed_windows[seed], cfg, monitor)
@@ -300,8 +323,8 @@ def main() -> int:
     # ---- money-CODE-PATH eval per (cell, seed) → the 15 verdict artifacts ------------------
     deciles = load_spread_deciles(DECILES)
     base_cfg = XSectionConfig(
-        window_start=EVAL_WINDOW[0],
-        window_end=EVAL_WINDOW[1],
+        window_start=eval_window[0],
+        window_end=eval_window[1],
         train_frac=TRAIN_FRAC,
         h=PRIMARY_H,
         seq_len=args.seq_len,
@@ -399,7 +422,8 @@ def main() -> int:
             "symbols": list(SYMBOLS),
             "thin_coin": THIN,
             "train_window": list(TRAIN_WINDOW),
-            "eval_window": list(EVAL_WINDOW),
+            "eval_window": list(eval_window),
+            "eval_only_rerun": bool(args.eval_only),
             "seq_len": args.seq_len,
             "batch": args.batch,
             "steps_per_stage": args.steps,
@@ -420,7 +444,10 @@ def main() -> int:
             "bars_per_s_into_gpu": round(bars_per_s, 1),
             "per_run_wall_s": run_walls,
             "note": "bars/s = steps/s x batch x seq_len (both stages pooled); Item-4 "
-            "arithmetic vs the §4 budget is computed in the report from these numbers",
+            "arithmetic vs the §4 budget is computed in the report from these numbers. "
+            "Under --eval-only these training fields are NaN/empty: training happened in the "
+            "prior invocation; the canonical training steps/s for Item 4 comes from the "
+            "attention bench (identical geometry: canonical backbone, batch, seq, bf16).",
         },
         "wall_s_total": round(time.time() - t_start, 1),
         "bundle_sha256": bundle_sha,
