@@ -190,6 +190,25 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4 (2026-07-20, supervisor adjudication of the token-control programme) —
+  BEFORE any real training. Receipts (m6_canary_v6_stage1_manifest.json,
+  m6_token_control_step0.json, m6_token_control_run_manifest.json) establish:
+  the AR learns dense per-bar-legible token conditionals essentially perfectly
+  at canonical scale (probe Spearman 0.9999, 94% of planted nats), but the
+  causal contextual encoder smears each bar's feature state forward across
+  later tokens' ids (per-bar id visibility ≈ chance: logistic 0.5135), so
+  feature-space conditionals arrive per-bar-illegible and are never learned
+  (zero nats from a ~1.15-nat plant). INSTRUMENT RE-SPEC: the fine subtoken is
+  now a PER-BAR pointwise encoding of bar t's own features (micro dims included
+  in +micro arms); the coarse subtoken remains causal-contextual. Identical for
+  both quantizers and all arms — bits-per-token parity and the cell design
+  unchanged. Enforced by the extended flip-KAT (fine invariant to all other
+  bars), the per-bar legibility gate (logistic ≥ 0.9 on a 3σ planted state),
+  and conformance pins. ACCEPTANCE: the v6 feature-space canary re-run under
+  the new tokenizer must DETECT (and the noise arm stay quiet) before the
+  canary gate may close. Comparability: 'microstructure-aware' is now an
+  architectural property of the tokenizer; disclosed alongside the Kronos
+  notes.**
 - **Attention mode FIXED (2026-07-19, toy-CUDA rehearsal — the §3a one-mode rule; entry
   pre-authorized in the rehearsal instruction): sdpa_deterministic** for all 15 real runs and
   the headline. Evidence (`runs/m6_attention_bench.json`; RTX 4090, canonical 21,301,248-param

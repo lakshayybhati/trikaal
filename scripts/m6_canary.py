@@ -98,6 +98,11 @@ STAGE1_PEAK_LR = 1e-3
 STAGE2_PEAK_LR = 3e-4
 WARMUP_FRAC = 0.1  # cosine_warmup_lr floor_frac stays its own default (0.1*peak)
 
+# §7 v1.4 standing PER-BAR LEGIBILITY gate (the measured defect, now permanent): a logistic
+# probe from bar t's own (c_id, f_id) digits must recover the 3-sigma planted state's sign
+# with accuracy >= this, measured after stage-1 tokenizer training and BEFORE any AR spend.
+LEGIBILITY_MIN = 0.9
+
 # v6 branch thresholds (supervisor spec, verbatim)
 DETECT_TF = 0.3  # (a): >= on 2 consecutive evals
 DETECT_VAL_MARGIN = 0.1  # (a): final val(planted) < val(noise) - this
@@ -171,6 +176,52 @@ def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dic
     }
 
 
+def _digit_onehots(tok, b_c: np.ndarray, b_f: np.ndarray) -> np.ndarray:
+    """One-hot per-digit decomposition of (c_id, f_id) — the per-bar id, made linear-probeable.
+
+    Radices come from the tokenizer's own quantizer (FSQ level counts / BSQ bits), so the
+    probe works identically for both arms."""
+    q = tok.quant
+    cols, radices = [], []
+    for ids, group in ((b_c, list(q.coarse_idx)), (b_f, list(q.fine_idx))):
+        radix = tok._group_radix(group)
+        rem = ids.copy()
+        digs = []
+        for pos in reversed(range(len(group))):
+            digs.append(rem % radix[pos])
+            rem = rem // radix[pos]
+        for d, r in zip(reversed(digs), radix, strict=True):
+            cols.append(d)
+            radices.append(r)
+    feats = np.zeros((b_c.size, sum(radices)), dtype=np.float32)
+    off = 0
+    for col, r in zip(cols, radices, strict=True):
+        feats[np.arange(b_c.size), off + col] = 1.0
+        off += r
+    return feats
+
+
+def legibility_probe(tok, state: np.ndarray, b_c: np.ndarray, b_f: np.ndarray) -> float:
+    """§7 v1.4 standing gate: logistic sign-accuracy of the state from bar t's OWN id."""
+    n = min(150_000, b_c.size)
+    feats = _digit_onehots(tok, b_c[:n], b_f[:n])
+    y = (state[:n] > 0).astype(np.float32)
+    n_tr = int(0.8 * n)
+    xt = torch.from_numpy(feats[:n_tr])
+    xv = torch.from_numpy(feats[n_tr:])
+    yt = torch.from_numpy(y[:n_tr])
+    torch.manual_seed(0)
+    logit = torch.nn.Linear(feats.shape[1], 1)
+    opt = torch.optim.Adam(logit.parameters(), lr=1e-2)
+    for _ in range(300):
+        opt.zero_grad()
+        loss = torch.nn.functional.binary_cross_entropy_with_logits(logit(xt).squeeze(-1), yt)
+        loss.backward()
+        opt.step()
+    with torch.no_grad():
+        return float(((logit(xv).squeeze(-1) > 0).numpy() == (y[n_tr:] > 0.5)).mean())
+
+
 def _batches_from(sampler, sym_tokens, batch, seq_len, rng):
     """One stage-2 batch through the sampler's two-stage draw over pre-tokenized streams."""
     sym_ids = rng.choice(len(sampler.per_symbol), size=batch, p=sampler.weights)
@@ -211,7 +262,9 @@ def _probes(model, tok, d: dict, b_c, b_f, hold_bar: int, *, device: str) -> dic
     return {"teacher_forced_corr": tf_corr, "rollout_h2_corr": r2_corr}
 
 
-def train_cell_budget(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> dict:
+def train_cell_budget(
+    spec, per_symbol_by_arm, raw, args, out_dir: Path, *, legibility_gate: bool = False
+) -> dict:
     """Stage-1 tokenizer (fixed steps) -> stage-2 AR on the FIXED --steps budget.
 
     Both stages run the orchestrator-REAL schedule. No early stop. Every eval logs
@@ -263,6 +316,21 @@ def train_cell_budget(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> dict
     rng = sampler._rng
     d0 = raw[SYMBOLS[0]]
     b_c0, b_f0 = sym_tokens[SYMBOLS[0]][0], sym_tokens[SYMBOLS[0]][1]
+
+    # ---- §7 v1.4 standing PER-BAR LEGIBILITY gate (before ANY AR spend) ---------------------
+    legibility = None
+    if spec.arm in ("micro", "micro_shuffled"):
+        legibility = legibility_probe(tok, d0["x"][:, 9], b_c0, b_f0)
+        print(
+            f"    [{spec.name}] per-bar id legibility (logistic sign-acc): {legibility:.4f} "
+            f"(gate {LEGIBILITY_MIN} {'ENFORCED' if legibility_gate else 'recorded'})",
+            flush=True,
+        )
+        if legibility_gate and args.canonical and legibility < LEGIBILITY_MIN:
+            raise SystemExit(
+                f"§7 v1.4 LEGIBILITY GATE FAILED before AR spend: {legibility:.4f} < "
+                f"{LEGIBILITY_MIN} — the fine subtoken does not carry bar t's state"
+            )
     # val batches: windows from the HELD-OUT slice [hold_bar, boundary) — never drawn in train
     val_starts = np.arange(hold_bar, hold_bar + 96 * SEQ_LEN, SEQ_LEN)
     val = [
@@ -399,6 +467,7 @@ def train_cell_budget(spec, per_symbol_by_arm, raw, args, out_dir: Path) -> dict
         "attempts": attempts,
         "trajectory": tr,
         "tokenize_wall_s": tokenize_wall_s,
+        "per_bar_id_legibility": legibility,
         "rule": {
             "budget_steps": args.steps,
             "eval_every": args.eval_every,
@@ -483,7 +552,14 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
     training = {}
     for spec in CELLS:
         print(f"  [{arm_name}] training {spec.name} on the fixed budget…", flush=True)
-        rec = train_cell_budget(spec, per_symbol_by_arm, raw, args, out_dir)
+        rec = train_cell_budget(
+            spec,
+            per_symbol_by_arm,
+            raw,
+            args,
+            out_dir,
+            legibility_gate=(arm_name == "planted" and spec.cell_id == 4),
+        )
         rec["arm_stream"] = arm_name
         training[spec.cell_id] = rec
 
@@ -651,7 +727,9 @@ def run_stage1(args) -> dict:
             arm_name, planted=planted, args=args, arms=(spec4.arm,)
         )
         out_dir = Path(args.out) / arm_name
-        rec = train_cell_budget(spec4, per_symbol_by_arm, raw, args, out_dir)
+        rec = train_cell_budget(
+            spec4, per_symbol_by_arm, raw, args, out_dir, legibility_gate=(arm_name == "planted")
+        )
         rec["arm_stream"] = arm_name
         runs[arm_name] = rec
         if arm_name == "planted":

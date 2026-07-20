@@ -53,13 +53,27 @@ def build_cell_tokenizer(spec: CellSpec, **tok_kwargs) -> TokenizerAE:
     content into the pre-tokenized eval context (measured 41.8 %/28.3 % past-token flips on
     the real lake), and invariant 2 binds eval INPUTS. Symmetric across all five cells, so
     bpt fairness and the paired design are unaffected; the flag changes no tensor. A caller
-    passing ``encoder_causal=False`` is a hard error, never a silent override."""
+    passing ``encoder_causal=False`` is a hard error, never a silent override.
+
+    ``fine_pointwise=True`` is likewise FORCED (prereg §7 v1.4, supervisor adjudication of
+    the token-control programme): the fine subtoken is a PER-BAR encoding of bar t's own
+    features — the causal contextual encoder was measured to smear per-bar feature state
+    forward across later tokens' ids (per-bar id visibility ~= chance), so feature-space
+    conditionals arrived per-bar-illegible to the AR. Identical for both quantizers and all
+    arms; bpt parity and the cell design unchanged. ``fine_pointwise=False`` is a hard
+    error, never a silent override."""
     if tok_kwargs.get("encoder_causal") is False:
         raise ValueError(
             "M6 cells are causal-encoder ONLY (prereg §7 v1.3) — a bidirectional cell "
             "tokenizer is not constructible through build_cell_tokenizer"
         )
+    if tok_kwargs.get("fine_pointwise") is False:
+        raise ValueError(
+            "M6 cells are pointwise-fine ONLY (prereg §7 v1.4) — a contextual-fine cell "
+            "tokenizer is not constructible through build_cell_tokenizer"
+        )
     tok_kwargs["encoder_causal"] = True
+    tok_kwargs["fine_pointwise"] = True
     return TokenizerAE(quantizer=spec.quantizer, n_features=arm_n_features(spec.arm), **tok_kwargs)
 
 
@@ -101,10 +115,10 @@ def assert_cells_parity(**tok_kwargs) -> dict[str, float]:
 
     Constructs a canonical FSQ-vs-BSQ pair with the run's shell kwargs and asserts
     bpt + param parity. Call at orchestration start, before any cell trains. The pair is
-    built under the same forced ``encoder_causal=True`` as the cells themselves (§7 v1.3;
-    the flag changes no tensor, so parity numbers are unaffected — asserted here anyway
-    on the configuration the run actually uses)."""
-    tok_kwargs = {**tok_kwargs, "encoder_causal": True}
+    built under the same forced ``encoder_causal=True`` (§7 v1.3) and ``fine_pointwise=True``
+    (§7 v1.4) as the cells themselves — the pointwise branch adds identical parameters to
+    both quantizer arms, so parity is asserted on the configuration the run actually uses."""
+    tok_kwargs = {**tok_kwargs, "encoder_causal": True, "fine_pointwise": True}
     fsq = TokenizerAE(quantizer="fsq", **tok_kwargs)
     bsq = TokenizerAE(quantizer="bsq", **tok_kwargs)
     return check_arm_parity(fsq, bsq)

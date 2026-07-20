@@ -228,14 +228,24 @@ def test_cell_tokenizer_causal_pin_and_mutations():
     from trikaal.train.cells import CELLS, build_cell_tokenizer
 
     tiny = dict(d_model=32, n_layers=1, n_heads=2, d_ff=64, max_len=64)
-    # the real construction path passes
+    # the real construction path passes both pins
     tok = build_cell_tokenizer(CELLS[3], **tiny)
     assert cell_tokenizer_failures(tok.get_config(), run="cell4_seed0") == []
-    # a bidirectional checkpoint config is caught, by name
-    bidi = TokenizerAE(encoder_causal=False, **tiny)
+    # a bidirectional checkpoint config is caught, by name (fine kept conformant to isolate)
+    bidi = TokenizerAE(encoder_causal=False, fine_pointwise=True, **tiny)
     fails = cell_tokenizer_failures(bidi.get_config(), run="cell4_seed0")
     assert len(fails) == 1 and "encoder_causal=False" in fails[0] and "v1.3" in fails[0]
     # a doctored/absent flag is also caught (an old-schema checkpoint cannot slip through)
     cfg = dict(tok.get_config())
     del cfg["encoder_causal"]
     assert any("encoder_causal=None" in f for f in cell_tokenizer_failures(cfg, run="r"))
+    # §7 v1.4: a contextual-fine checkpoint config is caught, by name (causal kept conformant)
+    ctx_fine = TokenizerAE(encoder_causal=True, fine_pointwise=False, **tiny)
+    fails4 = cell_tokenizer_failures(ctx_fine.get_config(), run="cell4_seed0")
+    assert len(fails4) == 1 and "fine_pointwise=False" in fails4[0] and "v1.4" in fails4[0]
+    cfg4 = dict(tok.get_config())
+    del cfg4["fine_pointwise"]
+    assert any("fine_pointwise=None" in f for f in cell_tokenizer_failures(cfg4, run="r"))
+    # a config violating BOTH pins reports BOTH named failures
+    both = TokenizerAE(encoder_causal=False, fine_pointwise=False, **tiny)
+    assert len(cell_tokenizer_failures(both.get_config(), run="r")) == 2

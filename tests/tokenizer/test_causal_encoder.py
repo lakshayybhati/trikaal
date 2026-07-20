@@ -74,3 +74,55 @@ def test_bidirectional_cell_is_not_constructible():
     """A caller trying to sneak encoder_causal=False into a cell is a hard error (§7 v1.3)."""
     with pytest.raises(ValueError, match="causal-encoder ONLY"):
         build_cell_tokenizer(CELLS[3], encoder_causal=False, **TINY)
+
+
+# ---- §7 v1.4: the EXTENDED flip-KAT — fine digits invariant to EVERY other bar --------------
+def _fine_other_bar_flips(tok: TokenizerAE, n_features: int) -> tuple[int, int]:
+    """(coarse, fine) token flips AT bar t when every bar EXCEPT t is replaced."""
+    tok.eval()
+    rng = np.random.default_rng(1)
+    mut = np.random.default_rng(7)
+    t = WINDOW // 2
+    flips_c = flips_f = 0
+    for _ in range(N_CHUNKS):
+        x = torch.from_numpy(rng.standard_normal((1, WINDOW, n_features)).astype(np.float32))
+        m = torch.zeros(1, WINDOW, n_features)
+        if n_features == 16:
+            m[:, :, 13:16] = 1.0
+        x2 = torch.from_numpy(mut.standard_normal((1, WINDOW, n_features)).astype(np.float32))
+        x2[0, t, :] = x[0, t, :]  # bar t itself is untouched; ALL other bars replaced
+        with torch.no_grad():
+            c0, f0 = tok.encode_tokens(x, m)
+            c1, f1 = tok.encode_tokens(x2, m)
+        flips_c += int((c0[0, t] != c1[0, t]).sum())
+        flips_f += int((f0[0, t] != f1[0, t]).sum())
+    return flips_c, flips_f
+
+
+@pytest.mark.parametrize("spec", [CELLS[2], CELLS[3]], ids=["bsq_cell3", "fsq_cell4"])
+def test_cell_fine_tokens_are_per_bar(spec):
+    """§7 v1.4 structural guarantee, both quantizer arms through the cell constructor:
+    replacing every bar EXCEPT t leaves bar t's FINE token untouched (the fine subtoken is
+    a pure function of bar t's own features). Coarse remains contextual by design."""
+    tok = build_cell_tokenizer(spec, **TINY)
+    assert tok.get_config()["fine_pointwise"] is True  # the wiring itself
+    _flips_c, flips_f = _fine_other_bar_flips(tok, n_features=16)
+    assert flips_f == 0, (
+        f"PER-BAR LEAK: bar t's fine token changed when only OTHER bars mutated "
+        f"({flips_f} flips) — §7 v1.4 binds the fine subtoken to bar t alone"
+    )
+
+
+def test_contextual_fine_control_does_flip():
+    """Anti-vacuity: a contextual-fine (fine_pointwise=False) tokenizer MUST flip bar t's
+    fine token under other-bar mutation — proving the zero above is the pointwise branch
+    working, not a probe that cannot fail."""
+    tok = TokenizerAE(encoder_causal=True, fine_pointwise=False, **TINY).eval()
+    _flips_c, flips_f = _fine_other_bar_flips(tok, n_features=16)
+    assert flips_f > 0, "the contextual-fine control should flip — the probe lost its teeth"
+
+
+def test_contextual_fine_cell_is_not_constructible():
+    """A caller trying to sneak fine_pointwise=False into a cell is a hard error (§7 v1.4)."""
+    with pytest.raises(ValueError, match="pointwise-fine ONLY"):
+        build_cell_tokenizer(CELLS[3], fine_pointwise=False, **TINY)

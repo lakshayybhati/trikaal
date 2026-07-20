@@ -1,0 +1,16 @@
+{
+  "extra_remote": 0,
+  "manifest_ledger_files_in_repo": [
+    "universe_manifest/agg_index.json",
+    "universe_manifest/ingest_ledger_2021-01-01_2025-01-01.jsonl",
+    "universe_manifest/universe_manifest.json"
+  ],
+  "manifest_ledger_verdict": "100% match (agg_index.json, ingest_ledger jsonl, universe_manifest.json \u2014 git-blob sha1 verified)",
+  "missing_remote": 0,
+  "parquets_local": 7024,
+  "parquets_remote": 7024,
+  "repo": "lakshayybhati/trikaal-m6-snapshot (private dataset)",
+  "sha256_mismatches": 0,
+  "universe_bars_orig_deletion": "SAFE per this verification \u2014 deletion is the operators action, not performed here",
+  "verdict_parquets": "100% match"
+}

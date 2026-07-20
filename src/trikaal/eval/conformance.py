@@ -44,20 +44,35 @@ DECILES = Path("runs_manifest/m6_spread_deciles.json")
 # eval context (measured 41.8%/28.3% real-lake past-token flips) and invariant 2 binds inputs.
 PINNED_ENCODER_CAUSAL = True
 
+# §7 v1.4 (supervisor adjudication of the token-control programme): the fine subtoken must be
+# a PER-BAR pointwise encoding — the causal contextual encoder smears per-bar feature state
+# forward across later tokens' ids (measured per-bar id visibility ~= chance, logistic 0.5135),
+# so feature-space conditionals arrive per-bar-illegible to the AR.
+PINNED_FINE_POINTWISE = True
+
 
 def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:
-    """Divergences between one cell tokenizer's config and the §7-v1.3 pin (empty = OK).
+    """Divergences between one cell tokenizer's config and the §7 v1.3/v1.4 pins (empty = OK).
 
     ``tok_config`` is ``TokenizerAE.get_config()`` of the constructed (train) or
-    checkpoint-loaded (eval) cell tokenizer. A bidirectional cell config is a NAMED failure —
-    the eval driver hard-stops on it before scoring anything."""
+    checkpoint-loaded (eval) cell tokenizer. A bidirectional cell config — or a
+    contextual-fine one — is a NAMED failure; the eval driver hard-stops on it before
+    scoring anything."""
+    failures = []
     got = tok_config.get("encoder_causal")
     if got is not PINNED_ENCODER_CAUSAL:
-        return [
+        failures.append(
             f"{run}: tokenizer encoder_causal={got!r} != pinned {PINNED_ENCODER_CAUSAL} "
             "(prereg §7 v1.3 — bidirectional tokens carry future-bar content into eval inputs)"
-        ]
-    return []
+        )
+    got_fp = tok_config.get("fine_pointwise")
+    if got_fp is not PINNED_FINE_POINTWISE:
+        failures.append(
+            f"{run}: tokenizer fine_pointwise={got_fp!r} != pinned {PINNED_FINE_POINTWISE} "
+            "(prereg §7 v1.4 — a contextual fine subtoken smears per-bar feature state "
+            "across later tokens' ids, leaving it per-bar-illegible to the AR)"
+        )
+    return failures
 
 
 # ---- the §3-clause-5 DSR pins (the verdict path's recipe — an INDEPENDENT statement of the
@@ -308,6 +323,7 @@ __all__ = [
     "MDE_INPUTS",
     "PINNED_DSR",
     "PINNED_ENCODER_CAUSAL",
+    "PINNED_FINE_POINTWISE",
     "PINNED_HEADLINE_COST",
     "PINNED_KAPPAS",
     "PINNED_SEEDS",

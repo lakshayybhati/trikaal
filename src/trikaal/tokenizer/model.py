@@ -12,7 +12,7 @@ from torch import Tensor, nn
 from trikaal.constants import FSQ_LEVELS
 from trikaal.tokenizer.bsq import BSQQuantizer
 from trikaal.tokenizer.decoder import TokenizerDecoder
-from trikaal.tokenizer.encoder import TokenizerEncoder
+from trikaal.tokenizer.encoder import PointwiseEncoder, TokenizerEncoder
 from trikaal.tokenizer.hierarchy import FSQQuantizer
 from trikaal.tokenizer.losses import default_feature_weights, masked_mae, weighted_masked_huber
 
@@ -41,6 +41,7 @@ class TokenizerAE(nn.Module):
         dropout: float = 0.0,
         per_stage_scale: bool = True,
         encoder_causal: bool = False,
+        fine_pointwise: bool = False,
         huber_delta: float = 1.0,
         finance_weighted: bool = False,
         max_len: int = 512,
@@ -61,6 +62,7 @@ class TokenizerAE(nn.Module):
             "dropout": dropout,
             "per_stage_scale": per_stage_scale,
             "encoder_causal": encoder_causal,
+            "fine_pointwise": fine_pointwise,
             "huber_delta": huber_delta,
             "finance_weighted": finance_weighted,
             "max_len": max_len,
@@ -73,6 +75,27 @@ class TokenizerAE(nn.Module):
         else:
             self.quant = FSQQuantizer(levels, per_stage_scale)
         self.w_in = nn.Linear(d_model, self.quant.dim, bias=True)
+        self.fine_pointwise = fine_pointwise
+        if fine_pointwise:
+            # §7 v1.4: the fine subtoken is a PER-BAR encoding of bar t's own features —
+            # a pointwise branch feeds the fine latent dims; the contextual (causal) encoder
+            # keeps the coarse dims. Identical for both quantizers (bpt parity untouched).
+            self.point_encoder = PointwiseEncoder(n_features, d_model, d_ff, 2, dropout)
+            self.w_in_fine = nn.Linear(d_model, self.quant.dim, bias=True)
+            # The per-bar BOTTLENECK leg: bar t's fine code alone must reconstruct bar t's
+            # features (pointwise decode head — zero cross-bar). Without it the optimizer
+            # routes per-bar state through the contextual coarse smear and leaves the fine
+            # bits on other structure (measured: pointwise-encoder-only legibility 0.5202
+            # ~= chance while window recon of the state was strong). Train-time only; the
+            # AR interface and the main decode path are unchanged.
+            n_fine = len(self.quant.fine_idx)
+            self.point_decoder = nn.Sequential(
+                nn.Linear(n_fine, d_model),
+                nn.GELU(),
+                nn.Linear(d_model, d_model),
+                nn.GELU(),
+                nn.Linear(d_model, n_features),
+            )
         self.w_out = nn.Linear(self.quant.dim, d_model, bias=True)
         self.decoder = TokenizerDecoder(
             n_features, d_model, n_layers, n_heads, d_ff, dropout, False, max_len
@@ -88,7 +111,13 @@ class TokenizerAE(nn.Module):
         return dict(self._config)
 
     def latent(self, x: Tensor, mask: Tensor) -> Tensor:
-        return self.w_in(self.encoder(x, mask))
+        z = self.w_in(self.encoder(x, mask))
+        if self.fine_pointwise:
+            z_f = self.w_in_fine(self.point_encoder(x, mask))
+            fine = list(self.quant.fine_idx)
+            z = z.clone()
+            z[..., fine] = z_f[..., fine]
+        return z
 
     def encode_tokens(self, x: Tensor, mask: Tensor) -> tuple[Tensor, Tensor]:
         """``encode(x:[B,L,16], mask) -> (b_c:[B,L], b_f:[B,L])`` — the AR-backbone interface."""
@@ -140,6 +169,11 @@ class TokenizerAE(nn.Module):
         # arm-specific extra: FSQ → gamma_reg ONLY (NO commitment term — the headline
         # simplification); BSQ → λ·L_quant (spec §1190)
         loss = loss_coarse + loss_fine + self.quant.aux_loss(z)
+        if self.fine_pointwise:
+            # §7 v1.4 per-bar bottleneck: reconstruct bar t from its OWN fine code alone.
+            x_hat_point = self.point_decoder(z_hat[..., list(self.quant.fine_idx)])
+            loss_point = weighted_masked_huber(x_hat_point, x, keep, self.w_feat, self.huber_delta)
+            loss = loss + loss_point
 
         with torch.no_grad():
             recon_mae = masked_mae(x_hat, x, keep)
