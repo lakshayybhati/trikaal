@@ -1,0 +1,649 @@
+{
+  "artifact": "m6_lambda_search_receipt",
+  "canonical_trials": [
+    {
+      "beta": 1.0,
+      "file": "fix_lam2_s0.json",
+      "lambda": 2.0,
+      "legibility": 0.8974,
+      "point_decoder_per_dim_corrs": [
+        0.9716,
+        0.7609,
+        0.8457,
+        0.8669,
+        0.8455,
+        0.8289,
+        0.8437,
+        0.8981,
+        0.897,
+        0.7799,
+        0.8928,
+        0.9113,
+        0.8753
+      ],
+      "seed": 0,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam2_s1.json",
+      "lambda": 2.0,
+      "legibility": 0.9152,
+      "point_decoder_per_dim_corrs": [
+        0.9716,
+        0.7601,
+        0.8488,
+        0.8677,
+        0.8411,
+        0.8288,
+        0.8463,
+        0.9006,
+        0.895,
+        0.7734,
+        0.8936,
+        0.9137,
+        0.8739
+      ],
+      "seed": 1,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam2_s2.json",
+      "lambda": 2.0,
+      "legibility": 0.9076,
+      "point_decoder_per_dim_corrs": [
+        0.9754,
+        0.763,
+        0.8466,
+        0.866,
+        0.842,
+        0.8296,
+        0.8449,
+        0.8975,
+        0.8959,
+        0.8018,
+        0.8932,
+        0.9113,
+        0.868
+      ],
+      "seed": 2,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam3_s0.json",
+      "lambda": 3.0,
+      "legibility": 0.8852,
+      "point_decoder_per_dim_corrs": [
+        0.9643,
+        0.6847,
+        0.7673,
+        0.8012,
+        0.7873,
+        0.7922,
+        0.8217,
+        0.9032,
+        0.909,
+        0.9044,
+        0.896,
+        0.9159,
+        0.8823
+      ],
+      "seed": 0,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam3_s1.json",
+      "lambda": 3.0,
+      "legibility": 0.9036,
+      "point_decoder_per_dim_corrs": [
+        0.9691,
+        0.7206,
+        0.8067,
+        0.8481,
+        0.8293,
+        0.8183,
+        0.8369,
+        0.9095,
+        0.9101,
+        0.7947,
+        0.8995,
+        0.9233,
+        0.8904
+      ],
+      "seed": 1,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam3_s2.json",
+      "lambda": 3.0,
+      "legibility": 0.918,
+      "point_decoder_per_dim_corrs": [
+        0.9704,
+        0.7099,
+        0.803,
+        0.8405,
+        0.8286,
+        0.8214,
+        0.839,
+        0.9084,
+        0.9086,
+        0.7983,
+        0.8988,
+        0.9235,
+        0.8944
+      ],
+      "seed": 2,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam4_s0.json",
+      "lambda": 4.0,
+      "legibility": 0.8644,
+      "point_decoder_per_dim_corrs": [
+        0.9645,
+        0.6109,
+        0.6958,
+        0.736,
+        0.7389,
+        0.754,
+        0.7962,
+        0.8927,
+        0.916,
+        0.9558,
+        0.9025,
+        0.9111,
+        0.8762
+      ],
+      "seed": 0,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam4_s1.json",
+      "lambda": 4.0,
+      "legibility": 0.8595,
+      "point_decoder_per_dim_corrs": [
+        0.963,
+        0.6284,
+        0.7055,
+        0.7469,
+        0.7463,
+        0.7554,
+        0.7939,
+        0.8956,
+        0.9115,
+        0.9573,
+        0.8987,
+        0.9082,
+        0.8736
+      ],
+      "seed": 1,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "fix_lam4_s2.json",
+      "lambda": 4.0,
+      "legibility": 0.9096,
+      "point_decoder_per_dim_corrs": [
+        0.9647,
+        0.626,
+        0.7057,
+        0.7512,
+        0.7511,
+        0.7602,
+        0.798,
+        0.8937,
+        0.9151,
+        0.9534,
+        0.9011,
+        0.908,
+        0.8696
+      ],
+      "seed": 2,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 2.0,
+      "file": "b2_s0.json",
+      "lambda": 3.0,
+      "legibility": 0.8846,
+      "point_decoder_per_dim_corrs": [
+        0.9632,
+        0.7114,
+        0.8028,
+        0.8376,
+        0.8258,
+        0.8186,
+        0.8379,
+        0.9076,
+        0.9063,
+        0.8053,
+        0.8975,
+        0.9224,
+        0.8867
+      ],
+      "seed": 0,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 2.0,
+      "file": "b2_s1.json",
+      "lambda": 3.0,
+      "legibility": 0.8939,
+      "point_decoder_per_dim_corrs": [
+        0.9739,
+        0.6661,
+        0.7405,
+        0.7742,
+        0.7684,
+        0.7791,
+        0.8174,
+        0.8992,
+        0.9041,
+        0.9328,
+        0.8928,
+        0.9035,
+        0.8615
+      ],
+      "seed": 1,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 2.0,
+      "file": "b2_s2.json",
+      "lambda": 3.0,
+      "legibility": 0.9057,
+      "point_decoder_per_dim_corrs": [
+        0.9753,
+        0.7121,
+        0.801,
+        0.8355,
+        0.8238,
+        0.8131,
+        0.8332,
+        0.9064,
+        0.9076,
+        0.7983,
+        0.8975,
+        0.9201,
+        0.8938
+      ],
+      "seed": 2,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 4.0,
+      "file": "b4_s0.json",
+      "lambda": 3.0,
+      "legibility": 0.8418,
+      "point_decoder_per_dim_corrs": [
+        0.969,
+        0.7046,
+        0.7947,
+        0.8286,
+        0.816,
+        0.808,
+        0.8295,
+        0.9017,
+        0.9079,
+        0.8338,
+        0.9019,
+        0.9181,
+        0.8829
+      ],
+      "seed": 0,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 4.0,
+      "file": "b4_s1.json",
+      "lambda": 3.0,
+      "legibility": 0.9307,
+      "point_decoder_per_dim_corrs": [
+        0.9673,
+        0.7121,
+        0.8028,
+        0.8416,
+        0.8279,
+        0.8186,
+        0.836,
+        0.907,
+        0.9097,
+        0.8081,
+        0.9011,
+        0.9226,
+        0.8935
+      ],
+      "seed": 1,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 4.0,
+      "file": "b4_s2.json",
+      "lambda": 3.0,
+      "legibility": 0.8754,
+      "point_decoder_per_dim_corrs": [
+        0.966,
+        0.7047,
+        0.7985,
+        0.838,
+        0.8229,
+        0.8162,
+        0.8361,
+        0.9047,
+        0.9064,
+        0.8117,
+        0.8989,
+        0.9208,
+        0.8896
+      ],
+      "seed": 2,
+      "wiring": "FIXED (w_feat_point + beta live)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam2_s0.json",
+      "lambda": 2.0,
+      "legibility": 0.5109,
+      "point_decoder_per_dim_corrs": [
+        0.9823,
+        0.8898,
+        0.9137,
+        0.854,
+        0.8317,
+        0.881,
+        0.9103,
+        0.8792,
+        0.833,
+        0.0204,
+        0.8539,
+        0.9139,
+        0.8876
+      ],
+      "seed": 0,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam2_s1.json",
+      "lambda": 2.0,
+      "legibility": 0.5068,
+      "point_decoder_per_dim_corrs": [
+        0.9827,
+        0.8855,
+        0.9123,
+        0.8565,
+        0.8339,
+        0.8848,
+        0.9102,
+        0.8755,
+        0.8252,
+        0.0035,
+        0.853,
+        0.9177,
+        0.8959
+      ],
+      "seed": 1,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam2_s2.json",
+      "lambda": 2.0,
+      "legibility": 0.5039,
+      "point_decoder_per_dim_corrs": [
+        0.9817,
+        0.8884,
+        0.9122,
+        0.8539,
+        0.8302,
+        0.8846,
+        0.9137,
+        0.8745,
+        0.8215,
+        0.013,
+        0.8509,
+        0.9159,
+        0.8917
+      ],
+      "seed": 2,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam4_s0.json",
+      "lambda": 4.0,
+      "legibility": 0.5055,
+      "point_decoder_per_dim_corrs": [
+        0.9827,
+        0.8798,
+        0.9097,
+        0.8544,
+        0.8251,
+        0.8733,
+        0.9129,
+        0.8855,
+        0.8349,
+        0.0249,
+        0.8517,
+        0.9158,
+        0.8946
+      ],
+      "seed": 0,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam4_s1.json",
+      "lambda": 4.0,
+      "legibility": 0.5083,
+      "point_decoder_per_dim_corrs": [
+        0.9819,
+        0.8215,
+        0.902,
+        0.9045,
+        0.8751,
+        0.8687,
+        0.8739,
+        0.8694,
+        0.8575,
+        0.006,
+        0.8766,
+        0.9161,
+        0.8826
+      ],
+      "seed": 1,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam4_s2.json",
+      "lambda": 4.0,
+      "legibility": 0.5017,
+      "point_decoder_per_dim_corrs": [
+        0.9827,
+        0.834,
+        0.8889,
+        0.873,
+        0.8597,
+        0.8873,
+        0.9123,
+        0.9053,
+        0.8883,
+        0.0052,
+        0.8911,
+        0.8851,
+        0.8157
+      ],
+      "seed": 2,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam8_s0.json",
+      "lambda": 8.0,
+      "legibility": 0.5071,
+      "point_decoder_per_dim_corrs": [
+        0.981,
+        0.8884,
+        0.9125,
+        0.8538,
+        0.8274,
+        0.8817,
+        0.917,
+        0.8813,
+        0.8269,
+        0.0117,
+        0.8519,
+        0.9177,
+        0.8932
+      ],
+      "seed": 0,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam8_s1.json",
+      "lambda": 8.0,
+      "legibility": 0.5181,
+      "point_decoder_per_dim_corrs": [
+        0.9782,
+        0.8918,
+        0.9157,
+        0.8517,
+        0.8207,
+        0.8772,
+        0.918,
+        0.8844,
+        0.8306,
+        0.0037,
+        0.8543,
+        0.9158,
+        0.8912
+      ],
+      "seed": 1,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "lam8_s2.json",
+      "lambda": 8.0,
+      "legibility": 0.5017,
+      "point_decoder_per_dim_corrs": [
+        0.9788,
+        0.8906,
+        0.9163,
+        0.8577,
+        0.8311,
+        0.8801,
+        0.9108,
+        0.883,
+        0.8338,
+        0.0136,
+        0.852,
+        0.9125,
+        0.8888
+      ],
+      "seed": 2,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 4.0,
+      "file": "diag_beta4_s0.json",
+      "lambda": 8.0,
+      "legibility": 0.5206,
+      "point_decoder_per_dim_corrs": [
+        0.9834,
+        0.8996,
+        0.92,
+        0.8693,
+        0.8433,
+        0.867,
+        0.8762,
+        0.876,
+        0.8863,
+        0.0155,
+        0.9072,
+        0.8958,
+        0.8101
+      ],
+      "seed": 0,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    },
+    {
+      "beta": 1.0,
+      "file": "diag_laminf_s0.json",
+      "lambda": 1000000.0,
+      "legibility": 0.5055,
+      "point_decoder_per_dim_corrs": [
+        0.9822,
+        0.8147,
+        0.8872,
+        0.9052,
+        0.9053,
+        0.8948,
+        0.8721,
+        0.8689,
+        0.8917,
+        0.0154,
+        0.912,
+        0.8903,
+        0.802
+      ],
+      "seed": 0,
+      "wiring": "BROKEN (silent patch failure: leg ran at lambda=1, beta=1 regardless of args)"
+    }
+  ],
+  "detach_amendment": "objective separation measured as load-bearing-for-stability: the window losses now see the fine channels DETACHED (decoder still trains on them; the fine encoder is shaped only by the per-bar bottleneck). Without it, tiny-scale no-detach control at lambda=4 reached dim9 0.96 but collapsed the return dim on 1/3 seeds (0.08); with it, collateral is stable across seeds.",
+  "prereg": "gate-2 final ruling calibration campaign (2026-07-20/21)",
+  "summary": {
+    "finding": "no searched (lambda, beta) clears 0.9 on all 3 seeds; the gate constant sits inside the instrument's seed-noise band (~\u00b10.03) at the achievable ceiling; the state IS carried (dim9 point-decoder corr 0.77-0.96; micro class 0.86-0.92; return preserved 0.96+)",
+    "lam2": {
+      "legibility": [
+        0.8974,
+        0.9152,
+        0.9076
+      ],
+      "three_of_three": false
+    },
+    "lam3": {
+      "legibility": [
+        0.8852,
+        0.9036,
+        0.918
+      ],
+      "three_of_three": false
+    },
+    "lam3_beta2": {
+      "legibility": [
+        0.8846,
+        0.8939,
+        0.9057
+      ],
+      "three_of_three": false
+    },
+    "lam3_beta4": {
+      "legibility": [
+        0.8418,
+        0.9307,
+        0.8754
+      ],
+      "three_of_three": false
+    },
+    "lam4": {
+      "legibility": [
+        0.8644,
+        0.8595,
+        0.9096
+      ],
+      "three_of_three": false
+    }
+  },
+  "wiring_bug_disclosure": "the first canonical lambda-search (lam 2/4/8, D1 lam=1e6, D2 beta=4) ran with loss_point reading self.w_feat instead of self.w_feat_point and no point_loss_coef \u2014 a formatter re-wrap made two string patches fail SILENTLY, so every 'lambda' run was effectively lambda=1. Detected via the total invariance of per-dim receipts; fixed at model.py (w_feat_point + point_loss_coef now live, verified by monotone lambda response afterward). Those runs are retained below as lambda=1 replicates; the within-class/asymptote analysis previously reported was based on them and is WITHDRAWN."
+}

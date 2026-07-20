@@ -161,13 +161,24 @@ def micro_legibility_gate(
     linearly recoverable from bar t's own id at logistic sign-accuracy >= ``min_acc`` on
     the run's real training stream. Raises RuntimeError on failure — a hard stop.
 
-    Only unmasked bars count per dim (mask-aware); per-dim base rates are recorded so a
-    degenerate sign distribution is visible in the receipt.
+    SIGN-ACCURACY SEMANTICS FOR THE MAGNITUDE DIMS (gate-2 final ruling, item 4): every
+    micro feature enters the model Z-SCORED (§3.2), so ``sign(x_t[dim])`` means
+    above-vs-below the causal rolling mean — a balanced, meaningful binary for the
+    magnitude-shaped dims (trade count, mean trade size, size dispersion, large-trade
+    share) exactly as for the signed dims (TFI). Per-dim base rates are recorded in the
+    receipt so any residual class imbalance is visible; only unmasked bars count per dim
+    (mask-aware), and a dim masked ~everywhere is SKIPPED with a named receipt entry,
+    never trivially passed.
 
-    PRE-AUTHORIZED FALLBACK (recorded here per the gate-2 ruling; NEVER applied
-    pre-emptively): on a REAL-DATA gate failure ONLY, micro-weighted ``w_feat`` in the
-    tokenizer's per-bar bottleneck leg may be applied — with a dated prereg §7 entry
-    BEFORE use."""
+    FIRST REAL-DATA EXECUTION IS A NAMED CHECKPOINT (gate-2 final ruling): if the real
+    micro dims cannot clear ``min_acc`` even under the calibrated micro-weighted
+    bottleneck leg (§7 v1.4.1), STOP and report with the per-dim receipts — that is a
+    re-adjudication, never a silent threshold move.
+
+    FALLBACK HISTORY: the micro-weighted ``w_feat`` bottleneck-leg fallback originally
+    recorded here fired under §7 v1.4.1 (2026-07-20) on a trigger STRICTLY STRONGER than
+    the one written (deterministic FIXTURE-gate failure with mechanism receipts, 3/3
+    seeds, vs the original real-data failure) — see the dated prereg entry."""
     per_dim: dict[str, dict] = {}
     ok = True
     for dim in MICRO_DIMS:

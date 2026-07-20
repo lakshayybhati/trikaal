@@ -69,6 +69,11 @@ FINANCE_WEIGHTED_IDX: tuple[int, ...] = (
     FEATURE_INDEX["d_oi"],
 )
 
+# §7 v1.4.1 — THE SIX MICRO DIMS (the aggTrades-derived microstructure block: TFI + trade-flow
+# shape). The micro-weighted per-bar bottleneck leg and the standing M6-time legibility gate
+# both target exactly this class.
+MICRO_DIMS_IDX: tuple[int, ...] = (7, 8, 9, 10, 11, 12)
+
 # §4.5 — mask-bit groups (0-indexed) referenced by the missing-data rules
 MASK_BITS_LIQUIDITY: tuple[int, ...] = (5, 6, 7, 8, 9, 10, 11, 12)  # spec "bits 6-13"
 MASK_BITS_AGGTRADES: tuple[int, ...] = (7, 8, 9, 10, 11, 12)  # spec "bits 8-13"

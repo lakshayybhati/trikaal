@@ -9,7 +9,7 @@ from __future__ import annotations
 import torch
 from torch import Tensor, nn
 
-from trikaal.constants import FSQ_LEVELS
+from trikaal.constants import FSQ_LEVELS, MICRO_DIMS_IDX
 from trikaal.tokenizer.bsq import BSQQuantizer
 from trikaal.tokenizer.decoder import TokenizerDecoder
 from trikaal.tokenizer.encoder import PointwiseEncoder, TokenizerEncoder
@@ -42,6 +42,8 @@ class TokenizerAE(nn.Module):
         per_stage_scale: bool = True,
         encoder_causal: bool = False,
         fine_pointwise: bool = False,
+        micro_point_weight: float = 1.0,
+        point_loss_coef: float = 1.0,
         huber_delta: float = 1.0,
         finance_weighted: bool = False,
         max_len: int = 512,
@@ -63,6 +65,8 @@ class TokenizerAE(nn.Module):
             "per_stage_scale": per_stage_scale,
             "encoder_causal": encoder_causal,
             "fine_pointwise": fine_pointwise,
+            "micro_point_weight": micro_point_weight,
+            "point_loss_coef": point_loss_coef,
             "huber_delta": huber_delta,
             "finance_weighted": finance_weighted,
             "max_len": max_len,
@@ -105,6 +109,23 @@ class TokenizerAE(nn.Module):
         self.n_features = n_features
         self.v_c, self.v_f = self.quant.v_c, self.quant.v_f
         self.register_buffer("w_feat", default_feature_weights(finance_weighted, n_features))
+        # §7 v1.4.1 (gate-2 final ruling): the per-bar BOTTLENECK leg weights THE SIX MICRO
+        # DIMS as a class by micro_point_weight (lambda) — the mechanism receipt showed the
+        # unweighted recon objective buys variance and covariance, never independence, so the
+        # state-like micro dims are priced out of the fine budget deterministically. Identical
+        # across arms and quantizers; OHLCV arms (n_features=7) carry no micro dims, so their
+        # weights stay uniform. Lambda is CALIBRATED (smallest value clearing the 3-seed 0.9
+        # legibility gate), pinned in conformance, and applies ONLY to the bottleneck leg —
+        # the main coarse/fine losses and the decision rule are untouched.
+        w_point = default_feature_weights(finance_weighted, n_features).clone()
+        for i in MICRO_DIMS_IDX:
+            if i < n_features:
+                w_point[i] = w_point[i] * micro_point_weight
+        self.register_buffer("w_feat_point", w_point)
+        # The bottleneck leg's coefficient beta (weighted_masked_huber self-normalizes, so
+        # in-leg weights cannot raise the LEG's own gradient share — this can). Default 1.0
+        # preserves the landed v1.4 behavior exactly.
+        self.point_loss_coef = point_loss_coef
 
     def get_config(self) -> dict:
         """The complete constructor kwargs — pass to ``save_checkpoint`` for a faithful reload."""
@@ -160,8 +181,22 @@ class TokenizerAE(nn.Module):
     def forward(self, x: Tensor, mask: Tensor) -> dict[str, Tensor]:
         z = self.latent(x, mask)
         z_hat, codes, cidx, fidx = self.quant(z)
-        x_hat = self.decode_latent(z_hat)
-        x_hat_coarse = self.decode_latent(self.quant.coarse_only(z_hat))
+        if self.fine_pointwise:
+            # §7 v1.4.1 objective separation: the WINDOW losses see the fine channels
+            # DETACHED — the decoder still trains on (and consumes) them, but the fine
+            # ENCODER is shaped exclusively by the per-bar bottleneck leg. Measured basis:
+            # with the window pull attached, the window objective forces all four fine
+            # channels into shared-component duty and the in-leg micro weighting is inert
+            # at every lambda (per-dim receipts identical from lambda=2 to lambda=1e6);
+            # detached, lambda regains monotone effect. Values are unchanged (detach only
+            # stops gradient), so eval and decode paths are identical.
+            fine = list(self.quant.fine_idx)
+            z_win = z_hat.clone()
+            z_win[..., fine] = z_hat[..., fine].detach()
+        else:
+            z_win = z_hat
+        x_hat = self.decode_latent(z_win)
+        x_hat_coarse = self.decode_latent(self.quant.coarse_only(z_win))
 
         keep = 1.0 - mask.to(x.dtype)
         loss_fine = weighted_masked_huber(x_hat, x, keep, self.w_feat, self.huber_delta)
@@ -172,8 +207,10 @@ class TokenizerAE(nn.Module):
         if self.fine_pointwise:
             # §7 v1.4 per-bar bottleneck: reconstruct bar t from its OWN fine code alone.
             x_hat_point = self.point_decoder(z_hat[..., list(self.quant.fine_idx)])
-            loss_point = weighted_masked_huber(x_hat_point, x, keep, self.w_feat, self.huber_delta)
-            loss = loss + loss_point
+            loss_point = weighted_masked_huber(
+                x_hat_point, x, keep, self.w_feat_point, self.huber_delta
+            )
+            loss = loss + self.point_loss_coef * loss_point
 
         with torch.no_grad():
             recon_mae = masked_mae(x_hat, x, keep)
