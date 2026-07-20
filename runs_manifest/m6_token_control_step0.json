@@ -1,0 +1,123 @@
+{
+  "artifact": "m6_token_control_step0",
+  "carrier": {
+    "coarse_digit_entropies_nats": [
+      2.3937514530202653,
+      2.179557873990503,
+      2.1872653383775362
+    ],
+    "coarse_digit_marginals": [
+      [
+        0.085164,
+        0.094025,
+        0.101943,
+        0.090129,
+        0.095569,
+        0.096592,
+        0.090321,
+        0.074375,
+        0.087401,
+        0.103063,
+        0.081418
+      ],
+      [
+        0.120138,
+        0.133799,
+        0.126022,
+        0.119189,
+        0.138232,
+        0.110229,
+        0.082148,
+        0.087118,
+        0.083125
+      ],
+      [
+        0.113111,
+        0.121074,
+        0.124144,
+        0.111123,
+        0.122215,
+        0.125281,
+        0.114377,
+        0.089164,
+        0.079511
+      ]
+    ],
+    "generator": "np.random.default_rng((zlib.crc32(b'noise'), 0)) \u2014 v6 verbatim",
+    "sample_bars": 1000000,
+    "tokenizer": "runs_cloud/canary_v6/m6_canary_v6/noise/cell4_fsq_micro_seed0/tokenizer.pt"
+  },
+  "gates": {
+    "PROCEED": false,
+    "info_band": [
+      0.7,
+      1.1
+    ],
+    "info_in_band": false,
+    "oracle_ceiling_clears_detect_threshold": true
+  },
+  "id_visibility_probe": {
+    "logistic_chance": 0.5,
+    "logistic_sign_accuracy": 0.5135166645050049,
+    "mlp_state_pearson_corr": 0.014173370141830274,
+    "note": "how visible the v6 feature-space state s_t is in (c_id, f_id) at bar t",
+    "sample_bars": 300000,
+    "stream": "regenerated v6 PLANTED, symbol 0",
+    "tokenizer": "runs_cloud/canary_v6/m6_canary_v6/planted/cell4_fsq_micro_seed0/tokenizer.pt",
+    "train_test_split": [
+      240000,
+      60000
+    ]
+  },
+  "plant": {
+    "amplitude": 8.5,
+    "g_float": [
+      -3.739413,
+      -2.660181,
+      -1.555942,
+      -0.513795,
+      0.580244,
+      1.636203,
+      2.453806,
+      3.173186,
+      3.896719
+    ],
+    "g_table": [
+      -2,
+      -2,
+      -2,
+      -1,
+      1,
+      2,
+      2,
+      2,
+      2
+    ],
+    "info_nats": 0.27685080868329665,
+    "mean_shift_after_round": -0.015634999999999982,
+    "planted_target_marginal": [
+      0.16406260447600002,
+      0.072654342925,
+      0.11743394042000001,
+      0.12323285440199999,
+      0.118768539468,
+      0.10470059066900002,
+      0.10247373453699998,
+      0.070716794263,
+      0.12595659884
+    ],
+    "source_digit": 1,
+    "source_levels": 9,
+    "target_digit": 2,
+    "target_levels": 9,
+    "target_marginal_kl_planted_vs_carrier": 0.03823518367532503
+  },
+  "plant_checks": {
+    "mc_plugin_info_nats": 0.2768976792294615,
+    "oracle_spearman_argmax_predictor": 0.5605250551016896,
+    "oracle_spearman_raw_src_vs_planted_tgt": 0.5390739175458641,
+    "unplanted_control_spearman": -8.759227241258484e-05
+  },
+  "rationale_verbatim": "rules at matched mutual information differ in SGD findability; rung (i) matches the real signal's dense/graded shape; rung (ii) (categorical needle) is reserved for the findability-cliff map and can never ground an H-A claim",
+  "wall_s": 33.5
+}
