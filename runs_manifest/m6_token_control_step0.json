@@ -48,19 +48,24 @@
     "tokenizer": "runs_cloud/canary_v6/m6_canary_v6/noise/cell4_fsq_micro_seed0/tokenizer.pt"
   },
   "gates": {
-    "PROCEED": false,
+    "PROCEED": true,
+    "closed_form_mc_agree": true,
+    "dh_max": 0.05,
     "info_band": [
       0.7,
       1.1
     ],
-    "info_in_band": false,
-    "oracle_ceiling_clears_detect_threshold": true
+    "info_in_band": true,
+    "kl_acceptable": true,
+    "kl_max": 0.05,
+    "oracle_ceiling_clears_detect_threshold": true,
+    "stacking_fallback_needed": false
   },
   "id_visibility_probe": {
     "logistic_chance": 0.5,
     "logistic_sign_accuracy": 0.5135166645050049,
     "mlp_state_pearson_corr": 0.014173370141830274,
-    "note": "how visible the v6 feature-space state s_t is in (c_id, f_id) at bar t",
+    "note": "how visible the v6 feature-space state s_t is in (c_id, f_id) at bar t; supervisor-accepted STANDING mechanistic H-T evidence",
     "sample_bars": 300000,
     "stream": "regenerated v6 PLANTED, symbol 0",
     "tokenizer": "runs_cloud/canary_v6/m6_canary_v6/planted/cell4_fsq_micro_seed0/tokenizer.pt",
@@ -70,54 +75,139 @@
     ]
   },
   "plant": {
-    "amplitude": 8.5,
-    "g_float": [
-      -3.739413,
-      -2.660181,
-      -1.555942,
-      -0.513795,
-      0.580244,
-      1.636203,
-      2.453806,
-      3.173186,
-      3.896719
+    "channel_matrix": [
+      [
+        0.56723567,
+        0.34666685,
+        0.07913318,
+        0.00674687,
+        0.00021485,
+        2.56e-06,
+        1e-08,
+        0.0,
+        0.0
+      ],
+      [
+        0.25742584,
+        0.42121455,
+        0.25742584,
+        0.05876226,
+        0.00501005,
+        0.00015955,
+        1.9e-06,
+        1e-08,
+        0.0
+      ],
+      [
+        0.0555009,
+        0.24313848,
+        0.39783676,
+        0.24313848,
+        0.0555009,
+        0.00473199,
+        0.00015069,
+        1.79e-06,
+        1e-08
+      ],
+      [
+        0.0047097,
+        0.05523951,
+        0.24199337,
+        0.39596307,
+        0.24199337,
+        0.05523951,
+        0.0047097,
+        0.00014998,
+        1.78e-06
+      ],
+      [
+        0.00014996,
+        0.00470901,
+        0.05523132,
+        0.24195751,
+        0.3959044,
+        0.24195751,
+        0.05523132,
+        0.00470901,
+        0.00014996
+      ],
+      [
+        1.78e-06,
+        0.00014998,
+        0.0047097,
+        0.05523951,
+        0.24199337,
+        0.39596307,
+        0.24199337,
+        0.05523951,
+        0.0047097
+      ],
+      [
+        1e-08,
+        1.79e-06,
+        0.00015069,
+        0.00473199,
+        0.0555009,
+        0.24313848,
+        0.39783676,
+        0.24313848,
+        0.0555009
+      ],
+      [
+        0.0,
+        1e-08,
+        1.9e-06,
+        0.00015955,
+        0.00501005,
+        0.05876226,
+        0.25742584,
+        0.42121455,
+        0.25742584
+      ],
+      [
+        0.0,
+        0.0,
+        1e-08,
+        2.56e-06,
+        0.00021485,
+        0.00674687,
+        0.07913318,
+        0.34666685,
+        0.56723567
+      ]
     ],
-    "g_table": [
-      -2,
-      -2,
-      -2,
-      -1,
-      1,
-      2,
-      2,
-      2,
-      2
-    ],
-    "info_nats": 0.27685080868329665,
-    "mean_shift_after_round": -0.015634999999999982,
+    "entropy_carrier_target_marginal": 2.1872653383775362,
+    "entropy_planted_target_marginal": 2.1818579705336547,
+    "entropy_shift": -0.0054073678438815165,
+    "form": "noisy monotone map: target digit REDRAWN ~ discretized Gaussian on the level grid, center mu(s) = (L_t-1)*s/(L_s-1) (monotone sweep), width sigma_plant",
+    "info_nats": 0.9000000000000004,
     "planted_target_marginal": [
-      0.16406260447600002,
-      0.072654342925,
-      0.11743394042000001,
-      0.12323285440199999,
-      0.118768539468,
-      0.10470059066900002,
-      0.10247373453699998,
-      0.070716794263,
-      0.12595659884
+      0.11016648531267517,
+      0.1358983020391125,
+      0.1310957826386536,
+      0.12644622881046758,
+      0.12294839219144693,
+      0.10994823883072968,
+      0.09657587884692179,
+      0.09224342483356104,
+      0.07467726649643175
     ],
+    "sigma_plant": 1.007677,
     "source_digit": 1,
     "source_levels": 9,
     "target_digit": 2,
     "target_levels": 9,
-    "target_marginal_kl_planted_vs_carrier": 0.03823518367532503
+    "target_marginal_kl_planted_vs_carrier": 0.004760539830577332
   },
   "plant_checks": {
-    "mc_plugin_info_nats": 0.2768976792294615,
-    "oracle_spearman_argmax_predictor": 0.5605250551016896,
-    "oracle_spearman_raw_src_vs_planted_tgt": 0.5390739175458641,
+    "closed_form_vs_mc_abs_diff": 0.0009085392898111611,
+    "mc_plugin_info_nats": 0.9009085392898115,
+    "oracle_spearman_argmax_predictor": 0.9257794670204093,
+    "oracle_spearman_raw_src_vs_planted_tgt": 0.9257794670204093,
+    "plant_rng": "np.random.default_rng((0x9A47, seed, symbol_index))",
     "unplanted_control_spearman": -8.759227241258484e-05
   },
+  "plant_family": "noisy monotone map (amended; translation RETIRED, parity SHELVED as rung (ii))",
   "rationale_verbatim": "rules at matched mutual information differ in SGD findability; rung (i) matches the real signal's dense/graded shape; rung (ii) (categorical needle) is reserved for the findability-cliff map and can never ground an H-A claim",
-  "wall_s": 33.5
+  "wall_s": 36.0
 }
