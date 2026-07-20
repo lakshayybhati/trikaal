@@ -114,14 +114,15 @@ class TokenizerAE(nn.Module):
         # unweighted recon objective buys variance and covariance, never independence, so the
         # state-like micro dims are priced out of the fine budget deterministically. Identical
         # across arms and quantizers; OHLCV arms (n_features=7) carry no micro dims, so their
-        # weights stay uniform. Lambda is CALIBRATED (smallest value clearing the 3-seed 0.9
-        # legibility gate), pinned in conformance, and applies ONLY to the bottleneck leg —
-        # the main coarse/fine losses and the decision rule are untouched.
-        w_point = default_feature_weights(finance_weighted, n_features).clone()
-        for i in MICRO_DIMS_IDX:
-            if i < n_features:
-                w_point[i] = w_point[i] * micro_point_weight
-        self.register_buffer("w_feat_point", w_point)
+        # weights stay uniform. Lambda is CALIBRATED, pinned in conformance, and applies ONLY
+        # to the bottleneck leg. The buffer is registered ONLY under fine_pointwise so
+        # old-schema checkpoints (the anchored M3/M5 instrument chain) reload bit-faithfully.
+        if fine_pointwise:
+            w_point = default_feature_weights(finance_weighted, n_features).clone()
+            for i in MICRO_DIMS_IDX:
+                if i < n_features:
+                    w_point[i] = w_point[i] * micro_point_weight
+            self.register_buffer("w_feat_point", w_point)
         # The bottleneck leg's coefficient beta (weighted_masked_huber self-normalizes, so
         # in-leg weights cannot raise the LEG's own gradient share — this can). Default 1.0
         # preserves the landed v1.4 behavior exactly.
