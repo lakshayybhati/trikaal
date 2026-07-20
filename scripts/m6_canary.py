@@ -75,7 +75,7 @@ from trikaal.train.cells import (
     build_cell_tokenizer,
 )
 from trikaal.train.checkpoint import load_checkpoint, save_checkpoint
-from trikaal.train.gates import cosine_warmup_lr
+from trikaal.train.gates import cosine_warmup_lr, digit_onehots, id_legibility_sign_acc
 from trikaal.train.token_stream import tokenize_features
 from trikaal.utils.seeding import set_determinism
 
@@ -97,6 +97,20 @@ BARS_TOTAL_DEFAULT = 42_000_000
 STAGE1_PEAK_LR = 1e-3
 STAGE2_PEAK_LR = 3e-4
 WARMUP_FRAC = 0.1  # cosine_warmup_lr floor_frac stays its own default (0.1*peak)
+
+# GATE-2 CALIBRATION RIDER (supervisor ruling, 2026-07-20): the fixture's 11 non-state,
+# non-return filler dims are CALIBRATED to the real lake's measured non-micro feature
+# entropy — a measurement-matched fixture, not a difficulty knob. Measured on 30 symbols /
+# 3,895,808 unmasked bars (sample seed 20260720): Gaussian-copula corr logdet -6.4819 over
+# the 7 non-micro dims => per-dim entropy deficit 0.4631 nats. The fixture matches it with
+# an AR(1)-ACROSS-DIMS chain over the 11 fillers: deficit = (10/22)*ln(1/(1-rho^2)) =>
+# rho = 0.7993 (exact by construction; plug-in receipt recorded per run, tolerance 0.05
+# nats/dim). Marginals stay N(0,1); bars stay temporally iid; state dim, plant, and return
+# rule UNTOUCHED.
+FILLER_DIMS = (1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12)
+FILLER_RHO = 0.7993
+FILLER_TARGET_DEFICIT = 0.4631  # nats/dim, from the lake measurement above
+FILLER_DEFICIT_TOL = 0.05
 
 # §7 v1.4 standing PER-BAR LEGIBILITY gate (the measured defect, now permanent): a logistic
 # probe from bar t's own (c_id, f_id) digits must recover the 3-sigma planted state's sign
@@ -123,6 +137,39 @@ TOY_BB_KW = dict(
     attn_dropout=0.0,
     token_dropout=0.0,
 )
+
+
+def filler_calibration_receipt(n: int = 500_000) -> dict:
+    """Plug-in Gaussian-copula deficit of a freshly generated filler sample vs the target."""
+    rng = np.random.default_rng(20260720)
+    g = rng.standard_normal((n, len(FILLER_DIMS)))
+    for j in range(1, len(FILLER_DIMS)):
+        g[:, j] = FILLER_RHO * g[:, j - 1] + np.sqrt(1.0 - FILLER_RHO**2) * g[:, j]
+    z = np.empty_like(g)
+    for j in range(g.shape[1]):
+        rk = g[:, j].argsort().argsort().astype(np.float64)
+        u = (rk + 0.5) / n
+        z[:, j] = (torch.erfinv(torch.tensor(2 * u - 1)) * np.sqrt(2)).numpy()
+    _sign, logdet = np.linalg.slogdet(np.corrcoef(z, rowvar=False))
+    achieved = float(-0.5 * logdet / len(FILLER_DIMS))
+    return {
+        "lake_measurement": {
+            "symbols": 30,
+            "unmasked_bars": 3_895_808,
+            "dims": "x_0..x_6 (non-micro)",
+            "copula_corr_logdet": -6.4819,
+            "per_dim_deficit_nats": 0.4631,
+            "sample_seed": 20260720,
+        },
+        "filler_dims": list(FILLER_DIMS),
+        "filler_rho": FILLER_RHO,
+        "target_per_dim_deficit_nats": FILLER_TARGET_DEFICIT,
+        "achieved_per_dim_deficit_nats": round(achieved, 4),
+        "tolerance_nats": FILLER_DEFICIT_TOL,
+        "within_tolerance": bool(abs(achieved - FILLER_TARGET_DEFICIT) <= FILLER_DEFICIT_TOL),
+        "note": "measurement-matched fixture (gate-2 rider): state dim, plant, and return "
+        "rule untouched; fillers N(0,1) marginals, cross-dim AR(1), temporally iid",
+    }
 
 
 def sub_epoch_arithmetic(steps: int, bars_total: int) -> dict:
@@ -161,8 +208,14 @@ def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dic
     r = SIGMA * eps
     if planted:
         r[SIGNAL_LAG:] = r[SIGNAL_LAG:] + C_SIGNAL * SIGMA * state[:-SIGNAL_LAG]
-    x = rng.standard_normal((n_bars, N_FEATURES)).astype(np.float32)  # dims 1-8,10-12 = noise
-    x[:, 0] = (r / SIGMA).astype(np.float32)  # standardized ret_close
+    x = rng.standard_normal((n_bars, N_FEATURES)).astype(np.float32)
+    # gate-2 calibration rider: fillers are CROSS-DIM correlated (AR(1) chain, rho matched
+    # to the lake's measured non-micro copula entropy), N(0,1) marginals, iid across bars
+    g = x[:, list(FILLER_DIMS)].astype(np.float64)
+    for j in range(1, len(FILLER_DIMS)):
+        g[:, j] = FILLER_RHO * g[:, j - 1] + np.sqrt(1.0 - FILLER_RHO**2) * g[:, j]
+    x[:, list(FILLER_DIMS)] = g.astype(np.float32)
+    x[:, 0] = (r / SIGMA).astype(np.float32)  # standardized ret_close (return rule UNTOUCHED)
     x[:, 9] = (state if planted else rng.standard_normal(n_bars)).astype(np.float32)
     m = np.zeros((n_bars, N_FEATURES), dtype=np.uint8)
     m[:, 13:16] = 1  # perp dims masked everywhere (the lake convention; placebo tripwire)
@@ -176,50 +229,14 @@ def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dic
     }
 
 
-def _digit_onehots(tok, b_c: np.ndarray, b_f: np.ndarray) -> np.ndarray:
-    """One-hot per-digit decomposition of (c_id, f_id) — the per-bar id, made linear-probeable.
-
-    Radices come from the tokenizer's own quantizer (FSQ level counts / BSQ bits), so the
-    probe works identically for both arms."""
-    q = tok.quant
-    cols, radices = [], []
-    for ids, group in ((b_c, list(q.coarse_idx)), (b_f, list(q.fine_idx))):
-        radix = tok._group_radix(group)
-        rem = ids.copy()
-        digs = []
-        for pos in reversed(range(len(group))):
-            digs.append(rem % radix[pos])
-            rem = rem // radix[pos]
-        for d, r in zip(reversed(digs), radix, strict=True):
-            cols.append(d)
-            radices.append(r)
-    feats = np.zeros((b_c.size, sum(radices)), dtype=np.float32)
-    off = 0
-    for col, r in zip(cols, radices, strict=True):
-        feats[np.arange(b_c.size), off + col] = 1.0
-        off += r
-    return feats
+# The §7 v1.4 legibility instruments live in trikaal.train.gates (ONE implementation —
+# the orchestrator's standing M6-time gate and this canary share it).
+_digit_onehots = digit_onehots
 
 
 def legibility_probe(tok, state: np.ndarray, b_c: np.ndarray, b_f: np.ndarray) -> float:
     """§7 v1.4 standing gate: logistic sign-accuracy of the state from bar t's OWN id."""
-    n = min(150_000, b_c.size)
-    feats = _digit_onehots(tok, b_c[:n], b_f[:n])
-    y = (state[:n] > 0).astype(np.float32)
-    n_tr = int(0.8 * n)
-    xt = torch.from_numpy(feats[:n_tr])
-    xv = torch.from_numpy(feats[n_tr:])
-    yt = torch.from_numpy(y[:n_tr])
-    torch.manual_seed(0)
-    logit = torch.nn.Linear(feats.shape[1], 1)
-    opt = torch.optim.Adam(logit.parameters(), lr=1e-2)
-    for _ in range(300):
-        opt.zero_grad()
-        loss = torch.nn.functional.binary_cross_entropy_with_logits(logit(xt).squeeze(-1), yt)
-        loss.backward()
-        opt.step()
-    with torch.no_grad():
-        return float(((logit(xv).squeeze(-1) > 0).numpy() == (y[n_tr:] > 0.5)).mean())
+    return id_legibility_sign_acc(tok, state, b_c, b_f)
 
 
 def _batches_from(sampler, sym_tokens, batch, seq_len, rng):
@@ -878,6 +895,8 @@ def main() -> int:
             "floor_frac": 0.1,
         },
         "spike_nats": args.spike_nats,
+        "filler_calibration": filler_calibration_receipt(),
+        "legibility_gate_min": LEGIBILITY_MIN,
     }
     out = Path(args.out) / "canary_manifest.json"
     out.parent.mkdir(parents=True, exist_ok=True)

@@ -10,6 +10,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -89,3 +90,110 @@ def determinism_smoke(
     assert len(curve_a) == len(curve_b) == steps, "loss curves must have the same length"
     max_div = max(abs(a - b) for a, b in zip(curve_a, curve_b, strict=True))
     return (curve_a == curve_b), max_div
+
+
+# ---- §7 v1.4 per-bar id-legibility instruments (the standing M6-time gate) ------------------
+MICRO_DIMS = (7, 8, 9, 10, 11, 12)
+MICRO_LEGIBILITY_MIN = 0.9
+
+
+def digit_onehots(tok, b_c: np.ndarray, b_f: np.ndarray) -> np.ndarray:
+    """One-hot per-digit decomposition of (c_id, f_id) — bar t's own id, linear-probeable.
+
+    Radices come from the tokenizer's quantizer (FSQ level counts / BSQ bits), so the probe
+    works identically for both arms."""
+    q = tok.quant
+    cols, radices = [], []
+    for ids, group in ((b_c, list(q.coarse_idx)), (b_f, list(q.fine_idx))):
+        radix = tok._group_radix(group)
+        rem = ids.copy()
+        digs = []
+        for pos in reversed(range(len(group))):
+            digs.append(rem % radix[pos])
+            rem = rem // radix[pos]
+        for d, r in zip(reversed(digs), radix, strict=True):
+            cols.append(d)
+            radices.append(r)
+    feats = np.zeros((b_c.size, sum(radices)), dtype=np.float32)
+    off = 0
+    for col, r in zip(cols, radices, strict=True):
+        feats[np.arange(b_c.size), off + col] = 1.0
+        off += r
+    return feats
+
+
+def id_legibility_sign_acc(
+    tok, values: np.ndarray, b_c: np.ndarray, b_f: np.ndarray, *, n: int = 150_000
+) -> float:
+    """Logistic sign-accuracy of ``values[t]`` from bar t's OWN (c_id, f_id) digits.
+
+    The §7 v1.4 legibility instrument: 80/20 split, 300 Adam steps, torch seed 0 —
+    deterministic given its inputs."""
+    n = min(n, b_c.size)
+    feats = digit_onehots(tok, b_c[:n], b_f[:n])
+    y = (values[:n] > 0).astype(np.float32)
+    n_tr = int(0.8 * n)
+    xt = torch.from_numpy(feats[:n_tr])
+    xv = torch.from_numpy(feats[n_tr:])
+    yt = torch.from_numpy(y[:n_tr])
+    torch.manual_seed(0)
+    logit = nn.Linear(feats.shape[1], 1)
+    opt = torch.optim.Adam(logit.parameters(), lr=1e-2)
+    for _ in range(300):
+        opt.zero_grad()
+        loss = nn.functional.binary_cross_entropy_with_logits(logit(xt).squeeze(-1), yt)
+        loss.backward()
+        opt.step()
+    with torch.no_grad():
+        return float(((logit(xv).squeeze(-1) > 0).numpy() == (y[n_tr:] > 0.5)).mean())
+
+
+def micro_legibility_gate(
+    tok,
+    per_symbol,
+    tokens: dict,
+    *,
+    min_acc: float = MICRO_LEGIBILITY_MIN,
+    run_name: str = "",
+) -> dict:
+    """The STANDING M6-time per-bar legibility gate (gate-2 ruling, 2026-07-20): after
+    Stage-1 and BEFORE any Stage-2 AR spend, each of the SIX MICRO DIMS (7-12) must be
+    linearly recoverable from bar t's own id at logistic sign-accuracy >= ``min_acc`` on
+    the run's real training stream. Raises RuntimeError on failure — a hard stop.
+
+    Only unmasked bars count per dim (mask-aware); per-dim base rates are recorded so a
+    degenerate sign distribution is visible in the receipt.
+
+    PRE-AUTHORIZED FALLBACK (recorded here per the gate-2 ruling; NEVER applied
+    pre-emptively): on a REAL-DATA gate failure ONLY, micro-weighted ``w_feat`` in the
+    tokenizer's per-bar bottleneck leg may be applied — with a dated prereg §7 entry
+    BEFORE use."""
+    per_dim: dict[str, dict] = {}
+    ok = True
+    for dim in MICRO_DIMS:
+        vals, bcs, bfs = [], [], []
+        for sw in per_symbol:
+            b_c, b_f = tokens[sw.symbol]
+            keep = sw.mask[:, dim] == 0
+            vals.append(sw.x[keep, dim])
+            bcs.append(b_c[keep])
+            bfs.append(b_f[keep])
+        v = np.concatenate(vals)
+        if v.size < 10_000:  # a dim masked ~everywhere cannot be gated meaningfully
+            per_dim[str(dim)] = {"skipped": "masked (n < 10k unmasked bars)", "n": int(v.size)}
+            continue
+        acc = id_legibility_sign_acc(tok, v, np.concatenate(bcs), np.concatenate(bfs))
+        per_dim[str(dim)] = {
+            "sign_acc": round(acc, 4),
+            "n": int(min(150_000, v.size)),
+            "base_rate_positive": round(float((v > 0).mean()), 4),
+        }
+        ok = ok and acc >= min_acc
+    receipt = {"min_acc": min_acc, "per_dim": per_dim, "pass": bool(ok)}
+    if not ok:
+        raise RuntimeError(
+            f"{run_name}: §7 v1.4 MICRO LEGIBILITY GATE FAILED before Stage-2 — {receipt} "
+            "(pre-authorized fallback: micro-weighted w_feat in the bottleneck leg, "
+            "real-data failures only, dated §7 entry required BEFORE use)"
+        )
+    return receipt

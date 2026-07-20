@@ -34,7 +34,7 @@ import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from m6_canary import legibility_probe
+from m6_canary import filler_calibration_receipt, legibility_probe, synth_symbol
 
 from trikaal.constants import N_FEATURES
 from trikaal.tokenizer.model import TokenizerAE
@@ -58,18 +58,9 @@ ARTIFACT = "runs_manifest/m6_interface_respec_design_pass.json"
 
 
 def synth_planted(n_bars: int) -> dict:
-    """The v6 planted generator, verbatim (symbol 0 seeds)."""
+    """The CALIBRATED v6 planted fixture (gate-2 rider) — via the canary's shared generator."""
     rng = np.random.default_rng((zlib.crc32(b"planted"), 0))
-    state = rng.standard_normal(n_bars)
-    eps = rng.standard_normal(n_bars)
-    r = SIGMA * eps
-    r[SIGNAL_LAG:] = r[SIGNAL_LAG:] + C_SIGNAL * SIGMA * state[:-SIGNAL_LAG]
-    x = rng.standard_normal((n_bars, N_FEATURES)).astype(np.float32)
-    x[:, 0] = (r / SIGMA).astype(np.float32)
-    x[:, 9] = state.astype(np.float32)
-    m = np.zeros((n_bars, N_FEATURES), dtype=np.uint8)
-    m[:, 13:16] = 1
-    return {"x": x, "mask": m, "segment_id": np.zeros(n_bars, dtype=np.int64)}
+    return synth_symbol(rng, planted=True, n_bars=n_bars)
 
 
 def train_tokenizer(tok: TokenizerAE, d: dict, *, seed: int = 0) -> float:
@@ -187,9 +178,15 @@ def nonlinear_diagnostics(tok: TokenizerAE, d: dict, b_c: np.ndarray, b_f: np.nd
             z = tok.latent(x, m)
             z_hat, _codes, _c, _f = tok.quant(z)
             xp = tok.point_decoder(z_hat[..., list(tok.quant.fine_idx)])
-        rec9 = xp[:, :, 9].reshape(-1).numpy().astype(np.float64)
-        tru9 = x[:, :, 9].reshape(-1).numpy().astype(np.float64)
-        out["point_decoder_dim9_corr"] = round(float(np.corrcoef(rec9, tru9)[0, 1]), 4)
+        xpn = xp.numpy().astype(np.float64)
+        xtn = x.numpy().astype(np.float64)
+        corrs = [
+            round(float(np.corrcoef(xpn[:, :, dd].ravel(), xtn[:, :, dd].ravel())[0, 1]), 4)
+            for dd in range(13)
+        ]
+        out["point_decoder_per_dim_corrs"] = corrs
+        out["point_decoder_dim9_corr"] = corrs[9]
+        rec9, tru9 = xpn[:, :, 9].ravel(), xtn[:, :, 9].ravel()
         out["point_decoder_sign_acc"] = round(float(((rec9 > 0) == (tru9 > 0)).mean()), 4)
     return out
 
@@ -201,51 +198,64 @@ def main() -> int:
     d = synth_planted(N_BARS)
 
     canonical = dict(d_model=256, n_layers=3, n_heads=4, d_ff=512, max_len=512)
-    out: dict = {"artifact": "m6_interface_respec_design_pass", "prereg": "§7 v1.4"}
+    out: dict = {
+        "artifact": "m6_interface_respec_design_pass",
+        "prereg": "§7 v1.4 + gate-2 calibration rider",
+        "filler_calibration": filler_calibration_receipt(),
+    }
+    print(f"[respec] filler calibration: {json.dumps(out['filler_calibration'])}", flush=True)
 
-    results = {}
-    for name, make in (
-        (
-            "old_contextual_fine",
-            lambda: TokenizerAE(
-                quantizer="fsq",
-                n_features=16,
-                encoder_causal=True,
-                fine_pointwise=False,
-                **canonical,
-            ),
-        ),
-        ("new_pointwise_fine", lambda: build_cell_tokenizer(CELLS[3], **canonical)),
-    ):
-        print(f"[respec] training {name} (canonical dims, {STAGE1_STEPS} steps, cpu)…")
-        tok = make().to(dev)
-        n_params = sum(p.numel() for p in tok.parameters())
-        final_loss = train_tokenizer(tok, d)
+    def measure(tok, seed_note: str) -> dict:
         b_c, b_f = tokenize_features(
-            tok,
-            d["x"],
-            d["mask"],
-            d["segment_id"],
-            window=SEQ_LEN,
-            batch_windows=256,
-            device=dev,
+            tok, d["x"], d["mask"], d["segment_id"], window=SEQ_LEN, batch_windows=256, device=dev
         )
         leg = legibility_probe(tok, d["x"][:, 9], b_c, b_f)
         recon = per_dim_recon(tok, d)
         diag = nonlinear_diagnostics(tok, d, b_c, b_f)
-        results[name] = {
-            "config": tok.get_config(),
-            "n_params": n_params,
-            "stage1_final_loss": round(final_loss, 4),
+        print(
+            f"[respec] {seed_note}: legibility {leg:.4f}, dim9 recon {recon['per_dim']['9']}, "
+            f"diag {json.dumps(diag)}",
+            flush=True,
+        )
+        return {
             "legibility_logistic_sign_acc": round(leg, 4),
             "recon": recon,
             "nonlinear_diagnostics": diag,
         }
-        print(
-            f"[respec] {name}: legibility {leg:.4f}, overall recon MAE "
-            f"{recon['overall_mae_unmasked_dims']}, dim9 {recon['per_dim']['9']}",
-            flush=True,
-        )
+
+    results: dict = {}
+    # old contextual-fine contrast (one seed — the defect receipt)
+    print(f"[respec] training old_contextual_fine (canonical dims, {STAGE1_STEPS} steps)…")
+    tok = TokenizerAE(
+        quantizer="fsq", n_features=16, encoder_causal=True, fine_pointwise=False, **canonical
+    ).to(dev)
+    old_loss = train_tokenizer(tok, d, seed=0)
+    results["old_contextual_fine"] = {
+        "config": tok.get_config(),
+        "n_params": sum(p.numel() for p in tok.parameters()),
+        "stage1_final_loss": round(old_loss, 4),
+        **measure(tok, "old_contextual_fine seed0"),
+    }
+
+    # NEW layout: the rider's 3-seed protocol — ALL THREE must clear (the lottery must be
+    # gone, not re-rolled until won)
+    seed_runs = {}
+    for seed in (0, 1, 2):
+        print(f"[respec] training new_pointwise_fine seed {seed} ({STAGE1_STEPS} steps)…")
+        tok = build_cell_tokenizer(CELLS[3], **canonical).to(dev)
+        loss = train_tokenizer(tok, d, seed=seed)
+        rec = measure(tok, f"new_pointwise_fine seed{seed}")
+        pd_corrs = rec["nonlinear_diagnostics"].get("point_decoder_per_dim_corrs", [])
+        seed_runs[str(seed)] = {
+            "stage1_final_loss": round(loss, 4),
+            **rec,
+            "channel_receipt_dims_ge_090": int(sum(1 for c in pd_corrs if c >= 0.9)),
+        }
+    results["new_pointwise_fine_3seed"] = {
+        "config": tok.get_config(),
+        "n_params": sum(p.numel() for p in tok.parameters()),
+        "seeds": seed_runs,
+    }
     out["tokenizers"] = results
 
     print("[respec] gate 4: G-parity under the new layout (canonical shells)…")
@@ -253,26 +263,32 @@ def main() -> int:
     out["g_parity_new_layout"] = parity
     print(f"[respec] parity: {parity}")
 
-    new = results["new_pointwise_fine"]
+    seeds = results["new_pointwise_fine_3seed"]["seeds"]
     old = results["old_contextual_fine"]
+    legs = {s: v["legibility_logistic_sign_acc"] for s, v in seeds.items()}
     out["gates"] = {
         "gate1_flip_kat": "CI — tests/tokenizer/test_causal_encoder.py "
         "(test_cell_fine_tokens_are_per_bar both quantizers + contextual-fine anti-vacuity "
         "+ not-constructible); run via the fast suite, result recorded in the report",
         "gate2_legibility": {
             "threshold": LEGIBILITY_MIN,
-            "new": new["legibility_logistic_sign_acc"],
+            "protocol": "3 seeds, ALL must clear (rider: the lottery must be gone, "
+            "not re-rolled until won)",
+            "new_by_seed": legs,
             "old": old["legibility_logistic_sign_acc"],
             "old_at_discovery": 0.5135,
-            "pass": bool(new["legibility_logistic_sign_acc"] >= LEGIBILITY_MIN),
+            "pass": bool(all(v >= LEGIBILITY_MIN for v in legs.values())),
+        },
+        "channel_receipt_non_gating": {
+            "dims_ge_090_by_seed": {s: v["channel_receipt_dims_ge_090"] for s, v in seeds.items()},
+            "expectation": ">= 4 dims at point-decoder corr >= 0.9 (evidence, not a gate)",
         },
         "gate3_recon": {
-            "new_dim9_non_degenerate": new["recon"]["per_dim"]["9"]["non_degenerate"],
-            "overall_mae_new_vs_old": [
-                new["recon"]["overall_mae_unmasked_dims"],
-                old["recon"]["overall_mae_unmasked_dims"],
-            ],
-            "pass": bool(new["recon"]["per_dim"]["9"]["non_degenerate"]),
+            "new_dim9_non_degenerate_by_seed": {
+                s: v["recon"]["per_dim"]["9"]["non_degenerate"] for s, v in seeds.items()
+            },
+            "old_overall_mae": old["recon"]["overall_mae_unmasked_dims"],
+            "pass": bool(all(v["recon"]["per_dim"]["9"]["non_degenerate"] for v in seeds.values())),
         },
         "gate4_parity": {
             "d_bpt": parity["d_bpt"],

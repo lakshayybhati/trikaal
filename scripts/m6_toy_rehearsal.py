@@ -271,6 +271,9 @@ def main() -> int:
         seeds=SEEDS,
         seq_len=args.seq_len,
         batch_size=args.batch,
+        # toy-rehearsal shells — the §7 v1.4 standing gate binds the REAL M6 run (default
+        # 0.9); toy dims on lake slices are not the gated configuration
+        micro_legibility_min=None,
         steps_stage1=args.steps,
         steps_stage2=args.steps,
         tok_kwargs=tok_kw,

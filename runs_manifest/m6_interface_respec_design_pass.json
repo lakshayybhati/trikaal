@@ -1,5 +1,34 @@
 {
   "artifact": "m6_interface_respec_design_pass",
+  "filler_calibration": {
+    "achieved_per_dim_deficit_nats": 0.462,
+    "filler_dims": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      10,
+      11,
+      12
+    ],
+    "filler_rho": 0.7993,
+    "lake_measurement": {
+      "copula_corr_logdet": -6.4819,
+      "dims": "x_0..x_6 (non-micro)",
+      "per_dim_deficit_nats": 0.4631,
+      "sample_seed": 20260720,
+      "symbols": 30,
+      "unmasked_bars": 3895808
+    },
+    "note": "measurement-matched fixture (gate-2 rider): state dim, plant, and return rule untouched; fillers N(0,1) marginals, cross-dim AR(1), temporally iid",
+    "target_per_dim_deficit_nats": 0.4631,
+    "tolerance_nats": 0.05,
+    "within_tolerance": true
+  },
   "g_parity_new_layout": {
     "bpt_a": 20.05784765541185,
     "bpt_b": 20.0,
@@ -8,90 +37,36 @@
     "params_a": 4558901,
     "params_b": 4570440
   },
-  "gate2_blocked_diagnosis": {
-    "capacity_arithmetic": {
-      "all_13_dims_would_need_bits": 23.1,
-      "bits_per_dim_at_rho_0.951": 1.78,
-      "conclusion": "infeasible for ANY unbiased per-bar code at the pinned bpt on a 13-equal-iid-dims stream, at any coarse/fine split; NOT a defect of the architecture \u2014 a collision between the gate constant and the canary FIXTURE's worst-case (incompressible) filler statistics; real bars are compressible",
-      "fine_bits_available": 10.26,
-      "sign_acc_0.9_requires_rho": 0.951,
-      "total_bpt_pinned": 20.058
-    },
-    "finding": "the per-bar channel WORKS (winner dims reach point-decoder corr 0.9+; fine digits near-max-entropy; flip-KAT invariance holds) but the fine budget of 10.26 bits supports only ~4-5 winner dims at the ~1.7-1.8 bits each that 0.9 sign-accuracy needs, and WINNER IDENTITY among the canary's 13 statistically exchangeable iid dims is arbitrary initialization symmetry-breaking \u2014 dim 9 specifically clearing 0.9 is a ~1-in-3 coin flip, never a gate",
-    "iteration_history": {
-      "iter1_pointwise_encoder_only": "legibility 0.5202 \u2014 optimizer routed state through the contextual coarse smear (window recon strong, per-bar nil)",
-      "iter2_added_per_bar_bottleneck_leg": "legibility 0.5136/0.5037 \u2014 leg trains (winner dims 0.9+) but dim 9 lost the arbitrary winner draw at canonical dims"
-    },
-    "options_for_ruling": [
-      "(a) RECOMMENDED: make the canary fixture's FILLER dims realistic-compressible (e.g. AR(1)/low-entropy, like real bars) with the state dim unchanged \u2014 capacity then flows to the state dim honestly; the plant, lag, and return rule are untouched; H0 regenerates in the acceptance run anyway (both arms re-run)",
-      "(b) re-gate on the architecture's guarantee ('>=K dims clear 0.9' + per-bar invariance) and let the acceptance run (v6 canary DETECT) be the arbiter",
-      "(c) re-split coarse/fine bits toward fine (design freedom at pinned totals) \u2014 more winners but still cannot cover 13 iid dims"
-    ],
-    "three_seed_winner_receipt": {
-      "note": "tiny shells (d64), 600 steps, identical data rng; dim 9 wins in seed 0 only",
-      "torch_seed_0_per_dim_corrs": [
-        0.03,
-        0.74,
-        0.09,
-        0.27,
-        0.89,
-        0.08,
-        0.15,
-        0.94,
-        0.94,
-        0.91,
-        0.09,
-        0.19,
-        0.12
-      ],
-      "torch_seed_1_per_dim_corrs": [
-        0.87,
-        0.08,
-        0.14,
-        0.66,
-        0.27,
-        0.42,
-        0.91,
-        0.07,
-        0.25,
-        0.26,
-        0.93,
-        0.94,
-        0.07
-      ],
-      "torch_seed_2_per_dim_corrs": [
-        0.95,
-        0.24,
-        0.05,
-        0.09,
-        0.17,
-        0.96,
-        0.33,
-        0.95,
-        0.14,
-        0.1,
-        0.07,
-        0.95,
-        0.12
-      ]
-    }
-  },
   "gates": {
     "PROCEED": false,
+    "channel_receipt_non_gating": {
+      "dims_ge_090_by_seed": {
+        "0": 4,
+        "1": 4,
+        "2": 4
+      },
+      "expectation": ">= 4 dims at point-decoder corr >= 0.9 (evidence, not a gate)"
+    },
     "gate1_flip_kat": "CI \u2014 tests/tokenizer/test_causal_encoder.py (test_cell_fine_tokens_are_per_bar both quantizers + contextual-fine anti-vacuity + not-constructible); run via the fast suite, result recorded in the report",
     "gate2_legibility": {
-      "new": 0.5037,
-      "old": 0.5284,
+      "new_by_seed": {
+        "0": 0.5014,
+        "1": 0.4995,
+        "2": 0.5182
+      },
+      "old": 0.5112,
       "old_at_discovery": 0.5135,
       "pass": false,
+      "protocol": "3 seeds, ALL must clear (rider: the lottery must be gone, not re-rolled until won)",
       "threshold": 0.9
     },
     "gate3_recon": {
-      "new_dim9_non_degenerate": true,
-      "overall_mae_new_vs_old": [
-        0.42781,
-        0.37998
-      ],
+      "new_dim9_non_degenerate_by_seed": {
+        "0": true,
+        "1": true,
+        "2": true
+      },
+      "old_overall_mae": 0.2538,
       "pass": true
     },
     "gate4_parity": {
@@ -100,9 +75,9 @@
       "pass": true
     }
   },
-  "prereg": "\u00a77 v1.4",
+  "prereg": "\u00a77 v1.4 + gate-2 calibration rider",
   "tokenizers": {
-    "new_pointwise_fine": {
+    "new_pointwise_fine_3seed": {
       "config": {
         "bsq_bits": [
           10,
@@ -132,96 +107,330 @@
         "per_stage_scale": true,
         "quantizer": "fsq"
       },
-      "legibility_logistic_sign_acc": 0.5037,
       "n_params": 4558901,
-      "nonlinear_diagnostics": {
-        "fine_digit_entropies_nats": [
-          1.9129,
-          1.9138,
-          1.5976,
-          1.6083
-        ],
-        "fine_digit_max_entropies_nats": [
-          1.9459,
-          1.9459,
-          1.6094,
-          1.6094
-        ],
-        "mlp_sign_acc_on_digits": 0.5009,
-        "point_decoder_dim9_corr": 0.0257,
-        "point_decoder_sign_acc": 0.5107
-      },
-      "recon": {
-        "overall_mae_unmasked_dims": 0.42781,
-        "per_dim": {
-          "0": {
-            "mean_baseline_mae": 2.51351,
-            "non_degenerate": true,
-            "recon_mae": 0.26813
+      "seeds": {
+        "0": {
+          "channel_receipt_dims_ge_090": 4,
+          "legibility_logistic_sign_acc": 0.5014,
+          "nonlinear_diagnostics": {
+            "fine_digit_entropies_nats": [
+              1.8844,
+              1.8758,
+              1.555,
+              1.5619
+            ],
+            "fine_digit_max_entropies_nats": [
+              1.9459,
+              1.9459,
+              1.6094,
+              1.6094
+            ],
+            "mlp_sign_acc_on_digits": 0.5001,
+            "point_decoder_dim9_corr": 0.014,
+            "point_decoder_per_dim_corrs": [
+              0.9818,
+              0.8931,
+              0.9128,
+              0.8523,
+              0.8261,
+              0.8793,
+              0.912,
+              0.8793,
+              0.8258,
+              0.014,
+              0.8513,
+              0.9179,
+              0.8969
+            ],
+            "point_decoder_sign_acc": 0.5082
           },
-          "1": {
-            "mean_baseline_mae": 0.80109,
-            "non_degenerate": true,
-            "recon_mae": 0.48837
+          "recon": {
+            "overall_mae_unmasked_dims": 0.30824,
+            "per_dim": {
+              "0": {
+                "mean_baseline_mae": 2.51351,
+                "non_degenerate": true,
+                "recon_mae": 0.2642
+              },
+              "1": {
+                "mean_baseline_mae": 0.80109,
+                "non_degenerate": true,
+                "recon_mae": 0.33397
+              },
+              "10": {
+                "mean_baseline_mae": 0.80241,
+                "non_degenerate": true,
+                "recon_mae": 0.30506
+              },
+              "11": {
+                "mean_baseline_mae": 0.79923,
+                "non_degenerate": true,
+                "recon_mae": 0.29377
+              },
+              "12": {
+                "mean_baseline_mae": 0.80534,
+                "non_degenerate": true,
+                "recon_mae": 0.33816
+              },
+              "2": {
+                "mean_baseline_mae": 0.80198,
+                "non_degenerate": true,
+                "recon_mae": 0.29502
+              },
+              "3": {
+                "mean_baseline_mae": 0.80112,
+                "non_degenerate": true,
+                "recon_mae": 0.31461
+              },
+              "4": {
+                "mean_baseline_mae": 0.80169,
+                "non_degenerate": true,
+                "recon_mae": 0.3147
+              },
+              "5": {
+                "mean_baseline_mae": 0.80045,
+                "non_degenerate": true,
+                "recon_mae": 0.31803
+              },
+              "6": {
+                "mean_baseline_mae": 0.80276,
+                "non_degenerate": true,
+                "recon_mae": 0.30715
+              },
+              "7": {
+                "mean_baseline_mae": 0.80141,
+                "non_degenerate": true,
+                "recon_mae": 0.31819
+              },
+              "8": {
+                "mean_baseline_mae": 0.80446,
+                "non_degenerate": true,
+                "recon_mae": 0.31669
+              },
+              "9": {
+                "mean_baseline_mae": 0.79812,
+                "non_degenerate": true,
+                "recon_mae": 0.28761
+              }
+            }
           },
-          "10": {
-            "mean_baseline_mae": 0.78975,
-            "non_degenerate": true,
-            "recon_mae": 0.37719
+          "stage1_final_loss": 0.3391
+        },
+        "1": {
+          "channel_receipt_dims_ge_090": 4,
+          "legibility_logistic_sign_acc": 0.4995,
+          "nonlinear_diagnostics": {
+            "fine_digit_entropies_nats": [
+              1.8886,
+              1.8681,
+              1.5524,
+              1.5399
+            ],
+            "fine_digit_max_entropies_nats": [
+              1.9459,
+              1.9459,
+              1.6094,
+              1.6094
+            ],
+            "mlp_sign_acc_on_digits": 0.5027,
+            "point_decoder_dim9_corr": 0.0011,
+            "point_decoder_per_dim_corrs": [
+              0.9815,
+              0.8903,
+              0.9113,
+              0.8509,
+              0.8256,
+              0.8808,
+              0.9166,
+              0.879,
+              0.8235,
+              0.0011,
+              0.8486,
+              0.9188,
+              0.8975
+            ],
+            "point_decoder_sign_acc": 0.4985
           },
-          "11": {
-            "mean_baseline_mae": 0.78436,
-            "non_degenerate": true,
-            "recon_mae": 0.43968
+          "recon": {
+            "overall_mae_unmasked_dims": 0.30311,
+            "per_dim": {
+              "0": {
+                "mean_baseline_mae": 2.51351,
+                "non_degenerate": true,
+                "recon_mae": 0.26054
+              },
+              "1": {
+                "mean_baseline_mae": 0.80109,
+                "non_degenerate": true,
+                "recon_mae": 0.33956
+              },
+              "10": {
+                "mean_baseline_mae": 0.80241,
+                "non_degenerate": true,
+                "recon_mae": 0.29879
+              },
+              "11": {
+                "mean_baseline_mae": 0.79923,
+                "non_degenerate": true,
+                "recon_mae": 0.29148
+              },
+              "12": {
+                "mean_baseline_mae": 0.80534,
+                "non_degenerate": true,
+                "recon_mae": 0.33857
+              },
+              "2": {
+                "mean_baseline_mae": 0.80198,
+                "non_degenerate": true,
+                "recon_mae": 0.29229
+              },
+              "3": {
+                "mean_baseline_mae": 0.80112,
+                "non_degenerate": true,
+                "recon_mae": 0.30134
+              },
+              "4": {
+                "mean_baseline_mae": 0.80169,
+                "non_degenerate": true,
+                "recon_mae": 0.30442
+              },
+              "5": {
+                "mean_baseline_mae": 0.80045,
+                "non_degenerate": true,
+                "recon_mae": 0.3156
+              },
+              "6": {
+                "mean_baseline_mae": 0.80276,
+                "non_degenerate": true,
+                "recon_mae": 0.30149
+              },
+              "7": {
+                "mean_baseline_mae": 0.80141,
+                "non_degenerate": true,
+                "recon_mae": 0.31093
+              },
+              "8": {
+                "mean_baseline_mae": 0.80446,
+                "non_degenerate": true,
+                "recon_mae": 0.29975
+              },
+              "9": {
+                "mean_baseline_mae": 0.79812,
+                "non_degenerate": true,
+                "recon_mae": 0.28574
+              }
+            }
           },
-          "12": {
-            "mean_baseline_mae": 0.80617,
-            "non_degenerate": true,
-            "recon_mae": 0.51694
+          "stage1_final_loss": 0.3461
+        },
+        "2": {
+          "channel_receipt_dims_ge_090": 4,
+          "legibility_logistic_sign_acc": 0.5182,
+          "nonlinear_diagnostics": {
+            "fine_digit_entropies_nats": [
+              1.8866,
+              1.8774,
+              1.5522,
+              1.5501
+            ],
+            "fine_digit_max_entropies_nats": [
+              1.9459,
+              1.9459,
+              1.6094,
+              1.6094
+            ],
+            "mlp_sign_acc_on_digits": 0.5136,
+            "point_decoder_dim9_corr": 0.0053,
+            "point_decoder_per_dim_corrs": [
+              0.9823,
+              0.892,
+              0.9109,
+              0.8565,
+              0.8319,
+              0.8816,
+              0.9101,
+              0.8738,
+              0.8242,
+              0.0053,
+              0.8514,
+              0.9171,
+              0.894
+            ],
+            "point_decoder_sign_acc": 0.4996
           },
-          "2": {
-            "mean_baseline_mae": 0.79826,
-            "non_degenerate": true,
-            "recon_mae": 0.45976
+          "recon": {
+            "overall_mae_unmasked_dims": 0.30979,
+            "per_dim": {
+              "0": {
+                "mean_baseline_mae": 2.51351,
+                "non_degenerate": true,
+                "recon_mae": 0.25808
+              },
+              "1": {
+                "mean_baseline_mae": 0.80109,
+                "non_degenerate": true,
+                "recon_mae": 0.33929
+              },
+              "10": {
+                "mean_baseline_mae": 0.80241,
+                "non_degenerate": true,
+                "recon_mae": 0.31266
+              },
+              "11": {
+                "mean_baseline_mae": 0.79923,
+                "non_degenerate": true,
+                "recon_mae": 0.29432
+              },
+              "12": {
+                "mean_baseline_mae": 0.80534,
+                "non_degenerate": true,
+                "recon_mae": 0.34548
+              },
+              "2": {
+                "mean_baseline_mae": 0.80198,
+                "non_degenerate": true,
+                "recon_mae": 0.29823
+              },
+              "3": {
+                "mean_baseline_mae": 0.80112,
+                "non_degenerate": true,
+                "recon_mae": 0.31456
+              },
+              "4": {
+                "mean_baseline_mae": 0.80169,
+                "non_degenerate": true,
+                "recon_mae": 0.31689
+              },
+              "5": {
+                "mean_baseline_mae": 0.80045,
+                "non_degenerate": true,
+                "recon_mae": 0.32123
+              },
+              "6": {
+                "mean_baseline_mae": 0.80276,
+                "non_degenerate": true,
+                "recon_mae": 0.30557
+              },
+              "7": {
+                "mean_baseline_mae": 0.80141,
+                "non_degenerate": true,
+                "recon_mae": 0.31808
+              },
+              "8": {
+                "mean_baseline_mae": 0.80446,
+                "non_degenerate": true,
+                "recon_mae": 0.31564
+              },
+              "9": {
+                "mean_baseline_mae": 0.79812,
+                "non_degenerate": true,
+                "recon_mae": 0.28727
+              }
+            }
           },
-          "3": {
-            "mean_baseline_mae": 0.80445,
-            "non_degenerate": true,
-            "recon_mae": 0.45534
-          },
-          "4": {
-            "mean_baseline_mae": 0.79078,
-            "non_degenerate": true,
-            "recon_mae": 0.47116
-          },
-          "5": {
-            "mean_baseline_mae": 0.79755,
-            "non_degenerate": true,
-            "recon_mae": 0.46928
-          },
-          "6": {
-            "mean_baseline_mae": 0.79762,
-            "non_degenerate": true,
-            "recon_mae": 0.47371
-          },
-          "7": {
-            "mean_baseline_mae": 0.8092,
-            "non_degenerate": true,
-            "recon_mae": 0.34902
-          },
-          "8": {
-            "mean_baseline_mae": 0.7908,
-            "non_degenerate": true,
-            "recon_mae": 0.49403
-          },
-          "9": {
-            "mean_baseline_mae": 0.79812,
-            "non_degenerate": true,
-            "recon_mae": 0.29898
-          }
+          "stage1_final_loss": 0.3459
         }
-      },
-      "stage1_final_loss": 0.7079
+      }
     },
     "old_contextual_fine": {
       "config": {
@@ -253,14 +462,14 @@
         "per_stage_scale": true,
         "quantizer": "fsq"
       },
-      "legibility_logistic_sign_acc": 0.5284,
+      "legibility_logistic_sign_acc": 0.5112,
       "n_params": 3951646,
       "nonlinear_diagnostics": {
         "fine_digit_entropies_nats": [
-          1.9352,
-          1.9356,
-          1.5353,
-          1.5299
+          1.8459,
+          1.8436,
+          1.534,
+          1.5193
         ],
         "fine_digit_max_entropies_nats": [
           1.9459,
@@ -268,80 +477,80 @@
           1.6094,
           1.6094
         ],
-        "mlp_sign_acc_on_digits": 0.5086
+        "mlp_sign_acc_on_digits": 0.502
       },
       "recon": {
-        "overall_mae_unmasked_dims": 0.37998,
+        "overall_mae_unmasked_dims": 0.2538,
         "per_dim": {
           "0": {
             "mean_baseline_mae": 2.51351,
             "non_degenerate": true,
-            "recon_mae": 0.32678
+            "recon_mae": 0.30365
           },
           "1": {
             "mean_baseline_mae": 0.80109,
             "non_degenerate": true,
-            "recon_mae": 0.47815
+            "recon_mae": 0.21974
           },
           "10": {
-            "mean_baseline_mae": 0.78975,
+            "mean_baseline_mae": 0.80241,
             "non_degenerate": true,
-            "recon_mae": 0.26147
+            "recon_mae": 0.2379
           },
           "11": {
-            "mean_baseline_mae": 0.78436,
+            "mean_baseline_mae": 0.79923,
             "non_degenerate": true,
-            "recon_mae": 0.45003
+            "recon_mae": 0.26746
           },
           "12": {
-            "mean_baseline_mae": 0.80617,
+            "mean_baseline_mae": 0.80534,
             "non_degenerate": true,
-            "recon_mae": 0.44491
+            "recon_mae": 0.21591
           },
           "2": {
-            "mean_baseline_mae": 0.79826,
+            "mean_baseline_mae": 0.80198,
             "non_degenerate": true,
-            "recon_mae": 0.23071
+            "recon_mae": 0.27147
           },
           "3": {
-            "mean_baseline_mae": 0.80445,
+            "mean_baseline_mae": 0.80112,
             "non_degenerate": true,
-            "recon_mae": 0.48099
+            "recon_mae": 0.24092
           },
           "4": {
-            "mean_baseline_mae": 0.79078,
+            "mean_baseline_mae": 0.80169,
             "non_degenerate": true,
-            "recon_mae": 0.36933
+            "recon_mae": 0.26168
           },
           "5": {
-            "mean_baseline_mae": 0.79755,
+            "mean_baseline_mae": 0.80045,
             "non_degenerate": true,
-            "recon_mae": 0.33371
+            "recon_mae": 0.24041
           },
           "6": {
-            "mean_baseline_mae": 0.79762,
+            "mean_baseline_mae": 0.80276,
             "non_degenerate": true,
-            "recon_mae": 0.368
+            "recon_mae": 0.25362
           },
           "7": {
-            "mean_baseline_mae": 0.8092,
+            "mean_baseline_mae": 0.80141,
             "non_degenerate": true,
-            "recon_mae": 0.45647
+            "recon_mae": 0.24196
           },
           "8": {
-            "mean_baseline_mae": 0.7908,
+            "mean_baseline_mae": 0.80446,
             "non_degenerate": true,
-            "recon_mae": 0.4344
+            "recon_mae": 0.25619
           },
           "9": {
             "mean_baseline_mae": 0.79812,
             "non_degenerate": true,
-            "recon_mae": 0.30476
+            "recon_mae": 0.28846
           }
         }
       },
-      "stage1_final_loss": 0.3845
+      "stage1_final_loss": 0.181
     }
   },
-  "wall_s": 577.6
+  "wall_s": 1339.0
 }

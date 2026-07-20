@@ -42,7 +42,7 @@ from trikaal.train.cells import (
     build_cell_tokenizer,
 )
 from trikaal.train.checkpoint import save_checkpoint
-from trikaal.train.gates import cosine_warmup_lr
+from trikaal.train.gates import cosine_warmup_lr, micro_legibility_gate
 from trikaal.train.token_stream import tokenize_features
 from trikaal.train.train_state import autocast_ctx, save_train_state
 from trikaal.train.tripwire import TripwireMonitor
@@ -62,6 +62,11 @@ class OrchestratorConfig:
     warmup_frac: float = 0.1
     alpha: float = 0.5  # symbol sampling ∝ n_windows^alpha (m6_design §4)
     tok_kwargs: dict = field(default_factory=dict)  # shell dims (empty = canonical)
+    # §7 v1.4 STANDING gate (gate-2 ruling): min per-bar logistic sign-acc for EACH of the
+    # six micro dims from bar t's own id, measured post-Stage-1 / pre-Stage-2 on the run's
+    # real training stream; hard stop below it. None disables (toy shells ONLY — the real
+    # M6 run uses this default).
+    micro_legibility_min: float | None = 0.9
     backbone_kwargs: dict = field(default_factory=dict)
     expect_backbone_params: int | None = 21_301_248  # None ONLY for tiny smoke shells
     enforce_parity: bool = True  # G-parity holds at canonical dims; tiny smoke shells skip
@@ -199,6 +204,14 @@ def run_cell(
             )
             tokens[sw.symbol] = (b_c, b_f)
 
+        # ---- §7 v1.4 STANDING micro-legibility gate: post-Stage-1, PRE-Stage-2 hard stop --
+        legibility_receipt = None
+        if cfg.micro_legibility_min is not None and spec.arm in ("micro", "micro_shuffled"):
+            legibility_receipt = micro_legibility_gate(
+                tok, per_symbol, tokens, min_acc=cfg.micro_legibility_min, run_name=run_name
+            )
+            print(f"[{run_name}] micro legibility gate: {legibility_receipt}", flush=True)
+
         # ---- Stage 2: AR backbone on the token windows (same draw geometry) --------------
         backbone = build_cell_backbone(
             tok.v_c,
@@ -261,6 +274,7 @@ def run_cell(
         "determinism": det,
         "artifacts": {"tokenizer_hash": tok_hash, "predictor_hash": pred_hash},
         "final_loss": {"stage1": s1_loss, "stage2": s2_loss},
+        "micro_legibility_gate": legibility_receipt,
         "draw": {
             "alpha": cfg.alpha,
             "n_drawn_stage1": sampler.n_drawn,

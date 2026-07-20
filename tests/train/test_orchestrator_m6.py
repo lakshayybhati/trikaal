@@ -77,6 +77,9 @@ def _cfg(tmp_path, steps=6) -> OrchestratorConfig:
         seeds=(0,),
         seq_len=16,
         batch_size=4,
+        # toy shells on synthetic fixtures — the §7 v1.4 standing gate applies to the REAL
+        # M6 run (default 0.9); a d-tiny tokenizer on noise cannot and need not clear it
+        micro_legibility_min=None,
         steps_stage1=steps,
         steps_stage2=steps,
         tok_kwargs=TOK_KW,
