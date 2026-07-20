@@ -1,0 +1,898 @@
+{
+  "attempts": [
+    {
+      "aborted_by_spike": false,
+      "best_val_nll": 12.7483,
+      "final_val_nll": 12.7483,
+      "peak_lr": 0.0003,
+      "spikes": [],
+      "steps": 20000,
+      "trajectory": [
+        {
+          "lr": 7.5e-05,
+          "probe_spearman": -0.0074,
+          "step": 500,
+          "train_nll": 18.0491,
+          "train_nll_main": 13.8898,
+          "val_nll": 13.6214
+        },
+        {
+          "lr": 0.00015,
+          "probe_spearman": 0.0333,
+          "step": 1000,
+          "train_nll": 17.7075,
+          "train_nll_main": 13.6324,
+          "val_nll": 13.6278
+        },
+        {
+          "lr": 0.000225,
+          "probe_spearman": -0.0005,
+          "step": 1500,
+          "train_nll": 17.5107,
+          "train_nll_main": 13.6331,
+          "val_nll": 13.6328
+        },
+        {
+          "lr": 0.0003,
+          "probe_spearman": 0.9895,
+          "step": 2000,
+          "train_nll": 17.2089,
+          "train_nll_main": 13.3562,
+          "val_nll": 12.8638
+        },
+        {
+          "lr": 0.00029949,
+          "probe_spearman": 0.9987,
+          "step": 2500,
+          "train_nll": 16.7675,
+          "train_nll_main": 12.9266,
+          "val_nll": 12.8193
+        },
+        {
+          "lr": 0.00029795,
+          "probe_spearman": 0.9974,
+          "step": 3000,
+          "train_nll": 16.7303,
+          "train_nll_main": 12.8939,
+          "val_nll": 12.8037
+        },
+        {
+          "lr": 0.0002954,
+          "probe_spearman": 0.9978,
+          "step": 3500,
+          "train_nll": 16.7069,
+          "train_nll_main": 12.8752,
+          "val_nll": 12.7976
+        },
+        {
+          "lr": 0.00029186,
+          "probe_spearman": 0.9989,
+          "step": 4000,
+          "train_nll": 16.6983,
+          "train_nll_main": 12.8685,
+          "val_nll": 12.7807
+        },
+        {
+          "lr": 0.00028735,
+          "probe_spearman": 0.9984,
+          "step": 4500,
+          "train_nll": 16.6905,
+          "train_nll_main": 12.8626,
+          "val_nll": 12.776
+        },
+        {
+          "lr": 0.00028191,
+          "probe_spearman": 0.9995,
+          "step": 5000,
+          "train_nll": 16.6845,
+          "train_nll_main": 12.8585,
+          "val_nll": 12.773
+        },
+        {
+          "lr": 0.00027559,
+          "probe_spearman": 0.9985,
+          "step": 5500,
+          "train_nll": 16.678,
+          "train_nll_main": 12.853,
+          "val_nll": 12.7758
+        },
+        {
+          "lr": 0.00026842,
+          "probe_spearman": 0.9998,
+          "step": 6000,
+          "train_nll": 16.6753,
+          "train_nll_main": 12.8514,
+          "val_nll": 12.7677
+        },
+        {
+          "lr": 0.00026046,
+          "probe_spearman": 0.9996,
+          "step": 6500,
+          "train_nll": 16.6683,
+          "train_nll_main": 12.8463,
+          "val_nll": 12.768
+        },
+        {
+          "lr": 0.00025178,
+          "probe_spearman": 0.9986,
+          "step": 7000,
+          "train_nll": 16.6691,
+          "train_nll_main": 12.8469,
+          "val_nll": 12.7649
+        },
+        {
+          "lr": 0.00024243,
+          "probe_spearman": 0.9999,
+          "step": 7500,
+          "train_nll": 16.6678,
+          "train_nll_main": 12.8461,
+          "val_nll": 12.7646
+        },
+        {
+          "lr": 0.0002325,
+          "probe_spearman": 0.9993,
+          "step": 8000,
+          "train_nll": 16.6642,
+          "train_nll_main": 12.8433,
+          "val_nll": 12.7597
+        },
+        {
+          "lr": 0.00022205,
+          "probe_spearman": 0.9989,
+          "step": 8500,
+          "train_nll": 16.6642,
+          "train_nll_main": 12.8435,
+          "val_nll": 12.7619
+        },
+        {
+          "lr": 0.00021117,
+          "probe_spearman": 0.9988,
+          "step": 9000,
+          "train_nll": 16.6598,
+          "train_nll_main": 12.8403,
+          "val_nll": 12.764
+        },
+        {
+          "lr": 0.00019994,
+          "probe_spearman": 0.9994,
+          "step": 9500,
+          "train_nll": 16.6572,
+          "train_nll_main": 12.8383,
+          "val_nll": 12.7572
+        },
+        {
+          "lr": 0.00018844,
+          "probe_spearman": 0.9994,
+          "step": 10000,
+          "train_nll": 16.6561,
+          "train_nll_main": 12.838,
+          "val_nll": 12.7617
+        },
+        {
+          "lr": 0.00017677,
+          "probe_spearman": 0.9997,
+          "step": 10500,
+          "train_nll": 16.6538,
+          "train_nll_main": 12.8362,
+          "val_nll": 12.7596
+        },
+        {
+          "lr": 0.000165,
+          "probe_spearman": 0.9999,
+          "step": 11000,
+          "train_nll": 16.6502,
+          "train_nll_main": 12.8335,
+          "val_nll": 12.7562
+        },
+        {
+          "lr": 0.00015323,
+          "probe_spearman": 1.0,
+          "step": 11500,
+          "train_nll": 16.6511,
+          "train_nll_main": 12.8344,
+          "val_nll": 12.7557
+        },
+        {
+          "lr": 0.00014156,
+          "probe_spearman": 0.9997,
+          "step": 12000,
+          "train_nll": 16.6537,
+          "train_nll_main": 12.8364,
+          "val_nll": 12.7523
+        },
+        {
+          "lr": 0.00013006,
+          "probe_spearman": 0.9995,
+          "step": 12500,
+          "train_nll": 16.6506,
+          "train_nll_main": 12.8342,
+          "val_nll": 12.7547
+        },
+        {
+          "lr": 0.00011883,
+          "probe_spearman": 0.9997,
+          "step": 13000,
+          "train_nll": 16.6516,
+          "train_nll_main": 12.8353,
+          "val_nll": 12.7536
+        },
+        {
+          "lr": 0.00010795,
+          "probe_spearman": 0.9996,
+          "step": 13500,
+          "train_nll": 16.6423,
+          "train_nll_main": 12.8284,
+          "val_nll": 12.7533
+        },
+        {
+          "lr": 9.75e-05,
+          "probe_spearman": 0.9992,
+          "step": 14000,
+          "train_nll": 16.644,
+          "train_nll_main": 12.8299,
+          "val_nll": 12.7507
+        },
+        {
+          "lr": 8.757e-05,
+          "probe_spearman": 0.9995,
+          "step": 14500,
+          "train_nll": 16.6456,
+          "train_nll_main": 12.8313,
+          "val_nll": 12.7527
+        },
+        {
+          "lr": 7.822e-05,
+          "probe_spearman": 0.9996,
+          "step": 15000,
+          "train_nll": 16.6445,
+          "train_nll_main": 12.8302,
+          "val_nll": 12.7526
+        },
+        {
+          "lr": 6.954e-05,
+          "probe_spearman": 0.9999,
+          "step": 15500,
+          "train_nll": 16.6424,
+          "train_nll_main": 12.829,
+          "val_nll": 12.7509
+        },
+        {
+          "lr": 6.158e-05,
+          "probe_spearman": 0.9997,
+          "step": 16000,
+          "train_nll": 16.6438,
+          "train_nll_main": 12.8303,
+          "val_nll": 12.7513
+        },
+        {
+          "lr": 5.441e-05,
+          "probe_spearman": 0.9997,
+          "step": 16500,
+          "train_nll": 16.6399,
+          "train_nll_main": 12.8274,
+          "val_nll": 12.7492
+        },
+        {
+          "lr": 4.809e-05,
+          "probe_spearman": 1.0,
+          "step": 17000,
+          "train_nll": 16.6429,
+          "train_nll_main": 12.8297,
+          "val_nll": 12.7498
+        },
+        {
+          "lr": 4.265e-05,
+          "probe_spearman": 0.9997,
+          "step": 17500,
+          "train_nll": 16.6403,
+          "train_nll_main": 12.8278,
+          "val_nll": 12.7489
+        },
+        {
+          "lr": 3.814e-05,
+          "probe_spearman": 0.9995,
+          "step": 18000,
+          "train_nll": 16.6395,
+          "train_nll_main": 12.8273,
+          "val_nll": 12.749
+        },
+        {
+          "lr": 3.46e-05,
+          "probe_spearman": 1.0,
+          "step": 18500,
+          "train_nll": 16.6375,
+          "train_nll_main": 12.8261,
+          "val_nll": 12.7505
+        },
+        {
+          "lr": 3.205e-05,
+          "probe_spearman": 0.9999,
+          "step": 19000,
+          "train_nll": 16.6391,
+          "train_nll_main": 12.827,
+          "val_nll": 12.751
+        },
+        {
+          "lr": 3.051e-05,
+          "probe_spearman": 1.0,
+          "step": 19500,
+          "train_nll": 16.6344,
+          "train_nll_main": 12.8234,
+          "val_nll": 12.7496
+        },
+        {
+          "lr": 3e-05,
+          "probe_spearman": 0.9999,
+          "step": 20000,
+          "train_nll": 16.6351,
+          "train_nll_main": 12.824,
+          "val_nll": 12.7483
+        }
+      ],
+      "wall_s": 979.2
+    }
+  ],
+  "branch_semantics": {
+    "a_detect_interface": "AR learns dense token-space conditionals -> v6 finding localizes to the tokenizer->AR INTERFACE (H-T); interface re-spec adjudication is the supervisor's",
+    "b_clean_fail_strong_HA": "STRONG H-A: the AR could not learn a dense, graded, task-shaped lag-2 dependency in its native ordinal digit structure; pre-named next = the scaling probe (d256/d128, reduced vocab, AND rung-(ii) parity at the scale where (i)-style rules ARE learned, to map the findability cliff)",
+    "c_extension": "ONE 20k extension",
+    "d_spike": "halve-lr-once restart (automatic, recorded as lr_halved)",
+    "e_inconclusive": "report, zero further spend, await ruling"
+  },
+  "branch_taken": "a_detect_interface",
+  "control": "m6_token_space_control_rung_i_noisy_map",
+  "decision_inputs": {
+    "H0_source": "runs_manifest/m6_canary_v6_stage1_manifest.json :: runs.noise.final_val_nll (v6 noise-arm cell4, identical carrier construction/budget/schedule/val protocol)",
+    "H0_val": 13.5979,
+    "branch": "a_detect_interface",
+    "detect_val_clause": "final val <= H0 - 0.5 x I_planted = 13.5979 - 0.4501",
+    "final_val_minus_H0": -0.8496,
+    "final_val_nll": 12.7483,
+    "final_val_train_main_gap": -0.0757,
+    "i_planted_full_stream": 0.9002715667652758,
+    "lr_halved": false,
+    "probe_cross_step": 2000,
+    "probe_final": 0.9999,
+    "probe_flat_every_eval": false,
+    "probe_max": 1.0,
+    "schedule_complete": true,
+    "sub_epoch_holds": true,
+    "thresholds": {
+      "desc_nats": 0.05,
+      "detect_corr": 0.3,
+      "detect_val_drop_nats": 0.4501,
+      "detect_val_frac_of_info": 0.5,
+      "flat_corr": 0.05,
+      "h0_tol": 0.1,
+      "memo_gap": 0.5
+    }
+  },
+  "full_stream_receipts": {
+    "carrier_target_marginal": [
+      0.11299304761904762,
+      0.12144514285714286,
+      0.12455045238095239,
+      0.1103665,
+      0.12225007142857143,
+      0.12495478571428571,
+      0.11471588095238096,
+      0.0895255238095238,
+      0.07919859523809523
+    ],
+    "closed_form_vs_mc_abs_diff": 1.994893911205775e-05,
+    "entropy_shift": -0.005211528164841717,
+    "exact_info_nats": 0.9002715667652758,
+    "mc_plugin_info_nats": 0.9002915157043878,
+    "source_marginal": [
+      0.12013383333333333,
+      0.1336299761904762,
+      0.12649376190476191,
+      0.118857,
+      0.13808590476190477,
+      0.110088,
+      0.08189330952380952,
+      0.08743957142857142,
+      0.08337864285714286
+    ],
+    "target_marginal_kl_planted_vs_carrier": 0.004795619186717248
+  },
+  "id_visibility_receipt_verbatim": {
+    "logistic_chance": 0.5,
+    "logistic_sign_accuracy": 0.5135,
+    "meaning": "the v6 feature-space state is nearly invisible in single-bar (c_id, f_id) while v6 dim-9 WINDOW-decode recon was non-degenerate \u2014 the state is smeared across the window's ids (causal encoder writes state_t into later tokens), not present in bar t's own id: standing mechanistic H-T evidence",
+    "mlp_state_pearson_corr": 0.0142,
+    "source": "runs_manifest/m6_token_control_step0.json (commit c4e5e72)",
+    "stream": "regenerated v6 PLANTED, symbol 0, first 300,000 bars"
+  },
+  "plant_from_step0": {
+    "channel_matrix": [
+      [
+        0.56723567,
+        0.34666685,
+        0.07913318,
+        0.00674687,
+        0.00021485,
+        2.56e-06,
+        1e-08,
+        0.0,
+        0.0
+      ],
+      [
+        0.25742584,
+        0.42121455,
+        0.25742584,
+        0.05876226,
+        0.00501005,
+        0.00015955,
+        1.9e-06,
+        1e-08,
+        0.0
+      ],
+      [
+        0.0555009,
+        0.24313848,
+        0.39783676,
+        0.24313848,
+        0.0555009,
+        0.00473199,
+        0.00015069,
+        1.79e-06,
+        1e-08
+      ],
+      [
+        0.0047097,
+        0.05523951,
+        0.24199337,
+        0.39596307,
+        0.24199337,
+        0.05523951,
+        0.0047097,
+        0.00014998,
+        1.78e-06
+      ],
+      [
+        0.00014996,
+        0.00470901,
+        0.05523132,
+        0.24195751,
+        0.3959044,
+        0.24195751,
+        0.05523132,
+        0.00470901,
+        0.00014996
+      ],
+      [
+        1.78e-06,
+        0.00014998,
+        0.0047097,
+        0.05523951,
+        0.24199337,
+        0.39596307,
+        0.24199337,
+        0.05523951,
+        0.0047097
+      ],
+      [
+        1e-08,
+        1.79e-06,
+        0.00015069,
+        0.00473199,
+        0.0555009,
+        0.24313848,
+        0.39783676,
+        0.24313848,
+        0.0555009
+      ],
+      [
+        0.0,
+        1e-08,
+        1.9e-06,
+        0.00015955,
+        0.00501005,
+        0.05876226,
+        0.25742584,
+        0.42121455,
+        0.25742584
+      ],
+      [
+        0.0,
+        0.0,
+        1e-08,
+        2.56e-06,
+        0.00021485,
+        0.00674687,
+        0.07913318,
+        0.34666685,
+        0.56723567
+      ]
+    ],
+    "entropy_carrier_target_marginal": 2.1872653383775362,
+    "entropy_planted_target_marginal": 2.1818579705336547,
+    "entropy_shift": -0.0054073678438815165,
+    "form": "noisy monotone map: target digit REDRAWN ~ discretized Gaussian on the level grid, center mu(s) = (L_t-1)*s/(L_s-1) (monotone sweep), width sigma_plant",
+    "info_nats": 0.9000000000000004,
+    "planted_target_marginal": [
+      0.11016648531267517,
+      0.1358983020391125,
+      0.1310957826386536,
+      0.12644622881046758,
+      0.12294839219144693,
+      0.10994823883072968,
+      0.09657587884692179,
+      0.09224342483356104,
+      0.07467726649643175
+    ],
+    "sigma_plant": 1.007677,
+    "source_digit": 1,
+    "source_levels": 9,
+    "target_digit": 2,
+    "target_levels": 9,
+    "target_marginal_kl_planted_vs_carrier": 0.004760539830577332
+  },
+  "rationale_verbatim": "rules at matched mutual information differ in SGD findability; rung (i) matches the real signal's dense/graded shape; rung (ii) (categorical needle) is reserved for the findability-cliff map and can never ground an H-A claim",
+  "recipe": {
+    "bars_total": 42000000,
+    "budget_steps": 20000,
+    "carrier": "regenerated v6 noise stream (same crc32 seeds), tokenized by the frozen v6 noise-arm cell4 tokenizer",
+    "coarse_levels": [
+      11,
+      9,
+      9
+    ],
+    "device": "cuda",
+    "eval_every": 500,
+    "hold_frac": 0.65,
+    "lag": 2,
+    "n_per_symbol": 14000000,
+    "noise_tokenizer": "runs_cloud/canary_v6/m6_canary_v6/noise/cell4_fsq_micro_seed0/tokenizer.pt",
+    "plant_rng": "np.random.default_rng((0x9A47, seed, symbol_index))",
+    "schedule": {
+      "floor_frac": 0.1,
+      "fn": "cosine_warmup_lr",
+      "peak_lr_stage2": 0.0003,
+      "warmup_frac": 0.1
+    },
+    "seed": 0,
+    "spike_nats": 1.0,
+    "toy": false
+  },
+  "rung_ii_status": "SHELVED (parity bijection \u2014 categorical needle; reserved for the findability-cliff map; can never ground an H-A claim)",
+  "step0_artifact": "runs_manifest/m6_token_control_step0.json",
+  "sub_epoch": {
+    "bar_visits": 20480000,
+    "bars_total": 42000000,
+    "batch": 32,
+    "epochs_equivalent_train_region": 0.7502,
+    "hold_frac": 0.65,
+    "holds": true,
+    "n_per_symbol": 14000000,
+    "required_train_bars": 26624000,
+    "rule": "train-region bars >= 1.3 x (steps x batch x seq_len) bar-visits",
+    "seq_len": 32,
+    "steps": 20000,
+    "train_bars": 27300000
+  },
+  "trajectory": [
+    {
+      "lr": 7.5e-05,
+      "probe_spearman": -0.0074,
+      "step": 500,
+      "train_nll": 18.0491,
+      "train_nll_main": 13.8898,
+      "val_nll": 13.6214
+    },
+    {
+      "lr": 0.00015,
+      "probe_spearman": 0.0333,
+      "step": 1000,
+      "train_nll": 17.7075,
+      "train_nll_main": 13.6324,
+      "val_nll": 13.6278
+    },
+    {
+      "lr": 0.000225,
+      "probe_spearman": -0.0005,
+      "step": 1500,
+      "train_nll": 17.5107,
+      "train_nll_main": 13.6331,
+      "val_nll": 13.6328
+    },
+    {
+      "lr": 0.0003,
+      "probe_spearman": 0.9895,
+      "step": 2000,
+      "train_nll": 17.2089,
+      "train_nll_main": 13.3562,
+      "val_nll": 12.8638
+    },
+    {
+      "lr": 0.00029949,
+      "probe_spearman": 0.9987,
+      "step": 2500,
+      "train_nll": 16.7675,
+      "train_nll_main": 12.9266,
+      "val_nll": 12.8193
+    },
+    {
+      "lr": 0.00029795,
+      "probe_spearman": 0.9974,
+      "step": 3000,
+      "train_nll": 16.7303,
+      "train_nll_main": 12.8939,
+      "val_nll": 12.8037
+    },
+    {
+      "lr": 0.0002954,
+      "probe_spearman": 0.9978,
+      "step": 3500,
+      "train_nll": 16.7069,
+      "train_nll_main": 12.8752,
+      "val_nll": 12.7976
+    },
+    {
+      "lr": 0.00029186,
+      "probe_spearman": 0.9989,
+      "step": 4000,
+      "train_nll": 16.6983,
+      "train_nll_main": 12.8685,
+      "val_nll": 12.7807
+    },
+    {
+      "lr": 0.00028735,
+      "probe_spearman": 0.9984,
+      "step": 4500,
+      "train_nll": 16.6905,
+      "train_nll_main": 12.8626,
+      "val_nll": 12.776
+    },
+    {
+      "lr": 0.00028191,
+      "probe_spearman": 0.9995,
+      "step": 5000,
+      "train_nll": 16.6845,
+      "train_nll_main": 12.8585,
+      "val_nll": 12.773
+    },
+    {
+      "lr": 0.00027559,
+      "probe_spearman": 0.9985,
+      "step": 5500,
+      "train_nll": 16.678,
+      "train_nll_main": 12.853,
+      "val_nll": 12.7758
+    },
+    {
+      "lr": 0.00026842,
+      "probe_spearman": 0.9998,
+      "step": 6000,
+      "train_nll": 16.6753,
+      "train_nll_main": 12.8514,
+      "val_nll": 12.7677
+    },
+    {
+      "lr": 0.00026046,
+      "probe_spearman": 0.9996,
+      "step": 6500,
+      "train_nll": 16.6683,
+      "train_nll_main": 12.8463,
+      "val_nll": 12.768
+    },
+    {
+      "lr": 0.00025178,
+      "probe_spearman": 0.9986,
+      "step": 7000,
+      "train_nll": 16.6691,
+      "train_nll_main": 12.8469,
+      "val_nll": 12.7649
+    },
+    {
+      "lr": 0.00024243,
+      "probe_spearman": 0.9999,
+      "step": 7500,
+      "train_nll": 16.6678,
+      "train_nll_main": 12.8461,
+      "val_nll": 12.7646
+    },
+    {
+      "lr": 0.0002325,
+      "probe_spearman": 0.9993,
+      "step": 8000,
+      "train_nll": 16.6642,
+      "train_nll_main": 12.8433,
+      "val_nll": 12.7597
+    },
+    {
+      "lr": 0.00022205,
+      "probe_spearman": 0.9989,
+      "step": 8500,
+      "train_nll": 16.6642,
+      "train_nll_main": 12.8435,
+      "val_nll": 12.7619
+    },
+    {
+      "lr": 0.00021117,
+      "probe_spearman": 0.9988,
+      "step": 9000,
+      "train_nll": 16.6598,
+      "train_nll_main": 12.8403,
+      "val_nll": 12.764
+    },
+    {
+      "lr": 0.00019994,
+      "probe_spearman": 0.9994,
+      "step": 9500,
+      "train_nll": 16.6572,
+      "train_nll_main": 12.8383,
+      "val_nll": 12.7572
+    },
+    {
+      "lr": 0.00018844,
+      "probe_spearman": 0.9994,
+      "step": 10000,
+      "train_nll": 16.6561,
+      "train_nll_main": 12.838,
+      "val_nll": 12.7617
+    },
+    {
+      "lr": 0.00017677,
+      "probe_spearman": 0.9997,
+      "step": 10500,
+      "train_nll": 16.6538,
+      "train_nll_main": 12.8362,
+      "val_nll": 12.7596
+    },
+    {
+      "lr": 0.000165,
+      "probe_spearman": 0.9999,
+      "step": 11000,
+      "train_nll": 16.6502,
+      "train_nll_main": 12.8335,
+      "val_nll": 12.7562
+    },
+    {
+      "lr": 0.00015323,
+      "probe_spearman": 1.0,
+      "step": 11500,
+      "train_nll": 16.6511,
+      "train_nll_main": 12.8344,
+      "val_nll": 12.7557
+    },
+    {
+      "lr": 0.00014156,
+      "probe_spearman": 0.9997,
+      "step": 12000,
+      "train_nll": 16.6537,
+      "train_nll_main": 12.8364,
+      "val_nll": 12.7523
+    },
+    {
+      "lr": 0.00013006,
+      "probe_spearman": 0.9995,
+      "step": 12500,
+      "train_nll": 16.6506,
+      "train_nll_main": 12.8342,
+      "val_nll": 12.7547
+    },
+    {
+      "lr": 0.00011883,
+      "probe_spearman": 0.9997,
+      "step": 13000,
+      "train_nll": 16.6516,
+      "train_nll_main": 12.8353,
+      "val_nll": 12.7536
+    },
+    {
+      "lr": 0.00010795,
+      "probe_spearman": 0.9996,
+      "step": 13500,
+      "train_nll": 16.6423,
+      "train_nll_main": 12.8284,
+      "val_nll": 12.7533
+    },
+    {
+      "lr": 9.75e-05,
+      "probe_spearman": 0.9992,
+      "step": 14000,
+      "train_nll": 16.644,
+      "train_nll_main": 12.8299,
+      "val_nll": 12.7507
+    },
+    {
+      "lr": 8.757e-05,
+      "probe_spearman": 0.9995,
+      "step": 14500,
+      "train_nll": 16.6456,
+      "train_nll_main": 12.8313,
+      "val_nll": 12.7527
+    },
+    {
+      "lr": 7.822e-05,
+      "probe_spearman": 0.9996,
+      "step": 15000,
+      "train_nll": 16.6445,
+      "train_nll_main": 12.8302,
+      "val_nll": 12.7526
+    },
+    {
+      "lr": 6.954e-05,
+      "probe_spearman": 0.9999,
+      "step": 15500,
+      "train_nll": 16.6424,
+      "train_nll_main": 12.829,
+      "val_nll": 12.7509
+    },
+    {
+      "lr": 6.158e-05,
+      "probe_spearman": 0.9997,
+      "step": 16000,
+      "train_nll": 16.6438,
+      "train_nll_main": 12.8303,
+      "val_nll": 12.7513
+    },
+    {
+      "lr": 5.441e-05,
+      "probe_spearman": 0.9997,
+      "step": 16500,
+      "train_nll": 16.6399,
+      "train_nll_main": 12.8274,
+      "val_nll": 12.7492
+    },
+    {
+      "lr": 4.809e-05,
+      "probe_spearman": 1.0,
+      "step": 17000,
+      "train_nll": 16.6429,
+      "train_nll_main": 12.8297,
+      "val_nll": 12.7498
+    },
+    {
+      "lr": 4.265e-05,
+      "probe_spearman": 0.9997,
+      "step": 17500,
+      "train_nll": 16.6403,
+      "train_nll_main": 12.8278,
+      "val_nll": 12.7489
+    },
+    {
+      "lr": 3.814e-05,
+      "probe_spearman": 0.9995,
+      "step": 18000,
+      "train_nll": 16.6395,
+      "train_nll_main": 12.8273,
+      "val_nll": 12.749
+    },
+    {
+      "lr": 3.46e-05,
+      "probe_spearman": 1.0,
+      "step": 18500,
+      "train_nll": 16.6375,
+      "train_nll_main": 12.8261,
+      "val_nll": 12.7505
+    },
+    {
+      "lr": 3.205e-05,
+      "probe_spearman": 0.9999,
+      "step": 19000,
+      "train_nll": 16.6391,
+      "train_nll_main": 12.827,
+      "val_nll": 12.751
+    },
+    {
+      "lr": 3.051e-05,
+      "probe_spearman": 1.0,
+      "step": 19500,
+      "train_nll": 16.6344,
+      "train_nll_main": 12.8234,
+      "val_nll": 12.7496
+    },
+    {
+      "lr": 3e-05,
+      "probe_spearman": 0.9999,
+      "step": 20000,
+      "train_nll": 16.6351,
+      "train_nll_main": 12.824,
+      "val_nll": 12.7483
+    }
+  ],
+  "translation_plant_status": "RETIRED (Step-0 receipt: 99%+ max-entropy digit marginals cap translation at 0.2769 nats \u2014 info-poor by physics)"
+}
