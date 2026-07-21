@@ -1,0 +1,27 @@
+{
+  "artifact": "m6_acceptance_mu_drift_diagnostic",
+  "context": "acceptance run 2026-07-21: Stage-1 branch (a) DETECT (cross 2000, tf 0.9407, d-val -1.3381, on-box legibility gate 0.8990 enforced-pass); Stage-2 full 10-cell verdicts FAILED (planted_fires False, placebo_neutral False; noise quiet, recon, codebooks green) with ALL five noise cells at bit-identical IR -7.56 / kappa* 1.0 / act 0.23 across BOTH quantizers \u2014 impossible unless positions are cell-independent.",
+  "diagnostic": {
+    "h15": {
+      "corr_mu_fwdret": 0.2055,
+      "corr_mu_state": 0.8128,
+      "mu_mean": -0.09676,
+      "mu_std": 0.03597
+    },
+    "h2": {
+      "corr_mu_fwdret": 0.6105,
+      "corr_mu_state": 0.9274,
+      "mu_mean": -6e-05,
+      "mu_std": 0.03021
+    },
+    "h5": {
+      "corr_mu_fwdret": 0.3827,
+      "corr_mu_state": 0.8884,
+      "mu_mean": -0.02345,
+      "mu_std": 0.03324
+    },
+    "setup": "cell4 planted stage-1 (20k) model, 2000 eval-region decision points, predict_mu at h in {2,5,15} vs the planted state and the realized forward return"
+  },
+  "localization": "the SIGNAL IS TRANSMITTED end-to-end (corr(mu,state) 0.81 at the headline h=15 \u2014 the v1.4/v1.4.1 interface fix works through the money predictor). The verdict failure is SIGN SATURATION: a systematic per-rollout-step decode bias (~ -0.0065/bar, x15 steps => mu mean -0.097 = -2.7 sigma of mu std 0.036) parks the entire mu distribution below zero, so every decision in every cell is short => identical positions => identical IRs; the kappa-threshold instrument reads sign only. An argmax-rollout decode-bias x fixture interaction: the Stage-2 money-path leg was last fixture-validated in the v3 era, BEFORE the calibrated fillers and the pointwise tokenizer.",
+  "note_for_real_data": "flag for the real run regardless of the ruling: add a per-cell mu mean/std receipt to score_cell diagnostics \u2014 a smaller real-data rollout drift would not sign-collapse (rehearsal receipts showed varied activity/kappa) but could still bias absolute IR levels."
+}
