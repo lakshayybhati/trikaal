@@ -173,7 +173,7 @@ Otherwise it is reported **descriptively with CIs, claimed as nothing** — and 
 
 ## 6. Binding gates (G-§8.C.3 quantified in v1.2; others unchanged)
 
-G-instrument-live (anchor `5eead7b6…`), G-parity, G-causal, G-determinism — per m6_design §3.
+G-instrument-live (anchor `3f86882a…`, re-anchored §7 v1.4.2 for the μ̂-mean estimator; `5eead7b6…` retired to history), G-parity, G-causal, G-determinism — per m6_design §3.
 
 **G-§8.C.3 (Kronos external validation), quantified (v1.2 — was "~10–15% / materially off / fix",
 three stacked judgment calls = an unlimited re-run license):**
@@ -190,6 +190,33 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.2 (2026-07-21, acceptance-run adjudication; supervisor-ordered) — BEFORE any real
+  training. THE μ̂ ESTIMATOR: conditional MEAN, not mode.** The acceptance run's Stage-2 money
+  verdicts failed with all noise cells at a bit-identical IR across both quantizers; diagnosed
+  as sign saturation — the greedy-argmax rollout is a conditional-MODE estimator, and under the
+  skewed per-step return distribution the mode is biased low, a bias that COMPOUNDS over the h
+  rollout steps (acceptance fixture, h=15: argmax μ̂ mean −0.051 with 92.9 % of decisions
+  negative — every decision short → identical positions → identical IRs). μ̂ is pre-registered
+  (§8) as the conditional MEAN. The decisive $0 comparison
+  (runs_manifest/m6_mu_estimator_comparison.json) on the fixture confirms the named hypothesis:
+  at h=15 the mean estimator removes ~91 % of the drift (argmax mean −0.051 → expectation
+  −0.004, frac-negative 0.929 → 0.534) while RAISING corr(μ̂, planted-state) 0.858 → 0.898; at
+  h=2 (few compounding steps) all estimators agree, the mode-bias signature. CHANGE: the
+  default estimator in `eval/predict.py` is now `"expectation"` — the token CHAIN still advances
+  greedily (deterministic cache, argmax conditioning) but each step's μ̂ contribution is the
+  mean decode `decode_latent(E[z])`, `E[z] = softmax(logits_c) @ grid_c ⊕
+  softmax(logits_f|ĉ) @ grid_f` (the mean-field/delta-method expectation — deterministic and
+  seed-stable). `"argmax"` is retained for regression KATs and pre-v1.4.2 anchor reproduction;
+  `"mc_mean"` (pinned n_samples=32/seed) is the unbiased-in-expectation fallback. **spec §8's
+  deferred MC-decode is thereby PARTIALLY un-deferred as a CORRECTNESS need — mean only, no
+  full-distribution scope.** Enforced by a skewed-toy KNOWN-ANSWER KAT (argmax provably biased
+  to the mode value, expectation provably the true mean) plus regression KATs (k=1 exclusion,
+  chunking, RoPE guard unchanged) and per-cell μ̂ mean/std/frac-negative receipts on
+  `CellScore` + the `m6_cell_eval_v1` artifact. μ̂'s pre-registered meaning is the conditional
+  mean; the estimator now matches it. GATE-A RE-ANCHOR: `predict.py` is inside the anchored M5
+  instrument, so the estimator change re-derives the results_hash under the standing
+  re-anchor procedure (≥2 bit-identical runs, new hash in the run-manifest, milestone5
+  anchor-history extended); the KATs + causal gates carry logic-integrity across the transition.
 - **v1.4.1 (2026-07-21, gate-2 final ruling execution; supervisor-signed) — BEFORE any real
   training.** The pre-authorized micro-weighted bottleneck fallback FIRED on a trigger
   strictly stronger than written: deterministic FIXTURE-gate failure with mechanism receipts

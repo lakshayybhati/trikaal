@@ -1,0 +1,84 @@
+{
+  "artifact": "m6_mu_estimator_comparison",
+  "device": "mps",
+  "fixture_planted_cell4": {
+    "h15": {
+      "argmax": {
+        "corr_mu_fwdret": 0.2449,
+        "corr_mu_state": 0.8582,
+        "frac_negative": 0.9287,
+        "mu_mean": -0.05128,
+        "mu_std": 0.033952
+      },
+      "expectation": {
+        "corr_mu_fwdret": 0.2587,
+        "corr_mu_state": 0.8978,
+        "frac_negative": 0.534,
+        "mu_mean": -0.004426,
+        "mu_std": 0.028714
+      },
+      "mc_mean": {
+        "corr_mu_fwdret": 0.2226,
+        "corr_mu_state": 0.7529,
+        "frac_negative": 0.6133,
+        "mu_mean": -0.010144,
+        "mu_std": 0.035777
+      }
+    },
+    "h2": {
+      "argmax": {
+        "corr_mu_fwdret": 0.8899,
+        "corr_mu_state": 0.9382,
+        "frac_negative": 0.5407,
+        "mu_mean": -0.000506,
+        "mu_std": 0.030746
+      },
+      "expectation": {
+        "corr_mu_fwdret": 0.8951,
+        "corr_mu_state": 0.9431,
+        "frac_negative": 0.5033,
+        "mu_mean": -0.000111,
+        "mu_std": 0.026967
+      },
+      "mc_mean": {
+        "corr_mu_fwdret": 0.8892,
+        "corr_mu_state": 0.9382,
+        "frac_negative": 0.5147,
+        "mu_mean": -0.000781,
+        "mu_std": 0.028951
+      }
+    }
+  },
+  "hypothesis": "greedy-argmax rollout = MODE estimator; mu-hat is pre-registered as the conditional MEAN; under skew the mode is biased",
+  "mc": {
+    "n_samples": 32,
+    "seed": 20260721
+  },
+  "real_btcusdt_m3_model": {
+    "h15": {
+      "argmax": {
+        "corr_mu_fwdret": -0.2805,
+        "frac_negative": 0.4133,
+        "mu_mean": 0.000601,
+        "mu_std": 0.021481
+      },
+      "expectation": {
+        "corr_mu_fwdret": 0.2106,
+        "frac_negative": 1.0,
+        "mu_mean": -0.001167,
+        "mu_std": 0.002565
+      },
+      "mc_mean": {
+        "corr_mu_fwdret": 0.2071,
+        "frac_negative": 0.9983,
+        "mu_mean": -0.000932,
+        "mu_std": 0.001418
+      }
+    }
+  },
+  "verdict": {
+    "drift_removed_by_expectation": true,
+    "drift_removed_by_mc": true
+  },
+  "wall_s": 935.6
+}

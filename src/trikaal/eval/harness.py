@@ -208,7 +208,7 @@ def run_harness(
 
     # DSR over the multiple-testing trial budget; PBO via CSCV on the κ-config matrix (VAL).
     # n_trials=240 here is the HISTORICAL M5 budget, kept numerically because run_harness is the
-    # M5 machine-validation instrument frozen under the Gate-A anchor (5eead7b6…) — it is NOT the
+    # M5 machine-validation instrument frozen under the Gate-A anchor (3f86882a…) — it is NOT the
     # M6 decision path and its DSR is never quoted as the M6 outcome. The governing recipe is
     # prereg §3 clause 5: N=180 ENUMERATED trials (5 cells × 3 seeds × horizons {5,15,60} × 4 κ;
     # h=1 is not evaluated in M6), computed ONLY by scripts/m6_verdict.py under the

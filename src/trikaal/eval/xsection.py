@@ -109,6 +109,12 @@ class CellScore:
     # artifacts persist (verdict.write_cell_eval_artifact) and the paired bootstrap resamples.
     # None under val_only (no headline grid was scored).
     headline_series: np.ndarray | None = None
+    # §7 v1.4.2 standing μ̂ receipt (acceptance adjudication): the decision-signal's mean/std
+    # and negative-fraction pooled across symbols. A constant-sign μ̂ (frac_negative ≈ 0 or 1)
+    # is the mode-estimator sign-saturation pathology the acceptance run surfaced — with the
+    # mean estimator this should be balanced; recorded per cell so any residual drift is visible
+    # in the artifact rather than silently collapsing the κ-threshold decisions.
+    mu_diag: dict = field(default_factory=dict)
 
 
 def global_decision_grid_ms(cfg: XSectionConfig, block: int) -> np.ndarray:
@@ -223,7 +229,7 @@ def score_cell(
 
     def grid_series(
         grid: np.ndarray,
-    ) -> tuple[dict[float, np.ndarray], dict[float, np.ndarray], dict[str, int], int]:
+    ) -> tuple[dict[float, np.ndarray], dict[float, np.ndarray], dict[str, int], int, dict]:
         """Per-κ pooled FULL-grid calendar series for one decision grid, netted BOTH ways:
         at the flat pre-registered headline cost AND at the modeled per-decision cost (the
         named secondary, §6 item 10a). Positions come from θ = κ·c_modeled in both."""
@@ -235,6 +241,7 @@ def score_cell(
             k: {} for k in cfg.kappas
         }
         n_dec: dict[str, int] = {}
+        mu_pool: list[np.ndarray] = []
         for sym, d in prepared.items():
             se = d["se"]
             dec = symbol_decisions(se, grid, cfg)
@@ -257,6 +264,7 @@ def score_cell(
                 seq_len=cfg.seq_len,
                 device=cfg.device,
             )
+            mu_pool.append(mu)
             y_d = d["y"][dec]
             c_mod = _per_bar_cost(cost, se.sigma, dec, spread_for(sym))
             pidx = np.searchsorted(grid, se.ts[dec])  # the decision's global period id
@@ -270,10 +278,22 @@ def score_cell(
                 nets_mod[k][sym] = (pidx[act], net_trade_returns(s[act], y_d[act], c_mod[act]))
         series = {k: _pool_periods(nets_flat[k], n_periods) for k in cfg.kappas}
         series_mod = {k: _pool_periods(nets_mod[k], n_periods) for k in cfg.kappas}
-        return series, series_mod, n_dec, n_periods
+        mu_all = np.concatenate(mu_pool) if mu_pool else np.array([])
+        mu_diag = (
+            {
+                "mean": float(mu_all.mean()),
+                "std": float(mu_all.std()),
+                "frac_negative": float((mu_all < 0).mean()),
+                "n": int(mu_all.size),
+                "estimator": "expectation",  # §7 v1.4.2 default (conditional mean)
+            }
+            if mu_all.size
+            else {}
+        )
+        return series, series_mod, n_dec, n_periods, mu_diag
 
     # κ* on the pooled VAL block; per-κ curve persisted; time-aligned PBO over the κ configs
-    val_series, _val_mod, _, _ = grid_series(global_decision_grid_ms(cfg, cfg.val_block))
+    val_series, _val_mod, _, _, _ = grid_series(global_decision_grid_ms(cfg, cfg.val_block))
     val_ir = {k: information_ratio(val_series[k], cfg.h) for k in cfg.kappas}
     finite_ir = {k: v for k, v in val_ir.items() if np.isfinite(v)}
     kappa_star = max(finite_ir, key=finite_ir.get) if finite_ir else cfg.kappas[0]
@@ -306,7 +326,7 @@ def score_cell(
         if cfg.money
         else global_decision_grid_ms(cfg, cfg.headline_block)
     )
-    hd_series, hd_mod, n_dec, _ = grid_series(hd_grid)
+    hd_series, hd_mod, n_dec, _, mu_diag = grid_series(hd_grid)
     head = hd_series[kappa_star]
     ir_headline = information_ratio(head, cfg.h)
     ir_modeled = information_ratio(hd_mod[kappa_star], cfg.h)
@@ -337,6 +357,7 @@ def score_cell(
         per_symbol_decisions=n_dec,
         codebook=codebook,
         headline_series=head,
+        mu_diag=mu_diag,
     )
 
 

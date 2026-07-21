@@ -85,6 +85,7 @@ def write_cell_eval_artifact(
     kappa_star_by_h: dict[int, float],
     val_ir_by_kappa_by_h: dict[int, dict[float, float]],
     codebook: dict | None = None,
+    mu_diag: dict | None = None,
     meta: dict | None = None,
 ) -> tuple[str, str]:
     """Write ONE per-(cell, seed) eval artifact; returns ``(name, sha256)``.
@@ -115,6 +116,9 @@ def write_cell_eval_artifact(
         # non-gating codebook-usage diagnostic (CO2 item 5): score_cell's CellScore.codebook —
         # per-cell utilization + effective bits, reported in the paper, never thresholded
         "codebook": codebook or {},
+        # §7 v1.4.2 standing μ̂ receipt: per-cell mean/std/frac_negative of the decision signal
+        # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology)
+        "mu_diag": mu_diag or {},
         "meta": meta or {},
     }
     name = f"cell{cell_id}_seed{seed}_eval.json"

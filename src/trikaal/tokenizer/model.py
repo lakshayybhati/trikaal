@@ -155,6 +155,28 @@ class TokenizerAE(nn.Module):
             return [2] * len(group)
         return [self.quant.levels[i] for i in group]
 
+    def group_grid(self, which: str, *, device=None) -> Tensor:
+        """``[V, len(group)]`` — the dequantized latent value of EVERY id of the coarse/fine
+        subtoken group, in the SAME dequantization as :meth:`decode_tokens` (FSQ grid value
+        ``code − (L_i−1)/2``; BSQ corner ``(2·bit − 1)/√k``). One source of truth for the
+        mean-estimator's ``E[z] = softmax(logits) @ grid`` decode (§8 μ̂ = conditional mean)."""
+        q = self.quant
+        group = list(q.coarse_idx if which == "coarse" else q.fine_idx)
+        v = self.v_c if which == "coarse" else self.v_f
+        radix = self._group_radix(group)
+        ids = torch.arange(v, dtype=torch.long)
+        codes = torch.zeros(v, len(group), dtype=torch.long)
+        rem = ids.clone()
+        for pos in reversed(range(len(group))):
+            codes[:, pos] = rem % radix[pos]
+            rem = rem // radix[pos]
+        if self.quantizer == "bsq":
+            grid = (2.0 * codes.to(torch.float32) - 1.0) / (float(q.dim) ** 0.5)
+        else:
+            half = (q.levels_t[group].cpu() - 1.0) / 2.0
+            grid = codes.to(torch.float32) - half
+        return grid.to(device) if device is not None else grid
+
     def decode_tokens(self, cidx: Tensor, fidx: Tensor) -> Tensor:
         """``(b_c, b_f) -> x_hat`` — inverse of ``encode_tokens`` (the AR rollout→features path).
 

@@ -92,6 +92,18 @@ without error and leak-free; that is the deliverable.** Outputs content-hashed
 > `results_hash sha256:5eead7b6cb90ffe2da0ac48752ebb819de186dbae665e954baec2e7d8b7bea46`
 > — durable record in `runs_manifest/gate_a_run_manifest.json` (committed). Any later
 > non-reproduction is a fail-closed STOP (m6_preflight Item 1).
+>
+> **Anchor history — RE-ANCHORED 2026-07-21 (prereg §7 v1.4.2, μ̂ estimator = conditional
+> mean).** `predict.py` is inside the anchored instrument; the acceptance-run adjudication
+> changed the default μ̂ estimator from greedy-argmax (the conditional MODE — sign-saturated
+> under skew) to `"expectation"` (the conditional MEAN μ̂ is pre-registered as), so the
+> results_hash re-derives under the standing procedure. New anchor, same committed env
+> (numpy==2.4.6 / torch==2.12.1 / py 3.11.7, device=mps, seed 0), **run twice → bit-identical**:
+> `results_hash sha256:3f86882a63dd06c780e7d73f61a5253e39f5b07564d4c84152bbaad62c886dc3`
+> (supersedes `5eead7b6…`, retained as history; `gate_a_run_manifest.json` updated). The KAT
+> suite (incl. the new skewed-toy known-answer estimator KAT) + both Gate-A causal tests carry
+> logic-integrity across the transition; any later non-reproduction of `3f86882a…` is the
+> fail-closed STOP.
 
 ## Adversarial review (required before declaring M5 done)
 

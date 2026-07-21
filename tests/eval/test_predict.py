@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import typing
+
 import numpy as np
 import pytest
 
@@ -71,6 +73,154 @@ def test_predict_mu_chunking_contract():
         b = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, chunk=chunk)
         assert np.array_equal(a, b), f"fixed chunk={chunk} must replay bit-exactly"
         np.testing.assert_allclose(a, ref, rtol=1e-4, atol=1e-6)  # cross-size: approximate
+
+
+# ---- §7 v1.4.2: the MEAN estimator (μ̂ = conditional mean, not mode) ------------------------
+class _SkewToy:
+    """A degenerate model+tokenizer with a KNOWN skewed per-step return distribution, so the
+    argmax (mode) μ̂ and the true mean μ̂ have hand-computable, DIFFERENT values.
+
+    Construction: coarse vocab of 3 ids whose decoded ret_close (dim 0) values are fixed to a
+    right-skewed set with p = [0.6, 0.3, 0.1] independent of context. The MODE is the p=0.6 id;
+    the MEAN is Σ p·value. Choose values so mode < mean (a left-heavy mode under right skew):
+    values [-1, 0, +5] → mode −1, mean 0.6·(−1)+0.3·0+0.1·5 = −0.1. Over (h−1) accumulated
+    steps the argmax μ̂ = (h−1)·(−1)·σ while the mean μ̂ = (h−1)·(−0.1)·σ — the mode is
+    6.7σ-scale more negative per step, the exact acceptance-run pathology in miniature."""
+
+    P: typing.ClassVar = [0.6, 0.3, 0.1]
+    VAL: typing.ClassVar = [-1.0, 0.0, 5.0]
+    V_C = 3
+
+    class _Out:
+        def __init__(self, logits_c, logits_f, coarse_cond, h_final):
+            self.logits_c, self.logits_f = logits_c, logits_f
+            self.coarse_cond, self.h_final = coarse_cond, h_final
+
+    def __init__(self):
+        import torch
+
+        self.v_c, self.v_f = self.V_C, 1
+        self._logits_c = torch.log(torch.tensor([self.P]))  # [1,3] fixed
+        self._config = {"max_len": 4096}
+
+    def eval(self):
+        return self
+
+    def init_caches(self):
+        return []
+
+    def step(self, b_c_t, b_f_t, ts_t, caches, pos):
+        import torch
+
+        n = b_c_t.shape[0]
+        lc = self._logits_c.to(b_c_t.device).expand(n, 1, self.V_C)
+        cc = lc.argmax(-1)
+        lf = torch.zeros(n, 1, 1, device=b_c_t.device)
+        return self._Out(lc, lf, cc, torch.zeros(n, 1, 1, device=b_c_t.device))
+
+    def fine_logits(self, h_final, coarse_ids):
+        import torch
+
+        return torch.zeros(*coarse_ids.shape, 1, device=coarse_ids.device)
+
+
+class _SkewTok:
+    """Tokenizer whose decode maps coarse id → the fixed VAL[id] on dim 0; fine ignored."""
+
+    quantizer = "fsq"
+
+    class _Q:
+        coarse_idx: typing.ClassVar = [0]
+        fine_idx: typing.ClassVar = [1]
+        dim = 2
+
+    def __init__(self):
+        self.quant = self._Q()
+        self.v_c, self.v_f = 3, 1
+
+    def eval(self):
+        return self
+
+    def _group_radix(self, group):
+        return [3] if group == [0] else [1]
+
+    def group_grid(self, which, *, device=None):
+        import torch
+
+        g = torch.tensor([[-1.0], [0.0], [5.0]]) if which == "coarse" else torch.zeros(1, 1)
+        return g.to(device) if device is not None else g
+
+    def decode_tokens(self, cidx, fidx):
+        import torch
+
+        vals = torch.tensor(_SkewToy.VAL, device=cidx.device)
+        x = torch.zeros(*cidx.shape, 16, device=cidx.device)
+        x[..., 0] = vals[cidx]
+        return x
+
+    def decode_latent(self, z):
+        import torch
+
+        x = torch.zeros(*z.shape[:-1], 16, device=z.device)
+        x[..., 0] = z[..., 0]  # dim-0 latent IS the ret_close (coarse grid value)
+        return x
+
+
+def test_estimator_argmax_is_biased_expectation_is_not():
+    """Known-answer: under the right-skewed toy, argmax μ̂ = (h−1)·(−1)·σ (the mode) while
+    expectation μ̂ = (h−1)·(−0.1)·σ (the true mean). This is the acceptance sign-saturation
+    pathology with an exact target — argmax must be wrong and expectation must be right."""
+    m, tok = _SkewToy(), _SkewTok()
+    ts = (1_600_000_000_000 + np.arange(40) * BAR_MS).astype(np.int64)
+    b_c = np.zeros(40, dtype=np.int64)
+    b_f = np.zeros(40, dtype=np.int64)
+    sigma = np.full(40, 0.01)
+    dec = np.array([20], dtype=np.int64)
+    h = 6
+    mu_arg = predict_mu(m, tok, b_c, b_f, ts, sigma, dec, h=h, seq_len=8, estimator="argmax")
+    mu_exp = predict_mu(m, tok, b_c, b_f, ts, sigma, dec, h=h, seq_len=8, estimator="expectation")
+    steps = h - 1  # k=1 excluded
+    assert np.allclose(mu_arg, steps * (-1.0) * 0.01), mu_arg  # mode
+    assert np.allclose(mu_exp, steps * (-0.1) * 0.01), mu_exp  # true mean
+    assert mu_exp[0] > mu_arg[0]  # the mode is biased LOW under this right skew
+
+
+def test_mc_mean_approaches_expectation_on_the_toy():
+    """The MC-mean fallback is unbiased-in-expectation: at enough samples its μ̂ approaches the
+    exact mean, not the mode (loose tolerance — it is the noisy estimator, by design)."""
+    m, tok = _SkewToy(), _SkewTok()
+    ts = (1_600_000_000_000 + np.arange(40) * BAR_MS).astype(np.int64)
+    b_c, b_f, sigma = np.zeros(40, np.int64), np.zeros(40, np.int64), np.full(40, 0.01)
+    mu_mc = predict_mu(
+        m,
+        tok,
+        b_c,
+        b_f,
+        ts,
+        sigma,
+        np.array([20]),
+        h=6,
+        seq_len=8,
+        estimator="mc_mean",
+        mc_samples=400,
+        mc_seed=7,
+    )
+    assert abs(mu_mc[0] - 5 * (-0.1) * 0.01) < abs(mu_mc[0] - 5 * (-1.0) * 0.01)  # nearer mean
+
+
+def test_estimators_are_all_deterministic_and_default_is_expectation():
+    """All three estimators replay bit-exactly (mc under its pinned seed), and the DEFAULT is
+    the mean estimator (expectation) — μ̂'s pre-registered meaning."""
+    model, tok, b_c, b_f, ts = _tiny()
+    sigma = np.full(80, 0.01)
+    dec = np.array([20, 40, 60])
+    default = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16)
+    exp = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, estimator="expectation")
+    assert np.array_equal(default, exp)  # default IS expectation
+    for est in ("argmax", "expectation", "mc_mean"):
+        a = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, estimator=est)
+        b = predict_mu(model, tok, b_c, b_f, ts, sigma, dec, h=5, seq_len=16, estimator=est)
+        assert np.array_equal(a, b), f"{est} must replay bit-exactly"
 
 
 def test_predict_mu_refuses_a_rollout_past_the_rope_cache():

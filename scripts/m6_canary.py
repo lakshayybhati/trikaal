@@ -609,9 +609,12 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
             sym_evals,
             xcfg,
         )
+        md = scores[spec.cell_id].mu_diag
         print(
             f"[{arm_name}] cell{spec.cell_id}: IR@0.30%={scores[spec.cell_id].ir_headline:+.2f} "
-            f"κ*={scores[spec.cell_id].kappa_chosen} act={scores[spec.cell_id].activity:.2f}",
+            f"κ*={scores[spec.cell_id].kappa_chosen} act={scores[spec.cell_id].activity:.2f} "
+            f"mu(mean={md.get('mean', float('nan')):+.4f} std={md.get('std', float('nan')):.4f} "
+            f"neg={md.get('frac_negative', float('nan')):.2f})",
             flush=True,
         )
 
@@ -650,6 +653,7 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
         },
         "micro_recon": recon,
         "codebook_non_collapsed": non_collapsed,
+        "mu_diag": {str(c): s.mu_diag for c, s in scores.items()},
         "wall_s": round(time.time() - t0, 1),
     }
 
