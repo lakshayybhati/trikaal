@@ -112,10 +112,13 @@ FILLER_RHO = 0.7993
 FILLER_TARGET_DEFICIT = 0.4631  # nats/dim, from the lake measurement above
 FILLER_DEFICIT_TOL = 0.05
 
-# §7 v1.4 standing PER-BAR LEGIBILITY gate (the measured defect, now permanent): a logistic
-# probe from bar t's own (c_id, f_id) digits must recover the 3-sigma planted state's sign
-# with accuracy >= this, measured after stage-1 tokenizer training and BEFORE any AR spend.
-LEGIBILITY_MIN = 0.9
+# §7 v1.4.1 fixture legibility gate, RESTATED AS RULED (2026-07-21): over the three
+# calibration seeds, mean >= 0.9 AND every seed >= 0.85 (seeded receipts at lambda*=3:
+# mean 0.9067, min 0.9000). The
+# in-run hard stop below enforces the PER-SEED floor before any AR spend; the mean clause
+# is enforced by the formal 3-seed cell-path re-run receipt
+# (runs_manifest/m6_lambda_search_receipt.json).
+LEGIBILITY_MIN = 0.85
 
 # v6 branch thresholds (supervisor spec, verbatim)
 DETECT_TF = 0.3  # (a): >= on 2 consecutive evals

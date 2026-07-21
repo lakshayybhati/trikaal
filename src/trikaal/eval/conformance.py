@@ -50,6 +50,12 @@ PINNED_ENCODER_CAUSAL = True
 # so feature-space conditionals arrive per-bar-illegible to the AR.
 PINNED_FINE_POINTWISE = True
 
+# §7 v1.4.1 (gate-2 final ruling): the per-bar bottleneck leg's micro-class weight, CALIBRATED
+# not chosen — the SMALLEST lambda whose three SEEDED calibration seeds clear the restated gate
+# (lambda=3: 0.9060/0.9142/0.9000, mean 0.9067, min 0.9000; lambda=2 fails at mean 0.8517;
+# init-seeding defect disclosed in the prereg entry; runs_manifest/m6_lambda_search_receipt.json).
+PINNED_MICRO_POINT_WEIGHT = 3.0
+
 
 def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:
     """Divergences between one cell tokenizer's config and the §7 v1.3/v1.4 pins (empty = OK).
@@ -71,6 +77,13 @@ def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:
             f"{run}: tokenizer fine_pointwise={got_fp!r} != pinned {PINNED_FINE_POINTWISE} "
             "(prereg §7 v1.4 — a contextual fine subtoken smears per-bar feature state "
             "across later tokens' ids, leaving it per-bar-illegible to the AR)"
+        )
+    got_l = tok_config.get("micro_point_weight")
+    if got_l != PINNED_MICRO_POINT_WEIGHT:
+        failures.append(
+            f"{run}: tokenizer micro_point_weight={got_l!r} != pinned "
+            f"{PINNED_MICRO_POINT_WEIGHT} (prereg §7 v1.4.1 — lambda is calibrated, "
+            "not chosen; a different weighting invalidates the legibility receipts)"
         )
     return failures
 
@@ -326,6 +339,7 @@ __all__ = [
     "PINNED_FINE_POINTWISE",
     "PINNED_HEADLINE_COST",
     "PINNED_KAPPAS",
+    "PINNED_MICRO_POINT_WEIGHT",
     "PINNED_SEEDS",
     "PINNED_SYMBOLS_SHA256",
     "ConformanceError",

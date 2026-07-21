@@ -601,7 +601,79 @@
     }
   ],
   "detach_amendment": "objective separation measured as load-bearing-for-stability: the window losses now see the fine channels DETACHED (decoder still trains on them; the fine encoder is shaped only by the per-bar bottleneck). Without it, tiny-scale no-detach control at lambda=4 reached dim9 0.96 but collapsed the return dim on 1/3 seeds (0.08); with it, collateral is stable across seeds.",
+  "formal_cell_path_pin3_omp3": {
+    "constructed_via": "build_cell_tokenizer (pinned path, PINNED_MICRO_POINT_WEIGHT=3.0)",
+    "legibility": [
+      0.9039,
+      0.9262,
+      0.8839
+    ],
+    "mean": 0.9047,
+    "min": 0.8839,
+    "restated_gate_pass": true
+  },
+  "path_determinism_proof": {
+    "lam2_omp2": "direct == cell-path bit-identical on all 3 seeds",
+    "lam3_omp3_seed0": "direct 0.9039 == cell-path 0.9039 bit-identical",
+    "note": "bit-exactness holds at FIXED OMP thread count; differing thread counts change cpu reduction order (the project's determinism scoping already env-pins this); both the OMP2 and OMP3 lambda=3 triplets pass the restated gate independently"
+  },
+  "pin": {
+    "PINNED_MICRO_POINT_WEIGHT": 3.0,
+    "adjudication_note": "the ruling's literal 'pin lambda*=2' was ratified from the defective (unseeded) receipts; the ruling's formula was executed on corrected instruments -> 3; disclosed in prereg v1.4.1",
+    "formula": "smallest searched lambda whose SEEDED 3-seed triplet clears mean>=0.9 AND min>=0.85",
+    "lam2_seeded_fails": {
+      "legibility": [
+        0.8365,
+        0.8594,
+        0.8592
+      ],
+      "mean": 0.8517
+    }
+  },
   "prereg": "gate-2 final ruling calibration campaign (2026-07-20/21)",
+  "seeded_campaign_omp2": {
+    "lam2": {
+      "legibility": [
+        0.8365,
+        0.8594,
+        0.8592
+      ],
+      "mean": 0.8517,
+      "min": 0.8365,
+      "restated_gate_pass": false
+    },
+    "lam3": {
+      "legibility": [
+        0.906,
+        0.9142,
+        0.9
+      ],
+      "mean": 0.9067,
+      "min": 0.9,
+      "restated_gate_pass": true
+    },
+    "lam4": {
+      "legibility": [
+        0.866,
+        0.8947,
+        0.8649
+      ],
+      "mean": 0.8752,
+      "min": 0.8649,
+      "restated_gate_pass": false
+    },
+    "lam6": {
+      "legibility": [
+        0.8704,
+        0.917,
+        0.9123
+      ],
+      "mean": 0.8999,
+      "min": 0.8704,
+      "restated_gate_pass": false
+    }
+  },
+  "seeding_defect_disclosure": "THIRD instrument defect (2026-07-21): the calibration harness seeded torch only inside train_tokenizer, AFTER model construction \u2014 every canonical triplet above carried unseeded-init variation and was unreproducible (exposed when the ordered formal cell-path re-run failed to reproduce the ruled-on 0.8974/0.9152/0.9076). Fixed by seeding before construction. All trials in 'canonical_trials' predate the fix and are retained as unseeded-init draws; the SEEDED campaign below supersedes them.",
   "summary": {
     "finding": "no searched (lambda, beta) clears 0.9 on all 3 seeds; the gate constant sits inside the instrument's seed-noise band (~\u00b10.03) at the achievable ceiling; the state IS carried (dim9 point-decoder corr 0.77-0.96; micro class 0.86-0.92; return preserved 0.96+)",
     "lam2": {

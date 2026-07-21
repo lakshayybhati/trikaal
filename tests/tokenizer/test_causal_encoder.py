@@ -126,3 +126,12 @@ def test_contextual_fine_cell_is_not_constructible():
     """A caller trying to sneak fine_pointwise=False into a cell is a hard error (§7 v1.4)."""
     with pytest.raises(ValueError, match="pointwise-fine ONLY"):
         build_cell_tokenizer(CELLS[3], fine_pointwise=False, **TINY)
+
+
+def test_off_pin_lambda_cell_is_not_constructible():
+    """§7 v1.4.1: lambda is calibrated (3.0) and pinned — any other value at cell
+    construction is a hard error, and the forced default IS the pin."""
+    with pytest.raises(ValueError, match=r"micro_point_weight = 3\.0"):
+        build_cell_tokenizer(CELLS[3], micro_point_weight=2.0, **TINY)
+    tok = build_cell_tokenizer(CELLS[3], **TINY)
+    assert tok.get_config()["micro_point_weight"] == 3.0

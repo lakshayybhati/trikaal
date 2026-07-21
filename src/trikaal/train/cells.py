@@ -72,8 +72,16 @@ def build_cell_tokenizer(spec: CellSpec, **tok_kwargs) -> TokenizerAE:
             "M6 cells are pointwise-fine ONLY (prereg §7 v1.4) — a contextual-fine cell "
             "tokenizer is not constructible through build_cell_tokenizer"
         )
+    lam = tok_kwargs.get("micro_point_weight")
+    if lam is not None and lam != 3.0:
+        raise ValueError(
+            "M6 cells pin micro_point_weight = 3.0 (prereg §7 v1.4.1, calibrated not "
+            f"chosen) — got {lam!r}; a different lambda is not constructible through "
+            "build_cell_tokenizer"
+        )
     tok_kwargs["encoder_causal"] = True
     tok_kwargs["fine_pointwise"] = True
+    tok_kwargs["micro_point_weight"] = 3.0
     return TokenizerAE(quantizer=spec.quantizer, n_features=arm_n_features(spec.arm), **tok_kwargs)
 
 
@@ -118,7 +126,12 @@ def assert_cells_parity(**tok_kwargs) -> dict[str, float]:
     built under the same forced ``encoder_causal=True`` (§7 v1.3) and ``fine_pointwise=True``
     (§7 v1.4) as the cells themselves — the pointwise branch adds identical parameters to
     both quantizer arms, so parity is asserted on the configuration the run actually uses."""
-    tok_kwargs = {**tok_kwargs, "encoder_causal": True, "fine_pointwise": True}
+    tok_kwargs = {
+        **tok_kwargs,
+        "encoder_causal": True,
+        "fine_pointwise": True,
+        "micro_point_weight": 3.0,
+    }
     fsq = TokenizerAE(quantizer="fsq", **tok_kwargs)
     bsq = TokenizerAE(quantizer="bsq", **tok_kwargs)
     return check_arm_parity(fsq, bsq)

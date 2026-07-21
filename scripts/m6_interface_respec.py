@@ -191,7 +191,9 @@ def nonlinear_diagnostics(tok: TokenizerAE, d: dict, b_c: np.ndarray, b_f: np.nd
     return out
 
 
-def gate2_single(lam: float, seed: int, out_json: str, beta: float = 1.0) -> int:
+def gate2_single(
+    lam: float, seed: int, out_json: str, beta: float = 1.0, cell_path: bool = False
+) -> int:
     """One (lambda, seed) λ-search trial (§7 v1.4.1 calibration): train the weighted
     pointwise-fine tokenizer on the calibrated fixture, measure state-dim legibility +
     per-dim point-decoder corrs. Direct construction (the cell surface pins λ only AFTER
@@ -199,15 +201,24 @@ def gate2_single(lam: float, seed: int, out_json: str, beta: float = 1.0) -> int
     dev = "cpu"
     d = synth_planted(N_BARS)
     canonical = dict(d_model=256, n_layers=3, n_heads=4, d_ff=512, max_len=512)
-    tok = TokenizerAE(
-        quantizer="fsq",
-        n_features=16,
-        encoder_causal=True,
-        fine_pointwise=True,
-        micro_point_weight=lam,
-        point_loss_coef=beta,
-        **canonical,
-    ).to(dev)
+    # Seed BEFORE construction: model init must be seed-determined, not ambient-RNG
+    # (disclosed defect: the first calibration campaign seeded only inside train_tokenizer,
+    # AFTER init, so its triplets carried unseeded-init variation and were unreproducible).
+    set_determinism(seed, deterministic_algorithms=False)
+    if cell_path:
+        # FORMAL cell-path re-run (final adjudication item 4): construct through the REAL
+        # pinned cell constructor — lambda comes from the pin, never from the CLI.
+        tok = build_cell_tokenizer(CELLS[3], **canonical).to(dev)
+    else:
+        tok = TokenizerAE(
+            quantizer="fsq",
+            n_features=16,
+            encoder_causal=True,
+            fine_pointwise=True,
+            micro_point_weight=lam,
+            point_loss_coef=beta,
+            **canonical,
+        ).to(dev)
     loss = train_tokenizer(tok, d, seed=seed)
     b_c, b_f = tokenize_features(
         tok, d["x"], d["mask"], d["segment_id"], window=SEQ_LEN, batch_windows=256, device=dev
@@ -216,8 +227,9 @@ def gate2_single(lam: float, seed: int, out_json: str, beta: float = 1.0) -> int
     diag = nonlinear_diagnostics(tok, d, b_c, b_f)
     recon = per_dim_recon(tok, d)
     rec = {
-        "lambda": lam,
+        "lambda": tok.get_config()["micro_point_weight"],
         "beta_point_loss_coef": beta,
+        "constructed_via": "build_cell_tokenizer (pinned path)" if cell_path else "direct",
         "seed": seed,
         "stage1_final_loss": round(loss, 4),
         "legibility_logistic_sign_acc": round(leg, 4),
@@ -352,9 +364,10 @@ if __name__ == "__main__":
     ap.add_argument("--gate2-only", action="store_true")
     ap.add_argument("--lam", type=float, default=1.0)
     ap.add_argument("--beta", type=float, default=1.0)
+    ap.add_argument("--cell-path", action="store_true")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out-json", default="")
     a = ap.parse_args()
     if a.gate2_only:
-        sys.exit(gate2_single(a.lam, a.seed, a.out_json, beta=a.beta))
+        sys.exit(gate2_single(a.lam, a.seed, a.out_json, beta=a.beta, cell_path=a.cell_path))
     sys.exit(main())

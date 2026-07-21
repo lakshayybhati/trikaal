@@ -190,6 +190,48 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.1 (2026-07-21, gate-2 final ruling execution; supervisor-signed) — BEFORE any real
+  training.** The pre-authorized micro-weighted bottleneck fallback FIRED on a trigger
+  strictly stronger than written: deterministic FIXTURE-gate failure with mechanism receipts
+  (3-seed per-dim point-decoder arrays — seed 0: [0.98, .89, .91, .85, .83, .88, .91, .88,
+  .83, **0.01**, .85, .91, .90]; seeds 1/2 near-identical; the recon objective buys variance
+  and covariance, never independence — the independent state dim is priced out of the
+  10.26-bit fine budget every time). AMENDMENTS: (a) the per-bar bottleneck leg weights THE
+  SIX MICRO DIMS as a class by λ\* = 3 — the SMALLEST searched value whose three seeded
+  calibration seeds clear the restated gate (0.9060/0.9142/0.9000: mean 0.9067, min 0.9000;
+  full receipt in runs_manifest/m6_lambda_search_receipt.json). The adjudication's literal
+  "λ\* = 2" was ratified from defective receipts (disclosure 3 below); the ruling's formula
+  — smallest λ clearing the gate, calibrated not chosen — was executed on the corrected
+  instruments, and λ=2's seeded triplet (0.8365/0.8594/0.8592, mean 0.8517) fails it; (b) OBJECTIVE SEPARATION: the window reconstruction
+  losses receive the fine channels detached — the fine encoder is shaped exclusively by the
+  per-bar objective (measured: without this the window pull re-creates the smearing
+  incentive at any λ, and collateral recon is seed-unstable). DISCLOSURES (both incidents on
+  the record): (1) a formatter re-wrap silently defeated the patches wiring
+  ``w_feat_point``/``point_loss_coef`` into the bottleneck loss, so the first canonical
+  λ-search ran entirely at λ=1 — those runs are retained as λ=1 replicates and the
+  normalization-asymptote analysis derived from them is WITHDRAWN; (2) commit e8d2a06's
+  "anchor re-proven" claim was FALSE — the unconditional ``w_feat_point`` buffer broke
+  old-schema checkpoint loading and the M5 anchor run FAILED, but a ``| grep | tail``
+  pipeline masked the exit-1, letting the unverified claim into the commit message;
+  corrected in b55fffc (buffer registered only under ``fine_pointwise``; anchor genuinely
+  re-proven exit-0, results_hash 5eead7b6 bit-identical; the exit-masking cause is now
+  policed by the pipefail rider); (3) the calibration harness seeded torch only INSIDE the
+  training loop, AFTER model construction, so every canonical calibration triplet carried
+  unseeded-init variation and was unreproducible — exposed when the ordered formal
+  cell-path re-run failed to reproduce the ruled-on triplet (0.8974/0.9152/0.9076 were
+  init-lottery draws); fixed by seeding before construction, after which the direct and
+  pinned-cell-path constructions produce BIT-IDENTICAL results per seed (the determinism
+  the formal re-run was ordered to demonstrate), and the λ landscape was re-derived seeded. FAIRNESS: identical weighting and detach across both
+  quantizers and all arms including Cell 5; OHLCV arms carry no micro dims and are
+  unaffected; bits-per-token, the cell matrix, the decision rule, and all eval instruments
+  are untouched. The fixture legibility gate is RESTATED AS RULED over the three calibration
+  seeds: mean ≥ 0.9 AND every seed ≥ 0.85 (seeded receipts at λ\*=3: mean 0.9067, min
+  0.9000, reproduced bit-identically through the pinned cell path); the STANDING real-data
+  gate stays 0.9-on-all-six with its named-checkpoint semantics. Paper-facing mechanism
+  sentence: *reconstruction-trained tokenizers allocate code capacity by variance and
+  covariance, never by downstream value — microstructure state, being weakly covariant with
+  price shape, is priced out unless the tokenizer is built to carry it;
+  "microstructure-aware" is therefore an architectural property, not an emergent one.*
 - **v1.4 (2026-07-20, supervisor adjudication of the token-control programme) —
   BEFORE any real training. Receipts (m6_canary_v6_stage1_manifest.json,
   m6_token_control_step0.json, m6_token_control_run_manifest.json) establish:
