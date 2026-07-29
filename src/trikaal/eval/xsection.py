@@ -242,6 +242,12 @@ def score_cell(
         }
         n_dec: dict[str, int] = {}
         mu_pool: list[np.ndarray] = []
+        # §7 v1.4.4 DEGENERACY-GUARD input: per-κ TRADED / SCORED decisions (the FILTER-BINDING
+        # ratio). Decision-activity ∈ {0, 1} means θ = κ·c never binds — the IR is a pure function
+        # of sign(μ̂), a constant-direction book (not a strategy). Distinct from `activity` below,
+        # which is traded/full-calendar-grid (diluted by the eval cap; never reaches 1.0).
+        traded_by_k: dict[float, int] = {k: 0 for k in cfg.kappas}
+        n_scored = 0
         for sym, d in prepared.items():
             se = d["se"]
             dec = symbol_decisions(se, grid, cfg)
@@ -252,6 +258,7 @@ def score_cell(
             if dec.size == 0:
                 continue
             n_dec[sym] = int(dec.size)
+            n_scored += int(dec.size)
             mu = predict_mu(
                 model,
                 tok,
@@ -271,6 +278,7 @@ def score_cell(
             for k in cfg.kappas:
                 s = positions(mu, k * c_mod)
                 act = s != 0
+                traded_by_k[k] += int(act.sum())
                 nets_flat[k][sym] = (
                     pidx[act],
                     net_trade_returns(s[act], y_d[act], np.full(int(act.sum()), cfg.headline_cost)),
@@ -286,6 +294,10 @@ def score_cell(
                 "frac_negative": float((mu_all < 0).mean()),
                 "n": int(mu_all.size),
                 "estimator": "expectation",  # §7 v1.4.2 default (conditional mean)
+                # §7 v1.4.4: decision-activity (traded/scored) per κ — the guard reads κ*'s value
+                "activity_decisions_by_kappa": {
+                    f"{k:g}": (traded_by_k[k] / n_scored) for k in cfg.kappas
+                },
             }
             if mu_all.size
             else {}
@@ -327,6 +339,10 @@ def score_cell(
         else global_decision_grid_ms(cfg, cfg.headline_block)
     )
     hd_series, hd_mod, n_dec, _, mu_diag = grid_series(hd_grid)
+    if mu_diag:  # §7 v1.4.4: pin the decision-activity AT κ* (the guard's binding-filter input)
+        mu_diag["activity_decisions"] = float(
+            mu_diag["activity_decisions_by_kappa"][f"{kappa_star:g}"]
+        )
     head = hd_series[kappa_star]
     ir_headline = information_ratio(head, cfg.h)
     ir_modeled = information_ratio(hd_mod[kappa_star], cfg.h)

@@ -1,0 +1,247 @@
+{
+  "CAP": 4000,
+  "L1_all_reproduced": true,
+  "N_PER": 14000000,
+  "cells": {
+    "1": {
+      "L1_abs_diff": 0.0,
+      "L1_cloud_ir": -7.240328510778865,
+      "L1_local_ir_at_kstar_sigma0.01": -7.240329,
+      "L1_reproduced_1e-3": true,
+      "per_sigma": {
+        "0.01": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 1.0,
+          "ir_at_kstar": -7.240329,
+          "kstar": 1.0,
+          "mu_mean": -0.034735,
+          "mu_std": 0.000123,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -7.240329,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -7.240329,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -7.240329,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -7.240329,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        },
+        "0.05": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 1.0,
+          "ir_at_kstar": -1.321288,
+          "kstar": 1.0,
+          "mu_mean": -0.173675,
+          "mu_std": 0.000613,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -1.321288,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -1.321288,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -1.321288,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -1.321288,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        }
+      }
+    },
+    "2": {
+      "L1_abs_diff": 0.0,
+      "L1_cloud_ir": -7.563377128272953,
+      "L1_local_ir_at_kstar_sigma0.01": -7.563377,
+      "L1_reproduced_1e-3": true,
+      "per_sigma": {
+        "0.01": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 0.0,
+          "ir_at_kstar": -7.563377,
+          "kstar": 1.0,
+          "mu_mean": 0.012421,
+          "mu_std": 0.000533,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        },
+        "0.05": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 0.0,
+          "ir_at_kstar": -1.646721,
+          "kstar": 1.0,
+          "mu_mean": 0.062106,
+          "mu_std": 0.002665,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        }
+      }
+    },
+    "3": {
+      "L1_abs_diff": 0.0,
+      "L1_cloud_ir": -7.563377128272953,
+      "L1_local_ir_at_kstar_sigma0.01": -7.563377,
+      "L1_reproduced_1e-3": true,
+      "per_sigma": {
+        "0.01": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 0.0,
+          "ir_at_kstar": -7.563377,
+          "kstar": 1.0,
+          "mu_mean": 0.004878,
+          "mu_std": 0.000135,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -7.563377,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        },
+        "0.05": {
+          "decision_activity_at_kstar": 1.0,
+          "frac_negative": 0.0,
+          "ir_at_kstar": -1.646721,
+          "kstar": 1.0,
+          "mu_mean": 0.024391,
+          "mu_std": 0.000674,
+          "per_kappa": {
+            "1.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "1.5": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "2.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            },
+            "3.0": {
+              "decision_activity": 1.0,
+              "ir": -1.646721,
+              "scored": 12000,
+              "traded": 12000
+            }
+          }
+        }
+      }
+    }
+  },
+  "cloud_ir": {
+    "1": -7.240328510778865,
+    "2": -7.563377128272953,
+    "3": -7.563377128272953
+  },
+  "kappas": [
+    1.0,
+    1.5,
+    2.0,
+    3.0
+  ],
+  "receipt": "m6_moneyleg_local_rescore_L1L2L4"
+}

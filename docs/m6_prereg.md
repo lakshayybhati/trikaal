@@ -190,6 +190,93 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.4 (2026-07-29, money-leg sign-lock adjudication; supervisor-ordered) — BEFORE any real
+  training. Spend WITHDRAWN; local $0 CPU work (L1–L4) + the degeneracy guard.** The staged $0.60
+  re-run's authorization was withdrawn: the money-leg manifest carries a stronger fact than the
+  v1.4.3 report drew out. VERIFIED locally from `runs_manifest/m6_moneyleg_rerun_manifest.json`:
+  the noise arm has exactly TWO distinct IRs partitioned PERFECTLY by frac_negative (cells 2,3,4
+  all-long share −7.563377128272953; cells 1,5 all-short share −7.240328510778865); planted cell3
+  and cell5 share −3.638854395025198 to 15 dp despite μ̂ means 8.48× and stds 237× apart (both
+  all-short); planted cell1 IR is exactly 0.0 (the single sub-threshold cell); cell4 frac_neg
+  0.99883 = 14/12000 long. Two cells produce a bit-identical net series ONLY if they trade the
+  SAME bars with the SAME signs — so EVERY bar trades, the θ=κ·c forecast-magnitude filter NEVER
+  BINDS, and the money-leg IR is a pure function of sign(μ̂). κ is an all-or-nothing switch, not a
+  per-bar conviction filter.
+  - **L1–L4 (`runs_manifest/m6_moneyleg_local_rescore.json`, CPU, full 14M, saved checkpoints).**
+    L2/L4: decision-activity (traded/scored) at EVERY κ ∈ {1,1.5,2,3} = **1.0** for noise cells
+    1,2,3 at BOTH SIGMA=0.01 and 0.05 — the filter never binds, and raising SIGMA does NOT put
+    activity inside (0,1) (it moves the fixture FURTHER from the binding regime — larger μ̂ vs the
+    fixed threshold → more saturated; at 0.05 the noise |IR| merely shrinks, −7.24→−1.32 and
+    −7.56→−1.65, activity still 1.0). L1 (the fidelity precondition): reproduced ALL three cloud
+    IRs BIT-EXACTLY (|Δ| = 0.00e+00, well inside the ~1e-3 bar): cell1 −7.240329, cells 2,3
+    −7.563377 — the saved checkpoints and the scoring path are faithful, so the exercise is valid.
+  - **SIGMA RECALIBRATION WITHDRAWN — a documented NON-FIX.** Per the pre-declared
+    decision rule (L2 activity 0/1 everywhere → revert), SIGMA is reverted 0.05 → 0.01: the v1.4.3
+    recalibration reduced fixed-cost DRAG but did NOT address the actual pathology (the filter
+    never binds), and raising SIGMA moved the fixture away from the filter-binding regime. Recorded
+    as a MEASURED NEGATIVE RESULT, not deleted. (The oracle margin still holds at 0.01: net IR
+    17.12 = 6.29× MDE, clears the pre-declared 5×; `m6_oracle_calibration.json` retained.)
+  - **DEGENERACY GUARD (HALT-only), armed on the real run (mitigation built now).** Every
+    `CellScore`/eval artifact now records per-cell `frac_negative` and decision-activity at κ*
+    (`activity_decisions`, traded/scored — the FILTER-BINDING ratio, distinct from the
+    cap-diluted grid-activity). `verdict.degeneracy_guard`: a cell whose seed-mean frac_negative
+    is outside **[0.05, 0.95]** (sign-locked) OR whose seed-mean decision-activity at κ* is
+    exactly 0 or 1 (filter never binds) is a constant-direction book; any clause involving it is
+    uninterpretable, so the verdict is **HALT_ADJUDICATE**. The guard is HALT-ONLY: it is computed
+    POST-HOC, never mutates the clauses or the clause-derived `primary`, and can NEVER flip
+    SURVIVES↔NULL — it can only refuse to emit a verdict. That asymmetry is what makes it
+    legitimate to add pre-run (it can manufacture neither a positive nor a negative claim). KATs:
+    HALT on each boundary leg, no-HALT just inside both, a proof that the guard cannot alter a
+    clause outcome (byte-identical clauses/primary with vs without a degenerate cell), and NULL-
+    side symmetry (`tests/eval/test_degeneracy_guard.py`). The canary's std-only non-degeneracy
+    floor is replaced by the CONJUNCTION dispersion ∧ sign-balance ∧ binding-filter (the std leg
+    is KEPT — it correctly flags the near-constant cells 2,5; it MISSED the sign-lock, a
+    99.88%-one-sided book that clears std ≥ 0.5·SIGMA). GATE-A: xsection.py (CellScore) and
+    verdict.py are edited; the M5 anchor replay uses `harness.single_symbol_backtest`, not
+    score_cell/verdict, so 3f86882a is RE-PROVEN bit-identical (results_hash 3f86882a, Gate-A
+    420/420 PASS, ×2 confirming runs) — the edit is anchor-neutral, fail-closed rule satisfied.
+  - **ENVIRONMENT DISCLOSURE (builder error, on the record).** This session's local receipts
+    (v1.4.4 L1–L4/L3 and the v1.4.3 oracle/bias-bound/throughput) were computed on the SYSTEM
+    interpreter (numpy 2.3.3 / torch 2.11.0), NOT the pinned uv-locked `.venv` (numpy 2.4.6 /
+    torch 2.12.1). The LOAD-BEARING gates are re-verified on the pinned `.venv`: the Gate-A anchor
+    re-proves 3f86882a BIT-IDENTICALLY on BOTH the system env and the pinned `.venv`, and the full
+    suite is re-run green on the pinned `.venv`. Independently, L1 reproduced the pinned-env cloud
+    IRs (the cloud box carried the lockfile) BIT-EXACTLY across the env gap — so the sign-lock /
+    filter-never-binds findings are robust to the numpy/torch delta (they are structural — signs
+    and all-trade — not ULP-sensitive). The diagnostic receipts are retained as-is with this label.
+  - **ITEM-1 CORRECTION (on the record).** The v1.4.3 bias-bound's "acceptance cell4 gives balanced
+    frac_neg=0.5 → the money-leg cell4 sign-lock is a MODEL property not an estimator artifact"
+    OVERREACHED: that result is n_dec=24 on a FIXTURE-PLANTED cell; it supports ONLY that
+    expectation and mc_mean agree on the same cell, and is NOT evidence that the AR avoids
+    sign-lock — we have NO real-data evidence either way. Withdrawn in the receipt. L3
+    (`m6_L3_acceptance_cell4_fullset.json`) re-decodes that cell over the FULL decision set (n=4000):
+    expectation frac_negative 0.5585 (balanced, NOT the near-0.999 sign-lock) with mc_mean 0.6016,
+    so the n=24 balance was not a small-sample artifact — but this still only shows the two
+    estimators agree on a FIXTURE-PLANTED cell, never that the AR avoids sign-lock on real data.
+  - **ARTIFACT-RETENTION FAILURE + standing rule (`m6_artifact_retention_disclosure.json`).** The
+    $0.60 run's PRIMARY artifacts did not survive teardown: moneyleg planted cells 1–5 and noise
+    cells 4,5 are EMPTY; only noise cells 1,2,3 retain checkpoints (verified). Summary diagnostics
+    survived but not the per-cell μ̂ SERIES. STANDING RULE: no box is destroyed until, for every
+    cell, the per-cell μ̂ SERIES + checkpoints + manifest are pulled AND sha256-verified locally;
+    for the real 15-day run this is a HARD PRE-TEARDOWN GATE, fail-closed.
+  - **GATE DISPOSITION (stated; the verdict-logic change is NOT implemented — awaiting the
+    supervisor's read of L1–L4).** Item 2 closes as a CONDITIONAL PASS with components stated
+    separately, never a clean green: **(a)** the tokenizer→AR interface transmits microstructure —
+    PASSED on-box (legibility 0.8990 enforced, tf_corr 0.9407, Δval −1.3381, noise quiet); **(b)**
+    the backtest layer converts a genuine per-bar edge into placebo-separated net IR under 0.30 %
+    costs — PASSED by the ORACLE receipt, the right receipt for this leg (activity 0.216 means the
+    filter genuinely binds; net IR 17.12 at 6.29× MDE; ΔIR vs placebo 20.77, CI lower 19.05,
+    through the identical grid_series/positions/net_trade_returns/information_ratio path); **(c)**
+    the trained-model → backtest handoff on PLANTED data — **NOT DEMONSTRATED**: the fixture cells
+    are sign-degenerate, so we would enter the real run never having watched a trained model turn
+    planted microstructure into net IR. This is a NAMED RESIDUAL, not a pass; an uncaught pathology
+    here fails toward NULL (conservative), never toward a false SURVIVES — the degeneracy guard is
+    the pre-run insurance for it.
+  - **CANARY-ONLY PROPOSAL (not executed).** Re-scoring the canary at the plant's own lag-2 horizon
+    (h=2) would concentrate the signal into one forward bar instead of diluting it across the h=15
+    window, so μ̂ magnitudes would vary enough for the θ=κ·c filter to BIND — the missing (c)-leg
+    demonstration on planted data. Proposed as a CANARY-ONLY fixture diagnostic; NOT executed; the
+    real run's h=15 and the entire §3a surface are untouched and out of scope.
 - **v1.4.3 (2026-07-29, money-leg adjudication + external-audit addenda; supervisor-ordered) —
   BEFORE any real training.** Ruling items 1–9 executed as ONE local ($0) pass; the ONE box
   re-run is STAGED with a pre-declared exit (item 4). Touches NO anchored M5-instrument file — the

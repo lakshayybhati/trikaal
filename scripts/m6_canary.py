@@ -64,6 +64,7 @@ from trikaal.data.universe_loader import (
 )
 from trikaal.eval.paired_bootstrap import paired_delta_ir_bootstrap
 from trikaal.eval.predict import predict_mu
+from trikaal.eval.verdict import FRAC_NEG_BAND
 from trikaal.eval.xsection import SymbolEval, XSectionConfig, score_cell
 from trikaal.model.predictor import TrikaalAR
 from trikaal.tokenizer.model import TokenizerAE
@@ -82,20 +83,18 @@ from trikaal.utils.seeding import set_determinism
 SYMBOLS = ("SYNAUSDT", "SYNBUSDT", "SYNCUSDT")
 BATCH = 32
 SEQ_LEN = 32
-# ECONOMIC-MAGNITUDE RECALIBRATION (§7 v1.4.3, supervisor money-leg ruling item 3, 2026-07-29).
-# SIGMA is the ONLY economic-magnitude knob and it is TRAINING-INVARIANT by construction:
-# x[:,0] = r/SIGMA = C_SIGNAL*state + eps and x[:,9] = state are both SIGMA-independent (the
-# SIGMA in r cancels), so the tokenized feature matrix — hence every token, the tokenizer, and
-# the AR — is BIT-IDENTICAL under any SIGMA (proven in the oracle receipt's x_bit_identity leg).
-# Only the BACKTEST changes: y = forward_log_returns(raw_ret_close) ∝ SIGMA and μ̂ = cum·σ_t ∝
-# SIGMA scale together, while the flat 0.30 % cost is FIXED — so raising SIGMA shrinks the
-# fixed-cost drag (oracle drag 2.17→0.45 IR as 0.01→0.05 at real scale) without touching the
-# information content, plant, lag, or filler calibration. Raised 0.01→0.05 so the fixed-cost
-# tax on the high-activity signal cell is negligible and the ΔIR comparisons reflect INFORMATION,
-# not cost-timing. NOTE (honest, on the record): the oracle already clears costs at SIGMA=0.01
-# (net IR +17.1, 6.3× MDE) — the fixture's planted edge survives 0.30 % costs at BOTH values;
-# recalibration is a cost-drag reduction, not an oracle rescue (m6_oracle_calibration.json).
-SIGMA = 0.05  # constant per-bar vol -> x0 = r/sigma (standardized ret_close); economic-only
+# SIGMA REVERTED 0.05 -> 0.01 (§7 v1.4.4, 2026-07-29) — the v1.4.3 economic recalibration is a
+# DOCUMENTED NON-FIX, kept as a measured negative result. L1/L2/L4 (m6_moneyleg_local_rescore.json,
+# verified at full 14M, L1 bit-exact) showed the θ=κ·c execution filter NEVER BINDS (decision-
+# activity = 1.0 at EVERY κ, at BOTH sigmas) — the money-leg IR is a pure function of sign(μ̂), and
+# raising SIGMA (larger μ̂ vs the fixed threshold) moves the fixture FURTHER from the filter-binding
+# regime, not closer. So the recalibration reduced fixed-cost DRAG (real) but did NOT address the
+# actual pathology. SIGMA is TRAINING-INVARIANT (x[:,0]=r/SIGMA cancels; proven, m6_oracle_
+# calibration.json), so the revert changes nothing about the tokens/AR — only the (still-saturated)
+# backtest economics. The oracle margin still holds at 0.01 (net IR 17.12 = 6.29× MDE, clears the
+# pre-declared 5×). Any filter-binding fix is the CANARY-ONLY lag-2-horizon diagnostic (proposed,
+# NOT executed — the real run's h=15 is out of scope).
+SIGMA = 0.01  # constant per-bar vol -> x0 = r/sigma (standardized ret_close); economic-only
 SIGNAL_LAG = 2  # state_t first touches r at t+2 — inside y[t], outside the OHLCV filtration
 C_SIGNAL = 3.0  # r_{t+2} = C*sigma*state_t + sigma*eps — per-bar corr(x0_{t+2}, state_t) ~ 0.95
 # MICRO_DIMS_IDX (7..12) and OHLCV_ONLY_IDX (0..6) are the CANONICAL constants (constants.py) —
@@ -875,20 +874,36 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
         "placebo_neutral": bool(pb52.ci_lower <= 0.0 <= pb52.ci_upper),
         "placebo_victim": bool(pb52.ci_upper < 0.0),
     }
-    # NON-DEGENERACY (item 2): a constant-μ̂ cell is not a strategy. Floor is SIGMA-relative
-    # (μ̂ ∝ SIGMA exactly). The GATE is on the signal cell (cell4) — a degenerate cell4 makes
-    # clauses 1+3 UNINTERPRETABLE (differencing near-constant series). All cells reported.
+    # NON-DEGENERACY (§7 v1.4.4 CONJUNCTION — the std-only floor missed the sign-lock pathology:
+    # a 99.88%-one-sided book passes std ≥ 0.5·SIGMA). A cell is non-degenerate iff ALL of:
+    # (i) DISPERSION std(μ̂) ≥ NONDEGEN_MU_STD_FRAC·SIGMA (SIGMA-relative; correctly flags the
+    # near-constant cells 2,5), (ii) SIGN-BALANCE frac_negative ∈ FRAC_NEG_BAND (flags all-long/
+    # all-short), (iii) BINDING-FILTER 0 < decision-activity@κ* < 1 (flags the θ=κ·c filter never
+    # binding). The GATE is on the signal cell (cell4). Mirrors the real-run verdict guard.
     nondegen_floor = NONDEGEN_MU_STD_FRAC * SIGMA
-    mu_std = {c: float(scores[c].mu_diag.get("std", 0.0)) for c in scores}
-    non_degeneracy = {
-        str(c): {
-            "mu_std": mu_std[c],
-            "mu_std_over_sigma": round(mu_std[c] / SIGMA, 4),
-            "non_degenerate": bool(mu_std[c] >= nondegen_floor),
+    lo, hi = FRAC_NEG_BAND
+
+    def _nd(c: int) -> dict:
+        md = scores[c].mu_diag
+        std = float(md.get("std", 0.0))
+        fn = float(md.get("frac_negative", float("nan")))
+        act = float(md.get("activity_decisions", float("nan")))
+        disp = bool(std >= nondegen_floor)
+        sign = bool(fn == fn and lo <= fn <= hi)
+        binds = bool(act == act and 0.0 < act < 1.0)
+        return {
+            "mu_std": std,
+            "mu_std_over_sigma": round(std / SIGMA, 4),
+            "frac_negative": fn,
+            "activity_decisions": act,
+            "dispersion_ok": disp,
+            "sign_balance_ok": sign,
+            "binding_filter_ok": binds,
+            "non_degenerate": bool(disp and sign and binds),
         }
-        for c in scores
-    }
-    cell4_non_degenerate = bool(mu_std[4] >= nondegen_floor)
+
+    non_degeneracy = {str(c): _nd(c) for c in scores}
+    cell4_non_degenerate = non_degeneracy["4"]["non_degenerate"]
     recon = _micro_recon_contribution(out_dir, raw, device=args.device)
     reallocation = _shared_ohlcv_recon(out_dir, raw, device=args.device)  # item 9
     cb4, cb3 = scores[4].codebook, scores[3].codebook

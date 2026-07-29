@@ -9,7 +9,7 @@
   ],
   "gap_spread_across_cells": 0.009647,
   "h": 15,
-  "key_diagnostic": "On the ACCEPTANCE cell4, expectation gives BALANCED frac_neg=0.5 (matching mc_mean) \u2014 so the money-leg cell4 frac_neg=0.999 (mostly-short) is a MODEL property of that specific 3000-step cell, NOT an estimator artifact. Because training is SIGMA-invariant, the re-run reproduces that cell4 bit-identically (sign pattern fixed), so raising SIGMA cannot correct its sign bias.",
+  "key_diagnostic_CORRECTED_v1.4.4": "CORRECTION (supervisor, 2026-07-29): the balanced frac_neg=0.5 result is n_dec=24 on a FIXTURE-PLANTED cell (acceptance cell4), not real data. It supports ONLY the claim it was computed for \u2014 expectation and mc_mean AGREE on the same cell \u2014 and nothing wider. It is NOT evidence that the AR avoids sign-lock: we have NO real-data evidence either way. The prior wording (that the money-leg cell4 frac_neg=0.999 is a MODEL property not an estimator artifact) OVERREACHED and is withdrawn. L3 (runs_manifest/m6_L3_acceptance_cell4_fullset.json) re-decodes this cell over the FULL decision set to test whether the n=24 balance was a small-sample artifact.",
   "mc_samples": 256,
   "mc_seed": 20260721,
   "n_dec": 24,

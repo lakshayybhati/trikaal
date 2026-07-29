@@ -55,8 +55,18 @@ DSR_THRESHOLD = 0.95  # §3 clause 5
 ECON_FLOOR_IR = 0.5  # §3 clause 4: annualized-IR materiality floor, fixed pre-data
 SURVIVES = "SURVIVES"
 NULL = "NULL"
+HALT_ADJUDICATE = "HALT_ADJUDICATE"  # §7 v1.4.4 degeneracy guard (HALT-only, never S<->N)
 FALLBACK_CLAIMED = "CLAIMED"  # §5: passed the identical paired rule
 FALLBACK_DESCRIPTIVE = "DESCRIPTIVE_ONLY"  # §5: reported with CIs, claimed as nothing
+# §7 v1.4.4 DEGENERACY GUARD: a cell is a constant-direction book (not a strategy) if its
+# seed-mean μ̂ sign is locked (frac_negative outside this band) OR its θ=κ·c execution filter
+# never binds (seed-mean decision-activity at κ* is exactly 0 or 1 — every/no decision trades,
+# so the IR is a pure function of sign(μ̂)). Any clause involving such a cell is uninterpretable,
+# so the verdict HALTS for adjudication. The guard is HALT-ONLY: it can only supersede
+# SURVIVES/NULL with HALT_ADJUDICATE, and can NEVER flip SURVIVES↔NULL — the clause results are
+# computed identically whether or not it fires. This asymmetry is what makes it legitimate to add
+# pre-run (it can never manufacture a positive or negative claim, only refuse to emit one).
+FRAC_NEG_BAND: tuple[float, float] = (0.05, 0.95)
 
 ARTIFACT_SCHEMA = "m6_cell_eval_v1"
 INDEX_SCHEMA = "m6_eval_index_v1"
@@ -245,6 +255,59 @@ def _pb_dict(pb: PairedBootstrap) -> dict:
     return {k: (float(v) if isinstance(v, float) else v) for k, v in asdict(pb).items()}
 
 
+def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
+    """§7 v1.4.4 HALT-only guard: flag any cell whose IR is a constant-direction book.
+
+    Reads each cell's seed-mean ``frac_negative`` and decision-activity at κ* from the persisted
+    ``mu_diag``. A cell is degenerate if the sign is locked (frac_negative outside FRAC_NEG_BAND)
+    OR the θ=κ·c filter never binds (decision-activity is exactly 0 or 1). PURE READ — it never
+    touches the clause computation, so it cannot alter a SURVIVES/NULL outcome; it only reports
+    whether the verdict must HALT. A missing ``activity_decisions`` (pre-v1.4.4 artifact) skips the
+    filter leg (NaN comparisons are False) but the sign leg still applies."""
+    lo, hi = FRAC_NEG_BAND
+    per_cell: dict[str, dict] = {}
+    degenerate: list[int] = []
+    for c in (1, 2, 3, 4, 5):
+        fns = [
+            float(evals[(c, s)].get("mu_diag", {}).get("frac_negative", float("nan")))
+            for s in DSR_SEEDS
+        ]
+        acts = [
+            float(evals[(c, s)].get("mu_diag", {}).get("activity_decisions", float("nan")))
+            for s in DSR_SEEDS
+        ]
+        fn, act = float(np.mean(fns)), float(np.mean(acts))
+        reasons: list[str] = []
+        if fn == fn and not (lo <= fn <= hi):  # fn==fn excludes NaN
+            reasons.append(f"seed-mean frac_negative {fn:.4f} outside [{lo}, {hi}] — sign-locked")
+        if act == act and (act <= 0.0 or act >= 1.0):
+            reasons.append(
+                f"seed-mean decision-activity {act:.4f} at kappa* is 0 or 1 — filter never binds"
+            )
+        deg = bool(reasons)
+        # NaN (a pre-v1.4.4 artifact missing the field) → None so the manifest stays deterministic
+        # (nan != nan) and JSON-clean; a None value never triggers degeneracy (checks are nan-safe).
+        per_cell[str(c)] = {
+            "frac_negative_seed_mean": (fn if fn == fn else None),
+            "activity_decisions_seed_mean": (act if act == act else None),
+            "degenerate": deg,
+            "reasons": reasons,
+        }
+        if deg:
+            degenerate.append(c)
+    return {
+        "armed": True,
+        "frac_neg_band": list(FRAC_NEG_BAND),
+        "rule": "HALT-ONLY (§7 v1.4.4): a cell with seed-mean frac_negative outside the band OR "
+        "seed-mean decision-activity at kappa* equal to 0 or 1 is a constant-direction book; any "
+        "clause involving it is uninterpretable, so the verdict is HALT_ADJUDICATE. The guard "
+        "NEVER flips SURVIVES<->NULL — the clauses/primary below are computed identically.",
+        "per_cell": per_cell,
+        "degenerate_cells": degenerate,
+        "halted": bool(degenerate),
+    }
+
+
 def assemble_verdict(
     evals: dict[tuple[int, int], dict],
     artifact_sha256: dict[str, str],
@@ -367,6 +430,11 @@ def assemble_verdict(
             "word": fb_word,
         }
 
+    # §7 v1.4.4 DEGENERACY GUARD — POST-HOC, HALT-only. Computed AFTER the clauses/primary, it
+    # never mutates them; it only decides whether the emitted verdict must HALT for adjudication.
+    guard = degeneracy_guard(evals)
+    emitted = HALT_ADJUDICATE if guard["halted"] else primary
+
     grid = next(iter(evals.values()))["grid"]
     manifest = {
         "schema": VERDICT_SCHEMA,
@@ -395,8 +463,14 @@ def assemble_verdict(
             "delta_5_minus_2": _pb_dict(pb52),
         },
         "clauses": clauses,
+        "degeneracy_guard": guard,
         "verdict": {
+            # `emitted` is the FINAL verdict: HALT_ADJUDICATE if the guard fired, else the
+            # clause-derived `primary`. `primary` is retained un-altered (the guard is HALT-only —
+            # it never changes SURVIVES<->NULL, only supersedes with HALT).
+            "emitted": emitted,
             "primary": primary,
+            "halted_for_degeneracy": guard["halted"],
             "failing_clauses": failing,
             "fallback": fallback,
             "double_null": bool(
@@ -419,6 +493,8 @@ __all__ = [
     "ECON_FLOOR_IR",
     "FALLBACK_CLAIMED",
     "FALLBACK_DESCRIPTIVE",
+    "FRAC_NEG_BAND",
+    "HALT_ADJUDICATE",
     "INDEX_NAME",
     "INDEX_SCHEMA",
     "NULL",
@@ -427,6 +503,7 @@ __all__ = [
     "VERDICT_SCHEMA",
     "VerdictInputError",
     "assemble_verdict",
+    "degeneracy_guard",
     "enumerate_dsr_trials",
     "load_cell_evals",
     "write_cell_eval_artifact",

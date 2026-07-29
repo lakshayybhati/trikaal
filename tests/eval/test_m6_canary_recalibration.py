@@ -22,7 +22,9 @@ import m6_canary as mc  # noqa: E402
 
 def test_recalibrated_constants_pinned():
     """§7 v1.4.3 pins — a silent change to any of these fails here, not silently in a run."""
-    assert mc.SIGMA == 0.05, "economic-magnitude SIGMA pinned to 0.05 (v1.4.3 item 3)"
+    assert mc.SIGMA == 0.01, (
+        "SIGMA reverted to 0.01 (v1.4.4 — the 0.05 recalibration was a non-fix)"
+    )
     assert mc.C_SIGNAL == 3.0, "information content (C_SIGNAL) UNCHANGED by the recalibration"
     assert mc.SIGNAL_LAG == 2, "plant lag UNCHANGED"
     assert mc.ORACLE_MARGIN_MULT == 5.0, "pre-declared oracle margin multiple (item 3)"

@@ -1,0 +1,16 @@
+{
+  "receipt": "m6_artifact_retention_disclosure",
+  "amendment": "prereg s7 v1.4.4 (2026-07-29), supervisor-ordered",
+  "failure": {
+    "what": "The money-leg $0.60 run's PRIMARY artifacts did not survive box teardown. Verified locally:",
+    "moneyleg_planted_cells_1_to_5": "all directories exist but are EMPTY (no tokenizer.pt/predictor.pt)",
+    "moneyleg_noise_cells_4_and_5": "EMPTY",
+    "moneyleg_noise_cells_1_2_3": "RETAINED (tokenizer.pt + predictor.pt present)",
+    "consequence": "The cells whose mu-hat generate every verdict clause (the planted arm, and noise cells 4/5) are unrecoverable. Only the summary manifest (m6_moneyleg_rerun_manifest.json) survived. This is why the L1-L4 local work is scoped to noise cells 1,2,3 (re-score) and the acceptance planted cell4 (L3), the only trained checkpoints on disk."
+  },
+  "standing_rule_landed": {
+    "rule": "NO box is destroyed until, for every cell: (i) the per-cell mu-hat SERIES (not just summary mean/std/frac_negative diagnostics), (ii) the tokenizer.pt + predictor.pt checkpoints, and (iii) the run manifest are pulled down to local disk AND hash-verified (sha256 recorded, re-read matches).",
+    "scope": "Standing for all cloud runs. For the real 15-day M6 run this is a HARD PRE-TEARDOWN GATE: teardown is blocked until the hash-verify passes, fail-closed.",
+    "why_series_not_summary": "The sign-lock pathology was only diagnosable because two cells shared a bit-identical IR; without the per-cell mu-hat and net series, we could not have re-derived activity or confirmed the filter never binds. Summary diagnostics (mean/std/frac_neg) were insufficient; the SERIES are the primary artifact."
+  }
+}

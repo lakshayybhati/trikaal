@@ -1,0 +1,22 @@
+{
+  "expectation_full": {
+    "frac_negative": 0.5585,
+    "mean": -0.026633038371347357,
+    "std": 0.14667682252299855
+  },
+  "expectation_on_mc_subsample": {
+    "frac_negative": 0.55859375,
+    "mean": -0.024831241551873974,
+    "std": 0.14270721610976703
+  },
+  "mc_mean_subsample": {
+    "frac_negative": 0.6015625,
+    "mean": -0.04665618566430609,
+    "std": 0.14970280261681881
+  },
+  "mc_samples": 256,
+  "mc_subsample": 256,
+  "n24_claim_status": "HELD: full-set expectation frac_neg is balanced (not sign-locked) on THIS fixture-planted cell \u2014 supports only that expectation and mc_mean agree here, not that the AR avoids sign-lock on real data",
+  "n_full_decisions": 4000,
+  "receipt": "m6_L3_acceptance_cell4_fullset"
+}

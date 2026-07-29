@@ -100,7 +100,13 @@ def main() -> int:
     print(f"[clauses] h={manifest['primary_h']} grid_pinned={grid_pinned}")
     for name, c in manifest["clauses"].items():
         print(f"  {name}: {'PASS' if c['pass'] else 'FAIL'}")
-    word = v["primary"]
+    g = manifest["degeneracy_guard"]
+    if g["halted"]:  # §7 v1.4.4: a degenerate cell makes the clauses uninterpretable
+        print(
+            f"  [degeneracy-guard] HALT — degenerate cells {g['degenerate_cells']} "
+            f"(clause-derived primary was {v['primary']}, superseded by HALT_ADJUDICATE)"
+        )
+    word = v["emitted"]  # the FINAL verdict (HALT_ADJUDICATE if the guard fired, else primary)
     if v["fallback"] is not None:
         word += f" (fallback §5: {v['fallback']['word']}; double_null={v['double_null']})"
     print(f"[verdict] {word}")
