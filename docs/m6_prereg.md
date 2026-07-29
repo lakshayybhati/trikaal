@@ -190,6 +190,187 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.5 (2026-07-29, C1/C2 corrections + the FINAL canary fixture iteration; supervisor-ordered)
+  — BEFORE any real training. Local $0 CPU only; no spend authorized, none taken.** The supervisor
+  confirmed gate legs (a) and (b), restated (c) at full strength, and ordered ONE pass: two wording/
+  epistemic corrections, a lattice observation to verify independently, an approved horizon sweep, a
+  BLOCKING band-stability check, and regeneration of every diagnostic receipt on the pinned `.venv`.
+  This is **pre-declared as the LAST fixture iteration** — there is no seventh.
+  - **C1 — MEASURED, and it overturns the premise (including the builder's first attempt at this
+    correction).** The ordered correction was to withdraw a "bit-exact |Δ| = 0.00e+00" claim as a
+    6-decimal rounding artifact whose true value was inferred to be ≈4.9e-7. **That inference is
+    wrong, and the original reported value was right.** The v1.4.4 receipt's *display* field was
+    rounded (`-7.240329`), which made the reported zero *look* like it could be an artifact.
+    Whether that receipt computed `L1_abs_diff` from rounded or full-precision values can no longer
+    be established — the ad-hoc script was not saved, itself a lesson now fixed by making the
+    rescore a committed, re-runnable mode — but it does not matter: the true |Δ| IS 0.0, so the
+    reported value was correct either way. Regenerated at full float64 on the pinned `.venv`
+    (`m6_moneyleg_local_rescore.json`): local == cloud **EXACTLY** for all three cells —
+    cell1 `-7.240328510778865`, cells 2,3 `-7.563377128272953`, worst |Δ| = **0.0**, not 4.9e-7.
+    The inferred discrepancy does not exist.
+    - **BUILDER ERROR, DISCLOSED.** The C1 correction was written into this document **before** the
+      receipt was regenerated — acting on the ruling's inference instead of on a measurement, which
+      is precisely what "claims must match receipts" forbids. That text is withdrawn and replaced by
+      the measured result above. The annotations it introduced into the v1.4.4 entry are corrected
+      in place. The term-of-art discipline still stands on its own merits: **"bit-identical" is what
+      Gate-A means** and is not spent loosely — here it happens to be literally true, for the
+      reason C2 gives.
+  - **C2 — L1's epistemic status REFRAMED, and the C1 measurement STRENGTHENS it.** The agreement
+    is **exact, not merely small**, and that is the point: with traded == scored at every κ the book
+    is CONSTANT, so μ̂'s *magnitudes* drop out of the IR entirely and the computation reduces to the
+    same return series under the same fixed positions. The arithmetic never touches the numbers that
+    differ between environments, which is why |Δ| is 0.0 across CUDA/numpy 2.4.6, CPU/numpy 2.3.3
+    and CPU/numpy 2.4.6. On a NON-degenerate cell those same differences would flip
+    marginal bars and reproduction would be looser. **L1 is therefore a SYMPTOM of the degeneracy,
+    not evidence of instrument health.** It validates the SIGN PATTERN and the scoring arithmetic —
+    which is all L2/L4 needed, so their conclusions stand unchanged — and nothing more.
+  - **CONSTANT-BOOK LATTICE — recorded as an OBSERVATION (`m6_constant_book_lattice.json`), n=2
+    runs, no error bars, NOT a hypothesis test.** Verified independently from the two Stage-2
+    manifests (recipes confirmed byte-identical). Across 20 (run, arm, cell) observations there are
+    **5 measured constant-book points**; a constant-direction book makes the pooled net series a
+    function of the RETURN BLOCK and the direction alone, so its IR is model-independent. This is
+    **measured, not inferred**: the three money-leg noise cells that are all-long span BOTH
+    quantizers and BOTH feature arms (cell2 FSQ+ohlcv, cell3 BSQ+micro, cell4 FSQ+micro) and return
+    the IDENTICAL float64 −7.563377128272953. Planted: all-short −3.638854395025198, all-long
+    −1.050127274973947, flat (never trades) 0.0. **Off-lattice = 4 of 20**, ALL in the planted arm
+    and ALL micro-fed: acceptance planted cells 3, 4, 5 and money-leg planted cell4. **0 of 8
+    OHLCV-only observations and 0 of 10 noise-arm observations are off-lattice.**
+    - **CORRECTION to the posted enumeration (verified before acting on it).** The ruling listed
+      "cell4 in both runs, acceptance cell3 once". **Acceptance planted cell5 is ALSO off-lattice** —
+      its −1.0308263783219347 is NOT the planted all-long constant −1.050127274973947. Conversely
+      money-leg planted cells 1 and 2 are NOT off-lattice: cell1 is the flat never-trades point and
+      cell2 IS the all-long point (a singleton value is not an off-lattice value). Cell4 remains the
+      only cell off-lattice in BOTH runs.
+    - **What it does NOT support.** Not evidence for the microstructure claim. Cell 5 is the
+      SHUFFLED-micro placebo and is off-lattice, so the pattern is equally consistent with extra
+      input CAPACITY widening μ̂ dispersion as with micro INFORMATION. "Off-lattice" also means
+      only "not perfectly constant": the one off-lattice cell with a measured direction is
+      money-leg planted cell4 at frac_negative 0.99883 — **14 long decisions out of 12,000**.
+  - **H-SWEEP — the approved horizon diagnostic (`m6_h_sweep.json`).** 5 checkpoints × h ∈
+    {1,2,3,5,15}, 12,000 decisions each (cap 4,000/symbol × 3), CPU, expectation estimator,
+    42,000,000 bars total. **h=1 is STRUCTURALLY VOID and is not a measurement**: μ̂ covers
+    [t+1, t+h] = log(C_{t+h}/C_{t+1}), so `predict.py` excludes rollout step k=1 (entry-next-bar,
+    spec §8.B.3) and μ̂ ≡ 0 identically for **every** model — confirmed on all five checkpoints.
+    Its all-zero row must never be read as "the filter did not bind".
+    - **PRE-DECLARED TEST → UPGRADE. All three legs hold on the acceptance PLANTED cell4 at
+      h ∈ {2,3,5,15}:** IR@κ* +65.098 / +43.461 / +28.878 / **+15.008**; activity@κ* 0.9152 /
+      0.9127 / 0.8862 / 0.8874 (all strictly inside (0,1)); frac_negative 0.4987 / 0.5198 / 0.6100 /
+      0.5662 (all inside [0.05, 0.95]).
+    - **MECHANISM CONFIRMED for the planted arm.** μ̂ std is flat across h (0.0267 → 0.0293) while
+      the mean drifts −0.00018 → −0.00576, so dispersion/|mean| collapses 146 → ~5. The offset
+      accumulates with h; the state-driven spread does not.
+    - **NOISE ARM QUIET AT EVERY h** on all four noise checkpoints — IR ≤ 0 throughout,
+      frac_negative pinned at 0.0 or 1.0, μ̂ std ~1e-5..5e-4. So the planted cell's binding activity
+      is NOT a generic short-horizon artifact of the backtest. At h=2 the two arms differ by ~2,700×
+      in μ̂ dispersion (0.02673 vs 0.00001).
+    - **A SECOND, DISTINCT DEGENERACY MECHANISM, separated by measurement.** Noise cells obey
+      μ̂ = (h−1)·c with std scaling identically (exact: 0.01730 / 0.03459 / 0.06918 / 0.24216 at
+      h = 2/3/5/15) — the model emits a fixed, context-independent per-step value. Their books are
+      constant **by absence of signal, not by drift**, so no horizon rescues them; lowering h merely
+      flips them from all-trade (activity 1) to no-trade (activity 0) without passing through a
+      discriminating regime. This must NOT be filed under the same mechanism as the planted arm's
+      h=15 sign-lock.
+    - **THE v1.4.4 CONJUNCTION FLOOR IS VALIDATED BY A COUNTEREXAMPLE.** `moneyleg_noise_cell2` at
+      h=5 has decision-activity **0.9318** — strictly inside (0,1) — with μ̂ std 0.00016 and NO
+      signal: θ merely happened to land inside a very narrow μ̂ spread. **Partial activity is
+      necessary, not sufficient.** That cell is caught because it fails the dispersion leg
+      (0.00016 < the 0.005 floor) AND the sign-balance leg (frac_negative 0.0). A filter-only guard
+      would have passed it. Each leg covers a case the others miss — now an instance, not an
+      argument.
+    - **INDEPENDENT REPRODUCTION OF THE LATTICE.** At h=15 the noise checkpoints land exactly on
+      the constant-book points: −7.563377128272953 (all-long) and −7.240328510778865 (all-short),
+      reproduced here by a different estimator, a different device and an independent code path
+      from the CUDA runs that established them.
+    - **THE FINDING THAT NEEDS ADJUDICATION — RUN-TO-RUN MODEL DIVERGENCE.** The acceptance cell4
+      is **not degenerate at h=15** (activity 0.8874, frac_negative 0.5662, IR +15.008 against the
+      oracle's 17.12 — ~88% of the analytic ceiling), while the money-leg cell4 at the same h, the
+      same cap and the same estimator gives frac_negative 0.99883, activity 1.0, IR −3.4258.
+      Recipes are byte-identical and the seed is the same. The sign-lock is therefore **run-to-run
+      model divergence, not a property of h=15 and not grid/cap dependence** (the latter is
+      excluded by the band-stability check below). Lowering h helps by shrinking a drift offset
+      whose magnitude is itself unstable across runs (~15× different here).
+      **CAVEAT, stated so the upgrade is not over-read:** the demonstration rests on ONE checkpoint,
+      is contradicted by its sibling, and comes from a re-decode with the corrected estimator rather
+      than from a run whose verdict path executed end-to-end (the acceptance run's own recorded IRs
+      are pre-v1.4.2 **argmax**, which is why its manifest reads −3.4709 for this cell and only the
+      money-leg comparison is apples-to-apples). Leg (c) upgrades **per the letter of the
+      pre-declared rule**; whether a single-checkpoint demonstration contradicted by its sibling is
+      sufficient to close the leg is the supervisor's call, not the builder's.
+  - **BLOCKING BAND-STABILITY CHECK — PASSED (`m6_guard_band_stability.json`).** Acceptance planted
+    cell4 re-decoded at h=15 across three decision-set sizes: n=4,000 → frac_negative 0.5557
+    (drift 0.0028); n=12,000 → 0.5662 (drift **0.0077**, the worst); n=**140,013** → 0.5638
+    (drift 0.0053). Against the pre-declared 0.15 limit that is inside by a factor of ~20, across a
+    35× range of set sizes. **The [0.05, 0.95] band IS grid-stable; no STOP is triggered and the
+    band is NOT adjusted.** This is what excludes grid/cap dependence as the explanation for the
+    acceptance-vs-money-leg gap, leaving model divergence.
+    - **PREMISE CORRECTED.** The ruling described the money-leg's n=12,000 set as UNCAPPED. It is
+      not: 12,000 = 3 symbols × the 4,000 per-symbol cap, and the genuinely uncapped block-3 grid is
+      46,671/symbol = **140,013**. Both are scored here, so cap dependence is settled by measurement
+      rather than by the label — had only the set labelled "uncapped" been run, cap dependence would
+      have been tested over no range at all.
+    - **CAPPING DISTORTS FIXTURE IR ~3×, but not the guard statistic.** The same cell reads +15.008
+      capped and +52.067 uncapped: the headline series is a full-calendar grid with untraded periods
+      entered as 0.0, so capping to 4,000 of 46,671 periods leaves ~91% of the series flat and
+      inflates the IR denominator. `frac_negative` and decision-activity are ratios over SCORED
+      decisions and are unaffected — which is why the guard reads stable while IR moves 3.5×. A
+      fixture-reporting caveat only: the real §3a money surface is uncapped by pin.
+  - **RECEIPT REGENERATION ON THE PINNED `.venv`** (numpy 2.4.6 / torch 2.12.1), closing the v1.4.4
+    environment disclosure. `m6_moneyleg_local_rescore.json` (L1/L2/L4 at full float64 — L2/L4
+    reproduce exactly: traded == scored == 12,000 at every κ at both sigmas, `binds=False`);
+    `m6_oracle_calibration.json`; `m6_estimator_bias_bound.json`. The L3 statistic is reproduced
+    inside the band-stability check (n=4,000 → 0.5557 vs L3's 0.5585). **A STALE FIELD WAS FOUND AND
+    FIXED:** the oracle receipt still recorded `pinned_sigma: 0.05` after the v1.4.4 revert; it now
+    reads 0.01, with `pinned_equals_baseline_after_v1_4_4_revert: true` making the (deliberately
+    retained) 0.05-vs-0.01 comparison legible as the receipt for the WITHDRAWN recalibration. Oracle
+    unchanged on the pinned env: net IR 17.1221 = **6.286× MDE**, activity 0.216, Δ vs placebo
+    20.7686 (CI lower 19.0507), margin met.
+    - **THE BIAS-BOUND REGENERATION WITHDRAWS A v1.4.3 CONCLUSION.** The order read "at n ≥ 256";
+      v1.4.3 used mc_samples=256 but **n_dec = 24**, and the decision count was the leg the
+      supervisor challenged. Re-run at n_dec = 256 AND mc_samples = 256 (both readings satisfied).
+      The level bias is confirmed **common-mode, and far more tightly than before**: gap means
+      +0.00498 and +0.00477, spread **0.000204** (v1.4.3 reported 0.00965 at n=24). **But the
+      inference drawn from that is wrong.** Sign agreement between expectation and mc_mean is
+      **0.8398** on the non-degenerate acceptance cell4 (|mean|/std = 0.150) versus **0.9883** on
+      the degenerate money-leg noise cell2 (|mean|/std = 27.4); frac_negative differs 0.5430 vs
+      0.6406, not identically as at n=24. A common-mode level shift of ≈+0.0049 preserves positions
+      ONLY when |mean| ≫ std. On a cell centred near zero — which is what a healthy, discriminating
+      cell looks like — **it flips ~16% of signs.** v1.4.3's "level shift ⇒ positions preserved ⇒
+      paired ΔIR robust" therefore holds for the DEGENERATE cells and FAILS for exactly the cells
+      the verdict depends on; the n_dec=24 equality was a small-sample artifact. That wording is
+      withdrawn in the v1.4.3 entry.
+    - **CONSEQUENCE — PROPOSED, NOT EXECUTED.** Expectation is biased ≈ +0.0049 against the
+      unbiased mc_mean, ~17% of the planted cell's μ̂ std (0.029), and it moves ~1 position in 6 on
+      a non-degenerate cell. `predict_mu`'s default is a v1.4.2 PIN inside the Gate-A anchored
+      instrument, so the builder changes nothing. Flagged for the supervisor: the estimator choice
+      is not free on the cells that matter, and if the real run's cells are non-degenerate (which
+      the guard now requires) the expectation-vs-mc_mean choice is position-relevant. No change is
+      made and none is implied.
+    - **PROVENANCE GAP, DISCLOSED.** `m6_h_sweep.json` and `m6_guard_band_stability.json` were
+      written BEFORE the `bars_total`/`environment` stamping was added, so they carry `device` and
+      `eval_cap_per_symbol` but not the stream size or interpreter versions. Both ran on the pinned
+      `.venv` at the committed default `--bars-total 42_000_000` (14,000,000 bars/symbol) with no
+      CLI overrides — evidenced by the run log and the script's own default. A new `_env()` helper
+      now stamps numpy/torch/device into every receipt this script writes (the v1.4.4 environment
+      slip was caught only by chance from an unrelated manifest diff; this makes it
+      self-announcing). **The two artifacts are NOT patched after the fact** — editing a receipt
+      post-hoc is exactly what receipts exist to prevent, and a ~2.5 CPU-hour re-run to add a
+      provenance string is not proportionate.
+  - **TOOLING (`scripts/m6_h_sweep.py`, `scripts/m6_lattice_observation.py`).** The sweep needs the
+    token stream hoisted out of the h-loop (25 scorings; three 14M-bar feature matrices do not fit
+    in this box's RAM), so `score_pretokenized` is a line-for-line mirror of `xsection.score_cell`
+    that imports the pooling/cost/position/netting/IR arithmetic from the instrument modules. **The
+    mirror is PROVEN, not asserted:** `tests/eval/test_h_sweep_mirror.py` runs both on one fixture
+    and requires bit-equality of κ*, headline IR, the VAL per-κ curve, the decision count and every
+    μ̂ diagnostic the guard reads. Tokenization is restricted to the aligned chunks containing a
+    needed bar — exact because `tokenize_features` encodes NON-OVERLAPPING windows, so a bar's
+    token depends on exactly one chunk — and that equality is its own KAT. Decisions occupy only
+    eval blocks 0 and 3, so this touches 10.0 % of the stream (1,400,174 / 14,000,000 bars per
+    symbol) and removed a swap-thrash that had made the full-stream version unusable on 16 GB.
+    **No file in the Gate-A anchored path is touched by this amendment.**
+  - **SCOPE GUARDRAIL.** Everything in v1.4.5 is CANARY-ONLY. The real run's h=15 and the entire
+    pinned §3a money surface are NOT in scope and are unchanged. If a fixture result argues for
+    moving them, that is a PROPOSAL for the supervisor, never an executed change.
+
 - **v1.4.4 (2026-07-29, money-leg sign-lock adjudication; supervisor-ordered) — BEFORE any real
   training. Spend WITHDRAWN; local $0 CPU work (L1–L4) + the degeneracy guard.** The staged $0.60
   re-run's authorization was withdrawn: the money-leg manifest carries a stronger fact than the
@@ -208,8 +389,12 @@ three stacked judgment calls = an unlimited re-run license):**
     activity inside (0,1) (it moves the fixture FURTHER from the binding regime — larger μ̂ vs the
     fixed threshold → more saturated; at 0.05 the noise |IR| merely shrinks, −7.24→−1.32 and
     −7.56→−1.65, activity still 1.0). L1 (the fidelity precondition): reproduced ALL three cloud
-    IRs BIT-EXACTLY (|Δ| = 0.00e+00, well inside the ~1e-3 bar): cell1 −7.240329, cells 2,3
-    −7.563377 — the saved checkpoints and the scoring path are faithful, so the exercise is valid.
+    IRs EXACTLY, |Δ| = 0.0, inside the declared 1e-3 criterion: cell1 −7.240329, cells 2,3
+    −7.563377. **[v1.4.5 NOTE: these display values are rounded to 6dp, which made the reported
+    zero LOOK like a rounding artifact; re-measured at full float64 on the pinned `.venv` the
+    agreement is exact (cell1 −7.240328510778865, cells 2,3 −7.563377128272953). But see v1.4.5
+    C2: the exactness is a CONSEQUENCE of the constant book — μ̂'s magnitudes never enter the IR —
+    and is NOT evidence of instrument health.]**
   - **SIGMA RECALIBRATION WITHDRAWN — a documented NON-FIX.** Per the pre-declared
     decision rule (L2 activity 0/1 everywhere → revert), SIGMA is reverted 0.05 → 0.01: the v1.4.3
     recalibration reduced fixed-cost DRAG but did NOT address the actual pathology (the filter
@@ -241,9 +426,12 @@ three stacked judgment calls = an unlimited re-run license):**
     torch 2.12.1). The LOAD-BEARING gates are re-verified on the pinned `.venv`: the Gate-A anchor
     re-proves 3f86882a BIT-IDENTICALLY on BOTH the system env and the pinned `.venv`, and the full
     suite is re-run green on the pinned `.venv`. Independently, L1 reproduced the pinned-env cloud
-    IRs (the cloud box carried the lockfile) BIT-EXACTLY across the env gap — so the sign-lock /
-    filter-never-binds findings are robust to the numpy/torch delta (they are structural — signs
-    and all-trade — not ULP-sensitive). The diagnostic receipts are retained as-is with this label.
+    IRs (the cloud box carried the lockfile) EXACTLY across the env gap — the sign-lock /
+    filter-never-binds findings are structural (signs and all-trade), not ULP-sensitive.
+    **[v1.4.5 C2 REFRAMES WHAT THIS SHOWS: that agreement is a SYMPTOM of the degeneracy — a
+    constant book makes IR independent of μ̂'s magnitudes — not evidence of instrument health.]** All diagnostic receipts are
+    REGENERATED on the pinned `.venv` in v1.4.5, so the "every receipt on the pinned env"
+    invariant holds without relying on this label.
   - **ITEM-1 CORRECTION (on the record).** The v1.4.3 bias-bound's "acceptance cell4 gives balanced
     frac_neg=0.5 → the money-leg cell4 sign-lock is a MODEL property not an estimator artifact"
     OVERREACHED: that result is n_dec=24 on a FIXTURE-PLANTED cell; it supports ONLY that
@@ -297,7 +485,12 @@ three stacked judgment calls = an unlimited re-run license):**
      frac_neg is IDENTICAL between the two estimators for each cell (cell4 0.5=0.5, cell2 0.0=0.0),
      so positions (sign(μ̂) gated by |μ̂|>κ·c) and hence the paired ΔIR are robust to it; mc_mean
      (unbiased) is the reference, expectation understates the negative drift by a small delta-method
-     level bias without flipping signs. (b) DECISIVE: on the ACCEPTANCE cell4 the expectation
+     level bias without flipping signs.
+     **[FINDING (a) IS WITHDRAWN BY THE §7 v1.4.5 REGENERATION — see v1.4.5. At n_dec=256 the
+     identical-frac_neg result does NOT survive: sign agreement is 0.8398 on the non-degenerate
+     cell. The "level shift ⇒ positions preserved ⇒ paired ΔIR robust" inference holds only for
+     DEGENERATE cells and FAILS for exactly the cells the verdict depends on. The n_dec=24 equality
+     was a small-sample artifact.]** (b) DECISIVE: on the ACCEPTANCE cell4 the expectation
      estimator gives BALANCED frac_neg=0.5, so the money-leg cell4's frac_neg=0.999 (mostly-short)
      is a MODEL property of that specific 3000-step cell, NOT an estimator artifact — and because
      training is SIGMA-invariant the re-run reproduces that cell4 bit-identically, so raising SIGMA

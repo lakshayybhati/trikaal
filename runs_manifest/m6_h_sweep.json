@@ -1,0 +1,1144 @@
+{
+  "cells": {
+    "acceptance_noise_cell4": {
+      "arm": "micro",
+      "by_h": {
+        "1": {
+          "dispersion_over_mean": Infinity,
+          "h": 1,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0,
+            "n": 12000,
+            "std": 0.0
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 123.4
+        },
+        "15": {
+          "dispersion_over_mean": 0.0008253604481014651,
+          "h": 15,
+          "ir_at_kstar": -7.563377128272953,
+          "ir_by_kappa": {
+            "1": -7.563377128272953,
+            "1.5": -7.563377128272953,
+            "2": -7.563377128272953,
+            "3": -7.563377128272953
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.24216440403779346,
+            "n": 12000,
+            "std": 0.00019987292103085746
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -8.806195286956855,
+            "1.5": -8.806195286956855,
+            "2": -8.806195286956855,
+            "3": -8.806195286956855
+          },
+          "wall_s": 267.7
+        },
+        "2": {
+          "dispersion_over_mean": 0.0008635517981469707,
+          "h": 2,
+          "ir_at_kstar": -26.58539703160799,
+          "ir_by_kappa": {
+            "1": -26.58539703160799,
+            "1.5": -26.58539703160799,
+            "2": -26.58539703160799,
+            "3": -26.58539703160799
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.01729529571970304,
+            "n": 12000,
+            "std": 1.4935383718233164e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -28.020955653197962,
+            "1.5": -28.020955653197962,
+            "2": -28.020955653197962,
+            "3": -28.020955653197962
+          },
+          "wall_s": 135.9
+        },
+        "3": {
+          "dispersion_over_mean": 0.0008520769947337791,
+          "h": 3,
+          "ir_at_kstar": -20.242503559340165,
+          "ir_by_kappa": {
+            "1": -20.242503559340165,
+            "1.5": -20.242503559340165,
+            "2": -20.242503559340165,
+            "3": -20.242503559340165
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.03459148481309414,
+            "n": 12000,
+            "std": 2.9474608422920412e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -18.514366150797077,
+            "1.5": -18.514366150797077,
+            "2": -18.514366150797077,
+            "3": -18.514366150797077
+          },
+          "wall_s": 166.4
+        },
+        "5": {
+          "dispersion_over_mean": 0.0008409061780418334,
+          "h": 5,
+          "ir_at_kstar": -15.036312211333211,
+          "ir_by_kappa": {
+            "1": -15.036312211333211,
+            "1.5": -15.036312211333211,
+            "2": -15.036312211333211,
+            "3": -15.036312211333211
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.06918341643571854,
+            "n": 12000,
+            "std": 5.8176762298836644e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -14.925302320227445,
+            "1.5": -14.925302320227445,
+            "2": -14.925302320227445,
+            "3": -14.925302320227445
+          },
+          "wall_s": 193.5
+        }
+      },
+      "cell_id": 4,
+      "checkpoint": "runs_cloud/acceptance/m6_acceptance/noise/cell4_fsq_micro_seed0"
+    },
+    "acceptance_planted_cell4": {
+      "arm": "micro",
+      "by_h": {
+        "1": {
+          "dispersion_over_mean": Infinity,
+          "h": 1,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0,
+            "n": 12000,
+            "std": 0.0
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 218.8
+        },
+        "15": {
+          "dispersion_over_mean": 5.080920689500573,
+          "h": 15,
+          "ir_at_kstar": 15.008170574899133,
+          "ir_by_kappa": {
+            "1": 14.882729266600863,
+            "1.5": 15.024399069253821,
+            "2": 14.832397295442187,
+            "3": 15.008170574899133
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.8874166666666666,
+            "activity_decisions_by_kappa": {
+              "1": 0.96225,
+              "1.5": 0.9444166666666667,
+              "2": 0.92475,
+              "3": 0.8874166666666666
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.5661666666666667,
+            "mean": -0.0057632097150187465,
+            "n": 12000,
+            "std": 0.029282411478969452
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 11547,
+            "1.5": 11333,
+            "2": 11097,
+            "3": 10649
+          },
+          "val_ir_by_kappa": {
+            "1": 15.23834997373094,
+            "1.5": 15.322658415277354,
+            "2": 15.551019704798197,
+            "3": 15.611373519766813
+          },
+          "wall_s": 218.1
+        },
+        "2": {
+          "dispersion_over_mean": 146.33447150080633,
+          "h": 2,
+          "ir_at_kstar": 65.09754521101361,
+          "ir_by_kappa": {
+            "1": 64.3596114068906,
+            "1.5": 64.58740762736193,
+            "2": 64.75751493312686,
+            "3": 65.09754521101361
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.9151666666666667,
+            "activity_decisions_by_kappa": {
+              "1": 0.9708333333333333,
+              "1.5": 0.9565,
+              "2": 0.9424166666666667,
+              "3": 0.9151666666666667
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.49866666666666665,
+            "mean": -0.00018267601615771137,
+            "n": 12000,
+            "std": 0.026731798280311452
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 11650,
+            "1.5": 11478,
+            "2": 11309,
+            "3": 10982
+          },
+          "val_ir_by_kappa": {
+            "1": 64.56850853451148,
+            "1.5": 64.77030131559826,
+            "2": 64.98249346332074,
+            "3": 65.09051154337989
+          },
+          "wall_s": 146.7
+        },
+        "3": {
+          "dispersion_over_mean": 11.705639526457189,
+          "h": 3,
+          "ir_at_kstar": 43.46063965297415,
+          "ir_by_kappa": {
+            "1": 42.60370854310835,
+            "1.5": 42.935670267375684,
+            "2": 43.09452503554352,
+            "3": 43.46063965297415
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.9126666666666666,
+            "activity_decisions_by_kappa": {
+              "1": 0.9699166666666666,
+              "1.5": 0.9565833333333333,
+              "2": 0.94125,
+              "3": 0.9126666666666666
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.51975,
+            "mean": -0.002371185037237592,
+            "n": 12000,
+            "std": 0.027756237296432215
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 11639,
+            "1.5": 11479,
+            "2": 11295,
+            "3": 10952
+          },
+          "val_ir_by_kappa": {
+            "1": 43.60371841053472,
+            "1.5": 43.7628336196943,
+            "2": 43.934350270482604,
+            "3": 44.324489494628544
+          },
+          "wall_s": 147.0
+        },
+        "5": {
+          "dispersion_over_mean": 4.288274668650898,
+          "h": 5,
+          "ir_at_kstar": 28.87784951153982,
+          "ir_by_kappa": {
+            "1": 27.919599301074935,
+            "1.5": 28.18506585079659,
+            "2": 28.31430980089179,
+            "3": 28.87784951153982
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.8861666666666667,
+            "activity_decisions_by_kappa": {
+              "1": 0.9598333333333333,
+              "1.5": 0.94075,
+              "2": 0.9231666666666667,
+              "3": 0.8861666666666667
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.61,
+            "mean": -0.006652628488901149,
+            "n": 12000,
+            "std": 0.028528298228900094
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 11518,
+            "1.5": 11289,
+            "2": 11078,
+            "3": 10634
+          },
+          "val_ir_by_kappa": {
+            "1": 28.43545545487424,
+            "1.5": 28.724832636651836,
+            "2": 29.141979941563566,
+            "3": 30.05638356857693
+          },
+          "wall_s": 149.2
+        }
+      },
+      "cell_id": 4,
+      "checkpoint": "runs_cloud/acceptance/m6_acceptance/planted/cell4_fsq_micro_seed0"
+    },
+    "moneyleg_noise_cell1": {
+      "arm": "ohlcv",
+      "by_h": {
+        "1": {
+          "dispersion_over_mean": Infinity,
+          "h": 1,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0,
+            "n": 12000,
+            "std": 0.0
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 145.0
+        },
+        "15": {
+          "dispersion_over_mean": 0.0035305398254078454,
+          "h": 15,
+          "ir_at_kstar": -7.240328510778865,
+          "ir_by_kappa": {
+            "1": -7.240328510778865,
+            "1.5": -7.240328510778865,
+            "2": -7.240328510778865,
+            "3": -7.240328510778865
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.03473498814721902,
+            "n": 12000,
+            "std": 0.00012263325898882624
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -6.201103276632372,
+            "1.5": -6.201103276632372,
+            "2": -6.201103276632372,
+            "3": -6.201103276632372
+          },
+          "wall_s": 261.2
+        },
+        "2": {
+          "dispersion_over_mean": 0.004107485607347902,
+          "h": 2,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": -27.468503777457492,
+            "1.5": -27.468503777457492,
+            "2": -27.468503777457492,
+            "3": 0.0
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.0024807867807149888,
+            "n": 12000,
+            "std": 1.0189795996685752e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": -26.75165112283381,
+            "1.5": -26.75165112283381,
+            "2": -26.75165112283381,
+            "3": 0.0
+          },
+          "wall_s": 157.4
+        },
+        "3": {
+          "dispersion_over_mean": 0.003810246661452655,
+          "h": 3,
+          "ir_at_kstar": -18.916942391352745,
+          "ir_by_kappa": {
+            "1": -18.916942391352745,
+            "1.5": -18.916942391352745,
+            "2": -18.916942391352745,
+            "3": -18.916942391352745
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.004961489309022824,
+            "n": 12000,
+            "std": 1.8904498075537256e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -20.71025112838495,
+            "1.5": -20.71025112838495,
+            "2": -20.71025112838495,
+            "3": -20.71025112838495
+          },
+          "wall_s": 167.4
+        },
+        "5": {
+          "dispersion_over_mean": 0.0037002695055654766,
+          "h": 5,
+          "ir_at_kstar": -12.969129799331023,
+          "ir_by_kappa": {
+            "1": -12.969129799331023,
+            "1.5": -12.969129799331023,
+            "2": -12.969129799331023,
+            "3": -12.969129799331023
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.009922843194901944,
+            "n": 12000,
+            "std": 3.671719408260357e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -13.056491641484415,
+            "1.5": -13.056491641484415,
+            "2": -13.056491641484415,
+            "3": -13.056491641484415
+          },
+          "wall_s": 181.2
+        }
+      },
+      "cell_id": 1,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell1_bsq_ohlcv_seed0"
+    },
+    "moneyleg_noise_cell2": {
+      "arm": "ohlcv",
+      "by_h": {
+        "1": {
+          "dispersion_over_mean": Infinity,
+          "h": 1,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0,
+            "n": 12000,
+            "std": 0.0
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 153.2
+        },
+        "15": {
+          "dispersion_over_mean": 0.04290751685699183,
+          "h": 15,
+          "ir_at_kstar": -7.563377128272953,
+          "ir_by_kappa": {
+            "1": -7.563377128272953,
+            "1.5": -7.563377128272953,
+            "2": -7.563377128272953,
+            "3": -7.563377128272953
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.012421296144624554,
+            "n": 12000,
+            "std": 0.0005329669737111657
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -8.806195286956855,
+            "1.5": -8.806195286956855,
+            "2": -8.806195286956855,
+            "3": -8.806195286956855
+          },
+          "wall_s": 258.7
+        },
+        "2": {
+          "dispersion_over_mean": 0.048995185970118614,
+          "h": 2,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0008850560981407762,
+            "n": 12000,
+            "std": 4.336348812239488e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 159.5
+        },
+        "3": {
+          "dispersion_over_mean": 0.04520612865632974,
+          "h": 3,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": -20.242503559340165,
+            "1.5": -19.553207716763115,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 2.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 0.9291666666666667,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0017719218767931065,
+            "n": 12000,
+            "std": 8.010172833127443e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 11150,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": -18.514366150797077,
+            "1.5": -18.30073664115581,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 167.0
+        },
+        "5": {
+          "dispersion_over_mean": 0.044103833740076794,
+          "h": 5,
+          "ir_at_kstar": -14.470551571802533,
+          "ir_by_kappa": {
+            "1": -15.036312211333211,
+            "1.5": -15.036312211333211,
+            "2": -15.036312211333211,
+            "3": -14.470551571802533
+          },
+          "kappa_star": 3.0,
+          "mu_diag": {
+            "activity_decisions": 0.9318333333333333,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 0.9318333333333333
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.003545188862457871,
+            "n": 12000,
+            "std": 0.0001563564201670139
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 11182
+          },
+          "val_ir_by_kappa": {
+            "1": -14.925302320227445,
+            "1.5": -14.925302320227445,
+            "2": -14.925302320227445,
+            "3": -14.666000658375816
+          },
+          "wall_s": 186.2
+        }
+      },
+      "cell_id": 2,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell2_fsq_ohlcv_seed0"
+    },
+    "moneyleg_noise_cell3": {
+      "arm": "micro",
+      "by_h": {
+        "1": {
+          "dispersion_over_mean": Infinity,
+          "h": 1,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0,
+            "n": 12000,
+            "std": 0.0
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 153.0
+        },
+        "15": {
+          "dispersion_over_mean": 0.027641122094613307,
+          "h": 15,
+          "ir_at_kstar": -7.563377128272953,
+          "ir_by_kappa": {
+            "1": -7.563377128272953,
+            "1.5": -7.563377128272953,
+            "2": -7.563377128272953,
+            "3": -7.563377128272953
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0048782711153477435,
+            "n": 12000,
+            "std": 0.00013484088750995241
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -8.806195286956855,
+            "1.5": -8.806195286956855,
+            "2": -8.806195286956855,
+            "3": -8.806195286956855
+          },
+          "wall_s": 285.3
+        },
+        "2": {
+          "dispersion_over_mean": 0.030801692623302575,
+          "h": 2,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.00034855131623800844,
+            "n": 12000,
+            "std": 1.0735970506210667e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 159.9
+        },
+        "3": {
+          "dispersion_over_mean": 0.02951768893413662,
+          "h": 3,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 0.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0006970099021804829,
+            "n": 12000,
+            "std": 2.057412147657649e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 0,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": 0.0,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 171.0
+        },
+        "5": {
+          "dispersion_over_mean": 0.02850220140027896,
+          "h": 5,
+          "ir_at_kstar": 0.0,
+          "ir_by_kappa": {
+            "1": -15.036312211333211,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "kappa_star": 1.5,
+          "mu_diag": {
+            "activity_decisions": 0.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 0.0,
+              "2": 0.0,
+              "3": 0.0
+            },
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.001394455347073575,
+            "n": 12000,
+            "std": 3.974504714598693e-05
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 0,
+            "2": 0,
+            "3": 0
+          },
+          "val_ir_by_kappa": {
+            "1": -14.925302320227445,
+            "1.5": 0.0,
+            "2": 0.0,
+            "3": 0.0
+          },
+          "wall_s": 195.0
+        }
+      },
+      "cell_id": 3,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell3_bsq_micro_seed0"
+    }
+  },
+  "device": "cpu",
+  "estimator": "expectation",
+  "eval_cap_per_symbol": 4000,
+  "frac_neg_band": [
+    0.05,
+    0.95
+  ],
+  "h1_structural_note": "h=1 is STRUCTURALLY VOID for this estimator, not a measurement: mu-hat covers [t+1, t+h] = log(C_{t+h}/C_{t+1}), so predict.py excludes rollout step k=1 (entry-next-bar, spec 8.B.3). At h=1 the accumulator is never touched and mu-hat == 0 identically for every model. Its all-zero row is the estimator's definition, NOT evidence about drift, sign-lock, or filter binding. The fixture's plant sits at SIGNAL_LAG=2, so h=2 is both the plant's own horizon and the smallest valid one.",
+  "horizons": [
+    1,
+    2,
+    3,
+    5,
+    15
+  ],
+  "mechanism_under_test": "h=15 rollout drift accumulation saturating the sign of mu-hat; lowering h should shrink the constant offset ~proportionally while preserving the state component.",
+  "pre_declared_upgrade_test": "Leg (c) upgrades to demonstrated-at-the-plant-horizon ONLY if, on the acceptance PLANTED cell4, at some h: decision-activity at kappa* strictly inside (0,1) AND frac_negative inside [0.05,0.95] AND IR at kappa* > 0. All three, or no upgrade.",
+  "receipt": "m6_h_sweep",
+  "scope": "CANARY-ONLY fixture diagnostic. The real run's h=15 and the pinned 3a money surface are NOT in scope and are unchanged by this receipt.",
+  "upgrade_test": {
+    "horizons_all_three": [
+      "2",
+      "3",
+      "5",
+      "15"
+    ],
+    "per_h": {
+      "1": {
+        "activity_binds": false,
+        "activity_decisions": 0.0,
+        "all_three": false,
+        "frac_negative": 0.0,
+        "ir_at_kstar": 0.0,
+        "ir_positive": false,
+        "sign_balanced": false,
+        "structurally_void": true
+      },
+      "15": {
+        "activity_binds": true,
+        "activity_decisions": 0.8874166666666666,
+        "all_three": true,
+        "frac_negative": 0.5661666666666667,
+        "ir_at_kstar": 15.008170574899133,
+        "ir_positive": true,
+        "sign_balanced": true,
+        "structurally_void": false
+      },
+      "2": {
+        "activity_binds": true,
+        "activity_decisions": 0.9151666666666667,
+        "all_three": true,
+        "frac_negative": 0.49866666666666665,
+        "ir_at_kstar": 65.09754521101361,
+        "ir_positive": true,
+        "sign_balanced": true,
+        "structurally_void": false
+      },
+      "3": {
+        "activity_binds": true,
+        "activity_decisions": 0.9126666666666666,
+        "all_three": true,
+        "frac_negative": 0.51975,
+        "ir_at_kstar": 43.46063965297415,
+        "ir_positive": true,
+        "sign_balanced": true,
+        "structurally_void": false
+      },
+      "5": {
+        "activity_binds": true,
+        "activity_decisions": 0.8861666666666667,
+        "all_three": true,
+        "frac_negative": 0.61,
+        "ir_at_kstar": 28.87784951153982,
+        "ir_positive": true,
+        "sign_balanced": true,
+        "structurally_void": false
+      }
+    },
+    "verdict": "UPGRADE \u2014 all three legs hold at h=['2', '3', '5', '15']"
+  }
+}

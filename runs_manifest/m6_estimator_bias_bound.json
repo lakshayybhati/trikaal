@@ -1,59 +1,72 @@
 {
-  "amendment": "prereg s7 v1.4.3 item 1 (2026-07-29)",
-  "common_mode_conclusion": "gap spread across cells = 0.00965 vs mean |mu| = 0.0406; a common-mode gap (small spread relative to the paired-delta scale) largely CANCELS in the paired \u0394IR(4-5) and \u0394IR(4-2) deltas; a per-cell-heterogeneous gap does not.",
-  "device": "cpu",
-  "estimator_stated": "per-step mean-field decode_latent(E[z]) along a GREEDY argmax token path; exact only under a linear decoder in z + deterministic path; mc_mean = unbiased-in-expectation MC reference",
-  "gap_means_expectation_minus_mcmean": [
-    0.032399,
-    0.022752
-  ],
-  "gap_spread_across_cells": 0.009647,
+  "amendment": "prereg s7 v1.4.3 item 1, REGENERATED under v1.4.5 on the pinned .venv",
+  "environment": "pinned .venv (numpy 2.4.6 / torch 2.12.1); device cpu",
+  "estimator_stated": "per-step mean-field decode_latent(E[z]) along a GREEDY argmax token path; exact only under a linear decoder in z + a deterministic path; mc_mean = unbiased-in-expectation MC reference over sampled chains",
+  "gap_spread_across_cells": 0.00020352383373648322,
   "h": 15,
-  "key_diagnostic_CORRECTED_v1.4.4": "CORRECTION (supervisor, 2026-07-29): the balanced frac_neg=0.5 result is n_dec=24 on a FIXTURE-PLANTED cell (acceptance cell4), not real data. It supports ONLY the claim it was computed for \u2014 expectation and mc_mean AGREE on the same cell \u2014 and nothing wider. It is NOT evidence that the AR avoids sign-lock: we have NO real-data evidence either way. The prior wording (that the money-leg cell4 frac_neg=0.999 is a MODEL property not an estimator artifact) OVERREACHED and is withdrawn. L3 (runs_manifest/m6_L3_acceptance_cell4_fullset.json) re-decodes this cell over the FULL decision set to test whether the n=24 balance was a small-sample artifact.",
   "mc_samples": 256,
   "mc_seed": 20260721,
-  "n_dec": 24,
+  "n24_claim_status": "The v1.4.3 'balanced frac_neg=0.5' diagnostic was n_dec=24 on a FIXTURE-PLANTED cell. It supports ONLY that expectation and mc_mean agree on that cell, never that the AR avoids sign-lock on real data. That withdrawal STANDS regardless of this regeneration.",
   "per_cell": [
     {
-      "cell": "cell4_fsq_micro (acceptance, planted)",
-      "expectation": {
-        "frac_neg": 0.5,
-        "mean": -0.009053099714219576,
-        "std": 0.13715873804389556
+      "cell": "acceptance_planted_cell4",
+      "checkpoint": "runs_cloud/acceptance/m6_acceptance/planted/cell4_fsq_micro_seed0",
+      "expectation_full": {
+        "frac_neg": 0.5621666666666667,
+        "mean": -0.0057687829753666296,
+        "std": 0.02923670098438907
+      },
+      "expectation_on_mc_subsample": {
+        "frac_neg": 0.54296875,
+        "mean": -0.004359181147956406,
+        "std": 0.028988747498395136
       },
       "gap_expectation_minus_mcmean": {
-        "abs_mean": 0.047039654672577556,
-        "mean": 0.03239919108370184,
-        "std": 0.05930042335832884
+        "abs_mean": 0.009802242673247861,
+        "frac_neg": 0.3046875,
+        "mean": 0.0049762240297496875,
+        "std": 0.011409214007036182
       },
-      "mc_mean_n256": {
-        "frac_neg": 0.5,
-        "mean": -0.041452290797921405,
-        "std": 0.13777590448666843
+      "mc_mean_subsample": {
+        "frac_neg": 0.640625,
+        "mean": -0.009335405177706093,
+        "std": 0.02885585182131826
       },
-      "n_dec": 24
+      "mc_wall_s": 997.8,
+      "n_dec_full": 12000,
+      "n_dec_subsample": 256,
+      "sign_agreement_frac": 0.83984375
     },
     {
-      "cell": "cell2_fsq_ohlcv (moneyleg, noise)",
-      "expectation": {
+      "cell": "moneyleg_noise_cell2",
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell2_fsq_ohlcv_seed0",
+      "expectation_full": {
         "frac_neg": 0.0,
-        "mean": 0.06249114573001863,
-        "std": 0.0034031744002100944
+        "mean": 0.012419976913432282,
+        "std": 0.0005343302774372156
+      },
+      "expectation_on_mc_subsample": {
+        "frac_neg": 0.0,
+        "mean": 0.012043781466782094,
+        "std": 0.00043956980751501043
       },
       "gap_expectation_minus_mcmean": {
-        "abs_mean": 0.023070745528942404,
-        "mean": 0.022752416792233516,
-        "std": 0.01239233161293134
+        "abs_mean": 0.00485827636501,
+        "frac_neg": 0.046875,
+        "mean": 0.004772700196013204,
+        "std": 0.0028325225817628355
       },
-      "mc_mean_n256": {
-        "frac_neg": 0.0,
-        "mean": 0.03973872893778511,
-        "std": 0.011095569426359968
+      "mc_mean_subsample": {
+        "frac_neg": 0.01171875,
+        "mean": 0.007271081270768889,
+        "std": 0.0028028431736926416
       },
-      "n_dec": 24
+      "mc_wall_s": 979.4,
+      "n_dec_full": 12000,
+      "n_dec_subsample": 256,
+      "sign_agreement_frac": 0.98828125
     }
   ],
-  "positions_robustness_finding": "The gap is directionally COMMON-MODE (both cells +0.023..+0.032) and a LEVEL shift, NOT a sign shift: frac_neg is IDENTICAL between expectation and mc_mean for each cell (cell4 0.5=0.5, cell2 0.0=0.0). Since positions come from sign(mu) gated by |mu|>k*c, a level shift that preserves the sign distribution preserves POSITIONS (hence IR), so the paired DIR clauses are robust to it; the only residual channel is marginal decisions near +/-k*c. mc_mean (unbiased) remains the reference; expectation understates the negative drift by ~+0.025..+0.032 (a delta-method level bias) without flipping signs.",
   "receipt": "m6_estimator_bias_bound",
-  "status": "INDICATIVE (cross-run local checkpoints: cell4 acceptance, cell2/3 moneyleg-noise); the authoritative same-run bias-bound is emitted alongside the re-run"
+  "what_changed_vs_v1_4_3": "The order read 'expectation vs mc_mean at n >= 256'. v1.4.3 used mc_samples = 256 with n_dec = 24, meeting that bar on the MC-sample reading; the DECISION count was the weak leg and the one challenged. Here n_dec = 256 and mc_samples = 256, so both readings are satisfied. This STRENGTHENS a weak leg; it does not close a compliance gap."
 }

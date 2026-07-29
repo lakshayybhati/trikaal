@@ -1,247 +1,333 @@
 {
-  "CAP": 4000,
+  "C1_builder_disclosure": "The builder wrote the C1 correction into docs/m6_prereg.md BEFORE regenerating this receipt, acting on the ruling's inference rather than on a measurement. That was the error the project's own rule forbids (claims must match receipts). The prereg text is withdrawn and replaced with this measured result.",
+  "C1_correction": "MEASURED, NOT INFERRED. The v1.4.4 receipt stored the local IR rounded to 6 decimals in its DISPLAY field (-7.240329) next to L1_abs_diff = 0.0, which made the zero look like it could be a rounding artifact; the v1.4.5 ruling inferred a true |Delta| of about 4.9e-7 on that basis. Regenerated here at full float64 on the pinned .venv, the local IR equals the cloud IR EXACTLY for all three cells (|Delta| = 0.0, not 4.9e-7), so the original L1_abs_diff was CORRECT and only the display precision was misleading. The inferred 4.9e-7 discrepancy does not exist.",
+  "C2_epistemic_status": "The exact agreement is a SYMPTOM of the sign-only degeneracy, not evidence of instrument health \u2014 and the C1 measurement STRENGTHENS this reading rather than weakening it. Because traded == scored at every kappa, the book is constant, so mu-hat's MAGNITUDES drop out of the IR entirely: the computation reduces to the same return series under the same fixed positions. That is why |Delta| is EXACTLY 0.0 across CUDA/numpy 2.4.6, CPU/numpy 2.3.3 and CPU/numpy 2.4.6 rather than merely small \u2014 the arithmetic never touches the numbers that differ between environments. On a NON-degenerate cell those same ULP-scale differences would flip marginal bars and reproduction would be looser. L1 therefore validates the SIGN PATTERN and the scoring arithmetic \u2014 which is all L2 and L4 needed, so their conclusions stand \u2014 and nothing more.",
   "L1_all_reproduced": true,
-  "N_PER": 14000000,
+  "L1_criterion_abs": 0.001,
+  "L2_L4_finding": "Decision-activity is 1.0 at every kappa in {1, 1.5, 2, 3} at BOTH sigmas: traded == scored everywhere, so the execution filter never binds and raising SIGMA only rescales |IR|. The v1.4.3 economic recalibration is a measured NON-FIX; SIGMA is reverted to 0.01 and the negative result is retained rather than deleted.",
   "cells": {
     "1": {
-      "L1_abs_diff": 0.0,
-      "L1_cloud_ir": -7.240328510778865,
-      "L1_local_ir_at_kstar_sigma0.01": -7.240329,
-      "L1_reproduced_1e-3": true,
+      "L1_abs_delta": 0.0,
+      "L1_abs_delta_sci": "0.000e+00",
+      "L1_cloud_ir_full_precision": -7.240328510778865,
+      "L1_criterion_abs": 0.001,
+      "L1_local_ir_full_precision": -7.240328510778865,
+      "L1_orders_of_margin": Infinity,
+      "L1_reproduced": true,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell1_bsq_ohlcv_seed0",
       "per_sigma": {
         "0.01": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 1.0,
-          "ir_at_kstar": -7.240329,
-          "kstar": 1.0,
-          "mu_mean": -0.034735,
-          "mu_std": 0.000123,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -7.240329,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -7.240328510778865,
+          "ir_by_kappa": {
+            "1": -7.240328510778865,
+            "1.5": -7.240328510778865,
+            "2": -7.240328510778865,
+            "3": -7.240328510778865
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -7.240329,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -7.240329,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -7.240329,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.03473498814721902,
+            "n": 12000,
+            "std": 0.00012263325898882624
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -6.201103276632372,
+            "1.5": -6.201103276632372,
+            "2": -6.201103276632372,
+            "3": -6.201103276632372
           }
         },
         "0.05": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 1.0,
-          "ir_at_kstar": -1.321288,
-          "kstar": 1.0,
-          "mu_mean": -0.173675,
-          "mu_std": 0.000613,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -1.321288,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -1.3212876858271823,
+          "ir_by_kappa": {
+            "1": -1.3212876858271823,
+            "1.5": -1.3212876858271823,
+            "2": -1.3212876858271823,
+            "3": -1.3212876858271823
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -1.321288,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -1.321288,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -1.321288,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 1.0,
+            "mean": -0.17367494073609518,
+            "n": 12000,
+            "std": 0.0006131662949441311
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -0.19209919146243207,
+            "1.5": -0.19209919146243207,
+            "2": -0.19209919146243207,
+            "3": -0.19209919146243207
           }
         }
       }
     },
     "2": {
-      "L1_abs_diff": 0.0,
-      "L1_cloud_ir": -7.563377128272953,
-      "L1_local_ir_at_kstar_sigma0.01": -7.563377,
-      "L1_reproduced_1e-3": true,
+      "L1_abs_delta": 0.0,
+      "L1_abs_delta_sci": "0.000e+00",
+      "L1_cloud_ir_full_precision": -7.563377128272953,
+      "L1_criterion_abs": 0.001,
+      "L1_local_ir_full_precision": -7.563377128272953,
+      "L1_orders_of_margin": Infinity,
+      "L1_reproduced": true,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell2_fsq_ohlcv_seed0",
       "per_sigma": {
         "0.01": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 0.0,
-          "ir_at_kstar": -7.563377,
-          "kstar": 1.0,
-          "mu_mean": 0.012421,
-          "mu_std": 0.000533,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -7.563377128272953,
+          "ir_by_kappa": {
+            "1": -7.563377128272953,
+            "1.5": -7.563377128272953,
+            "2": -7.563377128272953,
+            "3": -7.563377128272953
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.012421296144624554,
+            "n": 12000,
+            "std": 0.0005329669737111657
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -8.806195286956855,
+            "1.5": -8.806195286956855,
+            "2": -8.806195286956855,
+            "3": -8.806195286956855
           }
         },
         "0.05": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 0.0,
-          "ir_at_kstar": -1.646721,
-          "kstar": 1.0,
-          "mu_mean": 0.062106,
-          "mu_std": 0.002665,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -1.6467211140536466,
+          "ir_by_kappa": {
+            "1": -1.6467211140536466,
+            "1.5": -1.6467211140536466,
+            "2": -1.6467211140536466,
+            "3": -1.6467211140536466
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.062106480723122755,
+            "n": 12000,
+            "std": 0.002664834868555828
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -2.816909498926211,
+            "1.5": -2.816909498926211,
+            "2": -2.816909498926211,
+            "3": -2.816909498926211
           }
         }
       }
     },
     "3": {
-      "L1_abs_diff": 0.0,
-      "L1_cloud_ir": -7.563377128272953,
-      "L1_local_ir_at_kstar_sigma0.01": -7.563377,
-      "L1_reproduced_1e-3": true,
+      "L1_abs_delta": 0.0,
+      "L1_abs_delta_sci": "0.000e+00",
+      "L1_cloud_ir_full_precision": -7.563377128272953,
+      "L1_criterion_abs": 0.001,
+      "L1_local_ir_full_precision": -7.563377128272953,
+      "L1_orders_of_margin": Infinity,
+      "L1_reproduced": true,
+      "checkpoint": "runs_cloud/moneyleg/m6_moneyleg/noise/cell3_bsq_micro_seed0",
       "per_sigma": {
         "0.01": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 0.0,
-          "ir_at_kstar": -7.563377,
-          "kstar": 1.0,
-          "mu_mean": 0.004878,
-          "mu_std": 0.000135,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -7.563377128272953,
+          "ir_by_kappa": {
+            "1": -7.563377128272953,
+            "1.5": -7.563377128272953,
+            "2": -7.563377128272953,
+            "3": -7.563377128272953
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -7.563377,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.0048782711153477435,
+            "n": 12000,
+            "std": 0.00013484088750995241
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -8.806195286956855,
+            "1.5": -8.806195286956855,
+            "2": -8.806195286956855,
+            "3": -8.806195286956855
           }
         },
         "0.05": {
-          "decision_activity_at_kstar": 1.0,
-          "frac_negative": 0.0,
-          "ir_at_kstar": -1.646721,
-          "kstar": 1.0,
-          "mu_mean": 0.024391,
-          "mu_std": 0.000674,
-          "per_kappa": {
-            "1.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
+          "filter_binds_by_kappa": {
+            "1": false,
+            "1.5": false,
+            "2": false,
+            "3": false
+          },
+          "filter_ever_binds": false,
+          "h": 15,
+          "ir_at_kstar": -1.6467211140536466,
+          "ir_by_kappa": {
+            "1": -1.6467211140536466,
+            "1.5": -1.6467211140536466,
+            "2": -1.6467211140536466,
+            "3": -1.6467211140536466
+          },
+          "kappa_star": 1.0,
+          "mu_diag": {
+            "activity_decisions": 1.0,
+            "activity_decisions_by_kappa": {
+              "1": 1.0,
+              "1.5": 1.0,
+              "2": 1.0,
+              "3": 1.0
             },
-            "1.5": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "2.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            },
-            "3.0": {
-              "decision_activity": 1.0,
-              "ir": -1.646721,
-              "scored": 12000,
-              "traded": 12000
-            }
+            "estimator": "expectation",
+            "frac_negative": 0.0,
+            "mean": 0.024391355576738712,
+            "n": 12000,
+            "std": 0.000674204437549762
+          },
+          "n_decisions": 12000,
+          "n_scored": 12000,
+          "traded_by_kappa": {
+            "1": 12000,
+            "1.5": 12000,
+            "2": 12000,
+            "3": 12000
+          },
+          "val_ir_by_kappa": {
+            "1": -2.816909498926211,
+            "1.5": -2.816909498926211,
+            "2": -2.816909498926211,
+            "3": -2.816909498926211
           }
         }
       }
     }
   },
-  "cloud_ir": {
-    "1": -7.240328510778865,
-    "2": -7.563377128272953,
-    "3": -7.563377128272953
-  },
-  "kappas": [
-    1.0,
-    1.5,
-    2.0,
-    3.0
+  "environment": "pinned .venv (numpy 2.4.6 / torch 2.12.1); device cpu",
+  "eval_cap_per_symbol": 4000,
+  "n_per_symbol": 14000000,
+  "receipt": "m6_moneyleg_local_rescore_L1L2L4",
+  "sigmas": [
+    0.01,
+    0.05
   ],
-  "receipt": "m6_moneyleg_local_rescore_L1L2L4"
+  "supersedes": "the v1.4.4 receipt of the same name (display field rounded to 6dp)",
+  "worst_abs_delta": 0.0,
+  "worst_abs_delta_sci": "0.000e+00"
 }

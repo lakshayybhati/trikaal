@@ -1,0 +1,389 @@
+{
+  "correction_to_the_posted_enumeration": "The ruling enumerated the off-lattice set as 'cell4 in both runs, acceptance cell3 once'. Verified independently: acceptance planted cell5 is ALSO off-lattice \u2014 its -1.0308263783219347 is NOT the planted all-long constant -1.050127274973947 that money-leg cell2 measures. The off-lattice set is 4 observations: acceptance planted cells 3, 4, 5 and money-leg planted cell4. Cell4 remains the ONLY cell off-lattice in BOTH runs. Money-leg planted cells 1 and 2 are NOT off-lattice (cell1 is the flat never-trades point, cell2 is the all-long point) \u2014 a singleton value is not an off-lattice value.",
+  "lattice_definition": "A cell is ON the lattice iff its book is CONSTANT: all-short (frac_negative==1.0), all-long (frac_negative==0.0), or flat (IR==0.0 exactly => the pooled net series is identically zero => nothing traded at kappa*). Recurrence is EVIDENCE of a constant book, not the definition of one \u2014 money-leg planted cell2 is the only all-long planted cell, so its lattice value appears exactly once and is still a lattice point.",
+  "lattice_points": {
+    "noise:all_long": {
+      "arm": "noise",
+      "cross_run_multiplicity": 8,
+      "direction": "all_long",
+      "ir": -7.563377128272953,
+      "measured_on": [
+        "moneyleg/noise/cell2",
+        "moneyleg/noise/cell3",
+        "moneyleg/noise/cell4"
+      ]
+    },
+    "noise:all_short": {
+      "arm": "noise",
+      "cross_run_multiplicity": 2,
+      "direction": "all_short",
+      "ir": -7.240328510778865,
+      "measured_on": [
+        "moneyleg/noise/cell1",
+        "moneyleg/noise/cell5"
+      ]
+    },
+    "planted:all_long": {
+      "arm": "planted",
+      "cross_run_multiplicity": 1,
+      "direction": "all_long",
+      "ir": -1.050127274973947,
+      "measured_on": [
+        "moneyleg/planted/cell2"
+      ]
+    },
+    "planted:all_short": {
+      "arm": "planted",
+      "cross_run_multiplicity": 4,
+      "direction": "all_short",
+      "ir": -3.638854395025198,
+      "measured_on": [
+        "moneyleg/planted/cell3",
+        "moneyleg/planted/cell5"
+      ]
+    },
+    "planted:flat_never_trades": {
+      "arm": "planted",
+      "cross_run_multiplicity": 1,
+      "direction": "flat_never_trades",
+      "ir": 0.0,
+      "measured_on": [
+        "moneyleg/planted/cell1"
+      ]
+    }
+  },
+  "measured_direction_to_ir_moneyleg": {
+    "noise": {
+      "all_long": [
+        {
+          "cell": 2,
+          "ir": -7.563377128272953
+        },
+        {
+          "cell": 3,
+          "ir": -7.563377128272953
+        },
+        {
+          "cell": 4,
+          "ir": -7.563377128272953
+        }
+      ],
+      "all_short": [
+        {
+          "cell": 1,
+          "ir": -7.240328510778865
+        },
+        {
+          "cell": 5,
+          "ir": -7.240328510778865
+        }
+      ]
+    },
+    "planted": {
+      "all_long": [
+        {
+          "cell": 2,
+          "ir": -1.050127274973947
+        }
+      ],
+      "all_short": [
+        {
+          "cell": 3,
+          "ir": -3.638854395025198
+        },
+        {
+          "cell": 5,
+          "ir": -3.638854395025198
+        }
+      ],
+      "mixed(0.13750)": [
+        {
+          "cell": 1,
+          "ir": 0.0
+        }
+      ],
+      "mixed(0.99883)": [
+        {
+          "cell": 4,
+          "ir": -3.42577461939036
+        }
+      ]
+    }
+  },
+  "mechanism": "A constant-direction book makes the pooled net series a function of the RETURN BLOCK and the direction alone, so its IR is model-independent and recurs exactly. Direction->IR is MEASURED on the money-leg arm (mu_diag frac_negative); acceptance cells are classified by exact float64 identity with those measured cells, which is an INFERENCE (the acceptance run predates the mu_diag receipt).",
+  "model_independence_is_MEASURED_not_inferred": "The three money-leg noise cells that are all-long (cell2 FSQ+ohlcv, cell3 BSQ+micro, cell4 FSQ+micro) span BOTH quantizers and BOTH feature arms and return the IDENTICAL float64 IR -7.563377128272953. Three different trained models, three different tokenizers, one bit-identical number. That is direct evidence that the value belongs to the block and the direction, not to any model. The script asserts this.",
+  "n_observations": 20,
+  "observations": [
+    {
+      "arm": "planted",
+      "cell": 1,
+      "feature_arm": "ohlcv",
+      "frac_negative": null,
+      "ir": -3.638854395025198,
+      "ir_multiplicity": 4,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 2,
+      "feature_arm": "ohlcv",
+      "frac_negative": null,
+      "ir": -3.638854395025198,
+      "ir_multiplicity": 4,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 3,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -2.8350921263538913,
+      "ir_multiplicity": 1,
+      "on_lattice": false,
+      "quantizer": "bsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -3.4709265153971645,
+      "ir_multiplicity": 1,
+      "on_lattice": false,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 5,
+      "feature_arm": "micro_shuffled",
+      "frac_negative": null,
+      "ir": -1.0308263783219347,
+      "ir_multiplicity": 1,
+      "on_lattice": false,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "noise",
+      "cell": 1,
+      "feature_arm": "ohlcv",
+      "frac_negative": null,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "noise",
+      "cell": 2,
+      "feature_arm": "ohlcv",
+      "frac_negative": null,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "noise",
+      "cell": 3,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "noise",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "noise",
+      "cell": 5,
+      "feature_arm": "micro_shuffled",
+      "frac_negative": null,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 1,
+      "feature_arm": "ohlcv",
+      "frac_negative": 0.1375,
+      "ir": 0.0,
+      "ir_multiplicity": 1,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "planted",
+      "cell": 2,
+      "feature_arm": "ohlcv",
+      "frac_negative": 0.0,
+      "ir": -1.050127274973947,
+      "ir_multiplicity": 1,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "planted",
+      "cell": 3,
+      "feature_arm": "micro",
+      "frac_negative": 1.0,
+      "ir": -3.638854395025198,
+      "ir_multiplicity": 4,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "planted",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": 0.9988333333333334,
+      "ir": -3.42577461939036,
+      "ir_multiplicity": 1,
+      "on_lattice": false,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "planted",
+      "cell": 5,
+      "feature_arm": "micro_shuffled",
+      "frac_negative": 1.0,
+      "ir": -3.638854395025198,
+      "ir_multiplicity": 4,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "noise",
+      "cell": 1,
+      "feature_arm": "ohlcv",
+      "frac_negative": 1.0,
+      "ir": -7.240328510778865,
+      "ir_multiplicity": 2,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "noise",
+      "cell": 2,
+      "feature_arm": "ohlcv",
+      "frac_negative": 0.0,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "noise",
+      "cell": 3,
+      "feature_arm": "micro",
+      "frac_negative": 0.0,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "bsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "noise",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": 0.0,
+      "ir": -7.563377128272953,
+      "ir_multiplicity": 8,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    },
+    {
+      "arm": "noise",
+      "cell": 5,
+      "feature_arm": "micro_shuffled",
+      "frac_negative": 1.0,
+      "ir": -7.240328510778865,
+      "ir_multiplicity": 2,
+      "on_lattice": true,
+      "quantizer": "fsq",
+      "run": "moneyleg"
+    }
+  ],
+  "off_lattice": [
+    {
+      "arm": "planted",
+      "cell": 3,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -2.8350921263538913,
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": null,
+      "ir": -3.4709265153971645,
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 5,
+      "feature_arm": "micro_shuffled",
+      "frac_negative": null,
+      "ir": -1.0308263783219347,
+      "run": "acceptance"
+    },
+    {
+      "arm": "planted",
+      "cell": 4,
+      "feature_arm": "micro",
+      "frac_negative": 0.9988333333333334,
+      "ir": -3.42577461939036,
+      "run": "moneyleg"
+    }
+  ],
+  "off_lattice_caveat": "OFF-LATTICE MEANS 'NOT PERFECTLY CONSTANT', NOT 'A STRATEGY'. The only off-lattice cell with a measured direction is money-leg planted cell4 at frac_negative 0.99883 \u2014 14 long decisions out of 12,000. That is a 99.88% one-sided book that misses the lattice by a hair, not a discriminating signal.",
+  "pattern": {
+    "all_off_lattice_are_micro_fed": true,
+    "all_off_lattice_are_planted_arm": true,
+    "noise_arm_off_lattice": 0,
+    "off_lattice_count": 4,
+    "ohlcv_only_observations": 8,
+    "ohlcv_only_off_lattice": 0
+  },
+  "provenance": {
+    "acceptance": "f2a4792 runs_manifest/m6_acceptance_stage2_manifest.json",
+    "moneyleg": "a441cfa runs_manifest/m6_moneyleg_rerun_manifest.json",
+    "recipes_byte_identical": true
+  },
+  "receipt": "m6_constant_book_lattice",
+  "status": "OBSERVATION \u2014 n=2 runs, no error bars, NOT a hypothesis test",
+  "what_this_does_NOT_support": "Not evidence for the microstructure claim. Cell 5 is the SHUFFLED-micro placebo and is off-lattice in the acceptance run, so the pattern is equally consistent with extra input CAPACITY widening mu-hat dispersion as with micro INFORMATION. With n=2 runs and no seed replication there is no error bar on any of it."
+}

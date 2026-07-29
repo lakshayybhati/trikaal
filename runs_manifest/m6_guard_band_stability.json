@@ -1,0 +1,145 @@
+{
+  "absolute_drift_vs_l3": {
+    "cap4000_1symbol": 0.00275000000000003,
+    "cap4000_3symbols": 0.0076666666666667105,
+    "uncapped_3symbols": 0.005304789555255596
+  },
+  "band_drift_limit_absolute": 0.15,
+  "band_grid_stable": true,
+  "checkpoint": "runs_cloud/acceptance/m6_acceptance/planted/cell4_fsq_micro_seed0",
+  "frac_negative_by_variant": {
+    "cap4000_1symbol": 0.55575,
+    "cap4000_3symbols": 0.5661666666666667,
+    "uncapped_3symbols": 0.5638047895552556
+  },
+  "h": 15,
+  "l3_reference_frac_negative": 0.5585,
+  "pre_declared_action": "PASS -> the band stands. FAIL (>0.15) -> report and STOP for a band re-derivation or a replacement statistic; the builder does NOT adjust the band.",
+  "receipt": "m6_guard_band_stability",
+  "scope": "CANARY-ONLY. Blocking check on the v1.4.4 FRAC_NEG_BAND's grid stability.",
+  "variant_subsampling_note": "The 1-symbol and 3-symbol capped variants do NOT share a decision subset. score_cell draws the cap subsample from ONE rng in symbol order across the VAL pass then the headline pass, so SYNAUSDT's headline draw is the 2nd draw with one symbol and the 4th with three. The variants therefore probe subsample-to-subsample variation as well as cap size \u2014 a stricter stability test, not a weaker one.",
+  "variants": {
+    "cap4000_1symbol": {
+      "h": 15,
+      "ir_at_kstar": 7.298711782868282,
+      "ir_by_kappa": {
+        "1": 7.164194306278416,
+        "1.5": 7.18819676281645,
+        "2": 7.298711782868282,
+        "3": 7.419682705946342
+      },
+      "kappa_star": 2.0,
+      "mu_diag": {
+        "activity_decisions": 0.92325,
+        "activity_decisions_by_kappa": {
+          "1": 0.9585,
+          "1.5": 0.9405,
+          "2": 0.92325,
+          "3": 0.88425
+        },
+        "estimator": "expectation",
+        "frac_negative": 0.55575,
+        "mean": -0.004947422236955026,
+        "n": 4000,
+        "std": 0.028977351744403797
+      },
+      "n_decisions": 4000,
+      "n_scored": 4000,
+      "traded_by_kappa": {
+        "1": 3834,
+        "1.5": 3762,
+        "2": 3693,
+        "3": 3537
+      },
+      "val_ir_by_kappa": {
+        "1": 8.690628756461008,
+        "1.5": 8.6840907346341,
+        "2": 8.832490672441985,
+        "3": 8.829955168320918
+      },
+      "wall_s": 93.3
+    },
+    "cap4000_3symbols": {
+      "h": 15,
+      "ir_at_kstar": 15.008170574899133,
+      "ir_by_kappa": {
+        "1": 14.882729266600863,
+        "1.5": 15.024399069253821,
+        "2": 14.832397295442187,
+        "3": 15.008170574899133
+      },
+      "kappa_star": 3.0,
+      "mu_diag": {
+        "activity_decisions": 0.8874166666666666,
+        "activity_decisions_by_kappa": {
+          "1": 0.96225,
+          "1.5": 0.9444166666666667,
+          "2": 0.92475,
+          "3": 0.8874166666666666
+        },
+        "estimator": "expectation",
+        "frac_negative": 0.5661666666666667,
+        "mean": -0.0057632097150187465,
+        "n": 12000,
+        "std": 0.029282411478969452
+      },
+      "n_decisions": 12000,
+      "n_scored": 12000,
+      "traded_by_kappa": {
+        "1": 11547,
+        "1.5": 11333,
+        "2": 11097,
+        "3": 10649
+      },
+      "val_ir_by_kappa": {
+        "1": 15.23834997373094,
+        "1.5": 15.322658415277354,
+        "2": 15.551019704798197,
+        "3": 15.611373519766813
+      },
+      "wall_s": 259.2
+    },
+    "uncapped_3symbols": {
+      "h": 15,
+      "ir_at_kstar": 52.06711519534639,
+      "ir_by_kappa": {
+        "1": 51.15924842452707,
+        "1.5": 51.41878736249268,
+        "2": 51.56378291703174,
+        "3": 52.06711519534639
+      },
+      "kappa_star": 3.0,
+      "mu_diag": {
+        "activity_decisions": 0.8862534193253484,
+        "activity_decisions_by_kappa": {
+          "1": 0.9619106797225971,
+          "1.5": 0.9429695813960133,
+          "2": 0.9239142079664031,
+          "3": 0.8862534193253484
+        },
+        "estimator": "expectation",
+        "frac_negative": 0.5638047895552556,
+        "mean": -0.005794503621674972,
+        "n": 140013,
+        "std": 0.02918491460724051
+      },
+      "n_decisions": 140013,
+      "n_scored": 140013,
+      "traded_by_kappa": {
+        "1": 134680,
+        "1.5": 132028,
+        "2": 129360,
+        "3": 124087
+      },
+      "val_ir_by_kappa": {
+        "1": 52.10186973697818,
+        "1.5": 52.724487730145924,
+        "2": 53.07635572993928,
+        "3": 53.43658078275864
+      },
+      "wall_s": 3218.7
+    }
+  },
+  "what_the_uncapped_variant_settles": "The ruling described the money-leg's n=12000 decision set as UNCAPPED. Measured here: 12,000 is 3 symbols x the 4,000 per-symbol eval cap; the genuinely uncapped block-3 grid is 46,671 decisions per symbol = 140,013 total. Both are scored so cap dependence is settled by measurement rather than by the label.",
+  "worst_variant": "cap4000_3symbols"
+}

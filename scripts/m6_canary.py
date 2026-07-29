@@ -85,8 +85,9 @@ BATCH = 32
 SEQ_LEN = 32
 # SIGMA REVERTED 0.05 -> 0.01 (§7 v1.4.4, 2026-07-29) — the v1.4.3 economic recalibration is a
 # DOCUMENTED NON-FIX, kept as a measured negative result. L1/L2/L4 (m6_moneyleg_local_rescore.json,
-# verified at full 14M, L1 bit-exact) showed the θ=κ·c execution filter NEVER BINDS (decision-
-# activity = 1.0 at EVERY κ, at BOTH sigmas) — the money-leg IR is a pure function of sign(μ̂), and
+# verified at full 14M; L1 reproduced the cloud IRs EXACTLY, |Δ|=0.0 at full float64 — see the §7
+# v1.4.5 C1 measurement, and C2 for why exactness is a SYMPTOM) showed the θ=κ·c filter NEVER BINDS
+# (decision-activity = 1.0 at EVERY κ, at BOTH sigmas) — money-leg IR is a pure function of sign(μ̂),
 # raising SIGMA (larger μ̂ vs the fixed threshold) moves the fixture FURTHER from the filter-binding
 # regime, not closer. So the recalibration reduced fixed-cost DRAG (real) but did NOT address the
 # actual pathology. SIGMA is TRAINING-INVARIANT (x[:,0]=r/SIGMA cancels; proven, m6_oracle_
@@ -1114,6 +1115,10 @@ def run_oracle(args) -> int:
         "margin_met_at_pinned_sigma": margin_met,
         "training_invariance_proof": invariance,
         "finding_on_the_record": finding,
+        # After the §7 v1.4.4 revert SIGMA is 0.01 again, so "pinned" and "baseline" are the SAME
+        # measurement. The comparison is retained deliberately: it is the receipt for the
+        # WITHDRAWN v1.4.3 recalibration, kept as a measured negative result rather than deleted.
+        "pinned_equals_baseline_after_v1_4_4_revert": bool(SIGMA == 0.01),
     }
     out = Path("runs_manifest/m6_oracle_calibration.json")
     out.write_text(json.dumps(receipt, indent=2, sort_keys=True))
