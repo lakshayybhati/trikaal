@@ -190,6 +190,114 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.3 (2026-07-29, money-leg adjudication + external-audit addenda; supervisor-ordered) —
+  BEFORE any real training.** Ruling items 1–9 executed as ONE local ($0) pass; the ONE box
+  re-run is STAGED with a pre-declared exit (item 4). Touches NO anchored M5-instrument file — the
+  estimator (`eval/predict.py`) is UNCHANGED (item 1 is a DISCLOSURE, not a code change); the
+  criterion, oracle, non-degeneracy, and recon changes all live in `scripts/m6_canary.py` (the
+  fixture harness, never part of the eval instrument), so GATE-A anchor `3f86882a…` is unchanged
+  and needs no re-anchor.
+  1. **ESTIMATOR DISCLOSURE (item 1).** μ̂ is computed EXACTLY as a per-step MEAN-FIELD decode
+     `decode_latent(E[z])`, `E[z] = softmax(logits_c)@grid_c ⊕ softmax(logits_f|ĉ)@grid_f`,
+     accumulated along a GREEDY (argmax) token path — the cache/conditioning is fixed by the
+     argmax chain, only each step's μ̂ CONTRIBUTION is the mean-field expectation. This equals the
+     true conditional mean EXACTLY only under (i) a decoder LINEAR in z and (ii) the deterministic
+     greedy path; it is a delta-method approximation otherwise. `"mc_mean"` (pinned n=32/seed
+     20260721) is the UNBIASED-in-expectation Monte-Carlo reference, retained as the documented
+     fallback. BIAS-BOUND RECEIPT (`runs_manifest/m6_estimator_bias_bound.json`): expectation vs
+     mc_mean at n≥256 on a decision subsample of the local checkpoints. FINDINGS: (a) the gap is
+     directionally COMMON-MODE (both cells +0.023..+0.032) and a LEVEL shift, NOT a sign shift —
+     frac_neg is IDENTICAL between the two estimators for each cell (cell4 0.5=0.5, cell2 0.0=0.0),
+     so positions (sign(μ̂) gated by |μ̂|>κ·c) and hence the paired ΔIR are robust to it; mc_mean
+     (unbiased) is the reference, expectation understates the negative drift by a small delta-method
+     level bias without flipping signs. (b) DECISIVE: on the ACCEPTANCE cell4 the expectation
+     estimator gives BALANCED frac_neg=0.5, so the money-leg cell4's frac_neg=0.999 (mostly-short)
+     is a MODEL property of that specific 3000-step cell, NOT an estimator artifact — and because
+     training is SIGMA-invariant the re-run reproduces that cell4 bit-identically, so raising SIGMA
+     cannot correct its sign bias (bears directly on the item-4 exit). Portability note recorded:
+     `mc_mean` accumulates in float64 and is therefore CUDA/CPU-only (MPS lacks float64) —
+     production is CUDA, so no impact; logged, not patched.
+  2. **CANARY CRITERION REPLACED (item 2) — realigned to the LOCKED §3, not softened.** The
+     Stage-2 canary verdict had DRIFTED to gating on placebo-neutrality; §3 (v1.2) already makes
+     clause 3 = paired CI of IR(4)−IR(2) > 0 the placebo-INDEPENDENT validity clause with
+     IR(5)−IR(2) a REPORTED diagnostic. The canary now PASSES iff clause 1 (paired CI ΔIR(4−5)>0)
+     AND clause 3 (paired CI ΔIR(4−2)>0), the noise arm quiet on BOTH clauses, cell4 non-degenerate,
+     recon + codebooks intact. Placebo-neutrality is demoted to a reported diagnostic
+     (`placebo_health_diagnostic`). NON-DEGENERACY floor: a near-constant-μ̂ cell is not a strategy;
+     the GATE is `std(μ̂_cell4) ≥ 0.5·SIGMA` (SIGMA-relative — μ̂ ∝ SIGMA exactly), per-cell
+     reported; a degenerate cell4 makes clauses 1+3 UNINTERPRETABLE (differencing near-constant
+     series — the exact pathology the money-leg's tight CIs on constant-sign cells exhibited).
+  3. **FIXTURE ECONOMIC RECALIBRATION (item 3) — SIGMA 0.01→0.05, ECONOMIC-ONLY and
+     TRAINING-INVARIANT.** SIGMA is the sole economic-magnitude knob and is provably
+     training-invariant: `x[:,0]=r/SIGMA` and `x[:,9]=state` are SIGMA-free (the SIGMA in r
+     cancels), so the tokenized features — every token, the tokenizer, the AR — are BIT-IDENTICAL
+     across SIGMA (proven: `x_identical=True` both arms, raw_ret_close ratio exactly 5.0;
+     `runs_manifest/m6_oracle_calibration.json`). Only the backtest changes (y ∝ SIGMA, μ̂ ∝ SIGMA,
+     flat 0.30 % cost FIXED), so raising SIGMA shrinks fixed-cost DRAG without touching information
+     content, plant, lag, or filler. ORACLE receipt (perfect causal state, same θ=κ·c filter, same
+     0.30 % netting, EXACT canary scoring path): pinned SIGMA=0.05 → gross IR 18.89 / net IR 18.44
+     / cost drag 0.45 / activity 0.23 / MDE_paired 2.75 → **oracle net IR = 6.71× MDE**, clearing
+     the PRE-DECLARED margin (oracle net IR ≥ 5× fixture MDE_paired). **FINDING ON THE RECORD
+     (premise revision):** the oracle ALREADY clears 0.30 % costs at the OLD SIGMA=0.01 (net IR
+     17.12, 6.29× MDE, drag 2.17) — the fixture's planted edge survives costs at BOTH values. The
+     money-leg diagnosis "the planted edge does not survive costs" holds only for the TRAINED cell4
+     (net −3.43, frac-negative 0.999 — a sign-corrupted forecast), NOT for the oracle; recalibration
+     is a fixed-cost-drag reduction (2.17→0.45 IR), not an oracle rescue. The binding gap is cell4
+     EXTRACTION, which the canary MEASURES — not a fixture defect.
+  4. **THE ONE RE-RUN (item 4) — pre-declared exit.** STAGED (box blocked on absent GPU
+     credentials — the money/human-operator gate). Because training is SIGMA-invariant, the re-run
+     re-trains the cells BIT-IDENTICALLY to the money-leg (same tokens; cell4 val ≈ 11.88 expected)
+     and ONLY the backtest economics change. EXIT (pre-declared, so it can never read as a retreat):
+     clauses 1+3 both fire, cell4 non-degenerate, noise quiet → canary GREEN, board 8/8. IF NOT →
+     STOP, ship receipts, do NOT iterate the fixture; the supervisor adjudicates de-scoping the
+     canary money leg against the rehearsal's real-data Item-2 discrimination receipts.
+  5. **THROUGHPUT RESTATEMENT (item 5), LABELED.** Expectation is NOT a throughput regression:
+     measured ratio expectation/argmax = 0.82 on mps at the real config (seq 512, h=15) —
+     expectation ~1.2× FASTER, not slower, refuting the "expectation-decode is slower per rollout
+     step" premise on the measured hardware. Real-scale h=15 headline decision count = 35,063
+     periods × 40 symbols × 5 cells × 3 seeds = 21,037,800. LABELS (`runs_manifest/
+     m6_eval_throughput_expectation.json`): training throughput = measured on the 4090 (prior
+     rehearsal, 47.2k bars/s); eval leg = estimator not a regression (measured ratio 0.82), absolute
+     rate chunk- and hardware-dependent (recipe pins chunk=512), PENDING the 4090 measurement in
+     the re-run; dollar figure = spot-price dependent (~$0.26–0.40/hr). The banked "$20–30 / 2–3
+     GPU-days" is NOT quoted without these labels.
+  6. **PLACEBO-HARM, a paper-facing diagnostic (item 6).** Money-leg IR(5)−IR(2) = −2.59, CI
+     [−5.21, −0.02] clears 0 — the shuffle demonstrably HARMED Cell 5 below the OHLCV-only
+     counterfactual (a "placebo victim"). This VINDICATES §3's placebo-independence: shuffled
+     channels consume tokenizer capacity and add noise, so they are strictly worse than omitting
+     them, which is precisely why clause 3 (Cell 4 > Cell 2), not ΔIR(4−5), carries the
+     micro-information claim. Diagnostic language, never the rule.
+  7. **PAPER-FRAMING (item 7) — committed verbatim.** The supervisor WITHDRAWS the phrasing "the
+     tokenizer-eviction finding is now the central argument of the paper" and commits instead: *"the
+     eviction finding is a methodological contribution that stands INDEPENDENT of the M6 outcome;
+     whether the re-specced tokenizer captures real tradable microstructure is the open question the
+     run answers. Both outcomes — micro survives, or micro nulls after costs — are complete,
+     publishable papers containing this finding."*
+  8. **NON-CONTAMINATION (item 8) — the interface fix is GENERAL, not tuned to the plant.** (a) The
+     weighting keys on `MICRO_DIMS_IDX = (7..12)` BY DIM INDEX (the aggTrades-derived channels;
+     `constants.py`), never on the plant's shape/lag/functional form — landed c4cd082 (§7 v1.4,
+     pointwise-fine + per-bar bottleneck) and 7da3dc0 (§7 v1.4.1). (b) λ\* = 3 was calibrated
+     against CHANNEL-VALUE LEGIBILITY (`id_legibility_sign_acc`, gates.py:125 — the logistic
+     sign-accuracy of the dim's value from bar t's OWN id), never against detection of the planted
+     rule (7da3dc0). (c) Cell 5 receives IDENTICAL treatment — same fine_pointwise, same λ, same
+     dims (forced in `build_cell_tokenizer`, cells.py:82-84) — so generic capacity effects are
+     SHARED and ΔIR(4−5) still isolates information. ONE HONEST CAVEAT: λ's magnitude was tuned on a
+     synthetic fixture whose micro-slot dim is iid unit-variance, while real TFI has different
+     statistics; the already-armed STANDING real-data legibility gate (`micro_legibility_gate`,
+     gates.py:151 / orchestrator hard-stop post-Stage-1/pre-Stage-2, six real micro dims, default
+     0.9) is the NON-CIRCULAR check, and its first firing on real data is a NAMED adjudication
+     checkpoint.
+  9. **REALLOCATION-ASYMMETRY (item 9) — reported, not adjusted.** λ shifts Cell 4's per-bar
+     bottleneck budget toward the six micro dims and away from OHLCV shape; Cell 2 (7 uniform dims)
+     has no such reallocation. Per-cell recon on the SHARED OHLCV dims (0-6) is reported by
+     `run_arm._shared_ohlcv_recon` in the re-run (AUTHORITATIVE, same-arm/same-budget). LOCAL
+     INDICATIVE receipt (`runs_manifest/m6_reallocation_indicative.json`, cross-run/cross-arm): Cell
+     4 is ~20-37 % worse than Cell 2 on 6 of 7 shared dims (dims 1-6 — suggestive of the asymmetry);
+     dim 0 is dominated by the cross-run confound (the noise-arm Cell 2 reconstructs the planted
+     return dim poorly, MAE 0.84), so the mean is not interpretable. If the authoritative receipt
+     confirms Cell 4 materially worse on shared dims, that is a DISCLOSED asymmetry that makes
+     clause 3 HARDER (a conservative bias on the micro claim) — flagged, not adjusted.
+
 - **v1.4.2 (2026-07-21, acceptance-run adjudication; supervisor-ordered) — BEFORE any real
   training. THE μ̂ ESTIMATOR: conditional MEAN, not mode.** The acceptance run's Stage-2 money
   verdicts failed with all noise cells at a bit-identical IR across both quantizers; diagnosed

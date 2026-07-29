@@ -1,0 +1,59 @@
+{
+  "amendment": "prereg s7 v1.4.3 item 1 (2026-07-29)",
+  "common_mode_conclusion": "gap spread across cells = 0.00965 vs mean |mu| = 0.0406; a common-mode gap (small spread relative to the paired-delta scale) largely CANCELS in the paired \u0394IR(4-5) and \u0394IR(4-2) deltas; a per-cell-heterogeneous gap does not.",
+  "device": "cpu",
+  "estimator_stated": "per-step mean-field decode_latent(E[z]) along a GREEDY argmax token path; exact only under a linear decoder in z + deterministic path; mc_mean = unbiased-in-expectation MC reference",
+  "gap_means_expectation_minus_mcmean": [
+    0.032399,
+    0.022752
+  ],
+  "gap_spread_across_cells": 0.009647,
+  "h": 15,
+  "key_diagnostic": "On the ACCEPTANCE cell4, expectation gives BALANCED frac_neg=0.5 (matching mc_mean) \u2014 so the money-leg cell4 frac_neg=0.999 (mostly-short) is a MODEL property of that specific 3000-step cell, NOT an estimator artifact. Because training is SIGMA-invariant, the re-run reproduces that cell4 bit-identically (sign pattern fixed), so raising SIGMA cannot correct its sign bias.",
+  "mc_samples": 256,
+  "mc_seed": 20260721,
+  "n_dec": 24,
+  "per_cell": [
+    {
+      "cell": "cell4_fsq_micro (acceptance, planted)",
+      "expectation": {
+        "frac_neg": 0.5,
+        "mean": -0.009053099714219576,
+        "std": 0.13715873804389556
+      },
+      "gap_expectation_minus_mcmean": {
+        "abs_mean": 0.047039654672577556,
+        "mean": 0.03239919108370184,
+        "std": 0.05930042335832884
+      },
+      "mc_mean_n256": {
+        "frac_neg": 0.5,
+        "mean": -0.041452290797921405,
+        "std": 0.13777590448666843
+      },
+      "n_dec": 24
+    },
+    {
+      "cell": "cell2_fsq_ohlcv (moneyleg, noise)",
+      "expectation": {
+        "frac_neg": 0.0,
+        "mean": 0.06249114573001863,
+        "std": 0.0034031744002100944
+      },
+      "gap_expectation_minus_mcmean": {
+        "abs_mean": 0.023070745528942404,
+        "mean": 0.022752416792233516,
+        "std": 0.01239233161293134
+      },
+      "mc_mean_n256": {
+        "frac_neg": 0.0,
+        "mean": 0.03973872893778511,
+        "std": 0.011095569426359968
+      },
+      "n_dec": 24
+    }
+  ],
+  "positions_robustness_finding": "The gap is directionally COMMON-MODE (both cells +0.023..+0.032) and a LEVEL shift, NOT a sign shift: frac_neg is IDENTICAL between expectation and mc_mean for each cell (cell4 0.5=0.5, cell2 0.0=0.0). Since positions come from sign(mu) gated by |mu|>k*c, a level shift that preserves the sign distribution preserves POSITIONS (hence IR), so the paired DIR clauses are robust to it; the only residual channel is marginal decisions near +/-k*c. mc_mean (unbiased) remains the reference; expectation understates the negative drift by ~+0.025..+0.032 (a delta-method level bias) without flipping signs.",
+  "receipt": "m6_estimator_bias_bound",
+  "status": "INDICATIVE (cross-run local checkpoints: cell4 acceptance, cell2/3 moneyleg-noise); the authoritative same-run bias-bound is emitted alongside the re-run"
+}

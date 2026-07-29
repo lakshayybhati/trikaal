@@ -1,0 +1,65 @@
+{
+  "cell2_mean_shared_mae": 0.3632,
+  "cell2_source": "runs_cloud/moneyleg/m6_moneyleg/noise/cell2_fsq_ohlcv_seed0/tokenizer.pt",
+  "cell4_mean_shared_mae": 0.3514,
+  "cell4_over_cell2_mean": 0.9673,
+  "cell4_source": "runs_cloud/acceptance/m6_acceptance/planted/cell4_fsq_micro_seed0/tokenizer.pt",
+  "device": "mps",
+  "n_dims_cell4_materially_worse": 6,
+  "per_dim": {
+    "0": {
+      "cell2_mae": 0.8392,
+      "cell4_mae": 0.2855,
+      "cell4_materially_worse": false,
+      "cell4_over_cell2": 0.3402
+    },
+    "1": {
+      "cell2_mae": 0.3026,
+      "cell4_mae": 0.4149,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.3712
+    },
+    "2": {
+      "cell2_mae": 0.2576,
+      "cell4_mae": 0.3475,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.3487
+    },
+    "3": {
+      "cell2_mae": 0.3097,
+      "cell4_mae": 0.3708,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.1973
+    },
+    "4": {
+      "cell2_mae": 0.2913,
+      "cell4_mae": 0.3603,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.237
+    },
+    "5": {
+      "cell2_mae": 0.2531,
+      "cell4_mae": 0.3292,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.3007
+    },
+    "6": {
+      "cell2_mae": 0.2892,
+      "cell4_mae": 0.3514,
+      "cell4_materially_worse": true,
+      "cell4_over_cell2": 1.2154
+    }
+  },
+  "reallocation_asymmetry_flagged": false,
+  "receipt": "m6_reallocation_indicative",
+  "shared_dims": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "status": "INDICATIVE (cross-run/cross-arm local checkpoints); authoritative same-run receipt is emitted by run_arm._shared_ohlcv_recon in the box re-run"
+}

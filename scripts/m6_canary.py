@@ -57,7 +57,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from trikaal.constants import N_FEATURES
+from trikaal.constants import MICRO_DIMS_IDX, N_FEATURES, OHLCV_ONLY_IDX
 from trikaal.data.universe_loader import (
     MultiSymbolWindowSampler,
     build_symbol_windows,
@@ -67,7 +67,7 @@ from trikaal.eval.predict import predict_mu
 from trikaal.eval.xsection import SymbolEval, XSectionConfig, score_cell
 from trikaal.model.predictor import TrikaalAR
 from trikaal.tokenizer.model import TokenizerAE
-from trikaal.train.arms import ARMS
+from trikaal.train.arms import ARM_MICRO, ARM_OHLCV, ARMS, select_arm
 from trikaal.train.cells import (
     CELLS,
     assert_cells_parity,
@@ -82,9 +82,27 @@ from trikaal.utils.seeding import set_determinism
 SYMBOLS = ("SYNAUSDT", "SYNBUSDT", "SYNCUSDT")
 BATCH = 32
 SEQ_LEN = 32
-SIGMA = 0.01  # constant per-bar vol -> x0 = r/sigma (standardized ret_close)
+# ECONOMIC-MAGNITUDE RECALIBRATION (§7 v1.4.3, supervisor money-leg ruling item 3, 2026-07-29).
+# SIGMA is the ONLY economic-magnitude knob and it is TRAINING-INVARIANT by construction:
+# x[:,0] = r/SIGMA = C_SIGNAL*state + eps and x[:,9] = state are both SIGMA-independent (the
+# SIGMA in r cancels), so the tokenized feature matrix — hence every token, the tokenizer, and
+# the AR — is BIT-IDENTICAL under any SIGMA (proven in the oracle receipt's x_bit_identity leg).
+# Only the BACKTEST changes: y = forward_log_returns(raw_ret_close) ∝ SIGMA and μ̂ = cum·σ_t ∝
+# SIGMA scale together, while the flat 0.30 % cost is FIXED — so raising SIGMA shrinks the
+# fixed-cost drag (oracle drag 2.17→0.45 IR as 0.01→0.05 at real scale) without touching the
+# information content, plant, lag, or filler calibration. Raised 0.01→0.05 so the fixed-cost
+# tax on the high-activity signal cell is negligible and the ΔIR comparisons reflect INFORMATION,
+# not cost-timing. NOTE (honest, on the record): the oracle already clears costs at SIGMA=0.01
+# (net IR +17.1, 6.3× MDE) — the fixture's planted edge survives 0.30 % costs at BOTH values;
+# recalibration is a cost-drag reduction, not an oracle rescue (m6_oracle_calibration.json).
+SIGMA = 0.05  # constant per-bar vol -> x0 = r/sigma (standardized ret_close); economic-only
 SIGNAL_LAG = 2  # state_t first touches r at t+2 — inside y[t], outside the OHLCV filtration
 C_SIGNAL = 3.0  # r_{t+2} = C*sigma*state_t + sigma*eps — per-bar corr(x0_{t+2}, state_t) ~ 0.95
+# MICRO_DIMS_IDX (7..12) and OHLCV_ONLY_IDX (0..6) are the CANONICAL constants (constants.py) —
+# the interface fix and the recon receipts key on the aggTrades-derived dims BY INDEX, never on
+# the plant's shape/lag (item 8 non-contamination).
+ORACLE_MARGIN_MULT = 5.0  # item 3 PRE-DECLARED margin: oracle net IR >= this × fixture MDE_paired
+NONDEGEN_MU_STD_FRAC = 0.5  # item 2 non-degeneracy floor: a strategy cell's std(μ̂) >= frac·SIGMA
 T0_MS = 1_704_067_200_000  # 2024-01-01 UTC
 HOLD_FRAC = 0.65  # train draws < hold bar; [hold, 0.70) = held-out VAL/probe slice (v5 ratio)
 TRAIN_FRAC = 0.7  # Stage-2 scoring boundary (eval region [0.70, 1.0) — after the train region)
@@ -198,19 +216,24 @@ def sub_epoch_arithmetic(steps: int, bars_total: int) -> dict:
     }
 
 
-def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dict:
+def synth_symbol(
+    rng: np.random.Generator, *, planted: bool, n_bars: int, sigma: float = SIGMA
+) -> dict:
     """One synthetic symbol: micro dim 9 = an iid state that (if planted) drives r two bars on.
 
     Causal AND asymmetric by construction: state_t is known at the close of bar t (dim 9) and
     first moves the price at bar t+SIGNAL_LAG — inside the entry-next-bar label
     y[t] = log(C_{t+h}/C_{t+1}) but invisible to any function of returns available at t
     (iid states => past returns reveal only states <= t-SIGNAL_LAG, orthogonal to y[t]).
-    Identical generator to v5 — v6 changes ONLY the stream size."""
+    Identical generator to v5 — v6 changed ONLY the stream size; v1.4.3 makes ``sigma`` an
+    explicit economic-magnitude parameter (default = the module SIGMA). The FEATURE matrix x is
+    SIGMA-INDEPENDENT (x[:,0]=r/sigma cancels sigma; x[:,9]=state and fillers are sigma-free), so
+    the tokenizer/AR training is bit-identical across sigma; only raw_ret_close/sigma scale."""
     state = rng.standard_normal(n_bars)
     eps = rng.standard_normal(n_bars)
-    r = SIGMA * eps
+    r = sigma * eps
     if planted:
-        r[SIGNAL_LAG:] = r[SIGNAL_LAG:] + C_SIGNAL * SIGMA * state[:-SIGNAL_LAG]
+        r[SIGNAL_LAG:] = r[SIGNAL_LAG:] + C_SIGNAL * sigma * state[:-SIGNAL_LAG]
     x = rng.standard_normal((n_bars, N_FEATURES)).astype(np.float32)
     # gate-2 calibration rider: fillers are CROSS-DIM correlated (AR(1) chain, rho matched
     # to the lake's measured non-micro copula entropy), N(0,1) marginals, iid across bars
@@ -218,7 +241,7 @@ def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dic
     for j in range(1, len(FILLER_DIMS)):
         g[:, j] = FILLER_RHO * g[:, j - 1] + np.sqrt(1.0 - FILLER_RHO**2) * g[:, j]
     x[:, list(FILLER_DIMS)] = g.astype(np.float32)
-    x[:, 0] = (r / SIGMA).astype(np.float32)  # standardized ret_close (return rule UNTOUCHED)
+    x[:, 0] = (r / sigma).astype(np.float32)  # standardized ret_close (SIGMA cancels — invariant)
     x[:, 9] = (state if planted else rng.standard_normal(n_bars)).astype(np.float32)
     m = np.zeros((n_bars, N_FEATURES), dtype=np.uint8)
     m[:, 13:16] = 1  # perp dims masked everywhere (the lake convention; placebo tripwire)
@@ -227,9 +250,174 @@ def synth_symbol(rng: np.random.Generator, *, planted: bool, n_bars: int) -> dic
         "mask": m,
         "segment_id": np.zeros(n_bars, dtype=np.int64),
         "ts": (T0_MS + np.arange(n_bars) * 60_000).astype(np.int64),
-        "sigma": np.full(n_bars, SIGMA),
+        "sigma": np.full(n_bars, sigma),
         "raw_ret_close": r.astype(np.float64),
     }
+
+
+def _oracle_light_arrays(
+    arm_name: str, i: int, *, planted: bool, n_bars: int, sigma: float
+) -> dict:
+    """The oracle backtest needs ONLY state/return/sigma/ts — replicate synth_symbol's state/eps
+    draw ORDER (state first, eps second) and skip the 16-dim x and the filler AR(1) loop."""
+    rng = np.random.default_rng((zlib.crc32(arm_name.encode()), i))
+    state = rng.standard_normal(n_bars)
+    eps = rng.standard_normal(n_bars)
+    r = sigma * eps
+    if planted:
+        r[SIGNAL_LAG:] = r[SIGNAL_LAG:] + C_SIGNAL * sigma * state[:-SIGNAL_LAG]
+    return {
+        "state": state.astype(np.float64),
+        "sigma": np.full(n_bars, sigma),
+        "ts": (T0_MS + np.arange(n_bars) * 60_000).astype(np.int64),
+        "segment_id": np.zeros(n_bars, dtype=np.int64),
+        "raw_ret_close": r.astype(np.float64),
+    }
+
+
+def oracle_economics(sigma: float, *, n_per: int, cap: int, seed: int = 0) -> dict:
+    """§7 v1.4.3 item 3: the ORACLE (perfect causal state, same θ=κ·c filter, same flat 0.30 %
+    netting) scored through the EXACT canary Stage-2 path (xsection.symbol_decisions, block-3
+    headline grid, κ* on the VAL block, eval_cap subsample). μ̂_oracle[t] = C_SIGNAL·σ_t·state_t is
+    the true conditional mean of y[t]=log(C_{t+h}/C_{t+1}) given the causal state (the sole planted
+    bar in the window is r_{t+2}=C·σ·state_t). Reports gross IR (0 cost), net IR (0.30 %), cost
+    drag, activity, and the fixture's own paired MDE (oracle vs an independent-state placebo cell —
+    the clause-3 structure). No model, no GPU."""
+    from trikaal.eval.costs import SPREAD_DECILE_FRAC, CostModel
+    from trikaal.eval.harness import HEADLINE_COST, _per_bar_cost, forward_log_returns
+    from trikaal.eval.metrics import information_ratio
+    from trikaal.eval.strategy import net_trade_returns, portfolio_period_returns, positions
+    from trikaal.eval.xsection import XSectionConfig, global_decision_grid_ms, symbol_decisions
+
+    arm = "planted"
+    syms = {
+        s: _oracle_light_arrays(arm, i, planted=True, n_bars=n_per, sigma=sigma)
+        for i, s in enumerate(SYMBOLS)
+    }
+    prng = np.random.default_rng(999)  # placebo state: independent of returns (a no-edge cell)
+    for s in SYMBOLS:
+        syms[s]["placebo_state"] = prng.standard_normal(n_per)
+    end_dt = datetime.fromtimestamp((T0_MS + n_per * 60_000) / 1000, tz=UTC) + timedelta(days=1)
+    cfg = XSectionConfig(
+        window_start="2024-01-01",
+        window_end=end_dt.strftime("%Y-%m-%d"),
+        train_frac=TRAIN_FRAC,
+        h=15,
+        seq_len=SEQ_LEN,
+        cap_per_symbol=cap,
+        seed=seed,
+    )
+    cost = CostModel()
+    ses = {
+        s: SymbolEval(
+            symbol=s,
+            x=np.zeros((n_per, N_FEATURES), np.float32),
+            mask=np.zeros((n_per, N_FEATURES), np.uint8),
+            segment_id=d["segment_id"],
+            ts=d["ts"],
+            sigma=d["sigma"],
+            raw_ret_close=d["raw_ret_close"],
+        )
+        for s, d in syms.items()
+    }
+
+    def grid_series(grid, headline_cost, mu_key, rng):
+        n_periods = grid.shape[0]
+        nets = {k: {} for k in cfg.kappas}
+        for s, d in syms.items():
+            dec = symbol_decisions(ses[s], grid, cfg)
+            if cfg.cap_per_symbol is not None and dec.size > cfg.cap_per_symbol:
+                dec = np.sort(rng.choice(dec, size=cfg.cap_per_symbol, replace=False))
+            y = forward_log_returns(d["raw_ret_close"], d["segment_id"], cfg.h)
+            dec = dec[np.isfinite(y[dec])]
+            if dec.size == 0:
+                continue
+            mu = C_SIGNAL * d["sigma"][dec] * d[mu_key][dec]
+            c_mod = _per_bar_cost(cost, d["sigma"], dec, SPREAD_DECILE_FRAC["major"])
+            pidx = np.searchsorted(grid, d["ts"][dec])
+            for k in cfg.kappas:
+                pos = positions(mu, k * c_mod)
+                act = pos != 0
+                nets[k][s] = (
+                    pidx[act],
+                    net_trade_returns(
+                        pos[act], y[dec][act], np.full(int(act.sum()), headline_cost)
+                    ),
+                )
+        out = {}
+        for k in cfg.kappas:
+            if not nets[k]:
+                out[k] = np.zeros(n_periods)
+                continue
+            ap = np.concatenate([p for p, _ in nets[k].values()])
+            ar = np.concatenate([r for _, r in nets[k].values()])
+            ps = portfolio_period_returns(ap, ar, n_periods=n_periods)
+            cal = np.zeros(n_periods)
+            if ps.returns.size:
+                cal[np.unique(ap)] = ps.returns
+            out[k] = cal
+        return out
+
+    def score(mu_key, cost_val):
+        rng = np.random.default_rng(cfg.seed)  # ONE rng, matches score_cell's draw order
+        val = grid_series(global_decision_grid_ms(cfg, cfg.val_block), cost_val, mu_key, rng)
+        vir = {k: information_ratio(val[k], cfg.h) for k in cfg.kappas}
+        fin = {k: v for k, v in vir.items() if np.isfinite(v)}
+        kstar = max(fin, key=fin.get) if fin else cfg.kappas[0]
+        hd = grid_series(global_decision_grid_ms(cfg, cfg.headline_block), cost_val, mu_key, rng)
+        act = float((hd[kstar] != 0.0).mean())
+        return information_ratio(hd[kstar], cfg.h), act, hd[kstar], kstar
+
+    gross_ir, _, _, _ = score("state", 0.0)
+    net_ir, activity, net_series, kstar = score("state", HEADLINE_COST)
+    _, _, placebo_series, _ = score("placebo_state", HEADLINE_COST)
+    pb = paired_delta_ir_bootstrap(net_series, placebo_series, h=cfg.h)
+    return {
+        "sigma": sigma,
+        "n_per_symbol": n_per,
+        "eval_cap": cap,
+        "c_signal": C_SIGNAL,
+        "headline_cost": HEADLINE_COST,
+        "T_periods": int(net_series.shape[0]),
+        "kstar_net": kstar,
+        "gross_ir": round(gross_ir, 4),
+        "net_ir": round(net_ir, 4),
+        "cost_drag_ir": round(gross_ir - net_ir, 4),
+        "activity": round(activity, 4),
+        "mde_paired": round(pb.mde_paired, 4),
+        "oracle_net_over_mde": round(net_ir / pb.mde_paired, 3) if pb.mde_paired > 0 else None,
+        "delta_oracle_vs_placebo": round(pb.delta_ir, 4),
+        "pb_ci_lower": round(pb.ci_lower, 4),
+    }
+
+
+def x_bit_identity_across_sigma(n_bars: int = 50_000) -> dict:
+    """Proof of TRAINING-INVARIANCE: the tokenized feature matrix x is bit-identical across SIGMA
+    (x[:,0]=r/sigma cancels sigma; x[:,9]/fillers are sigma-free). Generate the SAME symbol at two
+    sigmas and assert every x element equal — so re-training at the new SIGMA reproduces the cells
+    bit-for-bit and ONLY the backtest economics change."""
+    results = {}
+    for planted in (True, False):
+        a = synth_symbol(
+            np.random.default_rng((zlib.crc32(b"planted"), 0)),
+            planted=planted,
+            n_bars=n_bars,
+            sigma=0.01,
+        )
+        b = synth_symbol(
+            np.random.default_rng((zlib.crc32(b"planted"), 0)),
+            planted=planted,
+            n_bars=n_bars,
+            sigma=0.05,
+        )
+        results[f"planted={planted}"] = {
+            "x_identical": bool(np.array_equal(a["x"], b["x"])),
+            "mask_identical": bool(np.array_equal(a["mask"], b["mask"])),
+            "raw_ret_close_ratio_mean": float(
+                np.nanmean(b["raw_ret_close"][1:] / a["raw_ret_close"][1:])
+            ),  # ~ 5.0 (0.05/0.01)
+        }
+    return results
 
 
 # The §7 v1.4 legibility instruments live in trikaal.train.gates (ONE implementation —
@@ -517,7 +705,7 @@ def _micro_recon_contribution(out_dir: Path, raw: dict, *, device: str) -> dict:
         cidx, fidx = tok.encode_tokens(x, m)
         x_hat = tok.decode_tokens(cidx, fidx)
     per_dim = {}
-    for dim in range(7, 13):
+    for dim in MICRO_DIMS_IDX:  # the canonical (7..12) aggTrades-derived micro block (item 8)
         truth = d["x"][:n, dim].astype(np.float64)
         rec = x_hat[:, :, dim].reshape(-1).float().cpu().numpy().astype(np.float64)
         mae = float(np.abs(rec - truth).mean())
@@ -528,6 +716,59 @@ def _micro_recon_contribution(out_dir: Path, raw: dict, *, device: str) -> dict:
             "non_degenerate": bool(mae < 0.9 * baseline),
         }
     return per_dim
+
+
+def _shared_ohlcv_recon(out_dir: Path, raw: dict, *, device: str) -> dict:
+    """§7 v1.4.3 item 9 REALLOCATION-ASYMMETRY receipt: per-dim recon MAE on the SHARED OHLCV
+    dims (0-6) for Cell 4 (micro arm, λ shifts its per-bar bottleneck budget toward the six micro
+    dims) vs Cell 2 (ohlcv arm, 7 uniform dims — no such reallocation). If Cell 4 is MATERIALLY
+    worse on the shared dims, that is a DISCLOSED asymmetry that makes clause 3 (Cell4 > Cell2)
+    HARDER — flag it, do not adjust anything for it. Each tokenizer is fed its OWN arm's input
+    (Cell 4 = full 16-dim; Cell 2 = the OHLCV_ONLY_IDX subset via select_arm)."""
+    d = raw[SYMBOLS[0]]
+    n_win = min(128, d["x"].shape[0] // SEQ_LEN)
+    n = n_win * SEQ_LEN
+
+    def _recon(cell_dir: str, arm: str) -> np.ndarray:
+        ck = load_checkpoint(out_dir / cell_dir / "tokenizer.pt", TokenizerAE)
+        tok = ck.model.to(device).eval()
+        xa, ma = select_arm(np.asarray(d["x"], np.float32), d["mask"], arm)
+        x = torch.from_numpy(xa[:n].reshape(n_win, SEQ_LEN, -1)).to(device)
+        m = torch.from_numpy(ma[:n].astype(np.float32).reshape(n_win, SEQ_LEN, -1)).to(device)
+        with torch.no_grad():
+            cidx, fidx = tok.encode_tokens(x, m)
+            x_hat = tok.decode_tokens(cidx, fidx)
+        return x_hat.reshape(-1, xa.shape[1]).float().cpu().numpy().astype(np.float64)
+
+    rec4 = _recon("cell4_fsq_micro_seed0", ARM_MICRO)  # full 16-dim layout, dim d at column d
+    rec2 = _recon("cell2_fsq_ohlcv_seed0", ARM_OHLCV)  # 7-dim; dim d at OHLCV_ONLY_IDX.index(d)
+    per_dim = {}
+    worse_count = 0
+    for dim in OHLCV_ONLY_IDX:
+        truth = d["x"][:n, dim].astype(np.float64)
+        mae4 = float(np.abs(rec4[:, dim] - truth).mean())
+        mae2 = float(np.abs(rec2[:, OHLCV_ONLY_IDX.index(dim)] - truth).mean())
+        worse = bool(mae4 > 1.10 * mae2)  # cell4 >10% worse on this shared dim = materially worse
+        worse_count += int(worse)
+        per_dim[str(dim)] = {
+            "cell4_mae": mae4,
+            "cell2_mae": mae2,
+            "cell4_over_cell2": round(mae4 / mae2, 4) if mae2 > 0 else None,
+            "cell4_materially_worse": worse,
+        }
+    mean4 = float(np.mean([per_dim[str(d)]["cell4_mae"] for d in OHLCV_ONLY_IDX]))
+    mean2 = float(np.mean([per_dim[str(d)]["cell2_mae"] for d in OHLCV_ONLY_IDX]))
+    return {
+        "shared_dims": list(OHLCV_ONLY_IDX),
+        "per_dim": per_dim,
+        "cell4_mean_shared_mae": round(mean4, 4),
+        "cell2_mean_shared_mae": round(mean2, 4),
+        "cell4_over_cell2_mean": round(mean4 / mean2, 4) if mean2 > 0 else None,
+        "n_dims_cell4_materially_worse": worse_count,
+        "reallocation_asymmetry_flagged": bool(mean4 > 1.10 * mean2),
+        "note": "DISCLOSED, not adjusted (item 9): if flagged, clause 3 is handicapped in Cell 4's "
+        "favor being harder, not easier — a conservative bias on the micro claim.",
+    }
 
 
 def _build_arm_inputs(arm_name: str, *, planted: bool, args, arms: tuple[str, ...]) -> tuple:
@@ -618,13 +859,38 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
             flush=True,
         )
 
+    # §7 v1.4.3 item 2 — the canary now mirrors the LOCKED prereg §3: clause 1 (ΔIR(4-5)>0) AND
+    # clause 3 (ΔIR(4-2)>0, placebo-INDEPENDENT). Placebo-neutrality is a REPORTED diagnostic, not
+    # a gate (prereg §3 clause 3 text: "the survival verdict itself is unaffected because clause 3
+    # already carries the placebo-free requirement").
     pb45 = paired_delta_ir_bootstrap(scores[4].headline_series, scores[5].headline_series, h=xcfg.h)
+    pb42 = paired_delta_ir_bootstrap(scores[4].headline_series, scores[2].headline_series, h=xcfg.h)
     pb52 = paired_delta_ir_bootstrap(scores[5].headline_series, scores[2].headline_series, h=xcfg.h)
-    fired = bool(pb45.ci_lower > 0.0)
-    neutral = bool(
-        (pb52.ci_lower <= 0.0 <= pb52.ci_upper) or (abs(pb52.delta_ir) <= 0.5 * abs(pb45.delta_ir))
-    )
+    clause1_fired = bool(pb45.ci_lower > 0.0)
+    clause3_fired = bool(pb42.ci_lower > 0.0)
+    placebo_health = {  # DIAGNOSTIC ONLY (never gating): upper<0 => the shuffle HARMED Cell 5
+        "delta": pb52.delta_ir,
+        "ci_lower": pb52.ci_lower,
+        "ci_upper": pb52.ci_upper,
+        "placebo_neutral": bool(pb52.ci_lower <= 0.0 <= pb52.ci_upper),
+        "placebo_victim": bool(pb52.ci_upper < 0.0),
+    }
+    # NON-DEGENERACY (item 2): a constant-μ̂ cell is not a strategy. Floor is SIGMA-relative
+    # (μ̂ ∝ SIGMA exactly). The GATE is on the signal cell (cell4) — a degenerate cell4 makes
+    # clauses 1+3 UNINTERPRETABLE (differencing near-constant series). All cells reported.
+    nondegen_floor = NONDEGEN_MU_STD_FRAC * SIGMA
+    mu_std = {c: float(scores[c].mu_diag.get("std", 0.0)) for c in scores}
+    non_degeneracy = {
+        str(c): {
+            "mu_std": mu_std[c],
+            "mu_std_over_sigma": round(mu_std[c] / SIGMA, 4),
+            "non_degenerate": bool(mu_std[c] >= nondegen_floor),
+        }
+        for c in scores
+    }
+    cell4_non_degenerate = bool(mu_std[4] >= nondegen_floor)
     recon = _micro_recon_contribution(out_dir, raw, device=args.device)
+    reallocation = _shared_ohlcv_recon(out_dir, raw, device=args.device)  # item 9
     cb4, cb3 = scores[4].codebook, scores[3].codebook
     non_collapsed = {
         "fsq_cell4": {
@@ -644,14 +910,24 @@ def run_arm(arm_name: str, *, planted: bool, args) -> dict:
         "training": training,
         "cell_ir": {str(c): float(s.ir_headline) for c, s in scores.items()},
         "delta_info": float(pb45.delta_ir),
-        "pb_4_minus_5": {"ci_lower": pb45.ci_lower, "ci_upper": pb45.ci_upper, "fired": fired},
-        "pb_5_minus_2": {
-            "delta": pb52.delta_ir,
-            "ci_lower": pb52.ci_lower,
-            "ci_upper": pb52.ci_upper,
-            "placebo_neutral": neutral,
+        "pb_4_minus_5_clause1": {
+            "delta": pb45.delta_ir,
+            "ci_lower": pb45.ci_lower,
+            "ci_upper": pb45.ci_upper,
+            "fired": clause1_fired,
         },
+        "pb_4_minus_2_clause3": {
+            "delta": pb42.delta_ir,
+            "ci_lower": pb42.ci_lower,
+            "ci_upper": pb42.ci_upper,
+            "fired": clause3_fired,
+        },
+        "placebo_health_diagnostic": placebo_health,
+        "non_degeneracy": non_degeneracy,
+        "cell4_non_degenerate": cell4_non_degenerate,
+        "nondegen_floor_mu_std": nondegen_floor,
         "micro_recon": recon,
+        "reallocation_asymmetry": reallocation,
         "codebook_non_collapsed": non_collapsed,
         "mu_diag": {str(c): s.mu_diag for c, s in scores.items()},
         "wall_s": round(time.time() - t0, 1),
@@ -787,6 +1063,60 @@ def run_stage1(args) -> dict:
     }
 
 
+def run_oracle(args) -> int:
+    """§7 v1.4.3 item 3 receipt: oracle economics at the PINNED SIGMA and the 0.01 baseline, the
+    PRE-DECLARED margin, and the x-bit-identity training-invariance proof. Writes
+    runs_manifest/m6_oracle_calibration.json. PRE-DECLARED (before the box re-run): oracle net IR
+    >= ORACLE_MARGIN_MULT × the fixture's own MDE_paired."""
+    n_per, cap = args.oracle_n_per, args.eval_cap
+    print(f"=== M6 ORACLE CALIBRATION (item 3) n_per={n_per} cap={cap} C_SIGNAL={C_SIGNAL} ===")
+    print(f"PRE-DECLARED margin: oracle net IR >= {ORACLE_MARGIN_MULT}x fixture MDE_paired")
+    pinned = oracle_economics(SIGMA, n_per=n_per, cap=cap, seed=args.seed)
+    baseline = oracle_economics(0.01, n_per=n_per, cap=cap, seed=args.seed)
+    invariance = x_bit_identity_across_sigma()
+    margin_met = bool(
+        pinned["oracle_net_over_mde"] is not None
+        and pinned["oracle_net_over_mde"] >= ORACLE_MARGIN_MULT
+    )
+    finding = (
+        "The oracle ALREADY clears 0.30pct costs at the OLD SIGMA=0.01 (net IR "
+        f"{baseline['net_ir']}, {baseline['oracle_net_over_mde']}x MDE) - the fixture's planted "
+        "edge survives costs at BOTH values. Raising SIGMA is a fixed-cost-DRAG reduction "
+        f"(oracle drag {baseline['cost_drag_ir']} -> {pinned['cost_drag_ir']} IR), not an oracle "
+        "rescue; the binding gap in the money-leg was cell4 EXTRACTION (net -3.43 vs oracle "
+        f"{baseline['net_ir']}), an outcome the canary measures, not a fixture defect."
+    )
+    receipt = {
+        "receipt": "m6_oracle_calibration",
+        "amendment": "prereg s7 v1.4.3 item 3 (2026-07-29)",
+        "pre_declared_margin": {
+            "rule": "oracle net IR >= mult x fixture MDE_paired",
+            "mult": ORACLE_MARGIN_MULT,
+        },
+        "pinned_sigma": SIGMA,
+        "oracle_at_pinned_sigma": pinned,
+        "oracle_at_baseline_sigma_0.01": baseline,
+        "margin_met_at_pinned_sigma": margin_met,
+        "training_invariance_proof": invariance,
+        "finding_on_the_record": finding,
+    }
+    out = Path("runs_manifest/m6_oracle_calibration.json")
+    out.write_text(json.dumps(receipt, indent=2, sort_keys=True))
+    print(
+        f"[oracle] pinned sigma={SIGMA}: gross {pinned['gross_ir']} net {pinned['net_ir']} "
+        f"drag {pinned['cost_drag_ir']} act {pinned['activity']} "
+        f"MDE {pinned['mde_paired']} net/MDE {pinned['oracle_net_over_mde']}x "
+        f"-> margin_met={margin_met}"
+    )
+    print(
+        f"[oracle] baseline sigma=0.01: net {baseline['net_ir']} "
+        f"({baseline['oracle_net_over_mde']}x MDE) - oracle already clears at the old SIGMA"
+    )
+    print(f"[oracle] training-invariance: {invariance}")
+    print(f"[oracle] receipt -> {out}")
+    return 0 if margin_met else 1
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--device", default="cuda")
@@ -828,7 +1158,15 @@ def main() -> int:
     )
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default="runs/m6_canary")
+    ap.add_argument(
+        "--oracle",
+        action="store_true",
+        help="§7 v1.4.3 item 3: compute the oracle economics receipt ($0, no model) and exit",
+    )
+    ap.add_argument("--oracle-n-per", type=int, default=14_000_000)
     args = ap.parse_args()
+    if args.oracle:
+        return run_oracle(args)
     args.canonical = not args.toy_shells
     if args.toy_shells:
         args.stage1_steps = min(args.stage1_steps, 300)
@@ -852,11 +1190,16 @@ def main() -> int:
     else:
         planted = run_arm("planted", planted=True, args=args)
         noise = run_arm("noise", planted=False, args=args)
+        # §7 v1.4.3 item 2 — PASS mirrors the LOCKED prereg §3: clause 1 AND clause 3, both
+        # placebo-independent for the micro-information claim; cell4 non-degenerate; noise quiet on
+        # BOTH clauses; recon + codebooks intact. Placebo-neutrality and reallocation are REPORTED
+        # diagnostics, never in the PASS conjunction.
         verdicts = {
-            "planted_fires": planted["pb_4_minus_5"]["fired"],
-            "planted_placebo_neutral": planted["pb_5_minus_2"]["placebo_neutral"],
-            "noise_does_not_fire": not noise["pb_4_minus_5"]["fired"],
-            "noise_placebo_neutral": noise["pb_5_minus_2"]["placebo_neutral"],
+            "planted_clause1_micro_beats_placebo": planted["pb_4_minus_5_clause1"]["fired"],
+            "planted_clause3_micro_beats_ohlcv": planted["pb_4_minus_2_clause3"]["fired"],
+            "planted_cell4_non_degenerate": planted["cell4_non_degenerate"],
+            "noise_clause1_does_not_fire": not noise["pb_4_minus_5_clause1"]["fired"],
+            "noise_clause3_does_not_fire": not noise["pb_4_minus_2_clause3"]["fired"],
             "micro_recon_non_degenerate": bool(
                 planted["micro_recon"]["9"]["non_degenerate"]
                 and np.mean([v["recon_mae"] for v in planted["micro_recon"].values()])
@@ -866,15 +1209,26 @@ def main() -> int:
                 side["ok"] for side in planted["codebook_non_collapsed"].values()
             ),
         }
+        diagnostics = {  # reported, NON-GATING (item 2 demotion + item 6 placebo-harm + item 9)
+            "planted_placebo_health": planted["placebo_health_diagnostic"],
+            "noise_placebo_health": noise["placebo_health_diagnostic"],
+            "planted_non_degeneracy": planted["non_degeneracy"],
+            "planted_reallocation_asymmetry": planted["reallocation_asymmetry"],
+        }
         ok = all(verdicts.values())
         manifest = {
             "canary": "m6_preflight_item2_v6",
             "stage": "full_10_cell",
             "arms": {"planted": planted, "noise": noise},
             "verdicts": verdicts,
+            "diagnostics": diagnostics,
             "PASS": ok,
         }
         print(f"[canary] verdicts: {verdicts}")
+        print(
+            f"[canary] diagnostics(placebo-health/reallocation): "
+            f"{json.dumps({k: diagnostics[k] for k in ('planted_placebo_health',)})}"
+        )
 
     manifest["recipe"] = {
         "canonical_dims": args.canonical,

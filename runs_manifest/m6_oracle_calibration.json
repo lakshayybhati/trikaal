@@ -1,0 +1,57 @@
+{
+  "amendment": "prereg s7 v1.4.3 item 3 (2026-07-29)",
+  "finding_on_the_record": "The oracle ALREADY clears 0.30pct costs at the OLD SIGMA=0.01 (net IR 17.1221, 6.286x MDE) - the fixture's planted edge survives costs at BOTH values. Raising SIGMA is a fixed-cost-DRAG reduction (oracle drag 2.1744 -> 0.4514 IR), not an oracle rescue; the binding gap in the money-leg was cell4 EXTRACTION (net -3.43 vs oracle 17.1221), an outcome the canary measures, not a fixture defect.",
+  "margin_met_at_pinned_sigma": true,
+  "oracle_at_baseline_sigma_0.01": {
+    "T_periods": 46671,
+    "activity": 0.216,
+    "c_signal": 3.0,
+    "cost_drag_ir": 2.1744,
+    "delta_oracle_vs_placebo": 20.7686,
+    "eval_cap": 4000,
+    "gross_ir": 19.2965,
+    "headline_cost": 0.003,
+    "kstar_net": 3.0,
+    "mde_paired": 2.7238,
+    "n_per_symbol": 14000000,
+    "net_ir": 17.1221,
+    "oracle_net_over_mde": 6.286,
+    "pb_ci_lower": 19.0507,
+    "sigma": 0.01
+  },
+  "oracle_at_pinned_sigma": {
+    "T_periods": 46671,
+    "activity": 0.2306,
+    "c_signal": 3.0,
+    "cost_drag_ir": 0.4514,
+    "delta_oracle_vs_placebo": 20.1486,
+    "eval_cap": 4000,
+    "gross_ir": 18.8881,
+    "headline_cost": 0.003,
+    "kstar_net": 3.0,
+    "mde_paired": 2.7467,
+    "n_per_symbol": 14000000,
+    "net_ir": 18.4366,
+    "oracle_net_over_mde": 6.712,
+    "pb_ci_lower": 18.421,
+    "sigma": 0.05
+  },
+  "pinned_sigma": 0.05,
+  "pre_declared_margin": {
+    "mult": 5.0,
+    "rule": "oracle net IR >= mult x fixture MDE_paired"
+  },
+  "receipt": "m6_oracle_calibration",
+  "training_invariance_proof": {
+    "planted=False": {
+      "mask_identical": true,
+      "raw_ret_close_ratio_mean": 5.0,
+      "x_identical": true
+    },
+    "planted=True": {
+      "mask_identical": true,
+      "raw_ret_close_ratio_mean": 5.0,
+      "x_identical": true
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "receipt": "m6_eval_throughput_expectation",
+  "amendment": "prereg s7 v1.4.3 item 5 (2026-07-29)",
+  "purpose": "Restate the eval-scoring cost under the expectation-decode estimator; the pre-flight Item-4 receipt was measured under argmax and is stale.",
+  "measured_local": {
+    "device": "mps (Apple, 20.13 GiB limit)",
+    "config": "canonical d512 (8L/512/1024/8h), seq_len=512, h=15, random weights (timing only)",
+    "chunk_64": {
+      "argmax_decisions_per_s": 1.23,
+      "expectation_decisions_per_s": 1.5,
+      "expectation_over_argmax_throughput_ratio": 1.22,
+      "note": "expectation is ~1.2x FASTER than argmax here (decode_latent(E[z]) + softmax@grid is cheaper than decode_tokens per step on this hardware)"
+    },
+    "chunk_512_recipe": {
+      "status": "OOM on mps (19.69 GiB KV cache at batch 512 x 527 rollout steps > 20.13 GiB limit) - not measurable locally",
+      "implication": "chunk=512 amortizes the 512-step context fill far better than chunk=64, so the chunk=64 rate is a FLOOR, not the operating point; the operating rate is PENDING the 4090"
+    }
+  },
+  "key_finding": "The estimator change (argmax -> expectation) is NOT a throughput regression: measured expectation/argmax throughput ratio = 1.22 (expectation faster) on mps at the real config. The premise 'expectation-decode is slower per rollout step' is not borne out on the measured hardware (the extra per-step cost is offset by decode_latent being cheaper than decode_tokens).",
+  "real_scale_decision_count_h15_headline": {
+    "T_periods": 35063,
+    "symbols": 40,
+    "cells": 5,
+    "seeds": 3,
+    "total_decisions": 21037800,
+    "basis": "prereg s2 primary region (forward blocks 1-5), h=15 stride grid"
+  },
+  "labels_required_by_item_5": {
+    "training_throughput": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days",
+    "eval_leg": "estimator is NOT a regression (measured ratio 1.22 faster); ABSOLUTE eval-scoring rate is chunk- and hardware-dependent (recipe pins chunk=512), PENDING the 4090 measurement in the re-run",
+    "dollar_figure": "spot-price dependent (~$0.26-0.40/hr on vast 4090); the banked '$20-30 / 2-3 GPU-days' is NOT quoted without these labels"
+  }
+}
