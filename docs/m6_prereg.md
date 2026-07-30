@@ -190,8 +190,17 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
-- **v1.5 AMENDMENT WINDOW — DRAFTS ONLY, NOT IN FORCE (2026-07-30).** Drafts for six items (A–F) are
-  in **`docs/m6_prereg_v1_5_drafts.md`**, awaiting a supervisor ruling. **NOTHING PINNED HAS
+- **v1.5 AMENDMENT WINDOW — FINAL TEXT AWAITING SIGN-OFF, NOT IN FORCE (2026-07-30).** The final
+  amendment text is **`docs/m6_prereg_v1_5_final.md`** (working drafts retained in
+  `docs/m6_prereg_v1_5_drafts.md`). It carries a **binding three-part safeguard**: a direction-blind
+  test answered per amendment, the **aggregate** change in the effective bar reported as one number,
+  and a **required `dual_specification` manifest field** computing the headline under BOTH the v1.2
+  original and the v1.5 amended specification — with any disagreement a FIRST-CLASS FINDING, never
+  resolved in our favour. **Correction to the window's own premise, on the record: it is NOT true
+  that every amendment loosens the bar** — B (the training-variance MDE) TIGHTENS the primary
+  contrast clause by 1.24–1.60× on the quantile multiplier alone plus a strictly positive variance
+  term, while A.5+A.4 loosen the deflation clause by 0.859× an unmeasured √f. The net across the
+  conjunctive gate is indeterminate pre-run and is not monotonically loosening. **NOTHING PINNED HAS
   CHANGED:** `conformance.PINNED_DSR` (N=180), `verdict.DSR_N_TRIALS`, `PINNED_SEEDS` (3),
   `PINNED_MICRO_POINT_WEIGHT` (3.0) and the tabled `MDE_paired` are all as ruled. The window is
   time-boxed on purpose: several central pre-registered numbers were derived assuming training
