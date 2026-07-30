@@ -101,11 +101,27 @@ def main() -> int:
     for name, c in manifest["clauses"].items():
         print(f"  {name}: {'PASS' if c['pass'] else 'FAIL'}")
     g = manifest["degeneracy_guard"]
-    if g["halted"]:  # §7 v1.4.4: a degenerate cell makes the clauses uninterpretable
+    if g["halted"]:  # §7 v1.4.4/v1.4.6: a degenerate cell makes the clauses uninterpretable
         print(
             f"  [degeneracy-guard] HALT — degenerate cells {g['degenerate_cells']} "
             f"(clause-derived primary was {v['primary']}, superseded by HALT_ADJUDICATE)"
         )
+        for cid in g["degenerate_cells"]:
+            for reason in g["per_cell"][str(cid)]["reasons"]:
+                print(f"      cell{cid}: {reason}")
+    p = manifest["power_guard"]
+    if p["halted"]:  # §7 v1.4.7: the claim is smaller than its own inputs' seed spread
+        print(
+            f"  [power-guard] HALT — underpowered claims {p['underpowered_claims']} "
+            f"(clause-derived primary was {v['primary']}, superseded by HALT_ADJUDICATE)"
+        )
+        for name in p["underpowered_claims"]:
+            chk = p["checks"][name]
+            print(
+                f"      {name}: within-cell across-seed IR range "
+                f"{chk['worst_within_cell_ir_range']:.4f} >= |claimed ΔIR| "
+                f"{abs(chk['delta_ir_claimed']):.4f} (cells {chk['cells']})"
+            )
     word = v["emitted"]  # the FINAL verdict (HALT_ADJUDICATE if the guard fired, else primary)
     if v["fallback"] is not None:
         word += f" (fallback §5: {v['fallback']['word']}; double_null={v['double_null']})"

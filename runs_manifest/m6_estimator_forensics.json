@@ -1,8 +1,39 @@
 {
   "M4a_method_note": "The 256 per-decision MC samples of the v1.4.6 run were NOT retained (_rollout_mc_mean accumulates and returns only the mean), so partitioning them after the fact is impossible without editing the anchored predict.py. The same 256-sample budget is instead spent as two independent n=128 halves, giving the split-half floor DIRECTLY rather than by 1/sqrt(n) extrapolation, at no extra rollout cost over the ordered M4b.",
   "M4a_split_half": {
+    "CORRECTION_v1_4_7": "BOTH earlier readings are WITHDRAWN. agree(half_a,half_b) compares two INDEPENDENT n=half estimates while agree(expectation,combined) compares expectation to ONE n=2*half estimate, so the error budgets differ and equal disagreement is NOT the null expectation. It IMPLIES s_exp = sqrt(2/n_half - 1/(2*n_half)) sigma, larger than the reference's own noise -- expectation's deviation is REAL, not indistinguishable from reference variance. WITHDRAWN: the builder's 'statistically indistinguishable'. EQUALLY WITHDRAWN: the ruling's 'most of the gap is reference variance'. The exact 228/256 tie should not be expected even in principle under this model.",
+    "DECISION_RELEVANT_v1_4_7": "The decision rests on this, not on 'indistinguishable': mc@32's noise scale is sigma/sqrt(32), so EXPECTATION'S ERROR IS ~0.61x THE PINNED ESTIMATOR'S AT 1/32 THE COST.",
     "agree_expectation_vs_combined_n256": 0.890625,
     "agree_half_a_vs_half_b": 0.890625,
+    "error_scale_model": {
+      "expectation_error_over_mc32": 0.61,
+      "implied_s_expectation": 0.1083,
+      "mc32_noise_scale": 0.1768,
+      "note": "Four measurements, ONE error-scale model, no free parameters once s_exp is fixed by the first pair. The D(*,mc32) values come from the v1.4.6 traded-set receipt.",
+      "ratio_expectation_over_reference_noise": 1.73,
+      "reference_noise_at_n256": 0.0625,
+      "self_consistency": {
+        "D(exp,mc256)": {
+          "observed": 0.1094,
+          "predicted_scale": 0.125
+        },
+        "D(exp,mc32)": {
+          "observed": 0.1875,
+          "predicted_scale": 0.2073
+        },
+        "D(half_a,half_b)": {
+          "observed": 0.1094,
+          "predicted_scale": 0.125
+        },
+        "D(mc32,mc256)": {
+          "observed": 0.1836,
+          "predicted_scale": 0.1875
+        }
+      },
+      "share_of_squared_budget_that_is_reference_variance": 0.25,
+      "split_half_comparison_scale": 0.125,
+      "units": "per-sample MC standard deviation (sigma)"
+    },
     "expectation_disagreement": 0.109375,
     "expectation_vs_mc256_v1_4_6": 0.9102,
     "n_per_half": 128,

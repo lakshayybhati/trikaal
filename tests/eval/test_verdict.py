@@ -256,3 +256,25 @@ def test_doctored_verdict_n_trials_is_caught_by_the_conformance_pin(planted_dir,
     evals, shas = load_cell_evals(planted_dir)
     with pytest.raises(ConformanceError, match="n_trials 240"):
         vd.assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+
+
+# ------------------------- §7 v1.4.7: the guards must work END-TO-END through the driver script
+@pytest.mark.slow
+def test_verdict_integration_check_script_passes():
+    """CI protection for the v1.4.7 integration item.
+
+    Both guards live in the ONLY path that may emit SURVIVES/NULL, and the pre-flight verdict dry
+    run predates both. ``scripts/m6_verdict_integration_check.py`` drives the REAL driver as a
+    subprocess over healthy / degenerate / low-power toy fixtures and exits non-zero on any failed
+    assertion, so asserting its exit code here keeps the whole integration surface covered."""
+    env = {**os.environ, "PYTHONPATH": "src"}
+    r = subprocess.run(
+        [sys.executable, "scripts/m6_verdict_integration_check.py"],
+        cwd=REPO,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=1800,
+    )
+    assert r.returncode == 0, f"integration check failed:\n{r.stdout}\n{r.stderr}"
+    assert "all_passed=True" in r.stdout

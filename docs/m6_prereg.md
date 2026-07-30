@@ -193,6 +193,49 @@ three stacked judgment calls = an unlimited re-run license):**
 - **v1.4.7 (2026-07-30, post-v1.4.6 ruling: bit-exactness sufficiency defect scoped, a NEW named
   statistical-power risk mitigated, item 4 resolved; supervisor-ordered) — BEFORE any real training.
   Local $0 CPU only; no spend authorized, none taken.**
+  - **CANARY GATE: CLOSED — PASS. Pre-flight item 2 is GREEN and the board is 8 of 8 — AND 8/8 DOES
+    NOT MEAN CLEARED TO RUN, because a new blocking item (B1) postdates the board.** Both halves of
+    this belong in one paragraph and must never be split: **anyone quoting "8/8" without B1 attached
+    is quoting it wrong.** The close is at exactly this strength: legs (a), (b) and (c) are all
+    demonstrated; leg (c)'s single-checkpoint residual is **ATTRIBUTED** to unconstrained CUDA
+    reduction order (not hardware, not a mystery) and **MITIGATED** by two armed HALT-only guards;
+    the control arm is clean at **0 of 16** noise cell-horizon combinations; and no remaining
+    affordable test adds information.
+    - **B1 — DETERMINISM POSTURE (BLOCKING; OUTSIDE the 8-item board).** Blocking for **two
+      independent** reasons: **(i)** reproducibility is a stated deliverable in invariant 7 and a
+      paper claim, and **49 of 49** records currently assert it falsely; **(ii)** the measured
+      same-seed basin-hopping leaves the 3-seed design's statistical power **unquantified**. B1
+      closes on **three** things: the STAGED CUDA feasibility + throughput probe (~$1–2, awaiting
+      credentials); **Lakshay's** choice between amendments A and B
+      (`docs/invariant7_amendment_decision.md`); and — **under A only** — the same-seed twice-run
+      **weight-hash comparison**, proving that forcing DELIVERS bit-identity rather than merely
+      claiming it. **The power guard stays ARMED under EITHER amendment**, because A removes the
+      same-seed component and NOT the across-seed one.
+  - **STANDING NORM (generalizes; sits alongside the PIPEFAIL rider).** **A probe or gate MUST
+    REFUSE to emit a verdict when its own CONTROL ARM fails.** "Both arms failed identically and the
+    script printed a conclusion" is a recurring failure mode, not a one-off: it produced a false
+    "FORCED DETERMINISM RAISES" verdict in this session's first feasibility probe, where a
+    `TypeError` killed the forced *and* unforced runs alike. Every probe that compares a treatment
+    against a control now reports **PROBE INVALID** unless the control completes, and must
+    distinguish the failure signature it is testing for from an unrelated fault. Implemented in
+    `scripts/m6_determinism_probe.py` (`probe_valid`, keyed on the unforced baseline). Companion to
+    the pipefail rider — same class of defect: a pipeline that masks its own failure and lets an
+    unverified claim through.
+  - **END-TO-END VERDICT INTEGRATION — PASS (`m6_verdict_integration_check.json`).** Both guards
+    were added to the ONLY path that may emit SURVIVES/NULL, and the pre-flight verdict dry run
+    (`m6_toy_verdict_manifest.json`) **predates both** — it carries neither guard. Unit KATs prove
+    the guard FUNCTIONS behave; they do not prove the DRIVER still emits. `scripts/m6_verdict.py` was
+    therefore invoked **as a subprocess** (real §3a conformance gate, real content-hash load, real
+    manifest write) with `--allow-toy-grid` on three fixtures. All three PASS: **healthy** → still
+    EMITS (SURVIVES, no HALT, `emitted == primary`); **one-locked-seed degenerate** →
+    `HALT_ADJUDICATE` end-to-end with `degenerate_cells [4]` from the v1.4.6 **per-seed leg only**
+    (its seed-mean 0.6997 is in-band); **wide-seed-spread low-power** → `HALT_ADJUDICATE` with BOTH
+    clause-1 and clause-3 flagged underpowered. Every run confirmed `grid_pinned: false` and loud,
+    both guards `armed`, `frac_negative_by_seed` / `activity_decisions_by_seed` / `ir_by_seed` /
+    `ir_range_across_seeds` present for all five cells and keyed by the pinned seeds, `primary`
+    preserved as a clause word, and the HALT surfaced on stdout (the driver now prints the
+    power-guard HALT and each guard's per-cell reasons, which it previously did not). The script
+    exits non-zero on any failed assertion and is CI-wired.
   - **THE `bit_exact_claim` SUFFICIENCY DEFECT — scoped exactly (`m6_bit_exact_claim_correction.json`).**
     Root cause `attention_mode.py`: `claim = attention_mode == MODE_SDPA`, i.e. **invariant 7's
     sufficiency premise encoded in code**. It is false — deterministic attention is NECESSARY, not
@@ -281,14 +324,28 @@ three stacked judgment calls = an unlimited re-run license):**
       budget was spent as **two independent n=128 halves** at different `mc_seed`s — giving the
       split-half floor **directly, measured rather than 1/√n-extrapolated**, at no extra rollout cost
       over the ordered M4b. Result: **agree(half_a, half_b) = 0.8906** and
-      **agree(expectation, combined n=256) = 0.8906** — *identical*. **Expectation's disagreement
-      with the reference (0.1094) EQUALS the reference's disagreement with itself (0.1094).** So at
-      this precision the apparent "expectation bias" is **statistically indistinguishable from
-      reference variance**: expectation sits as close to the unbiased mean as two independent MC
-      estimates of the same size sit to each other. The supervisor's prediction — that most of the
-      gap is reference variance rather than estimator bias — is confirmed, and at this resolution it
-      is not merely most of it. (Both proportions are 228/256; the exact equality is plausibly
-      coincidence at n=256, but the magnitudes are what matter and they match.)
+      **agree(expectation, combined n=256) = 0.8906**.
+      - **M4a CORRECTION (v1.4.7, supervisor-issued; BOTH earlier readings WITHDRAWN).** The two
+        quantities have **different error budgets**, so their equality is *not* the null expectation
+        and "indistinguishable" was wrong. `agree(half_a, half_b)` compares two independent n=128
+        estimates → combined scale √2·σ/√128 = **σ/8 = 0.1250σ**. `agree(expectation, combined)`
+        compares expectation to ONE n=256 estimate → scale √(s_exp² + (σ/16)²). Equal disagreement
+        therefore *implies* s_exp² = σ²/64 − σ²/256 = 3σ²/256, i.e. **s_exp ≈ 0.1083σ** against the
+        reference's own **0.0625σ**. So expectation's deviation is **REAL and ≈1.73× the reference
+        noise** — NOT indistinguishable from it — and only **25%** of that squared error budget is
+        reference variance. **Withdrawn: the builder's "statistically indistinguishable from
+        reference variance"; equally withdrawn: the ruling's "most of the gap is REFERENCE
+        VARIANCE".** Both were too strong in the same direction. The builder's instinct that the
+        228/256 tie is coincidence was right and is now stronger than stated: under this model the
+        tie should **not** be expected even in principle.
+      - **THE DECISION-RELEVANT STATEMENT (same arithmetic, and it is what carries item 4).**
+        mc@32's noise scale is σ/√32 = **0.1768σ**, so **expectation's error is ≈0.61× the PINNED
+        estimator's, at 1/32 the cost.** That, not "indistinguishable", is why expectation stands.
+      - **SELF-CONSISTENCY across FOUR independent measurements under ONE error-scale model**
+        (verified numerically): D(exp,mc256) 0.1094 @ 0.1250σ · D(half_a,half_b) 0.1094 @ 0.1250σ ·
+        D(mc32,mc256) 0.1836 @ 0.1875σ · D(exp,mc32) 0.1875 @ 0.2073σ — **monotone**, same rank
+        order in observed and predicted. Four measurements, one model, no free parameters after
+        s_exp is fixed by the first pair.
     - **M4b — THE PERTURBATION IS BENIGN, MEASURED NOT ASSERTED.** The premise holds: |μ̂| on the
       disagreement set is **0.00859** vs **0.02790** on the agreement set — **3.25× smaller**, i.e.
       the flips sit exactly where the forecast is least informative. Of 256 traded decisions, 28

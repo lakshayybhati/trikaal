@@ -1,0 +1,107 @@
+{
+  "all_passed": true,
+  "amendment": "prereg s7 v1.4.7 integration item (supervisor-ordered, $0)",
+  "cases": [
+    {
+      "case": "healthy",
+      "cell4_ir_range_across_seeds": 1.9467877268979574,
+      "checks": {
+        "both_guards_armed": true,
+        "both_guards_in_manifest": true,
+        "conformance_gate_ran_first": true,
+        "degeneracy_guard.activity_decisions_by_seed_present_for_every_cell": true,
+        "degeneracy_guard.frac_negative_by_seed_present_for_every_cell": true,
+        "driver_exit_zero": true,
+        "emitted_equals_primary": true,
+        "emitted_matches_expectation": true,
+        "grid_pinned_false_and_loud": true,
+        "manifest_written": true,
+        "no_guard_halted": true,
+        "per_seed_maps_keyed_by_pinned_seeds": true,
+        "power_guard.ir_by_seed_present_for_every_cell": true,
+        "power_guard.ir_range_across_seeds_present_for_every_cell": true,
+        "primary_preserved_as_a_clause_word": true
+      },
+      "degenerate_cells": [],
+      "emitted": "SURVIVES",
+      "grid_pinned": false,
+      "halted_for_degeneracy": false,
+      "halted_for_power": false,
+      "passed": true,
+      "primary": "SURVIVES",
+      "returncode": 0,
+      "stderr_tail": "",
+      "underpowered_claims": []
+    },
+    {
+      "case": "degenerate_one_locked_seed",
+      "cell4_ir_range_across_seeds": 1.9467877268979574,
+      "checks": {
+        "a_guard_flag_is_true": true,
+        "both_guards_armed": true,
+        "both_guards_in_manifest": true,
+        "conformance_gate_ran_first": true,
+        "degeneracy_guard.activity_decisions_by_seed_present_for_every_cell": true,
+        "degeneracy_guard.frac_negative_by_seed_present_for_every_cell": true,
+        "driver_exit_zero": true,
+        "emitted_matches_expectation": true,
+        "grid_pinned_false_and_loud": true,
+        "halt_surfaced_on_stdout": true,
+        "manifest_written": true,
+        "per_seed_maps_keyed_by_pinned_seeds": true,
+        "power_guard.ir_by_seed_present_for_every_cell": true,
+        "power_guard.ir_range_across_seeds_present_for_every_cell": true,
+        "primary_preserved_as_a_clause_word": true
+      },
+      "degenerate_cells": [
+        4
+      ],
+      "emitted": "HALT_ADJUDICATE",
+      "grid_pinned": false,
+      "halted_for_degeneracy": true,
+      "halted_for_power": false,
+      "passed": true,
+      "primary": "SURVIVES",
+      "returncode": 0,
+      "stderr_tail": "",
+      "underpowered_claims": []
+    },
+    {
+      "case": "low_power_wide_seed_spread",
+      "cell4_ir_range_across_seeds": 306.9583412514975,
+      "checks": {
+        "a_guard_flag_is_true": true,
+        "both_guards_armed": true,
+        "both_guards_in_manifest": true,
+        "conformance_gate_ran_first": true,
+        "degeneracy_guard.activity_decisions_by_seed_present_for_every_cell": true,
+        "degeneracy_guard.frac_negative_by_seed_present_for_every_cell": true,
+        "driver_exit_zero": true,
+        "emitted_matches_expectation": true,
+        "grid_pinned_false_and_loud": true,
+        "halt_surfaced_on_stdout": true,
+        "manifest_written": true,
+        "per_seed_maps_keyed_by_pinned_seeds": true,
+        "power_guard.ir_by_seed_present_for_every_cell": true,
+        "power_guard.ir_range_across_seeds_present_for_every_cell": true,
+        "primary_preserved_as_a_clause_word": true
+      },
+      "degenerate_cells": [],
+      "emitted": "HALT_ADJUDICATE",
+      "grid_pinned": false,
+      "halted_for_degeneracy": false,
+      "halted_for_power": true,
+      "passed": true,
+      "primary": "SURVIVES",
+      "returncode": 0,
+      "stderr_tail": "",
+      "underpowered_claims": [
+        "clause1_delta_4_minus_5",
+        "clause3_delta_4_minus_2"
+      ]
+    }
+  ],
+  "method": "scripts/m6_verdict.py invoked as a SUBPROCESS with --allow-toy-grid on three toy fixtures (healthy / one-locked-seed degenerate / wide-seed-spread low-power). Real conformance gate, real content-hash load, real manifest write.",
+  "receipt": "m6_verdict_integration_check",
+  "why": "Both guards were added to the ONLY path that may emit SURVIVES/NULL, and the pre-flight verdict dry run (m6_toy_verdict_manifest.json) predates both. Unit KATs prove the guard functions behave; they do not prove the DRIVER still emits, still writes a manifest, still surfaces the HALT and still carries the per-seed fields."
+}

@@ -1226,6 +1226,64 @@ def run_estimator_forensics(args) -> int:
     m4a["expectation_disagreement"] = 1.0 - m4a["agree_expectation_vs_combined_n256"]
     m4a["reference_self_disagreement_at_half"] = 1.0 - m4a["agree_half_a_vs_half_b"]
 
+    # §7 v1.4.7 CORRECTION (supervisor-issued). The two agreements have DIFFERENT error budgets, so
+    # their equality is NOT the null expectation and "indistinguishable" is wrong. Under one
+    # error-scale model in units of the per-sample MC sd (sigma):
+    #   D(half_a, half_b)  ~ sqrt(2)*sigma/sqrt(n_half)          (two independent halves)
+    #   D(exp, combined)   ~ sqrt(s_exp^2 + (sigma/sqrt(2*n_half))^2)
+    # Equal disagreement therefore IMPLIES s_exp, which is DERIVED here rather than asserted.
+    s_half = float(np.sqrt(2.0) / np.sqrt(half))  # scale of the split-half comparison
+    s_ref = float(1.0 / np.sqrt(2 * half))  # the reference's own noise at n = 2*half
+    s_exp_sq = s_half**2 - s_ref**2
+    s_exp = float(np.sqrt(s_exp_sq)) if s_exp_sq > 0 else float("nan")
+    s_mc32 = float(1.0 / np.sqrt(MC_DEFAULT_SAMPLES))
+    m4a["CORRECTION_v1_4_7"] = (
+        "BOTH earlier readings are WITHDRAWN. agree(half_a,half_b) compares two INDEPENDENT "
+        "n=half estimates while agree(expectation,combined) compares expectation to ONE n=2*half "
+        "estimate, so the error budgets differ and equal disagreement is NOT the null expectation. "
+        "It IMPLIES s_exp = sqrt(2/n_half - 1/(2*n_half)) sigma, larger than the reference's own "
+        "noise -- expectation's deviation is REAL, not indistinguishable from reference variance. "
+        "WITHDRAWN: the builder's 'statistically indistinguishable'. EQUALLY WITHDRAWN: the "
+        "ruling's 'most of the gap is reference variance'. The exact 228/256 tie should not be "
+        "expected even in principle under this model."
+    )
+    m4a["DECISION_RELEVANT_v1_4_7"] = (
+        "The decision rests on this, not on 'indistinguishable': mc@32's noise scale is "
+        "sigma/sqrt(32), so EXPECTATION'S ERROR IS ~0.61x THE PINNED ESTIMATOR'S AT 1/32 THE COST."
+    )
+    m4a["error_scale_model"] = {
+        "units": "per-sample MC standard deviation (sigma)",
+        "split_half_comparison_scale": round(s_half, 4),
+        "reference_noise_at_n256": round(s_ref, 4),
+        "implied_s_expectation": round(s_exp, 4),
+        "ratio_expectation_over_reference_noise": round(s_exp / s_ref, 2),
+        "share_of_squared_budget_that_is_reference_variance": round(s_ref**2 / s_half**2, 4),
+        "mc32_noise_scale": round(s_mc32, 4),
+        "expectation_error_over_mc32": round(s_exp / s_mc32, 2),
+        "self_consistency": {
+            "D(exp,mc256)": {
+                "observed": round(1.0 - m4a["agree_expectation_vs_combined_n256"], 4),
+                "predicted_scale": round(float(np.hypot(s_exp, s_ref)), 4),
+            },
+            "D(half_a,half_b)": {
+                "observed": round(1.0 - m4a["agree_half_a_vs_half_b"], 4),
+                "predicted_scale": round(s_half, 4),
+            },
+            "D(mc32,mc256)": {
+                "observed": round(1.0 - m4a["pinned_n32_floor_v1_4_6"], 4),
+                "predicted_scale": round(float(np.hypot(s_mc32, s_ref)), 4),
+            },
+            "D(exp,mc32)": {
+                "observed": round(1.0 - 0.8125, 4),
+                "predicted_scale": round(float(np.hypot(s_exp, s_mc32)), 4),
+            },
+        },
+        "note": (
+            "Four measurements, ONE error-scale model, no free parameters once s_exp is fixed "
+            "by the first pair. The D(*,mc32) values come from the v1.4.6 traded-set receipt."
+        ),
+    }
+
     # ---- M4b: is the perturbation benign?
     dis = (mu_exp < 0) != (mc_combined < 0)
     n_dis = int(dis.sum())

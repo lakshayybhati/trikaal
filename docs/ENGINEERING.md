@@ -43,6 +43,7 @@ The **per-bar feature vector is the method foundation** — every downstream com
 - Lint / format: `ruff check .` and `ruff format .`
 - Tests: `pytest` (full suite); single test: `pytest tests/<file>::<test_name> -q`
 - Pre-commit hooks + GitHub Actions CI running tests on push; the causal-safety/lookahead test is a **required CI gate**.
+- **Control-arm rule (standing, prereg §7 v1.4.7):** a probe or gate **must refuse to emit a verdict when its own control arm fails**. If the treatment and the control fail alike, the correct output is `PROBE INVALID` — never a conclusion about the treatment. A probe must also distinguish the failure signature it is testing for from an unrelated fault. This is the same class of defect as an exit code masked by a pipe (see the pipefail rider): a harness that hides its own failure and lets an unverified claim through.
 - Experiment tracking: Weights & Biases.
 - **Allowed to import** (infrastructure): PyTorch, CUDA/cuDNN/NCCL, FlashAttention-2, PyArrow/DuckDB/Polars, W&B.
 - **Write from scratch** (the research surface — do not import others' implementations): attention/blocks/model, the tokenizer (encoder + FSQ + decoder), the training loop (DDP, checkpointing, schedules), and all eval metrics.
