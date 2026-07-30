@@ -190,6 +190,18 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.5 AMENDMENT WINDOW — DRAFTS ONLY, NOT IN FORCE (2026-07-30).** Drafts for six items (A–F) are
+  in **`docs/m6_prereg_v1_5_drafts.md`**, awaiting a supervisor ruling. **NOTHING PINNED HAS
+  CHANGED:** `conformance.PINNED_DSR` (N=180), `verdict.DSR_N_TRIALS`, `PINNED_SEEDS` (3),
+  `PINNED_MICRO_POINT_WEIGHT` (3.0) and the tabled `MDE_paired` are all as ruled. The window is
+  time-boxed on purpose: several central pre-registered numbers were derived assuming training
+  variance is negligible, which v1.4.5 **measured** to be false, and they can be revised
+  legitimately **only while no real Cell-4 number exists**. Nothing in the drafts is quotable as the
+  pre-registration until it is ruled on and landed here. **Contains one flagged finding
+  (draft §A.4) that may outrank the item it was found inside: clause 5's `var_sr` basis makes the DSR
+  bar rise when the ablation succeeds, so the clause is anti-correlated with the hypothesis it
+  tests, and may be unpassable at realistic effect sizes.**
+
 - **v1.4.7 (2026-07-30, post-v1.4.6 ruling: bit-exactness sufficiency defect scoped, a NEW named
   statistical-power risk mitigated, item 4 resolved; supervisor-ordered) — BEFORE any real training.
   Local $0 CPU only; no spend authorized, none taken.**
