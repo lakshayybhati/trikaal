@@ -49,8 +49,12 @@ from trikaal.utils.hashing import content_hash
 PRIMARY_H = 15  # §3: h=15 is the primary; no horizon-shopping
 DSR_HORIZONS: tuple[int, ...] = (5, 15, 60)  # §3 clause 5: h=1 is not evaluated anywhere in M6
 DSR_KAPPAS: tuple[float, ...] = (1.0, 1.5, 2.0, 3.0)  # §3a κ grid
-DSR_SEEDS: tuple[int, ...] = (0, 1, 2)  # §3a seeds
-DSR_N_TRIALS = 180  # §3 clause 5: 5 cells × 3 seeds × 3 horizons × 4 κ, ENUMERATED
+DSR_SEEDS: tuple[int, ...] = (0, 1, 2, 3, 4)  # §3a seeds (§7 v1.5: S=5 up front)
+DSR_N_TRIALS = 60  # §3 clause 5 (§7 v1.5 A.5): 5 cells × 3 horizons × 4 κ — SEEDS EXCLUDED
+DSR_VAR_SR_BASIS_CELL = 5  # §7 v1.5 A.4: the PLACEBO arm — a null dispersion estimate
+# must not contain the treatment contrast (the old all-arms basis made clause 5 HARDER
+# exactly when the ablation succeeded — anti-correlated with its own hypothesis).
+PLACEBO_DISPERSION_TRIPWIRE = 1.5  # §7 v1.5 A.4.3: x median dispersion of cells 1,2,3
 DSR_THRESHOLD = 0.95  # §3 clause 5
 ECON_FLOOR_IR = 0.5  # §3 clause 4: annualized-IR materiality floor, fixed pre-data
 SURVIVES = "SURVIVES"
@@ -434,16 +438,37 @@ def assemble_verdict(
     s = {c: _seed_mean_series(evals, c) for c in (1, 2, 3, 4, 5)}
     ir = {c: float(information_ratio(s[c], PRIMARY_H)) for c in s}
 
-    pb45 = paired_delta_ir_bootstrap(s[4], s[5], h=PRIMARY_H)
-    pb42 = paired_delta_ir_bootstrap(s[4], s[2], h=PRIMARY_H)
-    pb52 = paired_delta_ir_bootstrap(s[5], s[2], h=PRIMARY_H)
+    # §7 v1.5 item B: the per-seed contrast supplies the across-seed TRAINING-VARIANCE term. It is
+    # CLEAN — all seeds share the same eval data and grid, so the cross-seed spread is purely
+    # model-induced with no scoring-noise component to subtract.
+    def _per_seed_delta(ca: int, cb: int) -> np.ndarray:
+        return np.array(
+            [
+                information_ratio(
+                    np.asarray(evals[(ca, sd)]["headline_series"], np.float64), PRIMARY_H
+                )
+                - information_ratio(
+                    np.asarray(evals[(cb, sd)]["headline_series"], np.float64), PRIMARY_H
+                )
+                for sd in DSR_SEEDS
+            ],
+            dtype=np.float64,
+        )
+
+    pb45 = paired_delta_ir_bootstrap(s[4], s[5], h=PRIMARY_H, per_seed_deltas=_per_seed_delta(4, 5))
+    pb42 = paired_delta_ir_bootstrap(s[4], s[2], h=PRIMARY_H, per_seed_deltas=_per_seed_delta(4, 2))
+    pb52 = paired_delta_ir_bootstrap(s[5], s[2], h=PRIMARY_H)  # diagnostic only, no MDE clause
 
     # clause 5: the pinned DSR recipe over the ENUMERATED N=180 trial set. The recipe is
     # asserted against conformance.PINNED_DSR — an INDEPENDENT statement of the §3-clause-5
     # constants — before any DSR is computed; var_sr uses the key-sorted ddof=0 construction
     # the pin re-derives bit-exactly (a subset-variance or a ddof drift cannot pass).
     trials = enumerate_dsr_trials(evals)
-    var_sr = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+    # §7 v1.5 A.4: dispersion basis = the CELL-5 placebo trials only (seeds retained inside it);
+    # the ENUMERATION stays the full cross-product as the audit trail, and n_trials counts
+    # configurations without seeds. Three deliberately different sets.
+    basis_keys = sorted(k for k in trials if k[0] == DSR_VAR_SR_BASIS_CELL)
+    var_sr = float(np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64)))
     recipe_fails = verdict_dsr_failures(
         n_trials=DSR_N_TRIALS, threshold=DSR_THRESHOLD, trials=trials, var_sr=var_sr
     )
@@ -542,6 +567,102 @@ def assemble_verdict(
             "word": fb_word,
         }
 
+    # §7 v1.5 A.4.3 PLACEBO-DISPERSION TRIPWIRE. pb(5−2) is a LEVEL statement and var_sr is a
+    # DISPERSION statistic, so placebo-victim behaviour does not move a variance at first order.
+    # The second-order risk (a degraded training signal producing more variable models) errs
+    # CONSERVATIVE — inflated var_sr raises SR0, making clause 5 HARDER — and is measured, not
+    # assumed.
+    def _arm_dispersion(c: int) -> float:
+        irs = [
+            float(
+                information_ratio(
+                    np.asarray(evals[(c, sd)]["headline_series"], np.float64), PRIMARY_H
+                )
+            )
+            for sd in DSR_SEEDS
+        ]
+        fin = [v for v in irs if np.isfinite(v)]
+        return (max(fin) - min(fin)) if fin else float("nan")
+
+    disp = {str(c): _arm_dispersion(c) for c in (1, 2, 3, 4, 5)}
+    ref = [disp[str(c)] for c in (1, 2, 3) if disp[str(c)] == disp[str(c)]]
+    med = float(np.median(ref)) if ref else float("nan")
+    placebo_disp = disp["5"]
+    fired = bool(
+        med == med
+        and med > 0
+        and placebo_disp == placebo_disp
+        and placebo_disp > PLACEBO_DISPERSION_TRIPWIRE * med
+    )
+    placebo_tripwire = {
+        "rule": (
+            "§7 v1.5 A.4.3: DISCLOSE if the placebo arm's across-seed IR dispersion exceeds "
+            f"{PLACEBO_DISPERSION_TRIPWIRE}x the median dispersion of cells 1,2,3 — a possible "
+            "shuffle-degradation artifact in the var_sr basis. Threshold fixed PRE-DATA. "
+            "Non-gating: it triggers DISCLOSURE and a dual-basis report, never a verdict change."
+        ),
+        "threshold": PLACEBO_DISPERSION_TRIPWIRE,
+        "across_seed_ir_dispersion_by_cell": disp,
+        "median_dispersion_cells_1_2_3": med,
+        "placebo_dispersion": placebo_disp,
+        "fired": fired,
+        "action_if_fired": (
+            "report clause 5 under BOTH the cell-5 and the within-cell-4 bases and disclose; "
+            "NEVER fall back to cell 2 — §5's NULL-fallback can CLAIM IR(2)-IR(1), which makes "
+            "cell 2 a treatment arm, and 7 vs 16 dims is a dispersion mismatch"
+        ),
+    }
+
+    # §7 v1.5 §0.3 DUAL-SPECIFICATION REPORT — the SAME artifacts under BOTH specifications.
+    # The v1.2 leg reconstructs the pre-amendment rules faithfully: seeds COUNTED as trials,
+    # var_sr over ALL arms, z-quantile MDE with scoring noise only.
+    n_trials_v12 = len(DSR_SEEDS) * len(_CELL_BY_ID) * len(DSR_HORIZONS) * len(DSR_KAPPAS)
+    var_sr_v12 = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+    dsr_v12 = float(deflated_sharpe_ratio(s[4], n_trials=n_trials_v12, var_sr=var_sr_v12))
+    clauses_v12 = {
+        "1_paired_ci": bool(pb45.passes_ci),
+        "2_mde_paired": bool(pb45.delta_ir >= pb45.mde_paired_scoring_only),
+        "3_placebo_validity": bool(pb42.passes_ci),
+        "4_economic_floor": bool(pb45.delta_ir >= ECON_FLOOR_IR),
+        "5_dsr": bool(dsr_v12 >= DSR_THRESHOLD),
+    }
+    primary_v12 = SURVIVES if all(clauses_v12.values()) else NULL
+    dual_specification = {
+        "rule": (
+            "§7 v1.5 §0.3: the headline is computed under BOTH the v1.2 ORIGINAL and the v1.5 "
+            "AMENDED specification from the SAME artifacts. v1.5 is the PRE-REGISTERED PRIMARY. "
+            "If they DISAGREE that disagreement is a FIRST-CLASS FINDING, reported in the abstract "
+            "and results and NEVER resolved in our favour or relegated to an appendix. A manifest "
+            "lacking this field cannot be quoted as the M6 outcome (same footing as grid_pinned)."
+        ),
+        "v1_2_original": {
+            "n_trials": n_trials_v12,
+            "n_trials_basis": "cells x SEEDS x horizons x kappas (seeds COUNTED as trials)",
+            "var_sr_basis": "all_arms",
+            "var_sr": var_sr_v12,
+            "sr0": float(expected_max_sharpe(var_sr_v12, n_trials_v12)),
+            "dsr": dsr_v12,
+            "mde_rule": "z-quantiles, scoring-noise SE only",
+            "mde_paired": pb45.mde_paired_scoring_only,
+            "clauses_pass": clauses_v12,
+            "primary": primary_v12,
+        },
+        "v1_5_amended": {
+            "n_trials": DSR_N_TRIALS,
+            "n_trials_basis": "cells x horizons x kappas (seeds are REPLICATES, not trials)",
+            "var_sr_basis": f"cell{DSR_VAR_SR_BASIS_CELL}_placebo",
+            "var_sr": var_sr,
+            "sr0": sr0,
+            "dsr": dsr,
+            "mde_rule": "t-quantiles (Welch-Satterthwaite), SE_boot (+) SE_train",
+            "mde_paired": pb45.mde_paired,
+            "clauses_pass": {k: bool(c["pass"]) for k, c in clauses.items()},
+            "primary": primary,
+        },
+        "agree": bool(primary_v12 == primary),
+        "disagreement_is_a_first_class_finding": True,
+    }
+
     # §7 v1.4.4/v1.4.7 GUARDS — POST-HOC, HALT-only, computed AFTER the clauses/primary so they
     # can never mutate them. Either firing supersedes the EMITTED verdict with HALT_ADJUDICATE;
     # neither can flip SURVIVES<->NULL. The degeneracy guard asks "is this cell a constant book?";
@@ -584,6 +705,8 @@ def assemble_verdict(
             "delta_5_minus_2": _pb_dict(pb52),
         },
         "clauses": clauses,
+        "dual_specification": dual_specification,
+        "placebo_dispersion_tripwire": placebo_tripwire,
         "degeneracy_guard": guard,
         "power_guard": power,
         "verdict": {

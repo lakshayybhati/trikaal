@@ -29,6 +29,7 @@ import numpy as np
 
 from trikaal.eval.dsr import norm_ppf
 from trikaal.eval.metrics import EPS_IR, information_ratio, periods_per_year
+from trikaal.eval.tdist import student_t_ppf, welch_satterthwaite_df
 
 BOOT_B = 10_000  # §3a: replicates
 BOOT_SEED = 20260704  # §3a: bootstrap RNG seed
@@ -66,7 +67,18 @@ class PairedBootstrap:
     ci_lower: float  # one-sided lower bound = α-quantile of the bootstrap ΔIR replicates
     ci_upper: float  # (1−α)-quantile — the §3 clause-3 placebo-health diagnostic needs it
     se_boot: float  # std (ddof=1) of the bootstrap ΔIR replicates
-    mde_paired: float  # (z_{1−α} + z_power)·SE_boot — §3 clause 2
+    mde_paired: float  # §3 clause 2 — the OPERATIVE MDE (v1.5: includes the training term)
+    # ---- §7 v1.5 item B: the two-term MDE ------------------------------------------------
+    # Var(ΔÎR) = E[Var_scoring | models] + Var_models(E[ΔÎR | models])  (law of total variance).
+    # Term 1 is se_boot (the bootstrap already conditions on the realized models, and seeds do NOT
+    # reduce it — every seed is scored on the SAME data and grid, so scoring noise is common, not
+    # independent). Term 2 is se_train, which is CLEAN: all seeds share the eval data, so the
+    # across-seed spread of the per-seed contrast is purely model-induced with nothing to subtract.
+    mde_paired_scoring_only: float  # the SUPERSEDED v1.2 number, retained for the dual report
+    se_train: float  # σ̂_train/√S; 0.0 when per-seed deltas were not supplied
+    se_total: float  # √(se_boot² + se_train²) ≥ se_boot ALWAYS
+    nu_effective: float  # Welch–Satterthwaite df of se_total
+    n_seeds: int  # S — the replicate count behind se_train
     t: int
     block_len: int
     b: int
@@ -86,12 +98,19 @@ def paired_delta_ir_bootstrap(
     alpha: float = BOOT_ALPHA,
     power: float = BOOT_POWER,
     chunk: int = 256,
+    per_seed_deltas: np.ndarray | None = None,
 ) -> PairedBootstrap:
     """Paired moving-block bootstrap of ΔIR = IR(r_a) − IR(r_b) with SHARED block indices.
 
     ``r_a``/``r_b`` are the two cells' pooled FULL-calendar-grid period series (seed-mean,
     flat periods = 0.0) on the SAME grid — the §3 pairing contract. ``chunk`` only bounds
-    memory; it cannot change the result (all starts are drawn before chunking)."""
+    memory; it cannot change the result (all starts are drawn before chunking).
+
+    ``per_seed_deltas`` (§7 v1.5 item B) is the per-seed contrast {ΔIR_s = IR(a_s) − IR(b_s)}. When
+    supplied, the MDE carries the across-seed TRAINING-VARIANCE term and uses t-quantiles at the
+    Welch–Satterthwaite df — which makes the primary test HARDER, by 1.24–1.60× on the multiplier
+    alone plus a strictly positive variance term. When omitted the historical scoring-only
+    z-quantile MDE is returned in both fields, which is what the dual report's v1.2 leg needs."""
     a = np.asarray(r_a, dtype=np.float64)
     bb = np.asarray(r_b, dtype=np.float64)
     if a.ndim != 1 or bb.ndim != 1 or a.shape != bb.shape:
@@ -118,13 +137,39 @@ def paired_delta_ir_bootstrap(
     ci_lower = float(np.quantile(deltas, alpha, method="linear"))
     ci_upper = float(np.quantile(deltas, 1.0 - alpha, method="linear"))
     se_boot = float(np.std(deltas, ddof=1))
-    mde_paired = float((norm_ppf(1.0 - alpha) + norm_ppf(power)) * se_boot)
+    mde_scoring_only = float((norm_ppf(1.0 - alpha) + norm_ppf(power)) * se_boot)
+
+    # §7 v1.5 item B — the training term. nu_boot is B−1: the bootstrap SE is estimated from B
+    # replicates, so its own df is large and the WS combination is dominated by the S−1 side.
+    se_train, n_seeds = 0.0, 0
+    if per_seed_deltas is not None:
+        psd = np.asarray(per_seed_deltas, dtype=np.float64).ravel()
+        n_seeds = int(psd.size)
+        if n_seeds < 2:
+            raise ValueError(
+                f"per_seed_deltas needs >=2 seeds to estimate a variance, got {n_seeds}"
+            )
+        if not np.isfinite(psd).all():
+            raise ValueError("per_seed_deltas contains non-finite values")
+        se_train = float(np.std(psd, ddof=1) / np.sqrt(n_seeds))
+    se_total = float(np.sqrt(se_boot * se_boot + se_train * se_train))
+    if se_train > 0.0:
+        nu = welch_satterthwaite_df(se_boot, float(b - 1), se_train, float(n_seeds - 1))
+        mde_paired = float((student_t_ppf(1.0 - alpha, nu) + student_t_ppf(power, nu)) * se_total)
+    else:  # no per-seed input → the historical scoring-only rule, unchanged
+        nu = float(b - 1)
+        mde_paired = mde_scoring_only
     return PairedBootstrap(
         delta_ir=float(delta_ir),
         ci_lower=ci_lower,
         ci_upper=ci_upper,
         se_boot=se_boot,
         mde_paired=mde_paired,
+        mde_paired_scoring_only=mde_scoring_only,
+        se_train=se_train,
+        se_total=se_total,
+        nu_effective=float(nu),
+        n_seeds=n_seeds,
         t=t,
         block_len=length,
         b=int(b),

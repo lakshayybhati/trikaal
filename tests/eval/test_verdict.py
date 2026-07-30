@@ -192,10 +192,19 @@ def test_doctored_horizon_budget_is_refused(tmp_path):
         load_cell_evals(d)
 
 
-def test_trial_enumeration_is_the_exact_180_cross_product(planted_dir):
+def test_trial_enumeration_and_the_v1_5_three_way_split(planted_dir):
+    """§7 v1.5 A.5 splits three things that used to be one number, and each is asserted here:
+
+    (1) the ENUMERATION is still the FULL cells x SEEDS x horizons x kappas cross-product — the
+        audit trail, so nothing can go missing;
+    (2) ``DSR_N_TRIALS`` is the MULTIPLICITY count and EXCLUDES seeds (replicates are not
+        configurations), so it is cells x horizons x kappas and is INDEPENDENT of how many seeds
+        we run;
+    (3) ``var_sr`` is the DISPERSION and is computed over the CELL-5 placebo subset only.
+    """
     evals, _ = load_cell_evals(planted_dir)
     trials = enumerate_dsr_trials(evals)
-    assert len(trials) == DSR_N_TRIALS == 180
+    # (1) full enumeration, seeds INCLUDED
     assert set(trials) == {
         (c, s, h, k)
         for c in (1, 2, 3, 4, 5)
@@ -203,6 +212,10 @@ def test_trial_enumeration_is_the_exact_180_cross_product(planted_dir):
         for h in DSR_HORIZONS
         for k in DSR_KAPPAS
     }
+    assert len(trials) == 5 * len(DSR_SEEDS) * len(DSR_HORIZONS) * len(DSR_KAPPAS)
+    # (2) multiplicity EXCLUDES seeds and does not move with S
+    assert DSR_N_TRIALS == 5 * len(DSR_HORIZONS) * len(DSR_KAPPAS) == 60
+    assert len(trials) != DSR_N_TRIALS  # the enumeration and the count are DIFFERENT sets
     # de-annualized: every trial is a per-period Sharpe, |sr| ≪ 1
     assert max(abs(v) for v in trials.values()) < 0.1
 
@@ -235,7 +248,7 @@ def test_script_end_to_end_on_the_planted_fixture(planted_dir, tmp_path):
     assert m["verdict"]["primary"] == SURVIVES
     assert m["grid_pinned"] is False  # toy fixture — loudly recorded, never quotable as M6
     assert m["conformance"] == "PASS" and len(m["prereg_sha256"]) == 64
-    assert len(m["artifact_sha256"]) == 15
+    assert len(m["artifact_sha256"]) == 5 * len(DSR_SEEDS)
 
 
 def test_script_refuses_a_toy_grid_without_the_flag(planted_dir, tmp_path):

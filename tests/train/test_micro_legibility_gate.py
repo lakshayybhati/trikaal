@@ -70,3 +70,30 @@ def test_gate_skips_masked_everywhere_dims():
     )
     receipt = micro_legibility_gate(tok, [sw2], tokens, min_acc=0.0, run_name="kat")
     assert "skipped" in receipt["per_dim"]["8"]
+
+
+# ------------------------------------------------- §7 v1.5 item E: the λ calibration slice
+def test_lambda_calibration_slice_is_carved_from_the_END_of_the_TRAIN_region():
+    """It must sit INSIDE the train region and strictly BEFORE the train/eval boundary — never in
+    a scored block and never in eval block 0, which already carries κ* selection AND every
+    clause-5 DSR trial entry. Inert unless the gate fires."""
+    from trikaal.train.gates import (
+        LAMBDA_CALIBRATION_SLICE_FRAC,
+        lambda_calibration_boundary_ms,
+    )
+
+    train_start, train_end = 1_000_000, 11_000_000  # the train/eval boundary is train_end
+    b = lambda_calibration_boundary_ms(train_start, train_end)
+    assert train_start < b < train_end  # strictly INSIDE the train region
+    assert b == train_end - int((train_end - train_start) * LAMBDA_CALIBRATION_SLICE_FRAC)
+    frac = (train_end - b) / (train_end - train_start)
+    assert abs(frac - LAMBDA_CALIBRATION_SLICE_FRAC) < 1e-12  # the LAST frac of train
+
+
+def test_lambda_calibration_slice_rejects_degenerate_inputs():
+    from trikaal.train.gates import lambda_calibration_boundary_ms
+
+    with pytest.raises(ValueError, match="slice fraction"):
+        lambda_calibration_boundary_ms(0, 100, frac=0.0)
+    with pytest.raises(ValueError, match="empty train region"):
+        lambda_calibration_boundary_ms(100, 100)

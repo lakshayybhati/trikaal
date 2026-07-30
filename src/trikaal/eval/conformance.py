@@ -32,7 +32,7 @@ from trikaal.train.arms import ARM_MICRO_SHUFFLED, select_arm, shuffle_micro
 # ---- the §3a pins (literals, mirroring docs/m6_prereg.md §3a) --------------------------------
 PINNED_SYMBOLS_SHA256 = "60e24f598de9601260099e3f11e537814385df23c837073035b9f7ce4dc32631"
 PINNED_KAPPAS: tuple[float, ...] = (1.0, 1.5, 2.0, 3.0)
-PINNED_SEEDS: tuple[int, ...] = (0, 1, 2)
+PINNED_SEEDS: tuple[int, ...] = (0, 1, 2, 3, 4)  # §7 v1.5 item D/C.1 Option 2: S=5 UP FRONT
 PINNED_HEADLINE_COST = 0.0030
 PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
@@ -92,14 +92,37 @@ def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:
 # prereg constants; trikaal/eval/verdict.py carries its own literals and the two must agree,
 # so an edit to either side is caught before any DSR is computed) ------------------------------
 PINNED_DSR = {
-    "n_trials": 180,  # 5 cells × 3 seeds × 3 horizons × 4 κ — ENUMERATED, never assumed
+    # §7 v1.5 item A.5: N counts DISTINCT CONFIGURATIONS evaluated and displayed; it does NOT count
+    # REPLICATES of a configuration. Seeds are the only replicate axis, so seeds are the only axis
+    # removed — cells, horizons and κ are distinct configurations and stay. A multiple-testing
+    # adjustment cannot legitimately get STRICTER because you replicated the same configuration more
+    # times; a spec that penalises collecting more data on one hypothesis is misspecified.
+    "n_trials": 60,  # 5 cells × 3 horizons × 4 κ — SEEDS EXCLUDED
+    "n_trials_factorization": "cells x horizons x kappas (seeds are replicates, not trials)",
     "cells": (1, 2, 3, 4, 5),
+    # seeds are still ENUMERATED (audit trail + the var_sr basis) but are NOT counted in n_trials
     "seeds": PINNED_SEEDS,
     "horizons": (5, 15, 60),  # h=1 is not evaluated anywhere in M6 (the old 240 was an error)
     "kappas": PINNED_KAPPAS,
     "threshold": 0.95,
-    "var_sr": "population variance (ddof=0) of the 180 de-annualized per-trial VAL IRs",
+    # §7 v1.5 item A.4: a NULL DISPERSION ESTIMATE MUST NOT CONTAIN THE TREATMENT CONTRAST. The old
+    # basis spanned structurally different arms, so if the microstructure claim were TRUE cell 4
+    # would separate, the cross-trial spread would grow, var_sr would grow and clause 5 would get
+    # HARDER — the clause was anti-correlated with the hypothesis it tests. The basis is now the
+    # PLACEBO arm (cell 5): signal-free BY CONSTRUCTION (the shuffle destroys temporal alignment),
+    # and matched to cell 4 on quantizer AND input dimensionality. NOT cell 2 — §5's NULL-fallback
+    # can CLAIM IR(2)−IR(1), which makes cell 2 a treatment arm, and 7 vs 16 dims is a dispersion
+    # mismatch. Seeds REMAIN inside var_sr (dispersion) while being absent from n_trials
+    # (multiplicity): deliberately different sets.
+    "var_sr_basis_cell": 5,
+    "var_sr": (
+        "population variance (ddof=0) of the de-annualized VAL IRs of the CELL-5 (placebo) trials"
+    ),
     "statistic": "Cell 4's seed-mean pooled headline series at the 0.30% flat netting",
+    # §7 v1.5 A.4.3 tripwire: pb(5−2) is a LEVEL statement and var_sr is a DISPERSION statistic, so
+    # placebo-victim behaviour does not move a variance at first order. The second-order risk
+    # (degraded training → more variable models) errs CONSERVATIVE and is measured, not assumed.
+    "placebo_dispersion_tripwire": 1.5,  # × the median across-seed IR dispersion of cells 1,2,3
 }
 
 
@@ -269,16 +292,32 @@ def verdict_dsr_failures(
     """Divergences between the verdict path's DSR inputs and the §3-clause-5 pins (empty = OK).
 
     ``trials`` is the ACTUAL enumerated trial set — ``{(cell_id, seed, h, κ): de-annualized VAL
-    IR}`` — not a self-declared count: a 240-trial budget (a 4th horizon), a 4-κ-only var_sr
-    basis (the M5 ``run_harness`` convention, which is NOT the M6 decision path), or a missing
-    cell/seed all fail the cross-product check. ``var_sr`` must equal the ddof=0 variance of the
-    key-sorted trial values BIT-EXACTLY — the same construction the verdict uses — so a wrong
-    ddof or a subset-variance is caught even when the key set is right."""
+    IR}`` — not a self-declared count: a 240-trial budget (a 4th horizon), the M5 ``run_harness``
+    4-κ convention (which is NOT the M6 decision path), or a missing cell/seed all fail the
+    cross-product check.
+
+    §7 v1.5 SPLITS THREE THINGS THAT USED TO BE ONE. (1) The ENUMERATION stays the FULL
+    ``cells × seeds × horizons × κ`` cross-product — the audit trail, so nothing can go missing.
+    (2) ``n_trials`` is the MULTIPLICITY count and excludes seeds (replicates are not
+    configurations), so it is ``cells × horizons × κ`` = 60 regardless of S. (3) ``var_sr`` is the
+    DISPERSION and is computed over the CELL-5 (placebo) subset only — a null dispersion estimate
+    must not contain the treatment contrast — with seeds retained inside it. All three are asserted
+    independently here, and ``var_sr`` must match the ddof=0 variance of the key-sorted placebo
+    subset BIT-EXACTLY, so a wrong ddof, a wrong basis, or a subset-variance is caught even when
+    the key set is right."""
     fails: list[str] = []
     if int(n_trials) != PINNED_DSR["n_trials"]:
         fails.append(f"DSR n_trials {n_trials} != pinned {PINNED_DSR['n_trials']} (§3 clause 5)")
     if float(threshold) != PINNED_DSR["threshold"]:
         fails.append(f"DSR threshold {threshold} != pinned {PINNED_DSR['threshold']}")
+    # (2) the MULTIPLICITY count must equal the seed-free factorization
+    want_n = len(PINNED_DSR["cells"]) * len(PINNED_DSR["horizons"]) * len(PINNED_DSR["kappas"])
+    if int(PINNED_DSR["n_trials"]) != want_n:
+        fails.append(
+            f"PINNED_DSR n_trials {PINNED_DSR['n_trials']} != cells x horizons x kappas = "
+            f"{want_n} (§7 v1.5 A.5: seeds are replicates and must NOT be counted)"
+        )
+    # (1) the ENUMERATION is still the FULL cross-product INCLUDING seeds (the audit trail)
     want = {
         (c, s, h, k)
         for c in PINNED_DSR["cells"]
@@ -296,12 +335,19 @@ def verdict_dsr_failures(
             + (f"; e.g. missing {sorted(missing)[:2]}" if missing else "")
             + ")"
         )
-    expected_var = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
-    if float(var_sr) != expected_var:
-        fails.append(
-            f"var_sr {var_sr!r} != the ddof=0 variance of the enumerated trial values "
-            f"({expected_var!r}) — wrong source (subset?) or wrong ddof"
-        )
+    # (3) var_sr is the PLACEBO-arm dispersion — a null estimate must not contain the contrast
+    basis_cell = int(PINNED_DSR["var_sr_basis_cell"])
+    basis_keys = sorted(k for k in trials if k[0] == basis_cell)
+    if not basis_keys:
+        fails.append(f"var_sr basis cell {basis_cell} absent from the enumerated trial set")
+    else:
+        expected_var = float(np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64)))
+        if float(var_sr) != expected_var:
+            fails.append(
+                f"var_sr {var_sr!r} != the ddof=0 variance of the CELL-{basis_cell} (placebo) "
+                f"trial values ({expected_var!r}) — wrong basis, wrong ddof, or the pre-v1.5 "
+                "all-arms basis (which made clause 5 anti-correlated with its own hypothesis)"
+            )
     return fails
 
 

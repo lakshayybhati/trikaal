@@ -190,17 +190,130 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
-- **v1.5 AMENDMENT WINDOW — FINAL TEXT AWAITING SIGN-OFF, NOT IN FORCE (2026-07-30).** The final
-  amendment text is **`docs/m6_prereg_v1_5_final.md`** (working drafts retained in
-  `docs/m6_prereg_v1_5_drafts.md`). It carries a **binding three-part safeguard**: a direction-blind
-  test answered per amendment, the **aggregate** change in the effective bar reported as one number,
-  and a **required `dual_specification` manifest field** computing the headline under BOTH the v1.2
-  original and the v1.5 amended specification — with any disagreement a FIRST-CLASS FINDING, never
-  resolved in our favour. **Correction to the window's own premise, on the record: it is NOT true
-  that every amendment loosens the bar** — B (the training-variance MDE) TIGHTENS the primary
-  contrast clause by 1.24–1.60× on the quantile multiplier alone plus a strictly positive variance
-  term, while A.5+A.4 loosen the deflation clause by 0.859× an unmeasured √f. The net across the
-  conjunctive gate is indeterminate pre-run and is not monotonically loosening. **NOTHING PINNED HAS
+- **v1.5 (2026-07-30, the AMENDMENT WINDOW — SIGNED OFF AND IN FORCE). THE LAST SPECIFICATION
+  CHANGE BEFORE THE RUN; after this the design is FROZEN.** Full text: `docs/m6_prereg_v1_5_final.md`
+  (working drafts: `docs/m6_prereg_v1_5_drafts.md`). Time-boxed on purpose: several central numbers
+  were derived assuming training variance is negligible, which v1.4.5 **measured** to be false, and
+  they could be revised legitimately **only while no real Cell-4 number existed**.
+  - **⚠ CORRECTION TO THE WINDOW'S OWN PREMISE — the ruling's framing was WITHDRAWN, and the
+    correction ORIGINATED WITH THE BUILDER** (recorded here at the supervisor's instruction, the same
+    treatment C1 received). The ruling stated *"every amendment in this window loosens the effective
+    bar."* **That is false.** Clause 5 (deflation) loosens by `M(60)/M(180) = 0.859×` times an
+    unmeasured `√f`; **clause 2 — the clause that most directly tests the headline contrast —
+    TIGHTENS twice over**: the quantile multiplier goes `2.4865 → 3.9806` at S=3 (1.601×) or
+    `→ 3.0728` at S=5 (1.236×), **and** `SE_total = √(SE_boot² + SE_train²) ≥ SE_boot` always. The
+    net across the conjunctive gate is **indeterminate pre-run and NOT monotonically loosening.**
+    Had the original framing survived into the paper it would have been a false statement about our
+    own amendments, in the section a referee reads most carefully. **No cosmetic offset was invented
+    anywhere** — the dual report is the safeguard.
+  - **A.5 — N = 60 (`PINNED_DSR["n_trials"]` 180 → 60; seeds REMOVED from the cross-product).**
+    N counts **distinct configurations evaluated and displayed**; it does **not** count **replicates**
+    of a configuration. A multiple-testing adjustment cannot legitimately get stricter because you
+    replicated the same configuration more times. Seeds are the only replicate axis, so seeds are the
+    only axis removed — cells, horizons and κ are distinct configurations and stay. **The chain stops
+    there and we declined the further 0.385× loosening** to κ-only N=4 that the ruling half-offered:
+    removing cells/horizons would claim credit for a discipline (pre-registration of what to *report*)
+    that DSR does not measure — DSR discounts the **search performed and shown**, and we show all 60.
+    *Disclosed limitation, arguing the other way:* N=60 omits development-time search, so a referee
+    could argue for more — a reason not to go lower.
+  - **A.4 — `var_sr` basis → the PLACEBO arm (cell 5).** Principle: **a null dispersion estimate must
+    not contain the treatment contrast.** The old all-arms basis meant that if the microstructure
+    claim were TRUE, cell 4 would separate, the cross-trial spread would grow, `var_sr` would grow and
+    **clause 5 would get HARDER** — the clause was **anti-correlated with the hypothesis it tests**,
+    and at realistic effect sizes was likely unpassable (required cell-4 annualized IR 3.01/4.38/7.11/
+    9.84 at VAL-IR spreads 0.5/1.0/2.0/3.0, against an economic floor of 0.5). Cell 5 is signal-free
+    **by construction** and matched to cell 4 on quantizer and input dimensionality. **NOT cell 2** —
+    §5's NULL-fallback can CLAIM `IR(2)−IR(1)`, which makes cell 2 a *treatment* arm, and 7 vs 16 dims
+    is a dispersion mismatch. **Placebo-victim concern resolved:** `pb(5−2) = −2.59` is a **LEVEL**
+    statement and `var_sr` is a **DISPERSION** statistic — a level shift does not move a variance. The
+    second-order risk (degraded training → more variable models) errs **conservative** and is
+    **measured** by a pre-data **1.5× tripwire** against the median dispersion of cells 1–3;
+    if it fires, report clause 5 under **both** cell-5 and within-cell-4 bases, never cell 2.
+  - **B — MDE carries an explicit training-variance term.** Law of total variance:
+    `Var(ΔÎR) = E[Var_scoring|models] + Var_models(E[ΔÎR|models])`. Term 1 stays `SE_boot` (and seeds
+    do **not** reduce it — all seeds are scored on the same data and grid, so scoring noise is
+    common). Term 2 is **clean** — cross-seed variation is purely model-induced. `σ̂²_train =
+    var({ΔIR_s}, ddof=1)`, `SE_train = σ̂_train/√S`, `SE_total = √(SE_boot²+SE_train²)`,
+    `MDE = (t_{0.95,ν} + t_{0.80,ν})·SE_total` with Welch–Satterthwaite ν. **t, not z**: at S=3 the
+    term has 2 df and `t_{0.95,2} = 2.9200` vs `z = 1.6449`, so z is not conservative once the term
+    enters. **Direction recorded pre-data: this makes the primary test HARDER.** The tabled
+    `MDE_paired` is superseded as a **number**; its scoring component is retained as a **term**.
+  - **C — OUTCOME TAXONOMY: three pre-committed, publishable outcomes.** SURVIVES / NULL /
+    **INCONCLUSIVE**. The guards could already emit `HALT_ADJUDICATE` while the prereg described the
+    experiment as binary; that gap is closed. INCONCLUSIVE response is selected **BY RULE**, first
+    match governing: **R1** power-halt only → add seeds to the cap, re-run ONLY the named cells;
+    **R2** degeneracy at a MAJORITY of seeds → no re-run, the mechanism becomes a primary finding;
+    **R2b** degeneracy at a strict MINORITY (per-seed leg, seed-mean in band) → that signature IS the
+    training lottery, treat as R1; **R3** report INCONCLUSIVE. **Bound: ≤1 re-run round ever, ≤5 total
+    distinct seeds.**
+    - **BECAUSE C.1 RULED S=5 UP FRONT, R1 AND R2b COLLAPSE INTO R3 — the design is COMMITTED to R3
+      as the INCONCLUSIVE response, with no seed headroom. R3 is therefore written out in full as an
+      acceptable, signed-off-in-advance answer, and must not read as a dead end when it arrives:**
+      > **R3 — INCONCLUSIVE, fully specified.** Report: the measured ΔIR(4−5) and ΔIR(4−2) **point
+      > estimates with their CIs**; the realized `MDE_paired` including the training term; the
+      > **per-cell across-seed IR distribution** (per-seed values, range, std) that defeated the
+      > claim; the guard reason and which rule fired; the per-seed `frac_negative` and
+      > `activity_decisions`; and the `dual_specification` block. The stated conclusion is: **"the
+      > effect, if any, is smaller than the training variance of our own design and is unresolvable
+      > at this scale."** The ablation headline is **WITHDRAWN, not softened**. The mechanism result
+      > is reported separately and only at §F strength. This is a **complete, publishable finding**
+      > about the detectability limit of a 27M-parameter two-stage design at this data scale — it is
+      > pre-committed as an acceptable answer, not a failure to report one.
+  - **D — `PINNED_SEEDS` (0,1,2) → (0,1,2,3,4); S = 5 UP FRONT (C.1 Option 2).** Decided on the
+    substantive asymmetry, not optics: a power halt at S=3 is plausibly a fixable sample-size
+    artifact; at S=5 the effect is genuinely small relative to training variance, so more seeds would
+    be marginal and having no remedy is an **honest stopping point**. The √(5/3) framing applies
+    **only** to the training term (`SE_boot` is untouched by seed count), so the MDE gain is 0–22.5%
+    and **not quantifiable pre-run**; **the statable benefit is B's degrees of freedom 2 → 4**,
+    cutting `t_{0.95}` 2.9200 → 2.1318 (**−27.0%**) and the combined multiplier 3.9806 → 3.0728
+    (**−22.8%**). Under A.5, N = 60 independently of S, so **there is no DSR tightening at all** —
+    clause 5 unchanged, clause 2 improved, **net sign positive**.
+    - **SPEND CONTINGENCY, BOTH PATHS PRE-REGISTERED NOW so neither becomes post-hoc.** S=5 raises
+      the run to **$33–50** (~**$43–65** with forced determinism at the illustrative 1.3×). **That
+      increase is LAKSHAY'S to approve and he has not yet.** **S=5 is the pre-registered primary**;
+      **if the operator declines the cost, the design falls back to S=3 under the SAME v1.5
+      specification in all other respects**, with the S=3 multiplier **3.9806** already tabled here.
+      The choice between them is then a **budget** decision, never a **specification** one.
+  - **E — legibility-gate adjudication, pre-written.** Reframe: real TFI is low-variance and weakly
+    price-correlated — exactly the eviction profile — and the λ fix was validated on a **synthetic**
+    tuned signal, so **a firing is the MODAL prediction of our own finding**, and simultaneously the
+    ablation's blocker and the mechanism's strongest real-data evidence. Rules: gate fires → **STOP
+    and report** (unchanged); **the PRIMARY becomes the mechanism finding**; λ may be re-derived **at
+    most ONCE**, by the pinned formula, **on a slice carved from the END of the TRAIN region — never
+    block 0** (verified: block 0 already carries κ* **and** every clause-5 trial entry, and λ is a
+    *training* hyperparameter set before any scoring; the real run had **no** in-train holdout, so
+    the slice is created by this amendment — `gates.lambda_calibration_boundary_ms`, inert unless the
+    gate fires); the re-derivation must emit **the pinned formula's calibration receipt on REAL
+    data**; **the re-derived λ counts as an additional configuration in the clause-5 multiplicity**
+    (N 60 → 120 for the affected report) — widening the search without paying for it is exactly what
+    DSR exists to prevent; and **the branch structure is biased and is disclosed as such** — the
+    contingency can only ever *help* the ablation, so any ablation under a re-derived λ is reported
+    **SECONDARY/exploratory**, naming which λ was used and that it was the second.
+  - **SAFEGUARDS (binding).** (1) **Direction-blind test answered per amendment.** A.5's evidence is
+    hard rather than asserted: the same amendment **deliberately keeps `var_sr` on the full
+    individual-trial set**, the tightening half of the available choice — pure seeds-as-replicates
+    offered 0.45–0.86× and we took 0.859× and declined the rest; *a motivated actor takes both.*
+    A.4's direction was **genuinely unknown at adoption**. B is itself a tightening. (2) **The
+    aggregate** is reported as one number (above). (3) **`dual_specification` is a REQUIRED manifest
+    field**: the headline is computed from the SAME artifacts under BOTH the v1.2 original spec
+    (seeds-as-trials, all-arms `var_sr`, z-quantile scoring-only MDE) and the v1.5 amended spec.
+    **v1.5 is the pre-registered primary; any disagreement is a FIRST-CLASS FINDING reported in the
+    abstract and results, never resolved in our favour or relegated to an appendix.** A manifest
+    lacking the field **cannot be quoted as the M6 outcome** — the same footing as `grid_pinned`.
+  - **A NON-DISCRIMINATING TEST FIXTURE, FOUND AND FIXED (disclosed).** The A.4 mutation check —
+    "the gate rejects the superseded all-arms `var_sr` basis" — could not fire on the existing
+    conformance fixture, because that fixture's trial values were a modular function that made the
+    placebo-only and all-arms dispersions **numerically identical**. The assertion would have passed
+    vacuously on a gate that did nothing. Caught only because the mutation test failed to fail. The
+    fixture is now cell-dependent, **and the test asserts `_var_all_arms(full) != _var0(full)`
+    before using it** — a mutation check must first prove its own fixture can tell the two cases
+    apart. Same family as the control-arm norm: a check that cannot fail is not a check.
+  - **VERIFICATION.** Mutation KATs prove the conformance gate **REJECTS** the pre-v1.5 values
+    (N=180, the seeds-as-trials 300, and the all-arms `var_sr` basis) and still rejects a missing
+    seed in the enumeration; the Student-t implementation is KAT'd against published tables and the
+    ν→∞ normal limit; the guards' seed loops and every fixture are now **S-agnostic**. **`harness.py`
+    is NOT touched** — its `5*3*4*len(KAPPAS)` = 240 is the M5 instrument frozen under Gate-A,
+    re-verified this pass. **NOTHING PINNED HAS
   CHANGED:** `conformance.PINNED_DSR` (N=180), `verdict.DSR_N_TRIALS`, `PINNED_SEEDS` (3),
   `PINNED_MICRO_POINT_WEIGHT` (3.0) and the tabled `MDE_paired` are all as ruled. The window is
   time-boxed on purpose: several central pre-registered numbers were derived assuming training

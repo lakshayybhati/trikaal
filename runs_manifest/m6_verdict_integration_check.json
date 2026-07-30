@@ -4,7 +4,7 @@
   "cases": [
     {
       "case": "healthy",
-      "cell4_ir_range_across_seeds": 1.9467877268979574,
+      "cell4_ir_range_across_seeds": 4.868376705540497,
       "checks": {
         "both_guards_armed": true,
         "both_guards_in_manifest": true,
@@ -35,7 +35,7 @@
     },
     {
       "case": "degenerate_one_locked_seed",
-      "cell4_ir_range_across_seeds": 1.9467877268979574,
+      "cell4_ir_range_across_seeds": 4.868376705540497,
       "checks": {
         "a_guard_flag_is_true": true,
         "both_guards_armed": true,
@@ -68,7 +68,7 @@
     },
     {
       "case": "low_power_wide_seed_spread",
-      "cell4_ir_range_across_seeds": 306.9583412514975,
+      "cell4_ir_range_across_seeds": 354.3789914262544,
       "checks": {
         "a_guard_flag_is_true": true,
         "both_guards_armed": true,
@@ -92,7 +92,7 @@
       "halted_for_degeneracy": false,
       "halted_for_power": true,
       "passed": true,
-      "primary": "SURVIVES",
+      "primary": "NULL",
       "returncode": 0,
       "stderr_tail": "",
       "underpowered_claims": [

@@ -208,3 +208,33 @@ def micro_legibility_gate(
             "real-data failures only, dated §7 entry required BEFORE use)"
         )
     return receipt
+
+
+# ---------------------------------------------------------------- §7 v1.5 item E: the λ slice
+LAMBDA_CALIBRATION_SLICE_FRAC = 0.10  # the LAST 10% of the TRAIN region, never an eval block
+
+
+def lambda_calibration_boundary_ms(
+    train_start_ms: int, train_end_ms: int, *, frac: float = LAMBDA_CALIBRATION_SLICE_FRAC
+) -> int:
+    """Start of the held-out slice carved off the END of the TRAIN region (§7 v1.5 item E rule 3).
+
+    WHY NOT BLOCK 0. If the micro-legibility gate fires, λ may be re-derived ONCE — and the obvious
+    place, eval block 0, is wrong twice over. (1) Block 0 already carries κ* selection AND every
+    clause-5 DSR trial entry; λ would be a THIRD use of one validation block, and repeated reuse of
+    a validation set is a known overfitting channel. (2) λ is a TRAINING hyperparameter and the gate
+    fires during training, before any scoring — using forward-region data to set it inverts the
+    train/eval separation for no reason. Verified when this was written: the real run has NO
+    in-train holdout (``build_symbol_windows`` takes the train/eval calendar split as its
+    boundary, and ``HOLD_FRAC`` exists only in ``scripts/m6_canary.py``), so the slice has to be
+    created — this is that creation.
+
+    INERT BY DEFAULT: nothing calls this unless the gate fires. It does not move the training
+    boundary of a passing run, and it never touches a scored block.
+    """
+    if not 0.0 < frac < 1.0:
+        raise ValueError(f"slice fraction must be in (0,1), got {frac}")
+    if train_end_ms <= train_start_ms:
+        raise ValueError(f"empty train region: [{train_start_ms}, {train_end_ms})")
+    span = train_end_ms - train_start_ms
+    return int(train_end_ms - int(span * frac))

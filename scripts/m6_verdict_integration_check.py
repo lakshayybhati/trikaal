@@ -89,6 +89,19 @@ def _fixture(out_dir: Path, *, mu_by_cell_seed, mudiag_by_cell_seed, seed: int) 
     return out_dir
 
 
+def _wide_spread(centre: float, half_width: float) -> dict:
+    """Per-seed values spread symmetrically about ``centre`` — S-agnostic.
+
+    The seed MEAN is preserved exactly, so a fixture built with this has the SAME seed-mean series
+    as its flat counterpart and differs ONLY in seed SPREAD — which is what the power-guard
+    HALT-only proof requires."""
+    n = len(DSR_SEEDS)
+    if n == 1:
+        return {DSR_SEEDS[0]: centre}
+    offs = [half_width * (2.0 * i / (n - 1) - 1.0) for i in range(n)]
+    return {sd: centre + o for sd, o in zip(DSR_SEEDS, offs, strict=True)}
+
+
 def _flat_mu():
     return {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
 
@@ -187,15 +200,15 @@ def main() -> int:
         #    seed-mean is (0.999 + 0.55 + 0.55)/3 = 0.6997, in-band, so ONLY the per-seed leg fires.
         diag = _flat_diag()
         diag[4][DSR_SEEDS[0]]["frac_negative"] = 0.999
-        diag[4][DSR_SEEDS[1]]["frac_negative"] = 0.55
-        diag[4][DSR_SEEDS[2]]["frac_negative"] = 0.55
+        for sd in DSR_SEEDS[1:]:
+            diag[4][sd]["frac_negative"] = 0.55
         cases.append(
             _case(tmp, "degenerate_one_locked_seed", _flat_mu(), diag, expect_halt=True, seed=101)
         )
 
         # 3) LOW-POWER — wide across-seed IR spread on the signal cell (the v1.4.7 power guard)
         mu = _flat_mu()
-        mu[4] = {DSR_SEEDS[0]: 0.0200, DSR_SEEDS[1]: 0.0020, DSR_SEEDS[2]: -0.0150}
+        mu[4] = _wide_spread(MU_PLANTED[4], 0.020)
         cases.append(
             _case(tmp, "low_power_wide_seed_spread", mu, _flat_diag(), expect_halt=True, seed=303)
         )

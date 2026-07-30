@@ -46,6 +46,19 @@ BENIGN = {
 }
 
 
+def _wide_spread(centre: float, half_width: float) -> dict:
+    """Per-seed values spread symmetrically about ``centre`` — S-agnostic.
+
+    The seed MEAN is preserved exactly, so a fixture built with this has the SAME seed-mean series
+    as its flat counterpart and differs ONLY in seed SPREAD — which is what the power-guard
+    HALT-only proof requires."""
+    n = len(DSR_SEEDS)
+    if n == 1:
+        return {DSR_SEEDS[0]: centre}
+    offs = [half_width * (2.0 * i / (n - 1) - 1.0) for i in range(n)]
+    return {sd: centre + o for sd, o in zip(DSR_SEEDS, offs, strict=True)}
+
+
 def _md(frac_negative=0.5, activity=0.5):
     return {**BENIGN, "frac_negative": frac_negative, "activity_decisions": activity}
 
@@ -186,8 +199,8 @@ def test_one_locked_seed_halts_where_the_seed_mean_rule_passed(tmp_path):
     md[4][DSR_SEEDS[0]] = _md(
         frac_negative=locked, activity=0.5
     )  # ONE locked seed on the signal cell
-    md[4][DSR_SEEDS[1]] = _md(frac_negative=healthy, activity=0.5)
-    md[4][DSR_SEEDS[2]] = _md(frac_negative=healthy, activity=0.5)
+    for sd in DSR_SEEDS[1:]:  # every OTHER seed healthy, whatever S is
+        md[4][sd] = _md(frac_negative=healthy, activity=0.5)
 
     m = _assemble(_fixture_per_seed(tmp_path / "onelock", MU_PLANTED, md, seed=101))
     g, cell4 = m["degeneracy_guard"], m["degeneracy_guard"]["per_cell"]["4"]
@@ -195,7 +208,8 @@ def test_one_locked_seed_halts_where_the_seed_mean_rule_passed(tmp_path):
     # (1) the OLD v1.4.4 rule — seed-mean only — would NOT have halted on this pattern
     lo, hi = FRAC_NEG_BAND
     seed_mean = cell4["frac_negative_seed_mean"]
-    assert abs(seed_mean - (locked + 2 * healthy) / 3) < 1e-12
+    n = len(DSR_SEEDS)
+    assert abs(seed_mean - (locked + (n - 1) * healthy) / n) < 1e-12
     old_rule_would_halt = not (lo <= seed_mean <= hi)
     assert old_rule_would_halt is False, "the pattern must be one the seed-mean rule PASSED"
 
@@ -210,9 +224,7 @@ def test_one_locked_seed_halts_where_the_seed_mean_rule_passed(tmp_path):
 
     # (3) the per-seed DISTRIBUTION is persisted for adjudication, not just the aggregate
     assert cell4["frac_negative_by_seed"] == {
-        str(DSR_SEEDS[0]): locked,
-        str(DSR_SEEDS[1]): healthy,
-        str(DSR_SEEDS[2]): healthy,
+        str(sd): (locked if sd == DSR_SEEDS[0] else healthy) for sd in DSR_SEEDS
     }
     assert cell4["activity_decisions_by_seed"] == {str(s): 0.5 for s in DSR_SEEDS}
 
@@ -237,10 +249,13 @@ def test_one_seed_never_binding_also_halts(tmp_path):
 
 def test_per_seed_leg_does_not_fire_on_healthy_seeds(tmp_path):
     """No false positives: three in-band seeds with differing values must NOT halt."""
+    n = len(DSR_SEEDS)
+    fracs = [0.45 + 0.27 * i / max(1, n - 1) for i in range(n)]  # 0.45..0.72, in band, S-agnostic
+    acts = [0.60 + 0.30 * i / max(1, n - 1) for i in range(n)]  # 0.60..0.90, strictly inside (0,1)
     md = {
         c: {
             sd: _md(frac_negative=f, activity=a)
-            for sd, f, a in zip(DSR_SEEDS, (0.45, 0.60, 0.72), (0.80, 0.90, 0.60), strict=True)
+            for sd, f, a in zip(DSR_SEEDS, fracs, acts, strict=True)
         }
         for c in (1, 2, 3, 4, 5)
     }
@@ -282,7 +297,7 @@ def test_power_guard_halts_when_seed_spread_swamps_the_claim(tmp_path):
     exceeds the between-cell ΔIR being claimed → HALT, primary preserved."""
     mu = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
     # a wide seed spread on the signal cell — the v1.4.5 basin-hopping scenario
-    mu[4] = {DSR_SEEDS[0]: 0.0200, DSR_SEEDS[1]: 0.0020, DSR_SEEDS[2]: -0.0150}
+    mu[4] = _wide_spread(MU_PLANTED[4], 0.020)
     m = _assemble(_fixture_per_seed_mu(tmp_path / "wide", mu, _md(), seed=303))
     p = m["power_guard"]
     assert p["halted"] is True
@@ -312,19 +327,47 @@ def test_power_guard_silent_when_seeds_agree(tmp_path):
 
 
 def test_power_guard_cannot_alter_a_clause_outcome(tmp_path):
-    """HALT-ONLY proof for the power guard, same shape as the degeneracy-guard proof: the clauses
-    are computed from the seed-MEAN series, so two fixtures with the same seed-mean but different
-    seed SPREAD must give identical clauses and differ only in `emitted`."""
-    base = MU_PLANTED[4]
-    tight = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
-    wide = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
-    # same MEAN for cell4 (base), very different spread → clauses identical, power verdict differs
-    wide[4] = {DSR_SEEDS[0]: base + 0.02, DSR_SEEDS[1]: base, DSR_SEEDS[2]: base - 0.02}
-    m_t = _assemble(_fixture_per_seed_mu(tmp_path / "t", tight, _md(), seed=404))
-    m_w = _assemble(_fixture_per_seed_mu(tmp_path / "w", wide, _md(), seed=404))
-    assert m_w["power_guard"]["halted"] is True
-    assert m_t["power_guard"]["halted"] is False
-    # the power guard never touched a clause result or the primary
-    assert m_t["verdict"]["primary"] == m_w["verdict"]["primary"]
-    assert m_w["verdict"]["emitted"] == HALT_ADJUDICATE
-    assert m_w["verdict"]["emitted"] != NULL or m_w["verdict"]["primary"] == NULL
+    """HALT-ONLY proof for the power guard, as a STRUCTURAL invariant.
+
+    The v1.4.7 version of this test compared a tight-spread against a wide-spread fixture with the
+    same seed-MEAN and asserted identical clauses. That premise DIED with §7 v1.5 item B: the MDE
+    now carries an across-seed training-variance term, so clause 2 legitimately DOES depend on seed
+    spread. Comparing two spreads can no longer isolate the guard.
+
+    The invariant that actually matters is asserted instead, and it is stronger because it holds on
+    EVERY fixture: `primary` is a pure function of the clause results (the guard is nowhere in its
+    computation), and `emitted` is either `primary` or HALT_ADJUDICATE and never anything else — so
+    the guard can only ever REFUSE to emit, never flip SURVIVES<->NULL.
+    """
+    for name, mu in (
+        ("tight", {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}),
+        ("wide", None),
+    ):
+        if mu is None:
+            mu = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+            mu[4] = _wide_spread(MU_PLANTED[4], 0.02)
+        m = _assemble(_fixture_per_seed_mu(tmp_path / name, mu, _md(), seed=404))
+        v, clauses = m["verdict"], m["clauses"]
+        # 1) primary is EXACTLY the clause conjunction — the guard never enters it
+        expected = SURVIVES if all(c["pass"] for c in clauses.values()) else NULL
+        assert v["primary"] == expected, name
+        # 2) emitted is primary, or HALT — never a third thing, never the opposite word
+        assert v["emitted"] in (v["primary"], HALT_ADJUDICATE), name
+        if v["emitted"] == HALT_ADJUDICATE:
+            assert v["halted_for_degeneracy"] or v["halted_for_power"], name
+        else:
+            assert not (v["halted_for_degeneracy"] or v["halted_for_power"]), name
+
+
+def test_power_guard_records_the_seed_spread_it_judged_on(tmp_path):
+    """The guard must persist the distribution it ruled on, not just its verdict."""
+    mu = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+    mu[4] = _wide_spread(MU_PLANTED[4], 0.02)
+    m = _assemble(_fixture_per_seed_mu(tmp_path / "rec", mu, _md(), seed=404))
+    for c in ("1", "2", "3", "4", "5"):
+        pc = m["power_guard"]["per_cell"][c]
+        assert set(pc["ir_by_seed"]) == {str(s) for s in DSR_SEEDS}
+        assert pc["ir_range_across_seeds"] >= 0.0
+    # cell4 was deliberately spread; it must show the widest range
+    ranges = {c: m["power_guard"]["per_cell"][c]["ir_range_across_seeds"] for c in "12345"}
+    assert ranges["4"] == max(ranges.values())

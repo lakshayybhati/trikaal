@@ -14,6 +14,8 @@ import pytest
 
 from trikaal.data.universe_loader import eval_block_bounds_ms
 from trikaal.eval.conformance import (
+    PINNED_DSR,
+    PINNED_SEEDS,
     ConformanceError,
     assert_conformance,
     conformance_failures,
@@ -79,9 +81,9 @@ def test_primary_region_grid_is_the_mde_basis():
 
 # ------------------------------------------------------------------ the gate itself
 def test_conformance_passes_on_the_real_money_config():
-    fails = conformance_failures(_money_cfg(), symbols=_symbols(), seeds=(0, 1, 2))
+    fails = conformance_failures(_money_cfg(), symbols=_symbols(), seeds=PINNED_SEEDS)
     assert fails == []
-    assert_conformance(_money_cfg(), symbols=_symbols(), seeds=(0, 1, 2))  # no raise
+    assert_conformance(_money_cfg(), symbols=_symbols(), seeds=PINNED_SEEDS)  # no raise
 
 
 @pytest.mark.parametrize(
@@ -152,29 +154,48 @@ def test_shuffle_threading_probe_has_teeth(monkeypatch):
         return real(x, mask, segment_id, symbol=symbol, seed=seed + 1)  # eval-side drift
 
     monkeypatch.setattr(conf, "shuffle_micro", drifted)
-    fails = conf.conformance_failures(_money_cfg(), symbols=_symbols(), seeds=(0, 1, 2))
-    assert sum("threading DIVERGES" in f for f in fails) == 3  # every pinned seed caught
+    fails = conf.conformance_failures(_money_cfg(), symbols=_symbols(), seeds=PINNED_SEEDS)
+    assert sum("threading DIVERGES" in f for f in fails) == len(PINNED_SEEDS)  # every pinned seed
 
 
 # ------------------------------------------------------------------ the §3-clause-5 DSR pins
 def _true_trials() -> dict[tuple[int, int, int, float], float]:
-    """The exact pinned 180-trial enumeration with deterministic small values."""
+    """The exact pinned enumeration with deterministic small values.
+
+    §7 v1.5: the per-cell SCALE is deliberately cell-dependent so the PLACEBO-only dispersion and
+    the superseded ALL-ARMS dispersion genuinely DIFFER. The previous fixture's values were a
+    modular function that made the two bases coincide, which silently disarmed the A.4 mutation
+    check — a non-discriminating fixture, caught when the mutation assertion could not fire.
+    """
     return {
-        (c, s, h, k): 1e-3 * ((c * 7 + s * 3 + int(h) + int(2 * k)) % 5)
+        (c, s, h, k): 1e-3 * c * ((c * 7 + s * 3 + int(h) + int(2 * k)) % 5)
         for c in (1, 2, 3, 4, 5)
-        for s in (0, 1, 2)
-        for h in (5, 15, 60)
-        for k in (1.0, 1.5, 2.0, 3.0)
+        for s in PINNED_SEEDS
+        for h in PINNED_DSR["horizons"]
+        for k in PINNED_DSR["kappas"]
     }
 
 
 def _var0(trials: dict) -> float:
+    """§7 v1.5 A.4: the dispersion basis is the PLACEBO arm only, NOT all arms."""
+    basis = int(PINNED_DSR["var_sr_basis_cell"])
+    keys = sorted(k for k in trials if k[0] == basis)
+    return float(np.var(np.array([trials[k] for k in keys], dtype=np.float64)))
+
+
+def _var_all_arms(trials: dict) -> float:
+    """The SUPERSEDED pre-v1.5 all-arms basis — retained only to prove the gate rejects it."""
     return float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
 
 
 def test_verdict_dsr_pins_pass_on_the_true_recipe():
     t = _true_trials()
-    assert verdict_dsr_failures(n_trials=180, threshold=0.95, trials=t, var_sr=_var0(t)) == []
+    assert (
+        verdict_dsr_failures(
+            n_trials=PINNED_DSR["n_trials"], threshold=0.95, trials=t, var_sr=_var0(t)
+        )
+        == []
+    )
 
 
 def test_verdict_dsr_doctored_n_trials_240_is_caught():
@@ -190,22 +211,49 @@ def test_verdict_dsr_fourth_horizon_budget_is_caught():
         for s in (0, 1, 2):
             for k in (1.0, 1.5, 2.0, 3.0):
                 t[(c, s, 1, k)] = 1e-3
-    fails = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=t, var_sr=_var0(t))
+    fails = verdict_dsr_failures(
+        n_trials=PINNED_DSR["n_trials"], threshold=0.95, trials=t, var_sr=_var0(t)
+    )
     assert any("cross product" in f and "outside the pin" in f for f in fails)
 
 
 def test_verdict_dsr_four_kappa_only_var_basis_is_caught():
-    """The M5 run_harness convention (var over ONE cell's 4 κ VAL IRs) is NOT the M6 recipe —
-    both the shrunken trial set and the subset-variance must be named."""
+    """The M5 run_harness convention (var over ONE cell's 4 κ VAL IRs) is NOT the M6 recipe.
+
+    §7 v1.5 gives this THREE independent ways to fail, and all three are asserted: the shrunken
+    trial set fails the cross-product; the placebo basis is ABSENT from that subset entirely (a
+    cell-4-only row contains no cell-5 trials); and on the full set a subset-variance still fails
+    the bit-exact re-derivation against the placebo basis.
+    """
     full = _true_trials()
-    subset = {
-        key: v for key, v in full.items() if key[:3] == (4, 0, 15)
-    }  # the 4 κ of one trial row
-    fails = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=subset, var_sr=_var0(subset))
-    assert any("cross product" in f and "176 missing" in f for f in fails)
-    # and: right keys, but var_sr computed over a 4-κ subset → the bit-exact re-derivation fails
-    fails2 = verdict_dsr_failures(n_trials=180, threshold=0.95, trials=full, var_sr=_var0(subset))
-    assert any("var_sr" in f and "wrong source" in f for f in fails2)
+    subset = {key: v for key, v in full.items() if key[:3] == (4, 0, 15)}  # one row's 4 κ
+    fails = verdict_dsr_failures(
+        n_trials=PINNED_DSR["n_trials"], threshold=0.95, trials=subset, var_sr=0.0
+    )
+    n_full = (
+        len(PINNED_DSR["cells"])
+        * len(PINNED_SEEDS)
+        * len(PINNED_DSR["horizons"])
+        * len(PINNED_DSR["kappas"])
+    )
+    assert any("cross product" in f and f"{n_full - len(subset)} missing" in f for f in fails)
+    # the placebo basis is not even present in a cell-4-only subset — named explicitly
+    assert any("basis cell" in f and "absent" in f for f in fails)
+
+    # right keys, but var_sr over a 4-κ subset → the bit-exact re-derivation fails
+    sub_var = float(np.var(np.array([full[k] for k in sorted(subset)], dtype=np.float64)))
+    fails2 = verdict_dsr_failures(
+        n_trials=PINNED_DSR["n_trials"], threshold=0.95, trials=full, var_sr=sub_var
+    )
+    assert any("var_sr" in f and "placebo" in f for f in fails2)
+    # and the SUPERSEDED pre-v1.5 ALL-ARMS basis is rejected too (§7 v1.5 A.4 mutation check).
+    # Assert the fixture actually DISCRIMINATES first — a fixture where the two bases coincide
+    # would make this mutation check vacuously pass.
+    assert _var_all_arms(full) != _var0(full)
+    fails3 = verdict_dsr_failures(
+        n_trials=PINNED_DSR["n_trials"], threshold=0.95, trials=full, var_sr=_var_all_arms(full)
+    )
+    assert any("var_sr" in f and "placebo" in f for f in fails3)
 
 
 def test_verdict_dsr_wrong_ddof_and_threshold_are_caught():
@@ -215,7 +263,9 @@ def test_verdict_dsr_wrong_ddof_and_threshold_are_caught():
         n_trials=180, threshold=0.95, trials=t, var_sr=float(np.var(vals, ddof=1))
     )
     assert any("wrong source" in f or "ddof" in f for f in fails)
-    fails2 = verdict_dsr_failures(n_trials=180, threshold=0.90, trials=t, var_sr=_var0(t))
+    fails2 = verdict_dsr_failures(
+        n_trials=PINNED_DSR["n_trials"], threshold=0.90, trials=t, var_sr=_var0(t)
+    )
     assert any("threshold 0.9" in f for f in fails2)
 
 
