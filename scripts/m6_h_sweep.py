@@ -945,6 +945,370 @@ def run_bias_bound(args) -> int:
     return 0
 
 
+# -------------------------------- §7 v1.4.6 item 4: sign agreement ON THE TRADED SET at kappa*
+TRADED_AGREEMENT_THRESHOLD = (
+    0.97  # pre-declared: >= this -> expectation stands; < -> mc_mean headline
+)
+
+
+def run_traded_sign_agreement(args) -> int:
+    """Sign agreement between expectation and mc_mean RESTRICTED TO THE TRADED SET at kappa*.
+
+    WHY RESTRICTED. The v1.4.5 figure (0.8398) is over ALL decisions, but only bars that actually
+    TRADE turn a sign into a position. The disagreements must concentrate where |mu-hat| is small
+    (gap std 0.0114 against mu-hat std 0.0292), and the theta = kappa*c filter already excludes
+    ~11% of bars at h=15 — precisely the small-|mu-hat| ones. So the all-decisions figure is a
+    LOWER BOUND on the agreement that matters, and this measures the population whose signs
+    become positions.
+
+    PRE-DECLARED (supervisor, §7 v1.4.6): traded-set agreement >= 0.97 -> expectation STANDS with
+    the bias disclosed; < 0.97 -> the HEADLINE block at kappa* must be scored with mc_mean, with
+    expectation retained for VAL and kappa*-selection (a fully pre-specified deterministic
+    two-stage procedure bounding MC cost to one block at one kappa).
+
+    kappa* is taken from the FAITHFUL VAL pass under the pre-registered estimator (expectation) —
+    the selection stage is unchanged by this measurement.
+    """
+    mc = _canary()
+    from trikaal.eval.predict import MC_DEFAULT_SAMPLES, MC_DEFAULT_SEED, predict_mu
+
+    n_per = args.bars_total // len(mc.SYMBOLS)
+    ck = next(c for c in CKPTS if c.key == "acceptance_planted_cell4")
+    print(f"[traded] {ck.key} @ h=15", flush=True)
+    prepared, model, tok = build_tokens(ck, n_per=n_per, device=args.device)
+    cfg = canary_cfg(15, cap=args.eval_cap, n_per=n_per, seed=args.seed, device=args.device)
+
+    # (1) kappa* from the faithful VAL pass under expectation (the pre-registered selector)
+    kappa_star = score_pretokenized(model, tok, prepared, cfg)["kappa_star"]
+    print(f"  kappa* (VAL, expectation) = {kappa_star}", flush=True)
+
+    # (2) headline grid: expectation mu-hat, then the traded set at kappa*
+    cost = CostModel()
+    rng = np.random.default_rng(cfg.seed)
+    grid = global_decision_grid_ms(cfg, cfg.headline_block)
+    kw = dict(h=cfg.h, seq_len=cfg.seq_len, device=cfg.device)
+    s0 = next(iter(prepared))
+    d0 = prepared[s0]
+    se0 = d0["se"]
+
+    traded_all, scored_all = 0, 0
+    sub = None
+    for sym, d in prepared.items():  # replicate score_cell's rng draw ORDER exactly
+        se = d["se"]
+        dec = symbol_decisions(se, grid, cfg)
+        if cfg.cap_per_symbol is not None and dec.size > cfg.cap_per_symbol:
+            dec = np.sort(rng.choice(dec, size=cfg.cap_per_symbol, replace=False))
+        y = forward_log_returns(se.raw_ret_close, se.segment_id, cfg.h)
+        dec = dec[np.isfinite(y[dec])]
+        mu = predict_mu(model, tok, d["b_c"], d["b_f"], se.ts, se.sigma, dec, **kw)
+        c_mod = _per_bar_cost(cost, se.sigma, dec, SPREAD_DECILE_FRAC["major"])
+        s = positions(mu, kappa_star * c_mod)
+        scored_all += int(dec.size)
+        traded_all += int((s != 0).sum())
+        if sym == s0:
+            sub = dec[s != 0][: args.bias_n_dec]  # the TRADED subsample, deterministic
+            mu_exp_traded = mu[s != 0][: args.bias_n_dec]
+    activity = traded_all / scored_all
+    print(
+        f"  traded/scored = {traded_all}/{scored_all} (activity {activity:.4f}); "
+        f"MC subsample n = {sub.size}",
+        flush=True,
+    )
+
+    # (3) mc_mean on the SAME traded decisions
+    t0 = time.time()
+    mu_mc_traded = predict_mu(
+        model,
+        tok,
+        d0["b_c"],
+        d0["b_f"],
+        se0.ts,
+        se0.sigma,
+        sub,
+        estimator="mc_mean",
+        mc_samples=args.bias_mc_samples,
+        **kw,
+    )
+    mc_wall = time.time() - t0
+
+    # (3b) THE PINNED mc_mean is n=32, not the 256 used above as a precise reference. If the <0.97
+    # branch fires, production would run n=32 — so its MC noise is a PRECONDITION of that branch
+    # being sound, not a detail. Measured here rather than assumed.
+    t1 = time.time()
+    mu_mc32 = predict_mu(
+        model,
+        tok,
+        d0["b_c"],
+        d0["b_f"],
+        se0.ts,
+        se0.sigma,
+        sub,
+        estimator="mc_mean",
+        mc_samples=MC_DEFAULT_SAMPLES,
+        **kw,
+    )
+    mc32_wall = time.time() - t1
+
+    def _agree(a, b):
+        return float(((a < 0) == (b < 0)).mean())
+
+    agree = _agree(mu_exp_traded, mu_mc_traded)
+    # would any of these bars ALSO be excluded under mc_mean? (a position can vanish, not just flip)
+    c_sub = _per_bar_cost(cost, se0.sigma, sub, SPREAD_DECILE_FRAC["major"])
+    s_exp = positions(mu_exp_traded, kappa_star * c_sub)
+    s_mc = positions(mu_mc_traded, kappa_star * c_sub)
+    s_mc32 = positions(mu_mc32, kappa_star * c_sub)
+    same_position = float((s_exp == s_mc).mean())
+    agree_pinned = _agree(mu_exp_traded, mu_mc32)
+    agree_mc_noise = _agree(mu_mc32, mu_mc_traded)
+    print(
+        f"  pinned mc_mean n={MC_DEFAULT_SAMPLES}: agree(exp,mc32)={agree_pinned:.4f} "
+        f"agree(mc32,mc256)={agree_mc_noise:.4f} [{mc32_wall:.0f}s]",
+        flush=True,
+    )
+
+    passes = bool(agree >= TRADED_AGREEMENT_THRESHOLD)
+    # eval-leg cost of the fallback: mc_mean on the headline block at ONE kappa, whole grid
+    per_dec = mc_wall / max(1, sub.size)
+    out = {
+        "receipt": "m6_traded_sign_agreement",
+        "amendment": "prereg s7 v1.4.6 item 4 (supervisor-ordered)",
+        "environment": _env(args.device),
+        "checkpoint": ck.path,
+        "h": 15,
+        "kappa_star_from_val_expectation": kappa_star,
+        "bars_total": int(args.bars_total),
+        "n_per_symbol": int(n_per),
+        "eval_cap_per_symbol": args.eval_cap,
+        "traded": traded_all,
+        "scored": scored_all,
+        "activity_decisions_at_kstar": activity,
+        "mc_samples": args.bias_mc_samples,
+        "mc_seed": MC_DEFAULT_SEED,
+        "n_traded_subsample": int(sub.size),
+        "sign_agreement_traded_set": agree,
+        "identical_position_traded_set": same_position,
+        "pinned_mc_samples": MC_DEFAULT_SAMPLES,
+        "sign_agreement_vs_PINNED_mc32": agree_pinned,
+        "identical_position_vs_PINNED_mc32": float((s_exp == s_mc32).mean()),
+        "mc_noise_floor_agreement_mc32_vs_mc256": agree_mc_noise,
+        "why_mc32_matters": (
+            "The PRE-REGISTERED mc_mean is n=32 (predict.MC_DEFAULT_SAMPLES); the n=256 run above "
+            "is a precise reference, not the production setting. If the <0.97 branch fires, the "
+            "headline would be scored at n=32, so agreement between mc32 and mc256 is the MC noise "
+            "floor -- the amount of position churn the fallback introduces on its own. A fallback "
+            "whose own noise floor is comparable to the disagreement it is meant to remove would "
+            "trade estimator bias for Monte-Carlo variance rather than fix anything."
+        ),
+        "threshold": TRADED_AGREEMENT_THRESHOLD,
+        "expectation_stands": passes,
+        "all_decisions_reference_v1_4_5": 0.8398,
+        "pre_declared_rule": (
+            "traded-set agreement >= 0.97 -> expectation STANDS (bias disclosed, this measurement "
+            "cited); < 0.97 -> the HEADLINE block at kappa* is scored with mc_mean while "
+            "expectation is retained for VAL and kappa* selection."
+        ),
+        "fallback_eval_cost_estimate": {
+            "mc_wall_s_for_subsample_n256": round(mc_wall, 1),
+            "mc_wall_s_for_subsample_n32_PINNED": round(mc32_wall, 1),
+            "measured_s_per_decision_n256": round(per_dec, 4),
+            "measured_s_per_decision_n32_PINNED": round(mc32_wall / max(1, sub.size), 4),
+            "expectation_multiplier": MC_DEFAULT_SAMPLES,
+            "note": (
+                "Cost of the <0.97 branch = mc_mean on the headline block at ONE kappa only. "
+                "Scale measured_s_per_decision by the headline decision count; the money surface "
+                "is UNCAPPED (46,671/symbol) so this is the number that matters, and it is per "
+                "GPU not per CPU — this figure is CPU-measured and is an upper bound."
+            ),
+        },
+    }
+    p = Path("runs_manifest/m6_traded_sign_agreement.json")
+    p.write_text(json.dumps(out, indent=2, sort_keys=True))
+    print(
+        f"  sign agreement ON TRADED SET = {agree:.4f} (identical position {same_position:.4f}) "
+        f"vs threshold {TRADED_AGREEMENT_THRESHOLD} -> expectation_stands={passes} "
+        f"[mc {mc_wall:.0f}s]",
+        flush=True,
+    )
+    print(f"[receipt] -> {p}")
+    return 0
+
+
+# --------------- §7 v1.4.7 item 4 forensics: M4a split-half floor + M4b benign perturbation
+def run_estimator_forensics(args) -> int:
+    """M4a (split-half MC noise floor) + M4b (is the perturbation benign?) in ONE rollout budget.
+
+    M4a AS SPECIFIED IS IMPOSSIBLE: ``_rollout_mc_mean`` accumulates ``acc += cum`` and returns
+    ``acc / mc_samples`` — the 256 per-decision samples were NEVER materialized, so they cannot be
+    partitioned after the fact. Retaining them would mean editing predict.py, which is the Gate-A
+    anchored instrument. Instead the SAME 256 sample-rollouts are spent as TWO INDEPENDENT n=128
+    halves at different mc_seeds, which yields the split-half floor DIRECTLY (measured, not
+    1/sqrt(n)-extrapolated) and their average is an n=256 estimate. So M4a costs nothing beyond the
+    M4b run that was ordered anyway — no extra rollouts are spent to recover discarded samples.
+
+    M4b tests the argument that makes a biased estimator acceptable in a pre-registered test: that
+    the disagreements sit where |mu-hat| is small, so the induced position noise pulls measured IR
+    TOWARD ZERO (biasing to NULL, the conservative direction) and cannot manufacture a false
+    SURVIVES. On the disagreement set it reports the realized forward-return distribution and
+    whether flip direction correlates with realized return. The raw per-decision vectors are
+    PERSISTED this time so no future question about them needs another rollout.
+    """
+    mc = _canary()
+    from trikaal.eval.predict import MC_DEFAULT_SAMPLES, MC_DEFAULT_SEED, predict_mu
+
+    n_per = args.bars_total // len(mc.SYMBOLS)
+    ck = next(c for c in CKPTS if c.key == "acceptance_planted_cell4")
+    print(f"[forensics] {ck.key} @ h=15", flush=True)
+    prepared, model, tok = build_tokens(ck, n_per=n_per, device=args.device)
+    cfg = canary_cfg(15, cap=args.eval_cap, n_per=n_per, seed=args.seed, device=args.device)
+    kappa_star = score_pretokenized(model, tok, prepared, cfg)["kappa_star"]
+    print(f"  kappa* = {kappa_star}", flush=True)
+
+    cost = CostModel()
+    rng = np.random.default_rng(cfg.seed)
+    grid = global_decision_grid_ms(cfg, cfg.headline_block)
+    kw = dict(h=cfg.h, seq_len=cfg.seq_len, device=cfg.device)
+    s0 = next(iter(prepared))
+    d0, se0 = prepared[s0], prepared[s0]["se"]
+    y_full = forward_log_returns(se0.raw_ret_close, se0.segment_id, cfg.h)
+
+    sub = mu_exp = None
+    for sym, d in prepared.items():  # replicate score_cell's rng draw ORDER
+        se = d["se"]
+        dec = symbol_decisions(se, grid, cfg)
+        if cfg.cap_per_symbol is not None and dec.size > cfg.cap_per_symbol:
+            dec = np.sort(rng.choice(dec, size=cfg.cap_per_symbol, replace=False))
+        y = forward_log_returns(se.raw_ret_close, se.segment_id, cfg.h)
+        dec = dec[np.isfinite(y[dec])]
+        if sym != s0:
+            continue
+        mu = predict_mu(model, tok, d["b_c"], d["b_f"], se.ts, se.sigma, dec, **kw)
+        c_mod = _per_bar_cost(cost, se.sigma, dec, SPREAD_DECILE_FRAC["major"])
+        traded = positions(mu, kappa_star * c_mod) != 0
+        sub, mu_exp = dec[traded][: args.bias_n_dec], mu[traded][: args.bias_n_dec]
+
+    half = args.bias_mc_samples // 2
+    halves = []
+    for i, seed_off in enumerate((0, 7919)):  # two INDEPENDENT mc streams, same total budget
+        t0 = time.time()
+        halves.append(
+            predict_mu(
+                model,
+                tok,
+                d0["b_c"],
+                d0["b_f"],
+                se0.ts,
+                se0.sigma,
+                sub,
+                estimator="mc_mean",
+                mc_samples=half,
+                mc_seed=MC_DEFAULT_SEED + seed_off,
+                **kw,
+            )
+        )
+        print(f"  mc half {i + 1} (n={half}) in {time.time() - t0:.0f}s", flush=True)
+    a, b = halves
+    mc_combined = 0.5 * (a + b)
+    y_sub = y_full[sub]
+
+    def _agree(u, v):
+        return float(((u < 0) == (v < 0)).mean())
+
+    # ---- M4a: the split-half floor, MEASURED
+    m4a = {
+        "n_per_half": int(half),
+        "agree_half_a_vs_half_b": _agree(a, b),
+        "agree_expectation_vs_combined_n256": _agree(mu_exp, mc_combined),
+        "pinned_n32_floor_v1_4_6": 0.8164,
+        "expectation_vs_mc256_v1_4_6": 0.9102,
+    }
+    # disagreement WITH the reference decomposed: how much is reference variance?
+    m4a["expectation_disagreement"] = 1.0 - m4a["agree_expectation_vs_combined_n256"]
+    m4a["reference_self_disagreement_at_half"] = 1.0 - m4a["agree_half_a_vs_half_b"]
+
+    # ---- M4b: is the perturbation benign?
+    dis = (mu_exp < 0) != (mc_combined < 0)
+    n_dis = int(dis.sum())
+    out_m4b: dict = {"n_disagreements": n_dis, "n_traded_subsample": int(sub.size)}
+    if n_dis >= 2:
+        yd = y_sub[dis]
+        flip_to_long = np.where(mc_combined[dis] > 0, 1.0, -1.0)
+        out_m4b.update(
+            {
+                "abs_mu_on_disagreements": float(np.abs(mu_exp[dis]).mean()),
+                "abs_mu_on_agreements": float(np.abs(mu_exp[~dis]).mean()),
+                "realized_return_on_disagreements": {
+                    "mean": float(yd.mean()),
+                    "std": float(yd.std()),
+                    "median": float(np.median(yd)),
+                    "frac_positive": float((yd > 0).mean()),
+                },
+                "corr_flip_direction_vs_realized_return": float(
+                    np.corrcoef(flip_to_long, yd)[0, 1]
+                ),
+                # the DIRECT test: on the disagreement bars, does either estimator's position earn?
+                "mean_signed_return_expectation_positions": float(
+                    (np.sign(mu_exp[dis]) * yd).mean()
+                ),
+                "mean_signed_return_mc_positions": float((np.sign(mc_combined[dis]) * yd).mean()),
+                "mean_signed_return_agreement_set": float(
+                    (np.sign(mu_exp[~dis]) * y_sub[~dis]).mean()
+                ),
+            }
+        )
+    out = {
+        "receipt": "m6_estimator_forensics",
+        "amendment": "prereg s7 v1.4.7 item 4 M4a/M4b (supervisor-ordered)",
+        "environment": _env(args.device),
+        "checkpoint": ck.path,
+        "h": 15,
+        "kappa_star": kappa_star,
+        "mc_total_sample_budget": int(args.bias_mc_samples),
+        "pinned_mc_samples": MC_DEFAULT_SAMPLES,
+        "M4a_split_half": m4a,
+        "M4b_benign_perturbation": out_m4b,
+        "M4a_method_note": (
+            "The 256 per-decision MC samples of the v1.4.6 run were NOT retained (_rollout_mc_mean "
+            "accumulates and returns only the mean), so partitioning them after the fact is "
+            "impossible without editing the anchored predict.py. The same 256-sample budget is "
+            "instead spent as two independent n=128 halves, giving the split-half floor DIRECTLY "
+            "rather than by 1/sqrt(n) extrapolation, at no extra rollout cost over the ordered M4b."
+        ),
+        "caveats": (
+            "n=256 traded decisions on ONE fixture-planted cell; point estimates, NOT significance "
+            "claims; no paired CI computed on any difference."
+        ),
+    }
+    p = Path("runs_manifest/m6_estimator_forensics.json")
+    p.write_text(json.dumps(out, indent=2, sort_keys=True))
+    np.savez_compressed(
+        "runs_manifest/m6_estimator_forensics_vectors.npz",
+        decisions=sub,
+        mu_expectation=mu_exp,
+        mc_half_a=a,
+        mc_half_b=b,
+        realized_return=y_sub,
+    )
+    print(
+        f"  M4a split-half agree(a,b) = {m4a['agree_half_a_vs_half_b']:.4f} "
+        f"| agree(exp, combined) = {m4a['agree_expectation_vs_combined_n256']:.4f}"
+    )
+    if n_dis >= 2:
+        print(
+            f"  M4b n_dis={n_dis} corr(flip, y) = "
+            f"{out_m4b['corr_flip_direction_vs_realized_return']:+.4f} "
+            f"| signed-return exp {out_m4b['mean_signed_return_expectation_positions']:+.6f} "
+            f"mc {out_m4b['mean_signed_return_mc_positions']:+.6f} "
+            f"agreeset {out_m4b['mean_signed_return_agreement_set']:+.6f}"
+        )
+        print(
+            f"  |mu| on dis {out_m4b['abs_mu_on_disagreements']:.5f} vs "
+            f"agree {out_m4b['abs_mu_on_agreements']:.5f}"
+        )
+    print(f"[receipt] -> {p}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--sweep", action="store_true", help="h-sweep over every checkpoint on disk")
@@ -953,6 +1317,16 @@ def main() -> int:
     ap.add_argument("--bias-bound", action="store_true", help="item-1 expectation vs mc_mean")
     ap.add_argument("--bias-n-dec", type=int, default=256, help="paired MC subsample size (>=256)")
     ap.add_argument("--bias-mc-samples", type=int, default=256)
+    ap.add_argument(
+        "--traded-sign-agreement",
+        action="store_true",
+        help="item 4: sign agreement restricted to the traded set at kappa*",
+    )
+    ap.add_argument(
+        "--estimator-forensics",
+        action="store_true",
+        help="item 4 M4a split-half MC floor + M4b benign-perturbation test",
+    )
     ap.add_argument("--bars-total", type=int, default=42_000_000)
     ap.add_argument("--eval-cap", type=int, default=4000)
     ap.add_argument("--seed", type=int, default=0)
@@ -967,7 +1341,14 @@ def main() -> int:
         return run_rescore(args)
     if args.bias_bound:
         return run_bias_bound(args)
-    ap.error("pass --sweep, --guard-stability, --rescore or --bias-bound")
+    if args.traded_sign_agreement:
+        return run_traded_sign_agreement(args)
+    if args.estimator_forensics:
+        return run_estimator_forensics(args)
+    ap.error(
+        "pass --sweep, --guard-stability, --rescore, --bias-bound, --traded-sign-agreement "
+        "or --estimator-forensics"
+    )
     return 2
 
 

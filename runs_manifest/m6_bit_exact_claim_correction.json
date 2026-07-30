@@ -1,0 +1,537 @@
+{
+  "affected_records": [
+    {
+      "artifact": "runs_cloud/ckpt_cell4_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell1_bsq_ohlcv_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell1_bsq_ohlcv_seed1/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell1_bsq_ohlcv_seed2/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell2_fsq_ohlcv_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell2_fsq_ohlcv_seed1/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell2_fsq_ohlcv_seed2/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell3_bsq_micro_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell3_bsq_micro_seed1/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell3_bsq_micro_seed2/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell4_fsq_micro_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell4_fsq_micro_seed1/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell4_fsq_micro_seed2/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell5_fsq_micro_shuffled_seed0/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell5_fsq_micro_shuffled_seed1/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/cell5_fsq_micro_shuffled_seed2/run_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism",
+      "run": "determinism",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed0",
+      "run": "cell1_bsq_ohlcv_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed1",
+      "run": "cell1_bsq_ohlcv_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed2",
+      "run": "cell1_bsq_ohlcv_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed0",
+      "run": "cell2_fsq_ohlcv_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed1",
+      "run": "cell2_fsq_ohlcv_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed2",
+      "run": "cell2_fsq_ohlcv_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed0",
+      "run": "cell3_bsq_micro_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed1",
+      "run": "cell3_bsq_micro_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed2",
+      "run": "cell3_bsq_micro_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed0",
+      "run": "cell4_fsq_micro_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed1",
+      "run": "cell4_fsq_micro_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed2",
+      "run": "cell4_fsq_micro_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed0",
+      "run": "cell5_fsq_micro_shuffled_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed1",
+      "run": "cell5_fsq_micro_shuffled_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_cloud/runs/m6_toy/rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed2",
+      "run": "cell5_fsq_micro_shuffled_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed0",
+      "run": "cell1_bsq_ohlcv_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed1",
+      "run": "cell1_bsq_ohlcv_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell1_bsq_ohlcv_seed2",
+      "run": "cell1_bsq_ohlcv_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed0",
+      "run": "cell2_fsq_ohlcv_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed1",
+      "run": "cell2_fsq_ohlcv_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell2_fsq_ohlcv_seed2",
+      "run": "cell2_fsq_ohlcv_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed0",
+      "run": "cell3_bsq_micro_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed1",
+      "run": "cell3_bsq_micro_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell3_bsq_micro_seed2",
+      "run": "cell3_bsq_micro_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed0",
+      "run": "cell4_fsq_micro_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed1",
+      "run": "cell4_fsq_micro_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell4_fsq_micro_seed2",
+      "run": "cell4_fsq_micro_seed2",
+      "seed": 2
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed0",
+      "run": "cell5_fsq_micro_shuffled_seed0",
+      "seed": 0
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed1",
+      "run": "cell5_fsq_micro_shuffled_seed1",
+      "seed": 1
+    },
+    {
+      "artifact": "runs_manifest/m6_rehearsal_manifest.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/determinism_by_run/cell5_fsq_micro_shuffled_seed2",
+      "run": "cell5_fsq_micro_shuffled_seed2",
+      "seed": 2
+    }
+  ],
+  "amendment": "prereg s7 v1.4.7 (supervisor-ordered one-time corrective receipt)",
+  "caveat_applying_to_every_affected_record": "bit_exact_claim in this record is TRUE on attention mode alone. The preconditions for run-to-run GPU bit-exactness were NOT met: torch.use_deterministic_algorithms was not forced, CUBLAS_WORKSPACE_CONFIG was unset and cudnn.deterministic was unset (the run passed set_determinism(..., deterministic_algorithms=False)). CUDA reduction order was therefore unconstrained. This run MUST NOT be quoted as a bit-exact GPU training run. See bit_exact_preconditions_met (added in prereg s7 v1.4.6) for the predicate a published claim must cite.",
+  "counts": {
+    "count_note": "The record count and the run count differ and mean different things. Every determinism record found claims bit-exactness with forced determinism off \u2014 the rate is 100%, not a sample. But the same training run is recorded in a per-run run_manifest.json AND in a rollup manifest, and the rollup is duplicated between runs_cloud/ and runs_manifest/, so the record count over-counts runs by ~3x. Both numbers are stated so neither can be quoted misleadingly.",
+    "determinism_records_found_total": 49,
+    "distinct_training_runs_affected": 16,
+    "of_which_are_derived_copies_in_this_sessions_own_receipts": 3,
+    "of_which_are_run_records": 46,
+    "records_claiming_bit_exact_without_forced_determinism": 49
+  },
+  "defect": "attention_mode.determinism_record derived bit_exact_claim from the attention mode ALONE. Deterministic attention is NECESSARY, not SUFFICIENT: forced deterministic algorithms are also required. orchestrator.py:159 (the PRODUCTION path) passes deterministic_algorithms=False, overriding a default of True.",
+  "derived_copies_excluded_from_the_run_count": [
+    {
+      "artifact": "runs_manifest/m6_divergence_attribution.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/bit_exact_claim_contradiction/examples/cell1_bsq_ohlcv_seed0",
+      "run": "cell1_bsq_ohlcv_seed0",
+      "seed": null
+    },
+    {
+      "artifact": "runs_manifest/m6_divergence_attribution.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/bit_exact_claim_contradiction/examples/cell1_bsq_ohlcv_seed1",
+      "run": "cell1_bsq_ohlcv_seed1",
+      "seed": null
+    },
+    {
+      "artifact": "runs_manifest/m6_divergence_attribution.json",
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "json_path": "/bit_exact_claim_contradiction/examples/cell1_bsq_ohlcv_seed2",
+      "run": "cell1_bsq_ohlcv_seed2",
+      "seed": null
+    }
+  ],
+  "distinct_runs_affected": [
+    "cell1_bsq_ohlcv_seed0",
+    "cell1_bsq_ohlcv_seed1",
+    "cell1_bsq_ohlcv_seed2",
+    "cell2_fsq_ohlcv_seed0",
+    "cell2_fsq_ohlcv_seed1",
+    "cell2_fsq_ohlcv_seed2",
+    "cell3_bsq_micro_seed0",
+    "cell3_bsq_micro_seed1",
+    "cell3_bsq_micro_seed2",
+    "cell4_fsq_micro_seed0",
+    "cell4_fsq_micro_seed1",
+    "cell4_fsq_micro_seed2",
+    "cell5_fsq_micro_shuffled_seed0",
+    "cell5_fsq_micro_shuffled_seed1",
+    "cell5_fsq_micro_shuffled_seed2",
+    "determinism"
+  ],
+  "receipt": "m6_bit_exact_claim_correction",
+  "remediation_status": {
+    "code": "bit_exact_preconditions_met + bit_exact_caveat ADDED in v1.4.6; the historical bit_exact_claim field is deliberately NOT redefined.",
+    "posture": "NOT changed by the builder. Forcing deterministic algorithms is a throughput/cost decision and CLAUDE.md invariant 7 embeds the false sufficiency premise in its own text; amending it is Lakshay's sign-off. Two candidate amendments are drafted in prereg s7 v1.4.7."
+  },
+  "scope": {
+    "false": "The GPU-TRAINING bit-exactness clause of invariant 7, for the enumerated records.",
+    "intact_gate_a": "The Gate-A anchor STANDS. It anchors the CPU eval-harness replay on a frozen M3 checkpoint and is genuinely bit-identical (results_hash 3f86882a, re-proven with a byte-identical run manifest); it does not depend on GPU training determinism.",
+    "intact_pipeline_clause": "Invariant 7's data-pipeline / frozen-stats / prediction-replay bit-exactness clause is INTACT and independently evidenced (M4a dataset_hash reproduction, token-stream content hashing, fixed-chunk rollout replay KATs).",
+    "no_result_invalidated": "No prior number changes. What changes is that a run stamping bit_exact_claim: true may not be quoted as a bit-exact GPU training run.",
+    "not_narrower_either": "This is not a documentation nit. The same-seed model divergence measured in v1.4.5 (frac_negative 0.5662 vs 0.99883 on byte-identical recipes) is the observable consequence, and it is BLOCKING for the 15-day run until adjudicated."
+  }
+}

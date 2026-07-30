@@ -1,0 +1,87 @@
+{
+  "amendment": "prereg s7 v1.4.6 item 2 (supervisor-ordered)",
+  "attention_mode_comparison_settled": false,
+  "bit_exact_claim_contradiction": {
+    "checked": true,
+    "examples": {
+      "cell1_bsq_ohlcv_seed0": {
+        "attention_mode": "sdpa_deterministic",
+        "bit_exact_claim": true,
+        "deterministic_algorithms": false,
+        "device": "cuda"
+      },
+      "cell1_bsq_ohlcv_seed1": {
+        "attention_mode": "sdpa_deterministic",
+        "bit_exact_claim": true,
+        "deterministic_algorithms": false,
+        "device": "cuda"
+      },
+      "cell1_bsq_ohlcv_seed2": {
+        "attention_mode": "sdpa_deterministic",
+        "bit_exact_claim": true,
+        "deterministic_algorithms": false,
+        "device": "cuda"
+      }
+    },
+    "n_runs_claiming_bit_exact_without_forced_determinism": 15,
+    "n_runs_total": 15,
+    "source": "runs_manifest/m6_rehearsal_manifest.json"
+  },
+  "blocking_for_the_real_run": true,
+  "checkpoint_metadata": "The .pt files carry only {format, config, hash, state_dict} \u2014 model config and a weight hash, no environment, no GPU, no attention mode.",
+  "determinism_posture_from_code": {
+    "forced_determinism_anywhere": false,
+    "meaning": "set_determinism(..., deterministic_algorithms=False) leaves torch.use_deterministic_algorithms UNSET, CUBLAS_WORKSPACE_CONFIG UNSET and cudnn.deterministic UNSET. CUDA reduction order is then unconstrained, so two runs of the same recipe on the SAME hardware are NOT expected to agree bit-for-bit.",
+    "set_determinism_calls": {
+      "orchestrator (the REAL 15-day run path)": [
+        "set_determinism(seed, deterministic_algorithms=False)"
+      ],
+      "scripts/m6_canary.py (the fixture path)": [
+        "set_determinism(args.seed, deterministic_algorithms=False)",
+        "set_determinism(args.seed, deterministic_algorithms=False)"
+      ]
+    }
+  },
+  "gpu_comparison_settled": false,
+  "pre_declared_reading_applied": "NEITHER pre-declared branch as written. The GPU comparison CANNOT be settled from the receipts (the money-leg run has no setup log at all), so branch A/B cannot be adjudicated on hardware. But the question is answered from CODE instead of logs: forced determinism is NEVER engaged in either the fixture path or the REAL 15-day orchestrator path, so run-to-run divergence is EXPECTED even on identical hardware. That lands on branch B's DISPOSITION (a determinism-deliverable defect, blocking for the 15-day run) by a different and code-established mechanism than branch B assumed: SDPA attention was never the weak link -- the missing torch.use_deterministic_algorithms is.",
+  "question": "acceptance vs money-leg cell4: frac_negative 0.5662 vs 0.99883 and IR +15.008 vs -3.4258 under byte-identical recipes and the same seed. Hardware, or a defect?",
+  "receipt": "m6_divergence_attribution",
+  "run_provenance": {
+    "acceptance": {
+      "commit": "f2a4792",
+      "from_setup_log": {
+        "attention_mode": null,
+        "cuda_version_smi": null,
+        "driver_version": null,
+        "gpu_model": "NVIDIA GeForce RTX 4090",
+        "numpy": "2.4.6",
+        "present": true,
+        "torch": "2.12.1"
+      },
+      "setup_log": "runs_cloud/acceptance/setup.log",
+      "stage2_manifest_records": [
+        "device",
+        "seed"
+      ]
+    },
+    "moneyleg": {
+      "commit": "a441cfa",
+      "from_setup_log": {
+        "present": false
+      },
+      "setup_log": "runs_cloud/moneyleg/setup.log",
+      "stage2_manifest_records": [
+        "device",
+        "seed"
+      ]
+    }
+  },
+  "wandb_coverage": {
+    "covers_acceptance_or_moneyleg": false,
+    "note": "The only wandb offline runs are from the 2026-07-19 toy rehearsal, and even those record gpu: None. wandb does not cover either run in question.",
+    "offline_run_dates": [
+      "20260719"
+    ]
+  },
+  "what_the_builder_did_NOT_do": "The determinism posture was NOT changed. Enabling forced deterministic algorithms slows CUDA training and the 2-3 GPU-day / $20-30 budget was measured WITHOUT it, so the throughput/cost trade is a supervisor decision. bit_exact_claim was likewise NOT redefined; a bit_exact_preconditions_met field plus a caveat were ADDED beside it so the contradiction is self-announcing (attention_mode.determinism_record)."
+}

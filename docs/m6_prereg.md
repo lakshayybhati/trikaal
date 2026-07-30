@@ -190,6 +190,196 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.4.7 (2026-07-30, post-v1.4.6 ruling: bit-exactness sufficiency defect scoped, a NEW named
+  statistical-power risk mitigated, item 4 resolved; supervisor-ordered) — BEFORE any real training.
+  Local $0 CPU only; no spend authorized, none taken.**
+  - **THE `bit_exact_claim` SUFFICIENCY DEFECT — scoped exactly (`m6_bit_exact_claim_correction.json`).**
+    Root cause `attention_mode.py`: `claim = attention_mode == MODE_SDPA`, i.e. **invariant 7's
+    sufficiency premise encoded in code**. It is false — deterministic attention is NECESSARY, not
+    SUFFICIENT. **49 of 49** determinism records claim bit-exactness with forced determinism OFF on
+    `device: cuda` (a 100% rate, not a sample). **Count composition, stated so neither number can be
+    quoted misleadingly:** 46 run records over **16 distinct training runs** (each run appears in a
+    per-run manifest AND a rollup duplicated across `runs_cloud/` and `runs_manifest/`, so the record
+    count over-counts runs ~3×) plus 3 derived copies inside this session's own receipts.
+    `orchestrator.py:159` — the **PRODUCTION** path — passes `deterministic_algorithms=False`,
+    overriding a default of `True` on a function whose docstring calls it "required for the G2
+    determinism gate and any published run".
+    - **SCOPE — neither broader nor narrower.** **FALSE:** the GPU-TRAINING bit-exactness clause, for
+      the enumerated runs. **INTACT:** invariant 7's data-pipeline / frozen-stats / prediction-replay
+      clause (independently evidenced: M4a `dataset_hash` reproduction, token-stream content hashing,
+      fixed-chunk rollout replay KATs). **INTACT:** the **Gate-A anchor** — it anchors the CPU
+      eval-harness replay on a frozen M3 checkpoint, is genuinely bit-identical (`results_hash
+      3f86882a`, re-proven with a byte-identical run manifest) and does not depend on GPU training
+      determinism. **NO prior result is invalidated and no number changes**; what changes is that a
+      run stamping `bit_exact_claim: true` may not be QUOTED as a bit-exact GPU training run. And it
+      is **not** a documentation nit: the same-seed divergence is its observable consequence and is
+      BLOCKING for the 15-day run until adjudicated.
+    - **NOT REDEFINED.** `bit_exact_claim` keeps its historical meaning — 49 records carry it and
+      silently redefining a recorded field rewrites history. `bit_exact_preconditions_met` is the
+      field any published claim must cite; the caveat string stays; the corrective receipt enumerates
+      every affected record so the correction is discoverable from the ARTIFACTS, not only from here.
+      (The receipt skips its own output — without that, each re-run would scan the enumeration it
+      wrote last time and the count would inflate; verified idempotent at 49.)
+    - **$0 FEASIBILITY PROBE — FORCED DETERMINISM COMPLETES ON CPU**
+      (`m6_determinism_feasibility_probe.json`). The real Stage-1 + Stage-2 objectives run under
+      `use_deterministic_algorithms(True, warn_only=False)` without raising, so no op in the M6
+      training path lacks a deterministic kernel there and "make the claim true" reduces to a GPU
+      THROUGHPUT question. **CUDA is NOT yet measured** and has its own non-deterministic kernels.
+      **BUILDER ERROR, DISCLOSED:** the probe's first version called a non-existent
+      `TrikaalAR.forward(targets=...)`, so BOTH arms failed on a `TypeError` while the script
+      printed a determinism verdict. It now (a) uses the orchestrator's own `compute_loss` path and
+      (b) **refuses to conclude anything unless the UNFORCED baseline completes** — a forced-run
+      failure is only interpretable against a passing baseline, and it distinguishes a
+      missing-deterministic-kernel signature from a probe/API fault.
+    - **STAGED, NOT RUN (PENDING):** the CUDA throughput delta against the measured 47.2k bars/s.
+      `scripts/m6_determinism_probe.py --device cuda --steps 50`; ~$1–2, < 2 min for the probe and
+      ~25 min of box time for a quotable forced-vs-unforced pair. To be conclusive it also needs a
+      same-seed twice-run weight-hash comparison — confirming forcing DELIVERS bit-identity rather
+      than merely claiming it.
+    - **POSTURE NOT CHANGED, AND NOT THE SUPERVISOR'S CALL EITHER.** CLAUDE.md invariant 7 embeds the
+      false premise in its own text, so amending it is **Lakshay's sign-off**. Both candidate
+      amendments are drafted with the measured facts in `docs/invariant7_amendment_decision.md` —
+      **(A)** force deterministic algorithms (invariant text unchanged, cost PENDING, degrades to
+      `warn_only` + an op allowlist if any CUDA op raises); **(B)** amend the invariant to state GPU
+      training is not bit-reproducible, scope the deliverable to pipeline/stats/replay, and report
+      across-seed spread instead ($0). **Neither is recommended** until the CUDA probe lands — it is
+      the discriminating input.
+  - **NEW NAMED RISK: STATISTICAL POWER — mitigated HALT-only at $0 (`verdict.power_guard`).** The
+    consequence larger than reproducibility: same recipe, **SAME SEED**, different run gave
+    frac_negative 0.5662 vs 0.99883 — **basin-hopping, not float jitter** — and same-seed divergence
+    is a **LOWER BOUND on across-seed variance**. The pre-registered MDE was derived from **SCORING
+    noise only** (paired moving-block bootstrap over time) and contains **no training-variance
+    term**, so it understates the true detection threshold and the 3-seed design may be underpowered
+    against its own effect size. **Forcing determinism removes the same-seed component and NOT the
+    across-seed component**, so amendment A does not fix this.
+    - **THE GUARD.** Per-cell across-seed IR (per seed, range, std) is persisted. Pre-declared: if
+      the WITHIN-cell across-seed IR range of the cells a claimed between-cell ΔIR is built from
+      meets or exceeds |ΔIR|, the claim is smaller than the seed-to-seed wobble of its own inputs
+      and the verdict is **HALT_ADJUDICATE** rather than a reported SURVIVES. Same semantics as the
+      degeneracy guard: a PURE post-hoc read that never touches a clause and can **never flip
+      SURVIVES↔NULL** — it only refuses to report an outcome its own inputs cannot support. It halts
+      symmetrically on a NULL too, because an underpowered NULL is equally uninterpretable (the
+      symmetry the degeneracy guard already has). Applied to clause 1 (ΔIR 4−5) and clause 3
+      (ΔIR 4−2). **KATs both directions** plus a HALT-only proof that two fixtures with the same
+      seed-MEAN but different seed SPREAD give identical clauses and differ only in `emitted`
+      (`tests/eval/test_degeneracy_guard.py`, now 11 KATs). This measures the power question on real
+      data at zero cost rather than arguing about it now.
+  - **ITEM 4 — EXPECTATION STANDS, and the record states WHY.** *Expectation is retained **NOT**
+    because it passed the 0.97 traded-set test — **it failed, at 0.9102** — but because at feasible
+    cost it is the closest available estimator to the unbiased reference; the pre-registered mc_mean
+    at its pinned n=32 is measurably farther.* The supervisor's fallback was defective (specified
+    without checking `MC_DEFAULT_SAMPLES = 32`) and the measurement retires it: mc@32's own noise
+    floor (agreement with mc@256 = **0.8164**) EXCEEDS the disagreement it was meant to remove
+    (**0.9102**), at a **32×** rollout cost — the branch degrades the property it protects. Measured
+    CPU cost 0.3402 s/decision at n=32 (2.9228 at n=256); GPU PENDING. Pinned money surface for
+    scale: 35,064 grid periods × 40 symbols = **1,402,560** headline decisions per (cell, seed),
+    uncapped by pin, ×15 (cell, seed) pairs.
+    - **M4a — THE SPLIT-HALF FLOOR, AND IT REFRAMES THE ITEM (`m6_estimator_forensics.json`).**
+      M4a as specified was impossible: `_rollout_mc_mean` accumulates and returns only the mean, so
+      the 256 per-decision samples were **never materialized** and cannot be partitioned after the
+      fact (retaining them would mean editing the anchored `predict.py`). Instead the SAME 256-sample
+      budget was spent as **two independent n=128 halves** at different `mc_seed`s — giving the
+      split-half floor **directly, measured rather than 1/√n-extrapolated**, at no extra rollout cost
+      over the ordered M4b. Result: **agree(half_a, half_b) = 0.8906** and
+      **agree(expectation, combined n=256) = 0.8906** — *identical*. **Expectation's disagreement
+      with the reference (0.1094) EQUALS the reference's disagreement with itself (0.1094).** So at
+      this precision the apparent "expectation bias" is **statistically indistinguishable from
+      reference variance**: expectation sits as close to the unbiased mean as two independent MC
+      estimates of the same size sit to each other. The supervisor's prediction — that most of the
+      gap is reference variance rather than estimator bias — is confirmed, and at this resolution it
+      is not merely most of it. (Both proportions are 228/256; the exact equality is plausibly
+      coincidence at n=256, but the magnitudes are what matter and they match.)
+    - **M4b — THE PERTURBATION IS BENIGN, MEASURED NOT ASSERTED.** The premise holds: |μ̂| on the
+      disagreement set is **0.00859** vs **0.02790** on the agreement set — **3.25× smaller**, i.e.
+      the flips sit exactly where the forecast is least informative. Of 256 traded decisions, 28
+      disagree. On those 28: realized-return `frac_positive` is **exactly 0.500**, median −0.0071,
+      mean −0.0288 at SE 0.0237 (**1.22σ** — not distinguishable from zero); and
+      **corr(flip direction, realized return) = −0.0935** with |t| ≈ **0.47** — uncorrelated.
+      Decisively, the mean signed return on the disagreement bars is **+0.000665** under
+      expectation's positions and **−0.000665** under mc's, versus **+0.029664** on the agreement
+      set — a **44.6×** magnitude gap. Those bars earn essentially nothing either way, so the
+      induced position noise **dilutes measured IR toward zero, biasing toward NULL — the
+      conservative direction — and cannot manufacture a false SURVIVES.** Symmetric and
+      uncorrelated: **the argument HOLDS and enters the prereg as MEASURED.**
+    - **Caveats (unchanged and binding):** n=256 traded decisions on ONE fixture-planted cell; point
+      estimates, **not** significance claims; no paired CI computed on any difference; the σ and |t|
+      figures above are derived from the receipt's own mean/std/n fields, not from a formal test. The
+      per-decision vectors ARE now persisted (`m6_estimator_forensics_vectors.npz`) so any further
+      question about them costs no rollouts.
+
+- **v1.4.6 (2026-07-30, post-v1.4.5 ruling: leg (c) UPGRADED, guard hole closed, divergence
+  attributed; supervisor-ordered) — BEFORE any real training. Local $0 CPU only; no spend
+  authorized, none taken.** Legs (a), (b) and (c) are now all demonstrated and the canary is a
+  **CONDITIONAL PASS — explicitly NOT 8/8**, and does not become 8/8 until items 1 and 2 below are
+  accepted.
+  - **LEG (c) UPGRADES — recorded at exactly this strength and no more. This sentence is the
+    permitted claim; nothing stronger may be derived from it:**
+    > *"A trained model on planted data converts microstructure into net IR through the money path,
+    > demonstrated at the pinned h=15 with a clean negative control, on ONE checkpoint whose
+    > byte-identical sibling is degenerate."*
+
+    Control arm verified independently by the supervisor: **0 of 16** noise cell-horizon combinations
+    pass the conjunction, and `moneyleg_noise_cell2` @ h=5 (activity 0.9318, binding) is correctly
+    rejected by the sign-balance leg. Legs (a), (b) and (c) are now all demonstrated; **the canary is
+    a CONDITIONAL PASS, explicitly NOT 8/8**, and does not become 8/8 until the v1.4.6 items 1 and 2
+    are accepted. **v1.4.7 note:** the "byte-identical sibling is degenerate" clause is now
+    ATTRIBUTED — see v1.4.7, the divergence is unforced-determinism, not hardware — and the
+    single-checkpoint weakness in this sentence is exactly what the v1.4.7 power guard exists to
+    catch on real data.
+  - **ITEM 1 — THE GUARD WAS DEFEATED BY THE THING IT NOW HAS TO CATCH (fixed).** v1.4.4's
+    `degeneracy_guard()` tested only the seed-MEAN and **discarded the per-seed lists it had already
+    computed**. At the measured 1-in-2 lock rate a realistic triple is (0.999, 0.55, 0.55): mean
+    **0.700**, comfortably inside [0.05, 0.95], **no HALT** — while the locked seed's
+    constant-direction book still enters the seed-mean headline series the §3 clauses are computed
+    on. Averaging is the wrong reduction for a degeneracy test: one poisoned seed is not diluted by
+    two healthy ones, it contaminates the aggregate the verdict reads. **FIX:** HALT if **ANY** seed
+    is degenerate, as a **union** with the existing seed-mean condition, on both the sign and the
+    activity leg; per-seed `frac_negative` and `activity_decisions` are now **persisted** in the
+    verdict manifest (`frac_negative_by_seed`, `activity_decisions_by_seed`,
+    `degenerate_seeds_frac_negative`, `degenerate_seeds_activity`) so an adjudication has the
+    distribution rather than an aggregate. **HALT-only semantics unchanged and non-negotiable** — the
+    guard is still a pure post-hoc read that can never flip SURVIVES↔NULL. KATs: the exact
+    (0.999, 0.55, 0.55) pattern proving **the old rule passes it and the new rule halts** (asserting
+    both halves), the same for one non-binding seed, and a no-false-positive case with three
+    differing in-band seeds. `tests/eval/test_degeneracy_guard.py` now 8 KATs.
+  - **ITEM 2 — THE DIVERGENCE, ATTRIBUTED FROM CODE (`m6_divergence_attribution.json`).** The
+    pre-declared reading could not be applied as written, and I say so plainly rather than inferring:
+    - **The GPU comparison CANNOT be settled from the receipts.** Acceptance: RTX 4090, torch
+      2.12.1+cu130, numpy 2.4.6 (from `runs_cloud/acceptance/setup.log`); driver/CUDA version and
+      attention mode absent. Money-leg: **no setup log exists at all** — nothing recorded. wandb
+      covers only the 2026-07-19 toy rehearsal (and records `gpu: None`). Checkpoints carry only
+      `{format, config, hash, state_dict}`. Both Stage-2 manifests record `device` and `seed` and
+      nothing else. So branch A/B cannot be adjudicated on hardware.
+    - **But the question is answered from CODE, not logs.** **Forced determinism is NEVER engaged**:
+      `orchestrator.py:159` — the REAL 15-day run path — and `m6_canary.py:482,557` both call
+      `set_determinism(..., deterministic_algorithms=False)`, leaving
+      `torch.use_deterministic_algorithms`, `CUBLAS_WORKSPACE_CONFIG` and `cudnn.deterministic`
+      unset. CUDA reduction order is unconstrained, so **run-to-run divergence is EXPECTED even on
+      identical hardware** — the GPU identity is not needed to attribute it.
+    - **This lands on branch B's DISPOSITION by a different mechanism than branch B assumed.** SDPA
+      attention was never the weak link; the missing `use_deterministic_algorithms` is. It is a
+      determinism-deliverable defect and **BLOCKING for the 15-day run**.
+    - **PROVEN, not argued:** **15 of 15** committed toy-rehearsal run records stamp
+      `bit_exact_claim: true` beside `deterministic_algorithms: false` on `device: cuda`. The
+      recorded bit-exactness claim is unsound as written.
+    - **NOT CHANGED BY THE BUILDER.** The determinism posture stands: forcing deterministic
+      algorithms slows CUDA training and the 2–3 GPU-day / \$20–30 budget was measured **without**
+      it, so the throughput/cost trade is a supervisor decision. `bit_exact_claim` was likewise NOT
+      redefined (that would silently restate a recorded claim and break its KAT).
+  - **ITEM 3 — RUN PROVENANCE, where it was absent and matters most.** `determinism_record()` —
+    the single point feeding **both** the cloud `run_manifest.json` and the checkpoint metadata — now
+    records GPU model / capability / count / total memory, driver version, CUDA build, cuDNN version,
+    torch / numpy / python, attention mode, **all** seeds (`seeds`, via an `extra_seeds` passthrough),
+    and **the determinism flags actually in force** (`torch_use_deterministic_algorithms`,
+    `cudnn_deterministic`, `cudnn_benchmark`, `cublas_workspace_config`). Every probe is guarded —
+    provenance must never be the thing that crashes a 15-day run. It also adds
+    **`bit_exact_preconditions_met`** (SDPA **and** forced algorithms **and** cuDNN determinism **and**
+    autotune off) plus a `bit_exact_caveat` string whenever that disagrees with the historical
+    `bit_exact_claim`, so the contradiction is **self-announcing** instead of silently wrong. KATs in
+    `tests/model/test_attention.py` assert the provenance fields and both directions of the
+    precondition predicate (flags set explicitly and restored, so the assertion is not
+    order-dependent on the shared global torch state).
+
 - **v1.4.5 (2026-07-29, C1/C2 corrections + the FINAL canary fixture iteration; supervisor-ordered)
   — BEFORE any real training. Local $0 CPU only; no spend authorized, none taken.** The supervisor
   confirmed gate legs (a) and (b), restated (c) at full strength, and ordered ONE pass: two wording/
@@ -208,13 +398,19 @@ three stacked judgment calls = an unlimited re-run license):**
     (`m6_moneyleg_local_rescore.json`): local == cloud **EXACTLY** for all three cells —
     cell1 `-7.240328510778865`, cells 2,3 `-7.563377128272953`, worst |Δ| = **0.0**, not 4.9e-7.
     The inferred discrepancy does not exist.
+    - **WHERE THE INFERENCE ORIGINATED (recorded at the supervisor's instruction, v1.4.6).** The
+      ≈4.9e-7 figure was inferred **in the v1.4.5 ruling itself**, from a rounded DISPLAY field, and
+      issued as a correction without being measured — the same failure this project's rules exist to
+      prevent, committed first at the ruling stage and then propagated into this prereg by the
+      builder. Both halves are on the record; neither is softened on the other's behalf.
     - **BUILDER ERROR, DISCLOSED.** The C1 correction was written into this document **before** the
       receipt was regenerated — acting on the ruling's inference instead of on a measurement, which
-      is precisely what "claims must match receipts" forbids. That text is withdrawn and replaced by
-      the measured result above. The annotations it introduced into the v1.4.4 entry are corrected
-      in place. The term-of-art discipline still stands on its own merits: **"bit-identical" is what
-      Gate-A means** and is not spent loosely — here it happens to be literally true, for the
-      reason C2 gives.
+      is precisely what "claims must match receipts" forbids. Receiving a wrong premise does not
+      excuse propagating it unmeasured; the builder's job was to measure first and did not. That
+      text is withdrawn and replaced by the measured result above. The annotations it introduced
+      into the v1.4.4 entry are corrected in place. The term-of-art discipline still stands on its
+      own merits: **"bit-identical" is what Gate-A means** and is not spent loosely — here it
+      happens to be literally true, for the reason C2 gives.
   - **C2 — L1's epistemic status REFRAMED, and the C1 measurement STRENGTHENS it.** The agreement
     is **exact, not merely small**, and that is the point: with traded == scored at every κ the book
     is CONSTANT, so μ̂'s *magnitudes* drop out of the IR entirely and the computation reduces to the

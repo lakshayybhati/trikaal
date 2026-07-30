@@ -1,0 +1,84 @@
+{
+  "amendment": "prereg s7 v1.4.7 item 2 feasibility probe (supervisor-ordered, $0)",
+  "baseline_unforced": {
+    "completed": true,
+    "determinism_record": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_caveat": "bit_exact_claim is TRUE on attention mode alone, but the preconditions are NOT met (see determinism_flags). Run-to-run bit-exactness is NOT established for this run: CUDA reduction order is unconstrained. Do not quote this run as bit-exact.",
+      "bit_exact_claim": true,
+      "bit_exact_preconditions_met": false,
+      "determinism_flags": {
+        "cublas_workspace_config": null,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "torch_use_deterministic_algorithms": false
+      },
+      "deterministic_algorithms": false,
+      "device": "cpu",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.7",
+        "torch": "2.12.1"
+      },
+      "hardware": {
+        "cuda_available": false
+      },
+      "seed": 0,
+      "seeds": {
+        "run": 0
+      }
+    },
+    "final_stage1_loss": 0.8942896127700806,
+    "final_stage2_loss": 17.74869155883789,
+    "forced": false,
+    "offending_ops": [],
+    "steps_each_stage": 5
+  },
+  "device": "cpu",
+  "forced": {
+    "completed": true,
+    "determinism_record": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_claim": true,
+      "bit_exact_preconditions_met": true,
+      "determinism_flags": {
+        "cublas_workspace_config": ":4096:8",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": true,
+        "torch_use_deterministic_algorithms": true
+      },
+      "deterministic_algorithms": true,
+      "device": "cpu",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.7",
+        "torch": "2.12.1"
+      },
+      "hardware": {
+        "cuda_available": false
+      },
+      "seed": 0,
+      "seeds": {
+        "run": 0
+      }
+    },
+    "final_stage1_loss": 0.8942896127700806,
+    "final_stage2_loss": 17.74869155883789,
+    "forced": true,
+    "offending_ops": [],
+    "steps_each_stage": 5
+  },
+  "forced_completes": true,
+  "probe_valid": true,
+  "question": "Does the M6 training path complete under torch.use_deterministic_algorithms(True, warn_only=False)? If it raises, 'make the claim true' needs warn_only + an op allowlist, which weakens the claim independently of cost.",
+  "receipt": "m6_determinism_feasibility_probe",
+  "staged_cuda_measurement_PENDING": {
+    "command": "PYTHONPATH=src python3 scripts/m6_determinism_probe.py --device cuda --steps 50 && PYTHONPATH=src python3 scripts/m6_attention_bench.py --forced-determinism",
+    "expected_wall_clock": "probe < 2 min; the throughput delta needs ~10 min of steady-state training per arm (forced vs unforced) to be quotable, so ~25 min of box time total.",
+    "purpose": "Measure the training throughput delta with deterministic algorithms forced, against the measured baseline of 47.2k bars/s, and confirm no CUDA op raises.",
+    "status": "STAGED \u2014 NOT RUN. Needs GPU credentials; ~$1-2 of box time.",
+    "what_would_make_it_conclusive": "A forced-vs-unforced bars/s pair measured on the SAME box in the SAME session, plus a same-seed twice-run weight-hash comparison to confirm forcing actually delivers bit-identity rather than merely claiming it."
+  },
+  "steps_each_stage": 5,
+  "verdict": "FORCED DETERMINISM COMPLETES on this device \u2014 no op in the M6 training path lacks a deterministic kernel here, so 'make the claim true' reduces to a pure GPU-THROUGHPUT question. NOTE THE SCOPE: this is CPU/MPS. CUDA has its own set of non-deterministic kernels, so a CUDA probe is still required before the claim can be relied on; that probe is STAGED, not run."
+}

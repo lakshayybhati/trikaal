@@ -1,0 +1,37 @@
+{
+  "M4a_method_note": "The 256 per-decision MC samples of the v1.4.6 run were NOT retained (_rollout_mc_mean accumulates and returns only the mean), so partitioning them after the fact is impossible without editing the anchored predict.py. The same 256-sample budget is instead spent as two independent n=128 halves, giving the split-half floor DIRECTLY rather than by 1/sqrt(n) extrapolation, at no extra rollout cost over the ordered M4b.",
+  "M4a_split_half": {
+    "agree_expectation_vs_combined_n256": 0.890625,
+    "agree_half_a_vs_half_b": 0.890625,
+    "expectation_disagreement": 0.109375,
+    "expectation_vs_mc256_v1_4_6": 0.9102,
+    "n_per_half": 128,
+    "pinned_n32_floor_v1_4_6": 0.8164,
+    "reference_self_disagreement_at_half": 0.109375
+  },
+  "M4b_benign_perturbation": {
+    "abs_mu_on_agreements": 0.02790389673620985,
+    "abs_mu_on_disagreements": 0.008591243965285166,
+    "corr_flip_direction_vs_realized_return": -0.09348192918559371,
+    "mean_signed_return_agreement_set": 0.029663564215075173,
+    "mean_signed_return_expectation_positions": 0.0006646309643159043,
+    "mean_signed_return_mc_positions": -0.0006646309643159043,
+    "n_disagreements": 28,
+    "n_traded_subsample": 256,
+    "realized_return_on_disagreements": {
+      "frac_positive": 0.5,
+      "mean": -0.028776566814963798,
+      "median": -0.00707966734686849,
+      "std": 0.12531356410400096
+    }
+  },
+  "amendment": "prereg s7 v1.4.7 item 4 M4a/M4b (supervisor-ordered)",
+  "caveats": "n=256 traded decisions on ONE fixture-planted cell; point estimates, NOT significance claims; no paired CI computed on any difference.",
+  "checkpoint": "runs_cloud/acceptance/m6_acceptance/planted/cell4_fsq_micro_seed0",
+  "environment": "numpy 2.4.6 / torch 2.12.1; device cpu",
+  "h": 15,
+  "kappa_star": 3.0,
+  "mc_total_sample_budget": 256,
+  "pinned_mc_samples": 32,
+  "receipt": "m6_estimator_forensics"
+}

@@ -21,6 +21,7 @@ from trikaal.eval.verdict import (  # noqa: E402
     DSR_HORIZONS,
     DSR_KAPPAS,
     DSR_SEEDS,
+    FRAC_NEG_BAND,
     HALT_ADJUDICATE,
     NULL,
     PRIMARY_H,
@@ -67,6 +68,33 @@ def _fixture(out_dir: Path, mu_by_cell, mudiag_by_cell, *, seed):
                 kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
                 val_ir_by_kappa_by_h=val,
                 mu_diag=mudiag_by_cell[cell],
+                meta={"fixture": True},
+            )
+            entries[name] = sha
+    write_eval_index(out_dir, entries)
+    return out_dir
+
+
+def _fixture_per_seed(out_dir: Path, mu_by_cell, mudiag_by_cell_seed, *, seed):
+    """Like ``_fixture`` but with a PER-(cell, seed) mu_diag — needed to build a cell whose seeds
+    disagree (the §7 v1.4.6 one-locked-seed pattern), which a single per-cell dict cannot express."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(seed)
+    common = rng.standard_normal(T) * SIGMA_COMMON
+    entries = {}
+    for cell in (1, 2, 3, 4, 5):
+        for sd in DSR_SEEDS:
+            series = common + rng.standard_normal(T) * SIGMA_IDIO + mu_by_cell[cell]
+            val = {h: {k: float(rng.normal(0.5, 0.3)) for k in DSR_KAPPAS} for h in DSR_HORIZONS}
+            name, sha = write_cell_eval_artifact(
+                out_dir,
+                cell_id=cell,
+                seed=sd,
+                grid={"h": PRIMARY_H, "start_ms": 1_704_132_000_000, "n_periods": T},
+                headline_series=series,
+                kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
+                val_ir_by_kappa_by_h=val,
+                mu_diag=mudiag_by_cell_seed[cell][sd],
                 meta={"fixture": True},
             )
             entries[name] = sha
@@ -139,3 +167,164 @@ def test_guard_holds_on_a_null_fixture_too(tmp_path):
     assert m["verdict"]["primary"] == NULL
     assert m["verdict"]["emitted"] == HALT_ADJUDICATE
     assert m["verdict"]["emitted"] != SURVIVES
+
+
+# ------------------------------------------------- §7 v1.4.6: the ONE-LOCKED-SEED hole (supervisor)
+def test_one_locked_seed_halts_where_the_seed_mean_rule_passed(tmp_path):
+    """THE v1.4.6 REGRESSION KAT — the exact (0.999, 0.55, 0.55) pattern from the ruling.
+
+    v1.4.4 tested only the seed-MEAN: (0.999 + 0.55 + 0.55)/3 = 0.6997, comfortably inside
+    [0.05, 0.95], so it did NOT halt — while seed 0's constant-direction book still entered the
+    seed-mean headline series the §3 clauses are computed on. This test proves BOTH halves: the
+    old rule passes the pattern, and the new per-seed union halts on it.
+    """
+    locked, healthy = 0.999, 0.55
+    md = {c: dict.fromkeys(DSR_SEEDS) for c in (1, 2, 3, 4, 5)}
+    for c in (1, 2, 3, 4, 5):
+        for sd in DSR_SEEDS:
+            md[c][sd] = _md()  # benign everywhere else
+    md[4][DSR_SEEDS[0]] = _md(
+        frac_negative=locked, activity=0.5
+    )  # ONE locked seed on the signal cell
+    md[4][DSR_SEEDS[1]] = _md(frac_negative=healthy, activity=0.5)
+    md[4][DSR_SEEDS[2]] = _md(frac_negative=healthy, activity=0.5)
+
+    m = _assemble(_fixture_per_seed(tmp_path / "onelock", MU_PLANTED, md, seed=101))
+    g, cell4 = m["degeneracy_guard"], m["degeneracy_guard"]["per_cell"]["4"]
+
+    # (1) the OLD v1.4.4 rule — seed-mean only — would NOT have halted on this pattern
+    lo, hi = FRAC_NEG_BAND
+    seed_mean = cell4["frac_negative_seed_mean"]
+    assert abs(seed_mean - (locked + 2 * healthy) / 3) < 1e-12
+    old_rule_would_halt = not (lo <= seed_mean <= hi)
+    assert old_rule_would_halt is False, "the pattern must be one the seed-mean rule PASSED"
+
+    # (2) the NEW v1.4.6 per-seed union DOES halt, and names the offending seed
+    assert g["halted"] is True
+    assert g["degenerate_cells"] == [4]
+    assert cell4["degenerate_seeds_frac_negative"] == [DSR_SEEDS[0]]
+    assert any("per-seed frac_negative" in r for r in cell4["reasons"])
+    assert not any(
+        "seed-mean frac_negative" in r for r in cell4["reasons"]
+    )  # only the per-seed leg
+
+    # (3) the per-seed DISTRIBUTION is persisted for adjudication, not just the aggregate
+    assert cell4["frac_negative_by_seed"] == {
+        str(DSR_SEEDS[0]): locked,
+        str(DSR_SEEDS[1]): healthy,
+        str(DSR_SEEDS[2]): healthy,
+    }
+    assert cell4["activity_decisions_by_seed"] == {str(s): 0.5 for s in DSR_SEEDS}
+
+    # (4) HALT-ONLY is unchanged: the clauses still say SURVIVES, only `emitted` is superseded
+    assert m["verdict"]["primary"] == SURVIVES
+    assert m["verdict"]["emitted"] == HALT_ADJUDICATE
+    assert m["verdict"]["emitted"] != NULL
+
+
+def test_one_seed_never_binding_also_halts(tmp_path):
+    """The activity leg gets the same per-seed treatment: one seed at activity 1.0 with a balanced
+    sign and an in-band seed-mean activity must still HALT."""
+    md = {c: {sd: _md() for sd in DSR_SEEDS} for c in (1, 2, 3, 4, 5)}
+    md[3][DSR_SEEDS[0]] = _md(frac_negative=0.5, activity=1.0)  # filter never binds on ONE seed
+    m = _assemble(_fixture_per_seed(tmp_path / "onebind", MU_PLANTED, md, seed=101))
+    cell3 = m["degeneracy_guard"]["per_cell"]["3"]
+    assert 0.0 < cell3["activity_decisions_seed_mean"] < 1.0  # seed-mean leg cannot fire
+    assert m["degeneracy_guard"]["degenerate_cells"] == [3]
+    assert cell3["degenerate_seeds_activity"] == [DSR_SEEDS[0]]
+    assert m["verdict"]["emitted"] == HALT_ADJUDICATE
+
+
+def test_per_seed_leg_does_not_fire_on_healthy_seeds(tmp_path):
+    """No false positives: three in-band seeds with differing values must NOT halt."""
+    md = {
+        c: {
+            sd: _md(frac_negative=f, activity=a)
+            for sd, f, a in zip(DSR_SEEDS, (0.45, 0.60, 0.72), (0.80, 0.90, 0.60), strict=True)
+        }
+        for c in (1, 2, 3, 4, 5)
+    }
+    m = _assemble(_fixture_per_seed(tmp_path / "healthy", MU_PLANTED, md, seed=101))
+    assert m["degeneracy_guard"]["halted"] is False
+    assert m["degeneracy_guard"]["degenerate_cells"] == []
+    assert m["verdict"]["emitted"] == SURVIVES
+
+
+# ----------------------------------- §7 v1.4.7: the HALT-only POWER guard (across-seed IR spread)
+def _fixture_per_seed_mu(out_dir: Path, mu_by_cell_seed, mudiag, *, seed):
+    """Fixture with a PER-(cell, seed) mu offset, so a cell's seeds can be made to disagree on IR."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(seed)
+    common = rng.standard_normal(T) * SIGMA_COMMON
+    entries = {}
+    for cell in (1, 2, 3, 4, 5):
+        for sd in DSR_SEEDS:
+            series = common + rng.standard_normal(T) * SIGMA_IDIO + mu_by_cell_seed[cell][sd]
+            val = {h: {k: float(rng.normal(0.5, 0.3)) for k in DSR_KAPPAS} for h in DSR_HORIZONS}
+            name, sha = write_cell_eval_artifact(
+                out_dir,
+                cell_id=cell,
+                seed=sd,
+                grid={"h": PRIMARY_H, "start_ms": 1_704_132_000_000, "n_periods": T},
+                headline_series=series,
+                kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
+                val_ir_by_kappa_by_h=val,
+                mu_diag=mudiag,
+                meta={"fixture": True},
+            )
+            entries[name] = sha
+    write_eval_index(out_dir, entries)
+    return out_dir
+
+
+def test_power_guard_halts_when_seed_spread_swamps_the_claim(tmp_path):
+    """Direction 1: cell4's seeds are driven far apart, so its within-cell across-seed IR range
+    exceeds the between-cell ΔIR being claimed → HALT, primary preserved."""
+    mu = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+    # a wide seed spread on the signal cell — the v1.4.5 basin-hopping scenario
+    mu[4] = {DSR_SEEDS[0]: 0.0200, DSR_SEEDS[1]: 0.0020, DSR_SEEDS[2]: -0.0150}
+    m = _assemble(_fixture_per_seed_mu(tmp_path / "wide", mu, _md(), seed=303))
+    p = m["power_guard"]
+    assert p["halted"] is True
+    assert p["underpowered_claims"], p["checks"]
+    c4 = p["per_cell"]["4"]
+    assert c4["ir_range_across_seeds"] > 0
+    assert set(c4["ir_by_seed"]) == {str(s) for s in DSR_SEEDS}
+    # the trip condition really is range >= |delta| for at least one claimed delta
+    trip = next(v for v in p["checks"].values() if v["seed_spread_exceeds_claim"])
+    assert trip["worst_within_cell_ir_range"] >= abs(trip["delta_ir_claimed"])
+    # HALT-ONLY: the clause-derived primary is untouched, only `emitted` is superseded
+    assert m["verdict"]["emitted"] == HALT_ADJUDICATE
+    assert m["verdict"]["halted_for_power"] is True
+    assert m["verdict"]["primary"] in (SURVIVES, NULL)
+
+
+def test_power_guard_silent_when_seeds_agree(tmp_path):
+    """Direction 2: identical per-seed mu → a tight across-seed IR range → the guard does NOT fire,
+    and the emitted verdict is the clause-derived one."""
+    mu = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+    m = _assemble(_fixture_per_seed_mu(tmp_path / "tight", mu, _md(), seed=303))
+    p = m["power_guard"]
+    assert p["halted"] is False
+    assert p["underpowered_claims"] == []
+    assert m["verdict"]["halted_for_power"] is False
+    assert m["verdict"]["emitted"] == m["verdict"]["primary"]
+
+
+def test_power_guard_cannot_alter_a_clause_outcome(tmp_path):
+    """HALT-ONLY proof for the power guard, same shape as the degeneracy-guard proof: the clauses
+    are computed from the seed-MEAN series, so two fixtures with the same seed-mean but different
+    seed SPREAD must give identical clauses and differ only in `emitted`."""
+    base = MU_PLANTED[4]
+    tight = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+    wide = {c: dict.fromkeys(DSR_SEEDS, MU_PLANTED[c]) for c in (1, 2, 3, 4, 5)}
+    # same MEAN for cell4 (base), very different spread → clauses identical, power verdict differs
+    wide[4] = {DSR_SEEDS[0]: base + 0.02, DSR_SEEDS[1]: base, DSR_SEEDS[2]: base - 0.02}
+    m_t = _assemble(_fixture_per_seed_mu(tmp_path / "t", tight, _md(), seed=404))
+    m_w = _assemble(_fixture_per_seed_mu(tmp_path / "w", wide, _md(), seed=404))
+    assert m_w["power_guard"]["halted"] is True
+    assert m_t["power_guard"]["halted"] is False
+    # the power guard never touched a clause result or the primary
+    assert m_t["verdict"]["primary"] == m_w["verdict"]["primary"]
+    assert m_w["verdict"]["emitted"] == HALT_ADJUDICATE
+    assert m_w["verdict"]["emitted"] != NULL or m_w["verdict"]["primary"] == NULL

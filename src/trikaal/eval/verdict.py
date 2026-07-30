@@ -256,15 +256,33 @@ def _pb_dict(pb: PairedBootstrap) -> dict:
 
 
 def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
-    """§7 v1.4.4 HALT-only guard: flag any cell whose IR is a constant-direction book.
+    """§7 v1.4.6 HALT-only guard: flag any cell whose IR is a constant-direction book.
 
-    Reads each cell's seed-mean ``frac_negative`` and decision-activity at κ* from the persisted
-    ``mu_diag``. A cell is degenerate if the sign is locked (frac_negative outside FRAC_NEG_BAND)
-    OR the θ=κ·c filter never binds (decision-activity is exactly 0 or 1). PURE READ — it never
-    touches the clause computation, so it cannot alter a SURVIVES/NULL outcome; it only reports
-    whether the verdict must HALT. A missing ``activity_decisions`` (pre-v1.4.4 artifact) skips the
-    filter leg (NaN comparisons are False) but the sign leg still applies."""
+    A cell is degenerate if its sign is locked (``frac_negative`` outside FRAC_NEG_BAND) or the
+    θ=κ·c filter never binds (decision-activity at κ* is exactly 0 or 1), tested BOTH on the
+    seed-mean AND **on every individual seed** (a union — either trips the HALT).
+
+    WHY THE PER-SEED LEG EXISTS (§7 v1.4.6, supervisor-identified). v1.4.4 tested ONLY the
+    seed-mean and threw the per-seed lists away. The v1.4.5 h-sweep measured a 1-in-2 lock rate
+    across two byte-identical-recipe runs, so a realistic triple is (0.999, 0.55, 0.55): its mean
+    is 0.700 — comfortably inside [0.05, 0.95], no HALT — while the locked seed's
+    constant-direction book still enters the seed-mean headline series the §3 clauses are computed
+    on. Averaging is exactly the wrong reduction for a degeneracy test: one poisoned seed is not
+    diluted by two healthy ones, it contaminates the aggregate the verdict reads. The per-seed
+    values are now PERSISTED too, so an adjudication has the distribution rather than a mean.
+
+    PURE READ — never touches the clause computation, so it cannot alter a SURVIVES/NULL outcome;
+    it only reports whether the verdict must HALT. A missing ``activity_decisions`` (pre-v1.4.4
+    artifact) skips the filter legs (NaN comparisons are False); the sign legs still apply.
+    """
     lo, hi = FRAC_NEG_BAND
+
+    def _locked(v: float) -> bool:
+        return v == v and not (lo <= v <= hi)  # v==v excludes NaN
+
+    def _never_binds(v: float) -> bool:
+        return v == v and (v <= 0.0 or v >= 1.0)
+
     per_cell: dict[str, dict] = {}
     degenerate: list[int] = []
     for c in (1, 2, 3, 4, 5):
@@ -277,12 +295,25 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
             for s in DSR_SEEDS
         ]
         fn, act = float(np.mean(fns)), float(np.mean(acts))
+        bad_fn = [s for s, v in zip(DSR_SEEDS, fns, strict=True) if _locked(v)]
+        bad_act = [s for s, v in zip(DSR_SEEDS, acts, strict=True) if _never_binds(v)]
         reasons: list[str] = []
-        if fn == fn and not (lo <= fn <= hi):  # fn==fn excludes NaN
+        if _locked(fn):
             reasons.append(f"seed-mean frac_negative {fn:.4f} outside [{lo}, {hi}] — sign-locked")
-        if act == act and (act <= 0.0 or act >= 1.0):
+        if _never_binds(act):
             reasons.append(
                 f"seed-mean decision-activity {act:.4f} at kappa* is 0 or 1 — filter never binds"
+            )
+        if bad_fn:
+            reasons.append(
+                f"per-seed frac_negative outside [{lo}, {hi}] on seed(s) {bad_fn} "
+                f"(values {[fns[DSR_SEEDS.index(s)] for s in bad_fn]}) — a locked seed's "
+                "constant-direction book enters the seed-mean series the clauses read"
+            )
+        if bad_act:
+            reasons.append(
+                f"per-seed decision-activity at kappa* is 0 or 1 on seed(s) {bad_act} "
+                f"(values {[acts[DSR_SEEDS.index(s)] for s in bad_act]}) — filter never binds there"
             )
         deg = bool(reasons)
         # NaN (a pre-v1.4.4 artifact missing the field) → None so the manifest stays deterministic
@@ -290,6 +321,16 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
         per_cell[str(c)] = {
             "frac_negative_seed_mean": (fn if fn == fn else None),
             "activity_decisions_seed_mean": (act if act == act else None),
+            # §7 v1.4.6: the per-seed DISTRIBUTION, persisted — an adjudication needs the seeds,
+            # not an aggregate that can hide a single locked one.
+            "frac_negative_by_seed": {
+                str(s): (v if v == v else None) for s, v in zip(DSR_SEEDS, fns, strict=True)
+            },
+            "activity_decisions_by_seed": {
+                str(s): (v if v == v else None) for s, v in zip(DSR_SEEDS, acts, strict=True)
+            },
+            "degenerate_seeds_frac_negative": list(bad_fn),
+            "degenerate_seeds_activity": list(bad_act),
             "degenerate": deg,
             "reasons": reasons,
         }
@@ -298,13 +339,84 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
     return {
         "armed": True,
         "frac_neg_band": list(FRAC_NEG_BAND),
-        "rule": "HALT-ONLY (§7 v1.4.4): a cell with seed-mean frac_negative outside the band OR "
-        "seed-mean decision-activity at kappa* equal to 0 or 1 is a constant-direction book; any "
-        "clause involving it is uninterpretable, so the verdict is HALT_ADJUDICATE. The guard "
-        "NEVER flips SURVIVES<->NULL — the clauses/primary below are computed identically.",
+        "rule": "HALT-ONLY (§7 v1.4.6): a cell is a constant-direction book if frac_negative is "
+        "outside the band OR decision-activity at kappa* is 0 or 1, evaluated on the seed-mean OR "
+        "ON ANY INDIVIDUAL SEED (union). The per-seed leg closes the v1.4.4 hole where a triple "
+        "like (0.999, 0.55, 0.55) averages to 0.700 and passes while one seed is fully locked. Any "
+        "clause involving such a cell is uninterpretable, so the verdict is HALT_ADJUDICATE. The "
+        "guard NEVER flips SURVIVES<->NULL — the clauses/primary below are computed identically.",
         "per_cell": per_cell,
         "degenerate_cells": degenerate,
         "halted": bool(degenerate),
+    }
+
+
+def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) -> dict:
+    """§7 v1.4.7 HALT-only POWER guard: refuse a claim its own seed spread cannot support.
+
+    THE RISK THIS MEASURES (supervisor-identified, v1.4.7). The pre-registered MDE was derived
+    entirely from SCORING noise — a paired moving-block bootstrap over TIME — and contains no
+    training-variance term at all. But v1.4.5 measured two runs of the SAME recipe at the SAME
+    SEED landing on frac_negative 0.5662 vs 0.99883: basin-hopping, not float jitter. Same-seed
+    divergence is a LOWER BOUND on across-seed variance, so the tabled MDE understates the true
+    detection threshold and the 3-seed design may be underpowered against its own effect size.
+    Forcing deterministic algorithms would remove the same-seed component and NOT the across-seed
+    component, so this cannot be fixed by determinism alone.
+
+    THE RULE. For each claimed between-cell ΔIR, take the WITHIN-cell across-seed IR range of the
+    cells that delta is built from. If that range meets or exceeds |ΔIR|, the claim is smaller than
+    the seed-to-seed wobble of its own inputs and the verdict is HALT_ADJUDICATE.
+
+    Like ``degeneracy_guard`` this is a PURE READ computed post-hoc: it never touches a clause and
+    can never flip SURVIVES<->NULL. It only refuses to REPORT an outcome its own inputs cannot
+    support — and it halts symmetrically on a NULL too, because an underpowered NULL is equally
+    uninterpretable (the same symmetry ``degeneracy_guard`` already has).
+    """
+    per_cell: dict[str, dict] = {}
+    for c in (1, 2, 3, 4, 5):
+        irs = [
+            float(
+                information_ratio(
+                    np.asarray(evals[(c, s)]["headline_series"], np.float64), PRIMARY_H
+                )
+            )
+            for s in DSR_SEEDS
+        ]
+        finite = [v for v in irs if np.isfinite(v)]
+        per_cell[str(c)] = {
+            "ir_by_seed": {str(s): v for s, v in zip(DSR_SEEDS, irs, strict=True)},
+            "ir_range_across_seeds": (max(finite) - min(finite)) if finite else None,
+            "ir_std_across_seeds": float(np.std(finite)) if finite else None,
+        }
+
+    checks: dict[str, dict] = {}
+    tripped: list[str] = []
+    for name, meta in claimed.items():
+        delta = float(meta["delta_ir"])
+        cells = [str(c) for c in meta["cells"]]
+        ranges = [per_cell[c]["ir_range_across_seeds"] for c in cells]
+        worst = max((r for r in ranges if r is not None), default=None)
+        trips = bool(worst is not None and np.isfinite(delta) and worst >= abs(delta))
+        checks[name] = {
+            "delta_ir_claimed": delta,
+            "cells": cells,
+            "worst_within_cell_ir_range": worst,
+            "seed_spread_exceeds_claim": trips,
+        }
+        if trips:
+            tripped.append(name)
+    return {
+        "armed": True,
+        "rule": "HALT-ONLY (§7 v1.4.7): if the WITHIN-cell across-seed IR range of the cells a "
+        "claimed between-cell dIR is built from meets or exceeds |dIR|, the claim is smaller than "
+        "the seed-to-seed wobble of its own inputs and the verdict is HALT_ADJUDICATE. The tabled "
+        "MDE contains SCORING noise only (paired moving-block bootstrap over time) and no "
+        "training-variance term, so it cannot speak to this. PURE READ — never alters a clause, "
+        "never flips SURVIVES<->NULL; it only refuses to report an unsupported outcome.",
+        "per_cell": per_cell,
+        "checks": checks,
+        "underpowered_claims": tripped,
+        "halted": bool(tripped),
     }
 
 
@@ -430,10 +542,19 @@ def assemble_verdict(
             "word": fb_word,
         }
 
-    # §7 v1.4.4 DEGENERACY GUARD — POST-HOC, HALT-only. Computed AFTER the clauses/primary, it
-    # never mutates them; it only decides whether the emitted verdict must HALT for adjudication.
+    # §7 v1.4.4/v1.4.7 GUARDS — POST-HOC, HALT-only, computed AFTER the clauses/primary so they
+    # can never mutate them. Either firing supersedes the EMITTED verdict with HALT_ADJUDICATE;
+    # neither can flip SURVIVES<->NULL. The degeneracy guard asks "is this cell a constant book?";
+    # the power guard asks "is this claim bigger than its own inputs' seed-to-seed wobble?".
     guard = degeneracy_guard(evals)
-    emitted = HALT_ADJUDICATE if guard["halted"] else primary
+    power = power_guard(
+        evals,
+        {
+            "clause1_delta_4_minus_5": {"delta_ir": pb45.delta_ir, "cells": (4, 5)},
+            "clause3_delta_4_minus_2": {"delta_ir": pb42.delta_ir, "cells": (4, 2)},
+        },
+    )
+    emitted = HALT_ADJUDICATE if (guard["halted"] or power["halted"]) else primary
 
     grid = next(iter(evals.values()))["grid"]
     manifest = {
@@ -464,6 +585,7 @@ def assemble_verdict(
         },
         "clauses": clauses,
         "degeneracy_guard": guard,
+        "power_guard": power,
         "verdict": {
             # `emitted` is the FINAL verdict: HALT_ADJUDICATE if the guard fired, else the
             # clause-derived `primary`. `primary` is retained un-altered (the guard is HALT-only —
@@ -471,6 +593,7 @@ def assemble_verdict(
             "emitted": emitted,
             "primary": primary,
             "halted_for_degeneracy": guard["halted"],
+            "halted_for_power": power["halted"],
             "failing_clauses": failing,
             "fallback": fallback,
             "double_null": bool(
@@ -506,6 +629,7 @@ __all__ = [
     "degeneracy_guard",
     "enumerate_dsr_trials",
     "load_cell_evals",
+    "power_guard",
     "write_cell_eval_artifact",
     "write_eval_index",
 ]

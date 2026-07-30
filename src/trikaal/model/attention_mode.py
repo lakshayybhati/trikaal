@@ -15,6 +15,7 @@ Modes:
 
 from __future__ import annotations
 
+import os
 import sys
 
 import numpy as np
@@ -64,20 +65,80 @@ def set_attention_backend(model: nn.Module, mode: str) -> int:
     return n
 
 
-def determinism_record(*, seed: int, device: str, attention_mode: str) -> dict:
-    """The per-run determinism provenance (manifest + checkpoint metadata; never stdout-only)."""
-    return {
+def _cuda_provenance() -> dict:
+    """GPU model / driver / CUDA / cuDNN — the fields a cross-hardware divergence needs.
+
+    §7 v1.4.6 item 3: the acceptance and money-leg Stage-2 manifests recorded ``device: "cuda"``
+    and nothing else, so when their cell4 models diverged (frac_negative 0.5662 vs 0.99883 under
+    byte-identical recipes) the divergence was UNATTRIBUTABLE from the receipts. Every field here
+    is one that was needed and absent. Each probe is guarded: provenance must never be the thing
+    that crashes a 15-day run.
+    """
+    if not torch.cuda.is_available():
+        return {"cuda_available": False}
+    out: dict = {"cuda_available": True, "cuda_build": torch.version.cuda}
+    for key, probe in (
+        ("gpu_name", lambda: torch.cuda.get_device_name(0)),
+        ("gpu_capability", lambda: ".".join(map(str, torch.cuda.get_device_capability(0)))),
+        ("gpu_count", torch.cuda.device_count),
+        ("gpu_total_memory_bytes", lambda: torch.cuda.get_device_properties(0).total_memory),
+        ("cudnn_version", torch.backends.cudnn.version),
+        ("driver_version", torch._C._cuda_getDriverVersion),  # not public API; guarded
+    ):
+        try:
+            out[key] = probe()
+        except Exception as e:  # pragma: no cover — probe availability is platform-dependent
+            out[key] = f"unavailable: {type(e).__name__}"
+    return out
+
+
+def determinism_record(
+    *, seed: int, device: str, attention_mode: str, extra_seeds: dict | None = None
+) -> dict:
+    """The per-run determinism provenance (manifest + checkpoint metadata; never stdout-only).
+
+    ``bit_exact_claim`` is retained with its historical meaning (attention mode == SDPA) so
+    existing manifests stay comparable, but §7 v1.4.6 adds ``bit_exact_preconditions_met``, which
+    is the claim that can actually be relied on: SDPA attention AND forced deterministic
+    algorithms AND cuDNN determinism AND cuDNN autotune off. These two DISAGREE today — every M6
+    path calls ``set_determinism(..., deterministic_algorithms=False)``, so a CUDA+SDPA run stamps
+    ``bit_exact_claim: true`` beside ``deterministic_algorithms: false``. The disagreement is
+    surfaced in ``bit_exact_caveat`` rather than silently resolved: redefining a recorded claim is
+    a supervisor decision, but a reader must not be able to miss the contradiction.
+    """
+    det_algos = bool(torch.are_deterministic_algorithms_enabled())
+    cudnn_det = bool(torch.backends.cudnn.deterministic)
+    cudnn_bench = bool(torch.backends.cudnn.benchmark)
+    claim = attention_mode == MODE_SDPA
+    preconditions = bool(claim and det_algos and cudnn_det and not cudnn_bench)
+    rec = {
         "attention_mode": attention_mode,
-        "bit_exact_claim": attention_mode == MODE_SDPA,
+        "bit_exact_claim": claim,
+        "bit_exact_preconditions_met": preconditions,
         "seed": int(seed),
+        "seeds": {"run": int(seed), **{k: int(v) for k, v in (extra_seeds or {}).items()}},
         "device": device,
-        "deterministic_algorithms": bool(torch.are_deterministic_algorithms_enabled()),
+        "deterministic_algorithms": det_algos,
+        "determinism_flags": {
+            "torch_use_deterministic_algorithms": det_algos,
+            "cudnn_deterministic": cudnn_det,
+            "cudnn_benchmark": cudnn_bench,
+            "cublas_workspace_config": os.environ.get("CUBLAS_WORKSPACE_CONFIG"),
+        },
+        "hardware": _cuda_provenance(),
         "env": {
             "python": sys.version.split()[0],
             "torch": torch.__version__,
             "numpy": np.__version__,
         },
     }
+    if claim and not preconditions:
+        rec["bit_exact_caveat"] = (
+            "bit_exact_claim is TRUE on attention mode alone, but the preconditions are NOT met "
+            "(see determinism_flags). Run-to-run bit-exactness is NOT established for this run: "
+            "CUDA reduction order is unconstrained. Do not quote this run as bit-exact."
+        )
+    return rec
 
 
 __all__ = [
