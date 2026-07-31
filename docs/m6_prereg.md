@@ -270,10 +270,23 @@ three stacked judgment calls = an unlimited re-run license):**
     clause 5 unchanged, clause 2 improved, **net sign positive**.
     - **SPEND CONTINGENCY, BOTH PATHS PRE-REGISTERED NOW so neither becomes post-hoc.** S=5 raises
       the run to **$33–50** (~**$43–65** with forced determinism at the illustrative 1.3×). **That
-      increase is LAKSHAY'S to approve and he has not yet.** **S=5 is the pre-registered primary**;
+      increase is LAKSHAY'S to approve and he has not yet** *(true as written on 2026-07-30;
+      SUPERSEDED 2026-07-31 — see the OPERATOR DECISION immediately below. Left standing rather than
+      rewritten: this is a dated record, and the pre-registration is only worth anything if the
+      state before the approval is still legible)*. **S=5 is the pre-registered primary**;
       **if the operator declines the cost, the design falls back to S=3 under the SAME v1.5
       specification in all other respects**, with the S=3 multiplier **3.9806** already tabled here.
       The choice between them is then a **budget** decision, never a **specification** one.
+    - **OPERATOR DECISION — 2026-07-31: LAKSHAY APPROVED S=5. The contingency is RESOLVED in favour
+      of the pre-registered primary; the S=3 fallback is NOT exercised.** Recorded here as what it
+      is: a **BUDGET approval of a pre-registered primary**, taken with **no M6 result in hand and
+      nothing seen** — it selects which of two paths already written down on 2026-07-30 gets funded,
+      and it is **not a specification choice**. Nothing about the v1.5 specification moved with it:
+      `PINNED_SEEDS = (0,1,2,3,4)`, `n_trials = 60` (N is independent of S under A.5), the
+      Welch–Satterthwaite multiplier **3.0728** at ν=4, and the R3 commitment all stand exactly as
+      signed off. The approved figure is **$33–50**, or ~**$43–65** if invariant 7 closes on
+      amendment A (forced determinism, illustrative 1.3×) — the invariant-7 A/B ruling is a
+      **separate, still-open** operator gate and this approval does **not** pre-decide it.
   - **E — legibility-gate adjudication, pre-written.** Reframe: real TFI is low-variance and weakly
     price-correlated — exactly the eviction profile — and the λ fix was validated on a **synthetic**
     tuned signal, so **a firing is the MODAL prediction of our own finding**, and simultaneously the
@@ -308,6 +321,18 @@ three stacked judgment calls = an unlimited re-run license):**
     fixture is now cell-dependent, **and the test asserts `_var_all_arms(full) != _var0(full)`
     before using it** — a mutation check must first prove its own fixture can tell the two cases
     apart. Same family as the control-arm norm: a check that cannot fail is not a check.
+    - **LANDED AS A STANDING NORM (2026-07-31, `CLAUDE.md` "Tooling & commands", beside the
+      control-arm rule).** **A mutation or negative check must first prove that its own fixture can
+      discriminate the cases it claims to separate; an assertion that would pass equally against a
+      gate that does nothing is not a check.** It is filed there as the third costume of a single
+      defect — with the **pipefail rider** (v1.4.1: a `| grep | tail` masked an exit-1 and put a
+      false anchor claim in a commit message) and the **control-arm rule** (v1.4.7: a probe emitted
+      a verdict while both arms died of the same `TypeError`). All three are a harness concealing
+      its own failure and letting an unverified claim through. **No new KAT was manufactured for
+      it**: the norm's own enforcement already exists as `tests/eval/test_conformance.py:252`, the
+      discrimination assertion that the mutation test now makes before relying on its fixture.
+      **This is a PROCESS norm, not an experimental parameter — it does not break the v1.5 freeze**;
+      no pin, threshold, seed, enumeration, or gate value moved.
   - **VERIFICATION.** Mutation KATs prove the conformance gate **REJECTS** the pre-v1.5 values
     (N=180, the seeds-as-trials 300, and the all-arms `var_sr` basis) and still rejects a missing
     seed in the enumeration; the Student-t implementation is KAT'd against published tables and the

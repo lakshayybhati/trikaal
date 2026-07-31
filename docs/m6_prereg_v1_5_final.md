@@ -262,6 +262,12 @@ Conditional on A.4 landing and C.1 being resolved. Recorded facts:
 - **FOR LAKSHAY, WITH THE SEED DECISION, NOT SEPARATELY:** D compounds **multiplicatively** with
   invariant-7 amendment A. At an illustrative 1.3× determinism penalty, S=5 + forced determinism ≈
   **2.17× baseline ≈ $43–65**. The penalty is PENDING the staged CUDA probe.
+- **RESOLVED 2026-07-31 — LAKSHAY APPROVED S=5.** The condition is discharged: A.4 landed and C.1
+  was ruled (Option 2). **S=5 is the live design; the S=3 fallback is NOT exercised.** This is a
+  **BUDGET approval of a pre-registered primary**, taken with **no M6 result in hand** — it funds
+  one of two paths written down on 2026-07-30 and is **not a specification choice**; no pin moved.
+  The determinism multiplier remains **PENDING** the staged CUDA probe, and the invariant-7 A/B
+  ruling is a **separate, still-open** operator gate that this approval does not pre-decide.
 
 ---
 
