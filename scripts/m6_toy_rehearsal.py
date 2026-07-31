@@ -1,6 +1,7 @@
-"""M6 pre-flight Item 2 ★ — ONE continuous 5-cell × 3-seed toy run on the REAL CUDA box.
+"""M6 pre-flight Item 2 ★ — ONE continuous 5-cell × N-seed toy run on the REAL CUDA box.
 
     PYTHONPATH=src python3 scripts/m6_toy_rehearsal.py --device cuda [--steps 300] [--wandb online]
+    # --seeds 0,1,2,3,4 is REQUIRED for the verdict path (it wants 5 cells x verdict.DSR_SEEDS)
     PYTHONPATH=src python3 scripts/m6_toy_rehearsal.py --local-smoke     # cpu script validation
 
 The entire real-run arc, once, small, on the actual rented GPU type (docs/m6_preflight.md
@@ -14,7 +15,8 @@ through ``verdict.write_cell_eval_artifact`` (with the codebook diagnostic) so t
 zero first-time events extends to the DECISION path.
 
 Numbers are garbage by design (few hundred steps); the deliverables are: it ran unattended,
-nvidia-smi + determinism mode in the log, 15 reloadable checkpoint hashes, the thin coin drawn
+nvidia-smi + determinism mode in the log, one reloadable checkpoint hash per (cell, seed),
+the thin coin drawn
 with its ^0.5 down-weight, Cell 5 verifiably trained on permuted micro, one W&B group with all
 cells' curves, measured into-GPU throughput + utilization (pre-flight Item 4's inputs), and a
 content-hashed bundle. Writes ``<out>/rehearsal_manifest.json`` (durable, never stdout-only).
@@ -52,7 +54,11 @@ from trikaal.train.cells import CELLS, assert_cells_parity
 from trikaal.train.checkpoint import load_checkpoint
 from trikaal.train.orchestrator import OrchestratorConfig, run_cell
 from trikaal.train.tripwire import TripwireConfig, TripwireMonitor
-from trikaal.utils.throughput import BASIS_END_TO_END, throughput_record
+from trikaal.utils.throughput import (
+    BASIS_END_TO_END,
+    BASIS_END_TO_END_EVAL,
+    throughput_record,
+)
 
 LAKE = Path("processed/universe_bars")
 SYMBOLS = ("BTCUSDT", "ETHUSDT", "SOLUSDT", "KLAYUSDT", "FRONTUSDT")  # deep×3 + tail + THIN
@@ -180,9 +186,16 @@ def main() -> int:
     ap.add_argument(
         "--eval-only",
         action="store_true",
-        help="reuse the 15 already-trained checkpoints in --out; skip training (the eval-cost "
+        help="reuse the already-trained checkpoints in --out; skip training (the eval-cost "
         "fix: full-window sdpa rollouts measured ~40 min/(cell,seed) on the 4090 — the money "
         "CODE PATH needs exercising, not the toy window's length)",
+    )
+    ap.add_argument(
+        "--seeds",
+        default=None,
+        help="comma-separated seeds; default keeps the historical (0,1,2). NOTE: the VERDICT path "
+        "requires exactly verdict.DSR_SEEDS — m6_verdict.py builds want_names over 5 cells x "
+        "DSR_SEEDS = 25 artifacts — so a run that must reach a verdict word has to pass 0,1,2,3,4.",
     )
     ap.add_argument(
         "--eval-window",
@@ -193,6 +206,9 @@ def main() -> int:
     )
     args = ap.parse_args()
     t_start = time.time()
+    global SEEDS
+    if args.seeds:
+        SEEDS = tuple(int(x) for x in args.seeds.split(","))
     eval_window = tuple(args.eval_window) if args.eval_window else EVAL_WINDOW
 
     if args.local_smoke:
@@ -324,7 +340,7 @@ def main() -> int:
         ckpt_hashes[run] = m["artifacts"]
     print(f"[ckpt] all {len(ckpt_hashes)} (cell, seed) checkpoints reloaded OK")
 
-    # ---- money-CODE-PATH eval per (cell, seed) → the 15 verdict artifacts ------------------
+    # ---- money-CODE-PATH eval per (cell, seed) → the verdict artifacts ---------------------
     deciles = load_spread_deciles(DECILES)
     base_cfg = XSectionConfig(
         window_start=eval_window[0],
@@ -341,6 +357,7 @@ def main() -> int:
     art_dir = Path(cfg.out_dir) / "eval"
     art_dir.mkdir(parents=True, exist_ok=True)
     entries: dict[str, str] = {}
+    eval_secs: dict[str, float] = {}  # per (cell, seed) — the last unmeasured run-cost input
     sym_evals = [
         SymbolEval(
             symbol=s,
@@ -355,6 +372,7 @@ def main() -> int:
     ]
     for spec in CELLS:
         for seed in SEEDS:
+            t_eval0 = time.time()
             rd = Path(cfg.out_dir) / f"{spec.name}_seed{seed}"
             tok = load_checkpoint(rd / "tokenizer.pt", TokenizerAE, map_location=args.device)
             pred = load_checkpoint(rd / "predictor.pt", TrikaalAR, map_location=args.device)
@@ -391,13 +409,19 @@ def main() -> int:
                 meta={"checkpoints": ckpt_hashes[f"{spec.name}_seed{seed}"]},
             )
             entries[name] = sha
+            eval_secs[f"{spec.name}_seed{seed}"] = round(time.time() - t_eval0, 3)
             print(
                 f"[eval]  {spec.name}_seed{seed}: IR@0.30%={head_score.ir_headline:+.2f} "
                 f"κ*={head_score.kappa_chosen} decisions={head_score.n_decisions} "
                 f"effbits={head_score.codebook['effective_bits_per_token']:.2f} → {name}"
             )
     write_eval_index(art_dir, entries)
-    print(f"[eval] 15 verdict artifacts + index → {art_dir} (feed to scripts/m6_verdict.py)")
+    # COUNT, not a literal: --seeds makes this 5 x len(SEEDS), and a hardcoded "15" printed while
+    # 10 files were written is prose contradicting its own datum — the defect this project polices.
+    print(
+        f"[eval] {len(entries)} verdict artifacts (5 cells x {len(SEEDS)} seeds) + index → "
+        f"{art_dir} (feed to scripts/m6_verdict.py)"
+    )
 
     # ---- throughput (Item 4 inputs) + the content-hashed bundle ----------------------------
     # Finding 0: this block is where the M6 cost basis was LOST. Under --eval-only there is no
@@ -480,6 +504,36 @@ def main() -> int:
             "the prior invocation if one is finite, else it is measured=False with NaN rates. "
             "The attention bench is NOT a substitute: it is basis=compute_only_step (pre-resident "
             "batches, no loader/tokenize/eval/checkpoint) and is an UPPER BOUND, not a cost basis.",
+        },
+        # v1.6: the eval leg as NUMBERS. Its own receipt said the absolute rate was "PENDING the
+        # 4090"; this is that measurement. Per (cell, seed) seconds plus a basis-tagged record
+        # under the SAME measured/is_costable discipline as training — eval is real run cost, so
+        # end_to_end_eval is costable, while a compute-only micro-benchmark still is not.
+        "eval_leg": {
+            "seconds_by_run": eval_secs,
+            "n_runs": len(eval_secs),
+            "mean_seconds_per_cell_seed": (
+                round(sum(eval_secs.values()) / len(eval_secs), 3) if eval_secs else float("nan")
+            ),
+            "total_seconds": round(sum(eval_secs.values()), 3) if eval_secs else float("nan"),
+            "chunk": "predict_mu default (recipe pins chunk=512)",
+            "horizons_scored": list(DSR_HORIZONS),
+            "primary_h": PRIMARY_H,
+            "eval_window": list(eval_window),
+            "n_symbols": len(sym_evals),
+            "grid_n_periods": int(grid.size),
+            "record": throughput_record(
+                steps=len(eval_secs),
+                batch=1,
+                seq_len=1,
+                wall_s=sum(eval_secs.values()) if eval_secs else None,
+                basis=BASIS_END_TO_END_EVAL,
+                device=args.device,
+                note=(
+                    "steps = (cell, seed) scoring passes; bars_per_s here reads as PASSES/s. "
+                    "Scale by grid_n_periods x n_symbols to project the real eval leg."
+                ),
+            ),
         },
         "wall_s_total": round(time.time() - t_start, 1),
         "bundle_sha256": bundle_sha,

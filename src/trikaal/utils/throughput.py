@@ -36,9 +36,15 @@ import math
 
 BASIS_COMPUTE_ONLY = "compute_only_step"
 BASIS_END_TO_END = "end_to_end_training"
+BASIS_END_TO_END_EVAL = "end_to_end_eval"
 BASIS_UNMEASURED = "unmeasured"
 
-VALID_BASES = (BASIS_COMPUTE_ONLY, BASIS_END_TO_END, BASIS_UNMEASURED)
+VALID_BASES = (BASIS_COMPUTE_ONLY, BASIS_END_TO_END, BASIS_END_TO_END_EVAL, BASIS_UNMEASURED)
+
+#: The bases that may price a run. Training and eval are BOTH real run cost — the eval leg was the
+#: last unmeasured input (its own receipt said "PENDING the 4090"). ``compute_only_step`` stays out
+#: deliberately: quoting a micro-benchmark as a cost basis is the Finding-0 defect.
+COSTABLE_BASES = (BASIS_END_TO_END, BASIS_END_TO_END_EVAL)
 
 #: What each basis does NOT include — carried in the record so a reader cannot lose it.
 BASIS_EXCLUDES = {
@@ -46,6 +52,10 @@ BASIS_EXCLUDES = {
         "data loading, tokenization, eval, checkpointing — UPPER BOUND, not a cost basis"
     ),
     BASIS_END_TO_END: "nothing; wall-clock of the real invocation",
+    BASIS_END_TO_END_EVAL: (
+        "nothing; wall-clock of the real scoring pass (rollout + costs + netting) at the pinned "
+        "chunk size — the eval leg of the run cost"
+    ),
     BASIS_UNMEASURED: "everything — no measurement was taken",
 }
 
@@ -118,7 +128,7 @@ def is_costable(record: dict | None) -> bool:
     """
     if not record or not record.get("measured"):
         return False
-    return record.get("basis") == BASIS_END_TO_END and math.isfinite(
+    return record.get("basis") in COSTABLE_BASES and math.isfinite(
         float(record.get("bars_per_s", float("nan")))
     )
 
@@ -126,8 +136,10 @@ def is_costable(record: dict | None) -> bool:
 __all__ = [
     "BASIS_COMPUTE_ONLY",
     "BASIS_END_TO_END",
+    "BASIS_END_TO_END_EVAL",
     "BASIS_EXCLUDES",
     "BASIS_UNMEASURED",
+    "COSTABLE_BASES",
     "VALID_BASES",
     "is_costable",
     "throughput_record",
