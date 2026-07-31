@@ -40,7 +40,9 @@
     "seeds": [
       0,
       1,
-      2
+      2,
+      3,
+      4
     ],
     "spread_deciles": "per-symbol (runs_manifest/m6_spread_deciles.json)",
     "symbols_sha256": "60e24f598de9601260099e3f11e537814385df23c837073035b9f7ce4dc32631",

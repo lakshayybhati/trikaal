@@ -190,6 +190,105 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6 (2026-07-31, PRE-RUN INSTRUCTIONS — NOT A SPECIFICATION CHANGE. The design stays FROZEN:
+  no pin, threshold, seed, enumeration, guard or gate value moved; the Gate-A anchor `3f86882a` was
+  re-proven byte-identical after `src/` and `pyproject.toml` edits.)** Local, $0, no spend.
+  - **FINDING 0 — THE COST BASIS IS UNBACKED (the priority item).** Receipt:
+    `runs_manifest/m6_cost_basis_forensics.json`; full write-up as entry 0 of
+    `docs/m6_claims_audit_appendix.md`. **(i) Was it ever measured?** The logs **cannot settle it,
+    and it is NOT reconstructed**: `runs_cloud/box_logs/item2.log` (the training invocation) has
+    **zero non-wandb lines** — only wandb's stderr was captured, so the script's own
+    `[throughput]` stdout is absent entirely. What IS settled: training happened; the manifest on
+    disk is the `--eval-only` re-run (`config.eval_only_rerun=true`) writing to the SAME path, so
+    the training invocation's manifest was **OVERWRITTEN**; `item2b.log` shows that re-run printing
+    `nan steps/s → nan bars/s`. **A lost measurement, not a failed one.**
+    **CORRECTION TO THE RULING'S DICHOTOMY:** there is a third option, and it is what happened —
+    **47.2k is a REAL measurement of a DIFFERENT quantity, persisted numerically in a DIFFERENT
+    artifact.** It is exactly reproducible from `m6_attention_bench.json`
+    (`steps_per_s` 2.8819876814331926 × 32 × 512 = **47,218.5**). That bench is **compute-only**
+    (pre-resident batches; no loader, no Stage-1, no tokenize pass, no eval, no checkpointing) — an
+    **upper bound**, not an end-to-end training rate. **NO artifact in the repo carries an
+    end-to-end training rate at the canonical geometry**: 20 real end-to-end records exist, all at
+    `seq_len=32` (the canary fixture), none at the pinned 512.
+    **A SECOND DEFECT, NOT ASKED FOR:** the bench ran under **FORCED determinism** and never
+    recorded it (`set_determinism`'s default is `True`) while production
+    (`orchestrator.py:159`) runs **UNFORCED** — so 47.2k is a *forced* rate and the
+    "1.3× penalty on top of 47.2k → $43–65" arithmetic **DOUBLE-COUNTS**.
+    **(ii) INSTRUMENTATION FIXED** — `src/trikaal/utils/throughput.py`: numeric records only, a
+    **closed `basis` vocabulary** (`compute_only_step` / `end_to_end_training` / `unmeasured`) so an
+    upper bound can never again be quoted as a cost basis, `measured=False` + NaN when a rate is
+    unsupported (never 0), and `is_costable()` which accepts **only** end-to-end. Wired into
+    `orchestrator.run_cell` (per-stage end-to-end records — the real run now produces the datum as
+    a by-product), the attention bench, the determinism probe, and `m6_toy_rehearsal` — which now
+    **carries a prior finite record forward instead of clobbering it**. 12 KATs.
+    **(iii) EVERY DOWNSTREAM COST CLAIM RE-LABELLED ESTIMATED-NOT-MEASURED** ($20–30, $33–50,
+    $43–65, "2–3 GPU-days", the 1.3×) — see the claims-audit appendix §2.
+    **(iv) THE STAGED CUDA PROBE NOW CARRIES BOTH JOBS.** It also had a **broken command**: it
+    invoked `--forced-determinism`, a flag `m6_attention_bench.py` **did not have** — it would have
+    failed at the box. The flag now exists, with `--no-forced-determinism` for the other arm, and
+    the staged command measures the pair.
+    **ATTRIBUTION, ON THE RECORD:** the supervisor propagated the unchecked figure twice; **so did
+    I**, in every prior report that repeated it. Neither of us opened the receipt.
+  - **FINDING 1 — THE PROPOSED FLOOR IS NOT A FLOOR (verified before use, as instructed).** Receipt:
+    `runs_manifest/m6_mde_floor_verification.json`. **(a)** 3.518 is **not** `2.4865 × SE_boot`; it
+    is an **ANALYTIC** iid-normal MDE, `z_sum·√(2/T_eff)·√(periods_per_year(h))`
+    (`scripts/m6_prereg.py:74`), reproduced to 3dp (**3.5183**) from the receipt's own `T_eff`.
+    Inverting it yields the **analytic** SE (1.4149), not the bootstrap `SE_boot` v1.5 multiplies —
+    an **estimate of an estimate**. **(b)** `3.0728 × 1.4149 = 4.3476` is **NOT a lower bound**: the
+    3.0728 multiplier is the **ν→4 limit**, which requires the training term to DOMINATE, while the
+    product is taken against an SE that IGNORES it — mutually exclusive limits. Verified through the
+    repo's own `paired_bootstrap` arithmetic: the MDE is **monotone increasing** in `se_train`, so
+    its infimum is at `se_train=0`, where Welch–Satterthwaite returns ν→ν_boot=9,999, the multiplier
+    returns to 2.4865 and the MDE returns to the v1.2 number. **The pre-run computable floor is
+    3.518**; 4.3475 is reached only once `se_train ≥ 0.685×se_boot`, unknowable pre-run.
+  - **ITEM 1 — REFRAME (done; the anchor rule fired and was honoured).** "Foundation model" removed
+    at all six sites the ruling named plus a re-grep of my own (`pyproject.toml`, `README.md`,
+    `CLAUDE.md`, the design spec ×2, `src/trikaal/__init__.py`); repo-wide re-grep now returns only
+    the prohibition itself. **Trikaal is a TOKENIZER STUDY; the backbone is the measurement
+    vehicle.** Param count corrected `~27M` → **21,301,248** at `CLAUDE.md:7`, `CLAUDE.md:33`, the
+    design spec's "~27M-class" and its §3 body text — **and at `m6_prereg.md`'s R3 text**, which is a
+    *publishable outcome sentence* and would have shipped the wrong number. Because `src/` and
+    `pyproject.toml` changed, **Gate-A was re-proven: exit-0 ×2, manifest byte-identical to the
+    pre-change baseline both times, `results_hash 3f86882a`, causal sweep 420/420.**
+  - **ITEM 2 — POWER STATEMENT drafted PRE-DATA** (`docs/paper_skeleton.md` §7): states the **floor
+    (≥ 3.518)** and the **structure** (two-term, t + Welch–Satterthwaite, training term supplied by
+    the run), **never a point number**, and makes INCONCLUSIVE read as instrument-reporting. Every
+    number verified against the live pinned surface. **The skeleton locks NO title and NO abstract**
+    — the legibility gate decides which paper this is.
+  - **ITEM 3 — TAXONOMY AUDIT: TWO HOLES FOUND, FLAGGED NOT FILLED.** Receipt:
+    `runs_manifest/m6_taxonomy_audit.json`. **R1 and R3 are determinate.** **R2/R2b are NOT:**
+    (1) *"degenerate at a MAJORITY of seeds"* does not say majority over **one leg** or over the
+    **union** — and the guard deliberately persists the two legs (sign-lock, activity-never-binds)
+    as separate seed lists; a fixture with 2 seeds locked and 2 *different* seeds never-binding is
+    majority-by-union (R2) and minority-by-leg (R2b) simultaneously. (2) R2b's headline test
+    (*strict minority of seeds*) and its parenthetical (*per-seed leg fires while the seed-mean is
+    in band*) are **different conditions presented as one**, and can disagree. Both demonstrated on
+    concrete fixtures. **Filling them is a specification choice and the design is frozen.**
+    **S=5 COLLAPSE CONFIRMED:** R1 and R2b prescribe the same remedy (add seeds within the cap), the
+    cap is exhausted at 5, so every INCONCLUSIVE path terminates at **R3 with zero re-runs** — R3 is
+    the operative rule. **The holes do not change the OUTCOME at S=5, but they do change what is
+    REPORTED** (R2 requires the degeneracy to be written up as a PRIMARY mechanism finding; R2b
+    treats the same halt as a training lottery), so the ambiguity is live for the paper's claims.
+  - **ITEM 4 — CLAIMS-AUDIT APPENDIX BUILT** (`docs/m6_claims_audit_appendix.md`), every substantive
+    claim tagged MEASURED (artifact + field + commit) or ESTIMATED. Sweep receipt:
+    `runs_manifest/m6_claims_sweep.json`, **idempotent (re-run byte-identical)**. Repo-wide the
+    Finding-0 signature occurs **exactly once** (P3=1, the entry-0 string). P2-HIGH = 5: **3 true
+    positives** (all `m6_rehearsal_manifest.json::throughput.*`) and **2 FALSE POSITIVES OF MY OWN
+    AUDIT** (`token_causality_probe`'s flip rates matched on the substring "rate"; 0.0 there is the
+    genuine and desired causal-safety result, corroborated by the companion 20-position array).
+    35 P2-LOW are per-step `rollout_h2_corr` NaNs — undefined by construction, not defects.
+    **ALSO FOUND, LISTED NOT FIXED:** `m6_eval_throughput_expectation.json`'s
+    `real_scale_decision_count_h15_headline.seeds = 3` is stale under v1.5 (S=5), understating
+    `total_decisions` by 5/3.
+    **TWO SELF-INFLICTED AUDIT DEFECTS DISCLOSED:** the sweep first scanned **its own output** and
+    the forensics receipt (self-inclusion — the same 49→98 bug), fixed with a skip set and
+    **idempotence asserted, not assumed**; and the first severity pass **buried the 3 real hits
+    under 35 benign NaNs**, which is how the original defect survived in the first place.
+  - **ITEM 5 — final pre-flight board re-run; see the v1.6 board section of the report.**
+  - **VERDICT ON THE RUN: NO-GO, unchanged.** Three blockers: **B1** (invariant 7 — needs the
+    probe), **GPU credentials**, and now **the absence of a receipt-backed cost**. No rental
+    instruction issued; the probe stays STAGED.
+
 - **v1.5 (2026-07-30, the AMENDMENT WINDOW — SIGNED OFF AND IN FORCE). THE LAST SPECIFICATION
   CHANGE BEFORE THE RUN; after this the design is FROZEN.** Full text: `docs/m6_prereg_v1_5_final.md`
   (working drafts: `docs/m6_prereg_v1_5_drafts.md`). Time-boxed on purpose: several central numbers
@@ -257,7 +356,7 @@ three stacked judgment calls = an unlimited re-run license):**
       > effect, if any, is smaller than the training variance of our own design and is unresolvable
       > at this scale."** The ablation headline is **WITHDRAWN, not softened**. The mechanism result
       > is reported separately and only at §F strength. This is a **complete, publishable finding**
-      > about the detectability limit of a 27M-parameter two-stage design at this data scale — it is
+      > about the detectability limit of a 21.3M-parameter two-stage design at this data scale — it is
       > pre-committed as an acceptable answer, not a failure to report one.
   - **D — `PINNED_SEEDS` (0,1,2) → (0,1,2,3,4); S = 5 UP FRONT (C.1 Option 2).** Decided on the
     substantive asymmetry, not optics: a power halt at S=3 is plausibly a fixable sample-size

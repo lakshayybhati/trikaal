@@ -1,7 +1,10 @@
 # Trikaal
 
-A microstructure-aware **FSQ tokenizer** for crypto 1-minute K-line foundation models — a
-controlled evolution of Kronos. The authoritative design is the blueprint spec at
+A **tokenizer study**: does microstructure-aware **FSQ** quantization of crypto 1-minute K-lines
+buy anything a price-shape tokenizer does not? The object under study is the *tokenizer*; the
+21.3M-parameter decoder-only backbone is the **measurement vehicle**, held fixed across every
+arm, not a product. A controlled evolution of Kronos. The authoritative design is the blueprint
+spec at
 [`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md);
 the live build order + milestone exit gates are in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 

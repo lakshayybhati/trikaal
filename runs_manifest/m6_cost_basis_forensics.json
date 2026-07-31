@@ -1,0 +1,344 @@
+{
+  "additional_finding_the_ruling_did_not_ask_for": "The attention bench ran under FORCED determinism and never recorded that it had: bench_mode called set_determinism(0), whose default is deterministic_algorithms=True, while the production path (orchestrator.py) passes False. So 47.2k is a FORCED-determinism rate, and the '~1.3x forced-determinism penalty applied to 47.2k -> $43-65' arithmetic DOUBLE-COUNTS the penalty. The posture is now recorded in the bench artifact (config.deterministic_algorithms) and both arms are runnable.",
+  "amendment": "prereg \u00a77 v1.6 Finding 0 (supervisor-ordered, local $0)",
+  "q1_was_it_ever_measured": {
+    "answer": "NOT SETTLED BY THE LOGS, AND NOT RECONSTRUCTED. item2.log (the training invocation) contains ZERO non-wandb lines \u2014 it captured only wandb's stderr, so the script's own [throughput]/[bundle] stdout is absent from it entirely. Whether that invocation printed a finite rate cannot be determined from anything on disk. What IS settled: (a) training DID happen (per-cell stage1/stage2 wandb summaries for all 15 runs); (b) the manifest on disk is the --eval-only RE-RUN (config.eval_only_rerun=true), which writes to the SAME path, so whatever the training invocation wrote there was OVERWRITTEN; (c) item2b.log shows that re-run printing '[throughput] nan steps/s -> nan bars/s'. The failure is a lost measurement, not a failed one.",
+    "artifacts": {
+      "runs_cloud/runs/m6_toy/rehearsal_manifest.json": {
+        "bars_per_s_into_gpu": NaN,
+        "bars_per_s_is_number": false,
+        "eval_only_rerun": true,
+        "exists": true,
+        "per_run_wall_s_entries": 0,
+        "total_train_steps": 9000,
+        "train_wall_s": 0,
+        "wall_s_total": 2180.8
+      },
+      "runs_manifest/m6_rehearsal_manifest.json": {
+        "bars_per_s_into_gpu": NaN,
+        "bars_per_s_is_number": false,
+        "eval_only_rerun": true,
+        "exists": true,
+        "per_run_wall_s_entries": 0,
+        "total_train_steps": 9000,
+        "train_wall_s": 0,
+        "wall_s_total": 2180.8
+      }
+    },
+    "logs": {
+      "bench.log": {
+        "captures_script_stdout": true,
+        "exists": true,
+        "non_wandb_lines": 5,
+        "throughput_lines": [],
+        "total_lines": 5
+      },
+      "item2.log": {
+        "captures_script_stdout": false,
+        "exists": true,
+        "non_wandb_lines": 0,
+        "throughput_lines": [],
+        "total_lines": 300
+      },
+      "item2b.log": {
+        "captures_script_stdout": true,
+        "exists": true,
+        "non_wandb_lines": 33,
+        "throughput_lines": [
+          "[throughput] nan steps/s \u2192 nan bars/s into-GPU; util mean=None"
+        ],
+        "total_lines": 33
+      }
+    },
+    "logs_can_settle_whether_it_was_measured": false,
+    "training_did_happen": true
+  },
+  "q2_provenance_of_47_2k": {
+    "answer": "YES \u2014 and NOT from the receipt it cites. 47.2k is exactly reproducible from m6_attention_bench.json: steps_per_s x batch x seq_len. So the ruling's dichotomy ('measured but not persisted' vs 'never measured') resolves to a THIRD option: a REAL measurement of a DIFFERENT QUANTITY, persisted numerically in a DIFFERENT artifact, whose derived product was never persisted anywhere and whose prose label points at the wrong receipt. The bench is a COMPUTE-ONLY micro-benchmark (60 steps, 10 warmup, pre-generated random-token batches resident in memory, AR backbone only: no data loading, no Stage-1 tokenizer training, no tokenize pass, no eval, no checkpointing) \u2014 an UPPER BOUND on the Stage-2 step rate, not an end-to-end training throughput. The cost extrapolation treats it as the latter.",
+    "bench_artifacts": [
+      {
+        "batch": 32,
+        "derived_bars_per_s": 47218.48617260143,
+        "matches_canonical_geometry": true,
+        "path": "runs_manifest/m6_attention_bench.json",
+        "posture_recorded_in_artifact": false,
+        "seq_len": 512,
+        "steps_per_s": 2.8819876814331926
+      },
+      {
+        "batch": 32,
+        "derived_bars_per_s": 47218.48617260143,
+        "matches_canonical_geometry": true,
+        "path": "runs_cloud/m6_attention_bench.json",
+        "posture_recorded_in_artifact": false,
+        "seq_len": 512,
+        "steps_per_s": 2.8819876814331926
+      },
+      {
+        "batch": 32,
+        "derived_bars_per_s": 47218.48617260143,
+        "matches_canonical_geometry": true,
+        "path": "runs_cloud/runs/m6_attention_bench.json",
+        "posture_recorded_in_artifact": false,
+        "seq_len": 512,
+        "steps_per_s": 2.8819876814331926
+      }
+    ],
+    "claim_is_prose_not_number": true,
+    "claim_site": "runs_manifest/m6_eval_throughput_expectation.json",
+    "claim_string": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days",
+    "derived_bars_per_s": 47218.48617260143,
+    "quoted_figure_bars_per_s": 47200.0,
+    "rounds_to_quoted_figure": true
+  },
+  "q3_end_to_end_datum_exists": {
+    "answer": "NO. Real end-to-end GPU training wall-times DO exist \u2014 the canary/money-leg arms record per-training `steps` and `wall_s` \u2014 but every one of them was run at seq_len=32, not the canonical 512. Attention cost is quadratic in sequence length and per-step overhead dominates at short sequences, so those rates cannot be transferred to the canonical geometry in either direction. The project therefore has NO end-to-end training-throughput measurement at the geometry it intends to run.",
+    "n_at_canonical_geometry": 0,
+    "n_end_to_end_records_found": 20,
+    "records": [
+      {
+        "arm": "noise",
+        "bars_per_s": 43636.36363636363,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell1_bsq_ohlcv",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.61363636363636,
+        "wall_s": 70.4
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 43389.83050847458,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell2_fsq_ohlcv",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.37288135593221,
+        "wall_s": 70.8
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 43085.553997194955,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell3_bsq_micro",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.0757363253857,
+        "wall_s": 71.3
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 42965.03496503497,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell4_fsq_micro",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 41.95804195804196,
+        "wall_s": 71.5
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 42965.03496503497,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell5_fsq_micro_shuffled",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 41.95804195804196,
+        "wall_s": 71.5
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 43636.36363636363,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell1_bsq_ohlcv",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.61363636363636,
+        "wall_s": 70.4
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 43512.747875354115,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell2_fsq_ohlcv",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.4929178470255,
+        "wall_s": 70.6
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 43146.06741573034,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell3_bsq_micro",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 42.13483146067416,
+        "wall_s": 71.2
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 42905.0279329609,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell4_fsq_micro",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 41.899441340782126,
+        "wall_s": 71.6
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 42965.03496503497,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell5_fsq_micro_shuffled",
+        "path": "runs_manifest/m6_acceptance_stage2_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 41.95804195804196,
+        "wall_s": 71.5
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 13556.928508384819,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell1_bsq_ohlcv",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 13.23918799646955,
+        "wall_s": 226.6
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 14415.767245424684,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell2_fsq_ohlcv",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 14.077897700610043,
+        "wall_s": 213.1
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 14321.678321678322,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell3_bsq_micro",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 13.986013986013987,
+        "wall_s": 214.5
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 13635.153129161117,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell4_fsq_micro",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 13.315579227696404,
+        "wall_s": 225.3
+      },
+      {
+        "arm": "noise",
+        "bars_per_s": 14409.005628517825,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell5_fsq_micro_shuffled",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 14.071294559099439,
+        "wall_s": 213.2
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 13837.837837837838,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell1_bsq_ohlcv",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 13.513513513513514,
+        "wall_s": 222.0
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 14078.826764436299,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell2_fsq_ohlcv",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 13.748854262144823,
+        "wall_s": 218.2
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 14684.51242829828,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell3_bsq_micro",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 14.340344168260039,
+        "wall_s": 209.2
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 14614.65271170314,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell4_fsq_micro",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 14.272121788772598,
+        "wall_s": 210.2
+      },
+      {
+        "arm": "planted",
+        "bars_per_s": 14348.435310602523,
+        "batch": 32,
+        "canonical_geometry": false,
+        "cell": "cell5_fsq_micro_shuffled",
+        "path": "runs_manifest/m6_moneyleg_rerun_manifest.json",
+        "seq_len": 32,
+        "steps": 3000,
+        "steps_per_s": 14.012143858010276,
+        "wall_s": 214.1
+      }
+    ]
+  },
+  "question": "Is the M6 cost basis backed by a measurement? Where did 47.2k bars/s come from, and does any artifact carry an end-to-end training rate at the canonical geometry?",
+  "receipt": "m6_cost_basis_forensics",
+  "verdict": "THE COST BASIS IS NOT BACKED BY AN END-TO-END MEASUREMENT. The 47.2k figure is real arithmetic on a real CUDA measurement, but of a compute-only micro-benchmark at canonical geometry \u2014 an upper bound that excludes data loading, the Stage-1 tokenizer, the tokenize pass, eval and checkpointing. The end-to-end rate the cost extrapolation needs was written to a manifest by the training invocation and then OVERWRITTEN by an --eval-only re-run at the same path; the logs on disk cannot settle what it said, and it is not reconstructed here. Every downstream cost claim is therefore ESTIMATED, NOT MEASURED, until a real datum exists."
+}

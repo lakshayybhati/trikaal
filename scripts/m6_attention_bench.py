@@ -41,13 +41,23 @@ from trikaal.model.attention_mode import (
 from trikaal.train.cells import build_cell_backbone
 from trikaal.train.train_state import autocast_ctx
 from trikaal.utils.seeding import set_determinism
+from trikaal.utils.throughput import BASIS_COMPUTE_ONLY, throughput_record, unmeasured_record
 
 OUT = Path("runs/m6_attention_bench.json")
 V_C, V_F = 891, 1225  # canonical FSQ vocab (the 21,301,248-param pin)
 
 
-def bench_mode(mode: str, batches: list, *, device: str, seq_len: int, warmup: int) -> dict:
-    set_determinism(0)
+def bench_mode(
+    mode: str,
+    batches: list,
+    *,
+    device: str,
+    seq_len: int,
+    warmup: int,
+    forced_determinism: bool = True,
+) -> dict:
+    set_determinism(0, deterministic_algorithms=forced_determinism)
+    batch = int(batches[0][0].shape[0]) if batches else 0
     model = build_cell_backbone(V_C, V_F, max_len=seq_len + 64).to(device)
     set_attention_backend(model, mode)
     opt = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.01, betas=(0.9, 0.95))
@@ -68,7 +78,16 @@ def bench_mode(mode: str, batches: list, *, device: str, seq_len: int, warmup: i
             t_timed += time.time() - t0
         losses.append(float(loss.detach()))
         if not (np.isfinite(losses[-1]) and np.isfinite(float(gn))):
-            return {"mode": mode, "stable": False, "losses": losses, "failed_at_step": i + 1}
+            return {
+                "mode": mode,
+                "stable": False,
+                "losses": losses,
+                "failed_at_step": i + 1,
+                "throughput": unmeasured_record(
+                    reason="bench aborted on non-finite loss/grad — no rate is claimed",
+                    device=device,
+                ),
+            }
     timed_steps = len(batches) - warmup
     return {
         "mode": mode,
@@ -76,6 +95,19 @@ def bench_mode(mode: str, batches: list, *, device: str, seq_len: int, warmup: i
         "losses": losses,
         "steps_per_s": timed_steps / t_timed if t_timed > 0 else float("nan"),
         "final_loss": losses[-1],
+        # Finding 0: this bench is where the 47.2k bars/s figure actually came from, but it was
+        # never persisted as a number — only the steps/s was, and the product lived in prose. The
+        # basis is COMPUTE-ONLY (batches are pre-generated and resident; no loader, no tokenizer
+        # stage, no eval, no checkpointing), so it is an UPPER BOUND and may not price a run.
+        "throughput": throughput_record(
+            steps=timed_steps,
+            batch=batch,
+            seq_len=seq_len,
+            wall_s=t_timed,
+            basis=BASIS_COMPUTE_ONLY,
+            device=device,
+            note="AR training step on pre-resident random-token batches; warmup excluded",
+        ),
     }
 
 
@@ -86,6 +118,12 @@ def main() -> int:
     ap.add_argument("--warmup", type=int, default=10)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--seq-len", type=int, default=512)
+    # The determinism POSTURE of this bench was never recorded in its own artifact, and the
+    # default has always been FORCED (set_determinism's own default is deterministic_algorithms
+    # =True) — while the production path, orchestrator.py, runs UNFORCED. Both flags exist so the
+    # staged CUDA probe can measure the pair in one rental; the default is unchanged (forced).
+    ap.add_argument("--forced-determinism", dest="forced", action="store_true", default=True)
+    ap.add_argument("--no-forced-determinism", dest="forced", action="store_false")
     args = ap.parse_args()
 
     # one fixed, pre-generated batch stream — both modes consume the identical bytes
@@ -102,14 +140,24 @@ def main() -> int:
 
     print(f"=== M6 attention-mode bench (device={args.device}, {args.steps} steps) ===")
     sdpa = bench_mode(
-        MODE_SDPA, batches, device=args.device, seq_len=args.seq_len, warmup=args.warmup
+        MODE_SDPA,
+        batches,
+        device=args.device,
+        seq_len=args.seq_len,
+        warmup=args.warmup,
+        forced_determinism=args.forced,
     )
     print(f"[sdpa]   stable={sdpa['stable']} steps/s={sdpa.get('steps_per_s', float('nan')):.3f}")
 
     flash = None
     if flash2_available():
         flash = bench_mode(
-            MODE_FLASH2, batches, device=args.device, seq_len=args.seq_len, warmup=args.warmup
+            MODE_FLASH2,
+            batches,
+            device=args.device,
+            seq_len=args.seq_len,
+            warmup=args.warmup,
+            forced_determinism=args.forced,
         )
         print(
             f"[flash2] stable={flash['stable']} "
@@ -154,6 +202,10 @@ def main() -> int:
             "batch": args.batch,
             "seq_len": args.seq_len,
             "bf16_autocast": args.device.startswith("cuda"),
+            # RECORDED FROM v1.6 ON: the posture this bench ran under. It was absent from every
+            # prior artifact, and the default has always been FORCED — so the 47.2k figure is a
+            # FORCED-determinism rate, while production (orchestrator.py) runs UNFORCED.
+            "deterministic_algorithms": bool(args.forced),
         },
         "sdpa_deterministic": {k: v for k, v in sdpa.items() if k != "losses"},
         "flash2": ({k: v for k, v in flash.items() if k != "losses"} if flash else None),

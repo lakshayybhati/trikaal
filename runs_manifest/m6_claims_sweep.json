@@ -1,0 +1,473 @@
+{
+  "P1_hits": [
+    {
+      "context": "cell4 planted stage-1 (20k) model, 2000 eval-region decision points, predict_mu at h in {2,5,15} vs the",
+      "field": ".diagnostic.setup",
+      "file": "runs_manifest/m6_acceptance_mu_drift_diagnostic.json",
+      "quoted": "20k"
+    },
+    {
+      "context": "ONE 20k extension BOTH arms (fresh --steps 40000 --bars-total 84000000), then re-app",
+      "field": ".branch_semantics.c_extension",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "quoted": "20k"
+    },
+    {
+      "context": "ims bit-exactness with forced determinism off \u2014 the rate is 100%, not a sample. But the same training run is recorded in a per-run run_manif",
+      "field": ".counts.count_note",
+      "file": "runs_manifest/m6_bit_exact_claim_correction.json",
+      "quoted": "100%"
+    },
+    {
+      "context": " Stage-2; (b) val <= d48 reference AND corr flat over final 5k steps -> GENUINE architectural FULL STOP with converged evidence; (c) still d",
+      "field": ".decision_node",
+      "file": "runs_manifest/m6_canary_v5_stage1_manifest.json",
+      "quoted": "5k"
+    },
+    {
+      "context": "est/m6_canary_d48_reference.json (d48 toy shells, identical 200k-bar stream, 600-step cap, cpu)",
+      "field": ".training.rule.d48_receipts.source",
+      "file": "runs_manifest/m6_canary_v5_stage1_manifest.json",
+      "quoted": "200k"
+    },
+    {
+      "context": "ONE 20k extension BOTH arms (fresh --steps 40000 --bars-total 84000000), then re-app",
+      "field": ".branch_semantics.c_extension",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "quoted": "20k"
+    },
+    {
+      "context": "headline cost 0.30%",
+      "field": ".checks_run[8]",
+      "file": "runs_manifest/m6_conformance_run.json",
+      "quoted": "0.30%"
+    },
+    {
+      "context": "gative 0.99883 \u2014 14 long decisions out of 12,000. That is a 99.88% one-sided book that misses the lattice by a hair, not a discriminating si",
+      "field": ".off_lattice_caveat",
+      "file": "runs_manifest/m6_constant_book_lattice.json",
+      "quoted": "99.88%"
+    },
+    {
+      "context": "The prior purpose said 'against the measured baseline of 47.2k bars/s'. That baseline is NOT end-to-end training throughput: it is the at",
+      "field": ".staged_cuda_measurement_PENDING.corrections_to_the_prior_staging[1]",
+      "file": "runs_manifest/m6_determinism_feasibility_probe.json",
+      "quoted": "47.2k"
+    },
+    {
+      "context": "probe < 2 min; the throughput delta needs ~10 min of steady-state training per arm (forc",
+      "field": ".staged_cuda_measurement_PENDING.expected_wall_clock",
+      "file": "runs_manifest/m6_determinism_feasibility_probe.json",
+      "quoted": "2 min"
+    },
+    {
+      "context": "probe < 2 min; the throughput delta needs ~10 min of steady-state training per arm (forced vs unforced) to be quotable, so ",
+      "field": ".staged_cuda_measurement_PENDING.expected_wall_clock",
+      "file": "runs_manifest/m6_determinism_feasibility_probe.json",
+      "quoted": "10 min"
+    },
+    {
+      "context": "e training per arm (forced vs unforced) to be quotable, so ~25 min of box time total.",
+      "field": ".staged_cuda_measurement_PENDING.expected_wall_clock",
+      "file": "runs_manifest/m6_determinism_feasibility_probe.json",
+      "quoted": "25 min"
+    },
+    {
+      "context": "rced deterministic algorithms slows CUDA training and the 2-3 GPU-day / $20-30 budget was measured WITHOUT it, so the throughput/cost trade ",
+      "field": ".what_the_builder_did_NOT_do",
+      "file": "runs_manifest/m6_divergence_attribution.json",
+      "quoted": "3 GPU-day"
+    },
+    {
+      "context": "halves, giving the split-half floor DIRECTLY rather than by 1/sqrt(n) extrapolation, at no extra rollout cost over the ordered M4b.",
+      "field": ".M4a_method_note",
+      "file": "runs_manifest/m6_estimator_forensics.json",
+      "quoted": "1/s"
+    },
+    {
+      "context": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days",
+      "field": ".labels_required_by_item_5.training_throughput",
+      "file": "runs_manifest/m6_eval_throughput_expectation.json",
+      "quoted": "47.2k"
+    },
+    {
+      "context": "090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days",
+      "field": ".labels_required_by_item_5.training_throughput",
+      "file": "runs_manifest/m6_eval_throughput_expectation.json",
+      "quoted": "3 GPU-day"
+    },
+    {
+      "context": "ndent (~$0.26-0.40/hr on vast 4090); the banked '$20-30 / 2-3 GPU-days' is NOT quoted without these labels",
+      "field": ".labels_required_by_item_5.dollar_figure",
+      "file": "runs_manifest/m6_eval_throughput_expectation.json",
+      "quoted": "3 GPU-day"
+    },
+    {
+      "context": "100% match (agg_index.json, ingest_ledger jsonl, universe_manifest.json \u2014 git-bl",
+      "field": ".manifest_ledger_verdict",
+      "file": "runs_manifest/m6_lake_push_verification.json",
+      "quoted": "100%"
+    },
+    {
+      "context": "100% match",
+      "field": ".verdict_parquets",
+      "file": "runs_manifest/m6_lake_push_verification.json",
+      "quoted": "100%"
+    },
+    {
+      "context": "    On  |   00000000:05:00.0 Off |                  Off |\n| 30%   24C    P8             22W /  450W |       0MiB /  24564MiB |      0%      ",
+      "field": ".nvidia_smi",
+      "file": "runs_manifest/m6_rehearsal_manifest.json",
+      "quoted": "30%"
+    },
+    {
+      "context": " P8             22W /  450W |       0MiB /  24564MiB |      0%      Default |\n|                                         |                   ",
+      "field": ".nvidia_smi",
+      "file": "runs_manifest/m6_rehearsal_manifest.json",
+      "quoted": "0%"
+    },
+    {
+      "context": "ONE 20k extension",
+      "field": ".branch_semantics.c_extension",
+      "file": "runs_manifest/m6_token_control_run_manifest.json",
+      "quoted": "20k"
+    },
+    {
+      "context": "RETIRED (Step-0 receipt: 99%+ max-entropy digit marginals cap translation at 0.2769 nats \u2014 info-poor by p",
+      "field": ".translation_plant_status",
+      "file": "runs_manifest/m6_token_control_run_manifest.json",
+      "quoted": "99%"
+    }
+  ],
+  "P2_hits": [
+    {
+      "field": ".runs.noise.attempts[0].trajectory[17].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.attempts[0].trajectory[23].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.trajectory[17].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.trajectory[23].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.attempts[0].trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.noise.training.5.attempts[0].trajectory[0].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.noise.training.5.trajectory[0].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.attempts[0].trajectory[1].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.attempts[0].trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.attempts[0].trajectory[3].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.trajectory[1].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.5.trajectory[3].rollout_h2_corr",
+      "file": "runs_manifest/m6_acceptance_stage2_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.noise.training.4.trajectory[0].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[4].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[5].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[6].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[7].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[8].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[9].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[10].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".arms.planted.training.3.trajectory[11].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_lr1e3_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.attempts[0].trajectory[14].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.attempts[0].trajectory[16].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.trajectory[14].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.noise.trajectory[16].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.attempts[0].trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.attempts[0].trajectory[3].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.attempts[0].trajectory[10].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.attempts[0].trajectory[14].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.trajectory[2].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.trajectory[3].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.trajectory[10].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".runs.planted.trajectory[14].rollout_h2_corr",
+      "file": "runs_manifest/m6_canary_v6_stage1_manifest.json",
+      "severity": "LOW",
+      "value": "NaN",
+      "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".throughput.bars_per_s_into_gpu",
+      "file": "runs_manifest/m6_rehearsal_manifest.json",
+      "severity": "HIGH",
+      "value": "NaN",
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".throughput.steps_per_s",
+      "file": "runs_manifest/m6_rehearsal_manifest.json",
+      "severity": "HIGH",
+      "value": "NaN",
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".throughput.train_wall_s",
+      "file": "runs_manifest/m6_rehearsal_manifest.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".results.untrained_causal_flag.coarse_flip_rate",
+      "file": "runs_manifest/m6_token_causality_probe.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".results.untrained_causal_flag.fine_flip_rate",
+      "file": "runs_manifest/m6_token_causality_probe.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    }
+  ],
+  "P3_hits": [
+    {
+      "field": ".labels_required_by_item_5.training_throughput",
+      "file": "runs_manifest/m6_eval_throughput_expectation.json",
+      "text": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days"
+    }
+  ],
+  "amendment": "prereg \u00a77 v1.6 item 4 (supervisor-ordered, local $0)",
+  "counts": {
+    "P1": 23,
+    "P2_HIGH": 5,
+    "P2_LOW": 35,
+    "P2_MEDIUM": 0,
+    "P2_total": 40,
+    "P3": 1
+  },
+  "patterns": {
+    "P1_number_inside_a_string_field": "a datum that cannot be read programmatically",
+    "P2_nan_or_zero_numeric_field": "a numeric slot that holds no measurement",
+    "P3_labelled_MEASURED_in_prose": "the exact Finding-0 signature"
+  },
+  "receipt": "m6_claims_sweep",
+  "scope_note": "Fields that are narrative by design (note/purpose/verdict/CORRECTION/...) are excluded \u2014 prose is their job. A hit here is a number in a field that is NOT one of those, i.e. a datum channel carrying text. NOTHING IS FIXED BY THIS SCRIPT.",
+  "self_referential_files_skipped": [
+    "m6_claims_sweep.json",
+    "m6_cost_basis_forensics.json"
+  ],
+  "triage_of_high_hits": {
+    "m6_rehearsal_manifest.json::throughput.bars_per_s_into_gpu": {
+      "evidence": "runs_manifest/m6_cost_basis_forensics.json",
+      "verdict": "TRUE POSITIVE \u2014 this is Finding 0 itself"
+    },
+    "m6_rehearsal_manifest.json::throughput.steps_per_s": {
+      "evidence": "runs_manifest/m6_cost_basis_forensics.json",
+      "verdict": "TRUE POSITIVE \u2014 same lost measurement"
+    },
+    "m6_rehearsal_manifest.json::throughput.train_wall_s": {
+      "evidence": "runs_manifest/m6_cost_basis_forensics.json",
+      "verdict": "TRUE POSITIVE \u2014 0 where a wall-clock belongs; the zero reads as a measurement of nothing rather than as an absent measurement"
+    },
+    "m6_token_causality_probe.json::results.untrained_causal_flag.coarse_flip_rate": {
+      "evidence": "the companion per-position array in the same artifact",
+      "verdict": "FALSE POSITIVE OF THIS AUDIT \u2014 matched on the substring 'rate'. 0.0 is the GENUINE measured value and the DESIRED one: zero token flips is the causal-safety result, corroborated by coarse_flip_by_position (20 positions, all 0.0) over n_chunks=60. Nothing is missing here."
+    },
+    "m6_token_causality_probe.json::results.untrained_causal_flag.fine_flip_rate": {
+      "evidence": "the companion per-position array in the same artifact",
+      "verdict": "FALSE POSITIVE OF THIS AUDIT \u2014 identical reasoning to coarse_flip_rate"
+    }
+  }
+}

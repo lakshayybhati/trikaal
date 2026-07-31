@@ -32,7 +32,20 @@
     "final_stage2_loss": 17.74869155883789,
     "forced": false,
     "offending_ops": [],
-    "steps_each_stage": 5
+    "steps_each_stage": 5,
+    "throughput": {
+      "bars_per_s": 16192.563262696272,
+      "basis": "compute_only_step",
+      "batch": 4,
+      "device": "cpu",
+      "excludes": "data loading, tokenization, eval, checkpointing \u2014 UPPER BOUND, not a cost basis",
+      "measured": true,
+      "note": "TOY probe geometry (d_model=32, seq=16, batch=4) \u2014 quote the forced/unforced RATIO only, never the absolute rate",
+      "seq_len": 16,
+      "steps": 10,
+      "steps_per_s": 253.00880097962926,
+      "wall_s": 0.03952431678771973
+    }
   },
   "device": "cpu",
   "forced": {
@@ -66,19 +79,42 @@
     "final_stage2_loss": 17.74869155883789,
     "forced": true,
     "offending_ops": [],
-    "steps_each_stage": 5
+    "steps_each_stage": 5,
+    "throughput": {
+      "bars_per_s": 21965.99615400352,
+      "basis": "compute_only_step",
+      "batch": 4,
+      "device": "cpu",
+      "excludes": "data loading, tokenization, eval, checkpointing \u2014 UPPER BOUND, not a cost basis",
+      "measured": true,
+      "note": "TOY probe geometry (d_model=32, seq=16, batch=4) \u2014 quote the forced/unforced RATIO only, never the absolute rate",
+      "seq_len": 16,
+      "steps": 10,
+      "steps_per_s": 343.218689906305,
+      "wall_s": 0.029135942459106445
+    }
   },
   "forced_completes": true,
   "probe_valid": true,
   "question": "Does the M6 training path complete under torch.use_deterministic_algorithms(True, warn_only=False)? If it raises, 'make the claim true' needs warn_only + an op allowlist, which weakens the claim independently of cost.",
   "receipt": "m6_determinism_feasibility_probe",
   "staged_cuda_measurement_PENDING": {
-    "command": "PYTHONPATH=src python3 scripts/m6_determinism_probe.py --device cuda --steps 50 && PYTHONPATH=src python3 scripts/m6_attention_bench.py --forced-determinism",
+    "command": "PYTHONPATH=src python3 scripts/m6_determinism_probe.py --device cuda --steps 50 && PYTHONPATH=src python3 scripts/m6_attention_bench.py --no-forced-determinism && PYTHONPATH=src python3 scripts/m6_attention_bench.py --forced-determinism",
+    "corrections_to_the_prior_staging": [
+      "The prior command called `--forced-determinism`, a flag m6_attention_bench.py DID NOT HAVE \u2014 it would have failed at the box. The flag now exists (with --no-forced-determinism for the other arm).",
+      "The prior purpose said 'against the measured baseline of 47.2k bars/s'. That baseline is NOT end-to-end training throughput: it is the attention bench's compute-only rate on pre-resident batches. It also was ALREADY measured under FORCED determinism (set_determinism's default), so treating it as the unforced baseline and applying a penalty on top double-counts. The bench now records its own posture in config.deterministic_algorithms."
+    ],
+    "cost_datum_note": "Even both bench arms are basis=compute_only_step and are an UPPER BOUND. The only end-to-end datum that can price the real run comes from a real cell run \u2014 orchestrator.run_cell now writes throughput.stage1/stage2 as end_to_end_training records, so the first real cell of the M6 run produces it as a by-product.",
     "expected_wall_clock": "probe < 2 min; the throughput delta needs ~10 min of steady-state training per arm (forced vs unforced) to be quotable, so ~25 min of box time total.",
-    "purpose": "Measure the training throughput delta with deterministic algorithms forced, against the measured baseline of 47.2k bars/s, and confirm no CUDA op raises.",
+    "purpose": "TWO JOBS IN ONE RENTAL (v1.6 Finding 0): (1) confirm no CUDA op raises under forced determinism; (2) produce the COST DATUM the project does not have. Both are persisted as numeric utils.throughput records, never as prose.",
     "status": "STAGED \u2014 NOT RUN. Needs GPU credentials; ~$1-2 of box time.",
     "what_would_make_it_conclusive": "A forced-vs-unforced bars/s pair measured on the SAME box in the SAME session, plus a same-seed twice-run weight-hash comparison to confirm forcing actually delivers bit-identity rather than merely claiming it."
   },
   "steps_each_stage": 5,
+  "throughput_pair": {
+    "CAVEAT_DO_NOT_QUOTE_THIS_RATIO_YET": "The two arms run SEQUENTIALLY in one process with no warmup, unforced first, so the ratio is confounded by cache/JIT warming and process state \u2014 on CPU it comes out with the SECOND arm faster, which is an ordering artifact, not a determinism effect. This pair exists to prove the plumbing emits NUMBERS. The quotable measurement is the CUDA bench pair (canonical geometry, warmup excluded, one posture per process invocation) in `staged_cuda_measurement_PENDING.command`.",
+    "forced_steps_per_s": 343.218689906305,
+    "unforced_steps_per_s": 253.00880097962926
+  },
   "verdict": "FORCED DETERMINISM COMPLETES on this device \u2014 no op in the M6 training path lacks a deterministic kernel here, so 'make the claim true' reduces to a pure GPU-THROUGHPUT question. NOTE THE SCOPE: this is CPU/MPS. CUDA has its own set of non-deterministic kernels, so a CUDA probe is still required before the claim can be relied on; that probe is STAGED, not run."
 }

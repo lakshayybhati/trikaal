@@ -52,6 +52,7 @@ from trikaal.train.cells import CELLS, assert_cells_parity
 from trikaal.train.checkpoint import load_checkpoint
 from trikaal.train.orchestrator import OrchestratorConfig, run_cell
 from trikaal.train.tripwire import TripwireConfig, TripwireMonitor
+from trikaal.utils.throughput import BASIS_END_TO_END, throughput_record
 
 LAKE = Path("processed/universe_bars")
 SYMBOLS = ("BTCUSDT", "ETHUSDT", "SOLUSDT", "KLAYUSDT", "FRONTUSDT")  # deep×3 + tail + THIN
@@ -399,10 +400,35 @@ def main() -> int:
     print(f"[eval] 15 verdict artifacts + index → {art_dir} (feed to scripts/m6_verdict.py)")
 
     # ---- throughput (Item 4 inputs) + the content-hashed bundle ----------------------------
+    # Finding 0: this block is where the M6 cost basis was LOST. Under --eval-only there is no
+    # training to time, so the fields were written NaN/0 — over the top of the training
+    # invocation's manifest at the same path. The measurement did not fail; it was overwritten.
+    # Two structural fixes: (1) the numbers are a utils.throughput record, so an unmeasured rate
+    # is NaN with measured=False and can never be quoted as a datum; (2) an eval-only re-run
+    # CARRIES FORWARD a prior finite training record instead of clobbering it.
     total_steps = len(manifests) * 2 * args.steps
     train_wall = sum(run_walls.values())
     steps_per_s = total_steps / train_wall if train_wall > 0 else float("nan")
     bars_per_s = steps_per_s * args.batch * args.seq_len
+    tput = throughput_record(
+        steps=total_steps if train_wall > 0 else None,
+        batch=args.batch,
+        seq_len=args.seq_len,
+        wall_s=train_wall if train_wall > 0 else None,
+        basis=BASIS_END_TO_END,
+        device=args.device,
+        note="both stages pooled across all (cell, seed) runs; wall-clock",
+    )
+    carried_from = None
+    prior_path = Path(cfg.out_dir) / "rehearsal_manifest.json"
+    if not tput["measured"] and prior_path.exists():
+        try:
+            prior = json.loads(prior_path.read_text()).get("throughput", {})
+            prior_rec = prior.get("record") if isinstance(prior, dict) else None
+            if isinstance(prior_rec, dict) and prior_rec.get("measured"):
+                tput, carried_from = dict(prior_rec), "prior invocation at this out_dir"
+        except (json.JSONDecodeError, OSError) as exc:  # a broken prior must not mask the NaN
+            print(f"[throughput] prior manifest unreadable ({exc}) — no carry-forward", flush=True)
     thin_drawn = {
         run: m["draw"]["drawn_by_symbol_stage1"].get(THIN, 0) for run, m in manifests.items()
     }
@@ -441,16 +467,19 @@ def main() -> int:
         "eval_artifacts": entries,
         "eval_grid": {"h": PRIMARY_H, "start_ms": int(grid[0]), "n_periods": int(grid.size)},
         "throughput": {
+            "record": tput,  # the numeric, basis-tagged datum (utils.throughput) — quote THIS
+            "carried_forward_from": carried_from,
             "train_wall_s": round(train_wall, 1),
             "total_train_steps": total_steps,
             "steps_per_s": round(steps_per_s, 3),
             "bars_per_s_into_gpu": round(bars_per_s, 1),
             "per_run_wall_s": run_walls,
-            "note": "bars/s = steps/s x batch x seq_len (both stages pooled); Item-4 "
-            "arithmetic vs the §4 budget is computed in the report from these numbers. "
-            "Under --eval-only these training fields are NaN/empty: training happened in the "
-            "prior invocation; the canonical training steps/s for Item 4 comes from the "
-            "attention bench (identical geometry: canonical backbone, batch, seq, bf16).",
+            "note": "bars/s = steps/s x batch x seq_len (both stages pooled). Quote "
+            "throughput.record — the flat fields below it are legacy and carry NO basis tag. "
+            "Under --eval-only there is no training to time: the record is carried forward from "
+            "the prior invocation if one is finite, else it is measured=False with NaN rates. "
+            "The attention bench is NOT a substitute: it is basis=compute_only_step (pre-resident "
+            "batches, no loader/tokenize/eval/checkpoint) and is an UPPER BOUND, not a cost basis.",
         },
         "wall_s_total": round(time.time() - t_start, 1),
         "bundle_sha256": bundle_sha,

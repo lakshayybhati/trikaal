@@ -1,0 +1,104 @@
+{
+  "A_what_3518_is": {
+    "CORRECTION": "The tabled 3.518 is NOT (z_.95+z_.80)\u00b7SE_boot with SE_boot the bootstrap SE. It is an ANALYTIC iid-normal MDE, z_sum\u00b7sqrt(2/T_eff)\u00b7sqrt(periods_per_year(h)) \u2014 reproduced here to 3dp from the receipt's own T_eff. Inverting the multiplier therefore yields the ANALYTIC SE, not the paired-bootstrap SE_boot that the v1.5 MDE multiplies. Substituting one for the other is an assumption about how well the iid approximation predicts the realized bootstrap SE \u2014 defensible as a pre-run estimate, but it is an ESTIMATE OF AN ESTIMATE, not an identity.",
+    "T_eff": 35002.3,
+    "analytic_se": 1.4149749623778654,
+    "formula_in_repo": "z_sum * sqrt(2/T_eff) * sqrt(periods_per_year(h))  [scripts/m6_prereg.py:74]",
+    "inverted_se_from_tabled": 1.4148544429793026,
+    "reproduced_mde": 3.5182996684544108,
+    "reproduces_to_3dp": true,
+    "tabled_mde_h15": 3.518,
+    "z_sum": 2.4864748578603173
+  },
+  "B_is_the_ruling_floor_a_floor": {
+    "CORRECTION": "NO \u2014 4.3475 is not a floor. The 3.0728 multiplier is the nu->4 limit, which obtains only when the TRAINING term dominates; but the product is taken against an SE that IGNORES the training term. Those two limits are mutually exclusive. The MDE is monotone increasing in se_train (verified across the sweep), so its infimum is at se_train = 0, where Welch-Satterthwaite gives nu -> nu_boot = 9999, the multiplier returns to z_sum = 2.4865, and the MDE returns to the v1.2 number itself. The pre-run computable LOWER BOUND is therefore 3.518, not 4.3475; the MDE only reaches 4.3475 once se_train exceeds ~0.68x se_boot, which is not knowable before the run.",
+    "infimum_at_se_train_zero": 3.518,
+    "mde_is_monotone_increasing_in_se_train": true,
+    "product_t4_times_inverted_se": 4.347580810172658,
+    "ruling_floor": 4.3475,
+    "se_train_over_se_boot_where_mde_reaches_ruling_floor": 0.6845734282453328,
+    "sweep": [
+      {
+        "above_ruling_floor": false,
+        "mde": 3.518,
+        "multiplier": 2.4864748578603173,
+        "nu_effective": Infinity,
+        "se_train_over_se_boot": 0.0
+      },
+      {
+        "above_ruling_floor": false,
+        "mde": 3.5226644064398163,
+        "multiplier": 2.4866652060723453,
+        "nu_effective": 9894.471831495122,
+        "se_train_over_se_boot": 0.05
+      },
+      {
+        "above_ruling_floor": false,
+        "mde": 3.53587443143088,
+        "multiplier": 2.486705665480102,
+        "nu_effective": 8160.147122942459,
+        "se_train_over_se_boot": 0.1
+      },
+      {
+        "above_ruling_floor": false,
+        "mde": 3.6288926325519633,
+        "multiplier": 2.4882721956116,
+        "nu_effective": 1048.611448788896,
+        "se_train_over_se_boot": 0.25
+      },
+      {
+        "above_ruling_floor": false,
+        "mde": 3.963476724583477,
+        "multiplier": 2.505587320981121,
+        "nu_effective": 99.36400675742819,
+        "se_train_over_se_boot": 0.5
+      },
+      {
+        "above_ruling_floor": true,
+        "mde": 4.508526805478676,
+        "multiplier": 2.549252654420016,
+        "nu_effective": 30.825224460905396,
+        "se_train_over_se_boot": 0.75
+      },
+      {
+        "above_ruling_floor": true,
+        "mde": 5.223572035006258,
+        "multiplier": 2.6106029678866207,
+        "nu_effective": 15.99360191942417,
+        "se_train_over_se_boot": 1.0
+      },
+      {
+        "above_ruling_floor": true,
+        "mde": 6.979822017333624,
+        "multiplier": 2.7364713464654074,
+        "nu_effective": 8.345019586830835,
+        "se_train_over_se_boot": 1.5
+      },
+      {
+        "above_ruling_floor": true,
+        "mde": 8.960689219775016,
+        "multiplier": 2.832335201700971,
+        "nu_effective": 6.24984373828037,
+        "se_train_over_se_boot": 2.0
+      },
+      {
+        "above_ruling_floor": true,
+        "mde": 17.456617761916764,
+        "multiplier": 2.99242916535745,
+        "nu_effective": 4.5156179436413275,
+        "se_train_over_se_boot": 4.0
+      }
+    ],
+    "t_multiplier_at_nu_4": 3.072811363561769
+  },
+  "amendment": "prereg \u00a77 v1.6 Finding 1 (supervisor-ordered, local $0)",
+  "pins_used": {
+    "B": 10000,
+    "S": 5,
+    "alpha": 0.05,
+    "h": 15,
+    "power": 0.8
+  },
+  "receipt": "m6_mde_floor_verification",
+  "what_the_abstract_may_state": "STRUCTURE, NOT A SECOND NUMBER. Pre-data, the only defensible quantitative floor is the v1.2 analytic value (3.518 annualized IR at h=15), attained only in the limit of zero across-seed training variance; the v1.5 MDE is >= that and strictly greater once training variance is non-zero, by an amount the run itself supplies. Quoting 4.35 pre-data would assert a bound the arithmetic does not support."
+}

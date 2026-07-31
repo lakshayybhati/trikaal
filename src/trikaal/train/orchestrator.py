@@ -22,6 +22,7 @@ the run disciplines the design binds:
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -47,6 +48,7 @@ from trikaal.train.token_stream import tokenize_features
 from trikaal.train.train_state import autocast_ctx, save_train_state
 from trikaal.train.tripwire import TripwireMonitor
 from trikaal.utils.seeding import set_determinism
+from trikaal.utils.throughput import BASIS_END_TO_END, throughput_record
 
 
 @dataclass
@@ -113,11 +115,20 @@ def _train_loop(
     np_rng: np.random.Generator,
     sampler: MultiSymbolWindowSampler,
     wandb_run,
+    timing: dict | None = None,
 ) -> float:
-    """The shared per-stage loop: cosine LR, clip, tripwire every step, atomic state saves."""
+    """The shared per-stage loop: cosine LR, clip, tripwire every step, atomic state saves.
+
+    ``timing``, when supplied, is filled in place with the stage's completed-step count and
+    wall-clock seconds (Finding 0: the cost basis must be a NUMBER on a manifest, and only an
+    end-to-end wall time can price a run). Purely observational — no training state depends on it,
+    and the fields are written only on normal completion, so an aborted stage reports no rate
+    rather than a fast one.
+    """
     opt = torch.optim.AdamW(model.parameters(), lr=peak_lr, weight_decay=0.01, betas=(0.9, 0.95))
     warmup = int(warmup_frac * steps)
     last_loss = float("nan")
+    t_stage = time.time()
     for step in range(1, steps + 1):
         for g in opt.param_groups:
             g["lr"] = cosine_warmup_lr(step, peak_lr, warmup, steps)
@@ -141,6 +152,9 @@ def _train_loop(
             )
         if step % 25 == 0:
             _log(wandb_run, {f"{label}/loss": last_loss, f"{label}/grad_norm": float(gn)}, step)
+    if timing is not None:
+        timing["steps"] = int(steps)
+        timing["wall_s"] = float(time.time() - t_stage)
     return last_loss
 
 
@@ -166,6 +180,8 @@ def run_cell(
     det = determinism_record(seed=seed, device=dev, attention_mode=mode)
 
     per_symbol = per_symbol_by_arm[spec.arm]
+    t_s1: dict = {}
+    t_s2: dict = {}
     sampler = MultiSymbolWindowSampler(per_symbol, alpha=cfg.alpha, seed=seed)
     wandb_run = _wandb_run(cfg, run_name, {"cell": spec.name, "seed": seed, **det})
 
@@ -193,6 +209,7 @@ def run_cell(
             np_rng=sampler._rng,
             sampler=sampler,
             wandb_run=wandb_run,
+            timing=t_s1,
         )
         tok_hash = save_checkpoint(run_dir / "tokenizer.pt", tok, tok.get_config(), meta=det)
 
@@ -259,6 +276,7 @@ def run_cell(
             np_rng=s2_sampler._rng,
             sampler=s2_sampler,
             wandb_run=wandb_run,
+            timing=t_s2,
         )
         pred_hash = save_checkpoint(
             run_dir / "predictor.pt", backbone, backbone.get_config(), meta=det
@@ -274,6 +292,29 @@ def run_cell(
         "determinism": det,
         "artifacts": {"tokenizer_hash": tok_hash, "predictor_hash": pred_hash},
         "final_loss": {"stage1": s1_loss, "stage2": s2_loss},
+        # Finding 0 — the cost basis must be a NUMBER on a manifest, never a prose label. Both
+        # stages are end-to-end wall-clock (sampling, transfer, checkpoint saves included), so
+        # these are the only records in the repo that may price a run (utils.throughput).
+        "throughput": {
+            "stage1": throughput_record(
+                steps=t_s1.get("steps"),
+                batch=cfg.batch_size,
+                seq_len=cfg.seq_len,
+                wall_s=t_s1.get("wall_s"),
+                basis=BASIS_END_TO_END,
+                device=dev,
+                note="Stage-1 tokenizer loop, wall-clock",
+            ),
+            "stage2": throughput_record(
+                steps=t_s2.get("steps"),
+                batch=cfg.batch_size,
+                seq_len=cfg.seq_len,
+                wall_s=t_s2.get("wall_s"),
+                basis=BASIS_END_TO_END,
+                device=dev,
+                note="Stage-2 AR loop, wall-clock (excludes the tokenize pass between stages)",
+            ),
+        },
         "micro_legibility_gate": legibility_receipt,
         "draw": {
             "alpha": cfg.alpha,

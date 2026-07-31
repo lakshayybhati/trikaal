@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "trikaal"
 version = "0.0.1"
-description = "A microstructure-aware FSQ tokenizer for crypto K-line foundation models"
+description = "A tokenizer study: microstructure-aware FSQ quantization for crypto K-lines"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Apache-2.0" }

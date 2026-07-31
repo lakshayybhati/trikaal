@@ -1,5 +1,5 @@
 # Trikaal — v1 Research Blueprint
-### A microstructure-aware FSQ tokenizer for crypto K-line foundation models
+### A tokenizer study: microstructure-aware FSQ quantization for crypto K-lines
 
 | field | value |
 |---|---|
@@ -12,7 +12,7 @@
 
 ## Executive summary
 
-Trikaal is a from-scratch ~27M-class decoder-only foundation model for the *language of crypto 1-minute K-lines*, released as code + weights (HuggingFace) + a paper + a live demo. It is a **controlled** evolution of Kronos with exactly **one** headline research contribution:
+Trikaal is a **tokenizer study**, not a foundation model. The object under study is the tokenizer for the *language of crypto 1-minute K-lines*; the from-scratch decoder-only backbone (**21,301,248 realized params** — "~27M-class" was the design target, never the built artifact) is the **measurement vehicle**, held fixed and matched across every ablation arm. Released as code + weights (HuggingFace) + a paper + a live demo. It is a **controlled** evolution of Kronos with exactly **one** headline research contribution:
 
 > **A microstructure-aware FSQ tokenizer for financial K-lines** — two mechanically-independent legs, one claim: (1) **Finite Scalar Quantization (FSQ)** replaces Kronos's Binary Spherical Quantization (no auxiliary commitment loss, no codebook-collapse failure mode, bounded quantization error); (2) the per-bar input vector carries **free microstructure** — trade-flow imbalance (TFI), funding, open interest — beyond OHLCV.
 
@@ -706,7 +706,7 @@ This pipeline **does not choose** the split or embargo — it **consumes boundar
 
 ## 3. Volatility-Scaled, Regime-Relative Targets
 
-This section owns the volatility transform that the feature spec (§7) exposes as a hook. It defines the causal current-regime volatility estimator `sigma_t`, the exact set of quantities it scales, the precise order of operations relative to the §3.2 z-score (so nothing is double-normalized), and the decode-time de-normalization that recovers absolute moves, prices, and quantiles. **Core premise:** a `+0.4%` 1-minute move is a non-event when BTC's realized vol is `1.2%`/min during a liquidation cascade, but a `4-sigma` tail when vol is `0.1%`/min in an overnight drift. Standardizing every move by its current-regime vol lets a 27M-param model spend its capacity learning *shape and direction relative to regime* instead of re-learning the unconditional vol distribution it will see at decode time anyway.
+This section owns the volatility transform that the feature spec (§7) exposes as a hook. It defines the causal current-regime volatility estimator `sigma_t`, the exact set of quantities it scales, the precise order of operations relative to the §3.2 z-score (so nothing is double-normalized), and the decode-time de-normalization that recovers absolute moves, prices, and quantiles. **Core premise:** a `+0.4%` 1-minute move is a non-event when BTC's realized vol is `1.2%`/min during a liquidation cascade, but a `4-sigma` tail when vol is `0.1%`/min in an overnight drift. Standardizing every move by its current-regime vol lets a 21.3M-param model spend its capacity learning *shape and direction relative to regime* instead of re-learning the unconditional vol distribution it will see at decode time anyway.
 
 ---
 

@@ -1,4 +1,4 @@
-"""Trikaal — a microstructure-aware FSQ tokenizer for crypto K-line foundation models.
+"""Trikaal — a tokenizer study: microstructure-aware FSQ quantization for crypto K-lines.
 
 This package is built against the v1 blueprint spec
 (``docs/superpowers/specs/2026-06-18-trikaal-v1-design.md``), which is the single

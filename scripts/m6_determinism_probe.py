@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import time
 import traceback
 from pathlib import Path
 
@@ -28,6 +29,7 @@ from trikaal.model.attention_mode import MODE_SDPA, determinism_record, set_atte
 from trikaal.model.predictor import TrikaalAR
 from trikaal.tokenizer.model import TokenizerAE
 from trikaal.utils.seeding import set_determinism
+from trikaal.utils.throughput import BASIS_COMPUTE_ONLY, throughput_record
 
 OUT = Path("runs_manifest/m6_determinism_feasibility_probe.json")
 
@@ -73,6 +75,7 @@ def _one_pass(*, forced: bool, steps: int, device: str, seed: int = 0) -> dict:
         seq, batch = 16, 4
 
         losses = []
+        t_train = time.time()
         # Stage 1: the tokenizer objective (embedding/scatter ops are the usual offenders)
         for _ in range(steps):
             x = torch.from_numpy(rng.standard_normal((batch, seq, 16)).astype(np.float32)).to(
@@ -99,6 +102,7 @@ def _one_pass(*, forced: bool, steps: int, device: str, seed: int = 0) -> dict:
             loss.backward()
             opt_a.step()
             losses.append(float(loss.detach()))
+        t_train = time.time() - t_train
 
         rec.update(
             {
@@ -107,6 +111,22 @@ def _one_pass(*, forced: bool, steps: int, device: str, seed: int = 0) -> dict:
                 "final_stage1_loss": losses[steps - 1],
                 "final_stage2_loss": losses[-1],
                 "offending_ops": [],
+                # Item (iv): the probe now also produces a NUMBER, so one rental settles the
+                # determinism question AND yields a forced-vs-unforced rate pair. TOY geometry —
+                # only the RATIO between the two arms is quotable; the absolute is not a cost
+                # basis and the basis tag says so.
+                "throughput": throughput_record(
+                    steps=2 * steps,
+                    batch=batch,
+                    seq_len=seq,
+                    wall_s=t_train,
+                    basis=BASIS_COMPUTE_ONLY,
+                    device=device,
+                    note=(
+                        "TOY probe geometry (d_model=32, seq=16, batch=4) — quote the "
+                        "forced/unforced RATIO only, never the absolute rate"
+                    ),
+                ),
             }
         )
     except Exception as e:  # the whole point of the probe
@@ -177,15 +197,40 @@ def main() -> int:
         "forced": forced,
         "forced_completes": bool(forced["completed"]),
         "probe_valid": bool(baseline["completed"]),
+        "throughput_pair": {
+            "unforced_steps_per_s": (baseline.get("throughput") or {}).get("steps_per_s"),
+            "forced_steps_per_s": (forced.get("throughput") or {}).get("steps_per_s"),
+            "CAVEAT_DO_NOT_QUOTE_THIS_RATIO_YET": (
+                "The two arms run SEQUENTIALLY in one process with no warmup, unforced first, so "
+                "the ratio is confounded by cache/JIT warming and process state — on CPU it comes "
+                "out with the SECOND arm faster, which is an ordering artifact, not a determinism "
+                "effect. This pair exists to prove the plumbing emits NUMBERS. The quotable "
+                "measurement is the CUDA bench pair (canonical geometry, warmup excluded, one "
+                "posture per process invocation) in `staged_cuda_measurement_PENDING.command`."
+            ),
+        },
         "verdict": verdict,
         "staged_cuda_measurement_PENDING": {
             "status": "STAGED — NOT RUN. Needs GPU credentials; ~$1-2 of box time.",
             "purpose": (
-                "Measure the training throughput delta with deterministic algorithms forced, "
-                "against the measured baseline of 47.2k bars/s, and confirm no CUDA op raises."
+                "TWO JOBS IN ONE RENTAL (v1.6 Finding 0): (1) confirm no CUDA op raises under "
+                "forced determinism; (2) produce the COST DATUM the project does not have. Both "
+                "are persisted as numeric utils.throughput records, never as prose."
             ),
+            "corrections_to_the_prior_staging": [
+                "The prior command called `--forced-determinism`, a flag m6_attention_bench.py "
+                "DID NOT HAVE — it would have failed at the box. The flag now exists (with "
+                "--no-forced-determinism for the other arm).",
+                "The prior purpose said 'against the measured baseline of 47.2k bars/s'. That "
+                "baseline is NOT end-to-end training throughput: it is the attention bench's "
+                "compute-only rate on pre-resident batches. It also was ALREADY measured under "
+                "FORCED determinism (set_determinism's default), so treating it as the unforced "
+                "baseline and applying a penalty on top double-counts. The bench now records its "
+                "own posture in config.deterministic_algorithms.",
+            ],
             "command": (
                 "PYTHONPATH=src python3 scripts/m6_determinism_probe.py --device cuda --steps 50 "
+                "&& PYTHONPATH=src python3 scripts/m6_attention_bench.py --no-forced-determinism "
                 "&& PYTHONPATH=src python3 scripts/m6_attention_bench.py --forced-determinism"
             ),
             "expected_wall_clock": (
@@ -196,6 +241,12 @@ def main() -> int:
                 "A forced-vs-unforced bars/s pair measured on the SAME box in the SAME session, "
                 "plus a same-seed twice-run weight-hash comparison to confirm forcing actually "
                 "delivers bit-identity rather than merely claiming it."
+            ),
+            "cost_datum_note": (
+                "Even both bench arms are basis=compute_only_step and are an UPPER BOUND. The "
+                "only end-to-end datum that can price the real run comes from a real cell run — "
+                "orchestrator.run_cell now writes throughput.stage1/stage2 as end_to_end_training "
+                "records, so the first real cell of the M6 run produces it as a by-product."
             ),
         },
     }
