@@ -35,6 +35,7 @@ import torch
 from trikaal.model.attention_mode import (
     MODE_FLASH2,
     MODE_SDPA,
+    determinism_record,
     flash2_available,
     set_attention_backend,
 )
@@ -60,6 +61,12 @@ def bench_mode(
     batch = int(batches[0][0].shape[0]) if batches else 0
     model = build_cell_backbone(V_C, V_F, max_len=seq_len + 64).to(device)
     set_attention_backend(model, mode)
+    # v1.6 JOB 1: each arm SELF-IDENTIFIES its determinism posture from the live torch flags
+    # (determinism_record reads torch.are_deterministic_algorithms_enabled(), not our intent), and
+    # carries GPU/driver/CUDA/cuDNN/torch/numpy provenance. This is what closes the
+    # double-counting question by ARTIFACT rather than by argument: the 47.2k bench carried no
+    # posture field at all, so nothing on disk said whether the penalty was already in the number.
+    det = determinism_record(seed=0, device=device, attention_mode=mode)
     opt = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.01, betas=(0.9, 0.95))
     losses: list[float] = []
     t_timed = 0.0
@@ -87,6 +94,8 @@ def bench_mode(
                     reason="bench aborted on non-finite loss/grad — no rate is claimed",
                     device=device,
                 ),
+                "determinism_record": det,
+                "forced_determinism_requested": bool(forced_determinism),
             }
     timed_steps = len(batches) - warmup
     return {
@@ -108,6 +117,8 @@ def bench_mode(
             device=device,
             note="AR training step on pre-resident random-token batches; warmup excluded",
         ),
+        "determinism_record": det,
+        "forced_determinism_requested": bool(forced_determinism),
     }
 
 

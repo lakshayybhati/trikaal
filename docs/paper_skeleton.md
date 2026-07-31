@@ -103,7 +103,36 @@ Every number below was verified against the live pinned surface
 > reported as unresolvable at this scale, which is a measurement of the instrument and not a
 > failure of the experiment.*
 
-**What that sentence deliberately does and does not say.**
+## The three layers of the floor, and the withdrawal that produced them
+
+Recorded here in full because the superseded figure **was stated to the operator**, so the
+correction has to be visible rather than quietly absorbed — the same treatment C1 got.
+
+**Layer 1 — what 3.518 actually is.** Not `(z_.95+z_.80) × SE_boot`. It is an **analytic
+iid-normal** MDE, `z_sum · √(2/T_eff) · √(periods_per_year(h))` (`scripts/m6_prereg.py:74`),
+reproduced to 3dp (**3.5183**) from the receipt's own `T_eff` = 35,002.3. Inverting the multiplier
+therefore recovers the **analytic** SE (1.4149), **not** the paired-bootstrap `SE_boot` that the
+v1.5 MDE multiplies. Standing one in for the other is a defensible pre-run assumption but it is
+**an estimate of an estimate, not an identity** — so the floor is tagged ESTIMATED in the claims
+audit and is replaced by the realized value in the final text.
+
+**Layer 2 — why 4.3475 is not a floor.** The 3.0728 multiplier is the **ν→4 limit**, which obtains
+only when the **training term dominates**; the product was taken against an SE that **ignores** the
+training term. Those are mutually exclusive states of the same formula. Verified through the repo's
+own arithmetic (`paired_bootstrap.py:156-160`): at `se_train = 0` the code takes the
+scoring-only branch, ν = B−1 = 9,999, and the multiplier collapses back to z_sum = 2.4865.
+
+**Layer 3 — where the true infimum is.** The MDE is **monotone increasing** in `se_train`, so its
+infimum sits at `se_train = 0` and equals the v1.2 value, **3.518**. The figure 4.3475 is reached
+only once `se_train ≥ 0.685 × se_boot` — a threshold that is **not knowable before the run**.
+
+> **WITHDRAWAL, ATTRIBUTED.** The "≥ 4.35 annualized IR at S=5" floor originated with the
+> **supervisor**, was stated to the operator, and is **withdrawn in full**. The supervisor verified
+> the correction independently in `paired_bootstrap.py:156-160` and adopted all three layers. The
+> builder's further point — that 3.518 is analytic rather than a bootstrap product — was adopted in
+> the same ruling.
+
+**What the abstract sentence deliberately does and does not say.**
 
 - It states a **floor** (**≥ 3.518**) and a **structure** (two-term, t-quantiles, Welch–
   Satterthwaite, training term supplied by the run). It states **no point number** for the

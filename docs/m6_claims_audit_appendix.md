@@ -114,6 +114,13 @@ z_sum = 2.4865, and the MDE returns to the v1.2 number itself.
 > **The pre-run computable lower bound is 3.518, not 4.3475.** The MDE reaches 4.3475 only once
 > `se_train ≥ 0.685 × se_boot`, which is not knowable before the run.
 
+**Withdrawal, attributed (2026-07-31).** The "≥ 4.35 annualized IR at S=5" floor originated with
+the **supervisor** and **was stated to the operator**. It is **withdrawn in full**; the supervisor
+verified the correction independently at `paired_bootstrap.py:156-160` — at `se_train = 0` the code
+takes the scoring-only branch, ν = B−1 = 9,999, and the multiplier collapses to z_sum = 2.4865 —
+and adopted all three layers, including the builder's further point that 3.518 is analytic rather
+than a bootstrap product. Recorded visibly rather than absorbed, the same treatment C1 got.
+
 ---
 
 ## 4. Sweep for the same failure mode elsewhere — LISTED, NOT FIXED
