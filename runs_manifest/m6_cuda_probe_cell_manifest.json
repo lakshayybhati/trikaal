@@ -1,0 +1,110 @@
+{
+  "artifacts": {
+    "predictor_hash": "sha256:7b6b6bd9a2dc2df74e10a388be2e613c3e7a2d9671512ddd0f27621cd0f49593",
+    "tokenizer_hash": "sha256:6ffb50d8724a8337d3a6e24bb0578a7f4f399c4b05c821ec5d3813bb6ef6fba8"
+  },
+  "cell": {
+    "arm": "micro",
+    "id": 4,
+    "quantizer": "fsq"
+  },
+  "config": {
+    "backbone_kwargs": {
+      "max_len": 576
+    },
+    "batch_size": 32,
+    "seq_len": 512,
+    "steps_stage1": 120,
+    "steps_stage2": 120,
+    "tok_kwargs": {
+      "max_len": 512
+    }
+  },
+  "determinism": {
+    "attention_mode": "sdpa_deterministic",
+    "bit_exact_caveat": "bit_exact_claim is TRUE on attention mode alone, but the preconditions are NOT met (see determinism_flags). Run-to-run bit-exactness is NOT established for this run: CUDA reduction order is unconstrained. Do not quote this run as bit-exact.",
+    "bit_exact_claim": true,
+    "bit_exact_preconditions_met": false,
+    "determinism_flags": {
+      "cublas_workspace_config": null,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": false,
+      "torch_use_deterministic_algorithms": false
+    },
+    "deterministic_algorithms": false,
+    "device": "cuda",
+    "env": {
+      "numpy": "2.4.6",
+      "python": "3.11.9",
+      "torch": "2.12.1+cu130"
+    },
+    "hardware": {
+      "cuda_available": true,
+      "cuda_build": "13.0",
+      "cudnn_version": 92000,
+      "driver_version": "unavailable: AttributeError",
+      "gpu_capability": "8.9",
+      "gpu_count": 1,
+      "gpu_name": "NVIDIA GeForce RTX 4090",
+      "gpu_total_memory_bytes": 25250627584
+    },
+    "seed": 0,
+    "seeds": {
+      "run": 0
+    }
+  },
+  "draw": {
+    "alpha": 0.5,
+    "drawn_by_symbol_stage1": {
+      "BTCUSDT": 870,
+      "ETHUSDT": 857,
+      "FRONTUSDT": 359,
+      "KLAYUSDT": 879,
+      "SOLUSDT": 875
+    },
+    "drawn_by_symbol_stage2": {
+      "BTCUSDT": 870,
+      "ETHUSDT": 857,
+      "FRONTUSDT": 359,
+      "KLAYUSDT": 879,
+      "SOLUSDT": 875
+    },
+    "n_drawn_stage1": 3840,
+    "n_drawn_stage2": 3840
+  },
+  "final_loss": {
+    "stage1": 0.12739567458629608,
+    "stage2": 15.699630737304688
+  },
+  "micro_legibility_gate": null,
+  "run": "cell4_fsq_micro_seed0",
+  "seed": 0,
+  "throughput": {
+    "stage1": {
+      "bars_per_s": 275020.2390850678,
+      "basis": "end_to_end_training",
+      "batch": 32,
+      "device": "cuda",
+      "excludes": "nothing; wall-clock of the real invocation",
+      "measured": true,
+      "note": "Stage-1 tokenizer loop, wall-clock",
+      "seq_len": 512,
+      "steps": 120,
+      "steps_per_s": 16.78590326446947,
+      "wall_s": 7.148855686187744
+    },
+    "stage2": {
+      "bars_per_s": 54013.349059138185,
+      "basis": "end_to_end_training",
+      "batch": 32,
+      "device": "cuda",
+      "excludes": "nothing; wall-clock of the real invocation",
+      "measured": true,
+      "note": "Stage-2 AR loop, wall-clock (excludes the tokenize pass between stages)",
+      "seq_len": 512,
+      "steps": 120,
+      "steps_per_s": 3.2967131994102896,
+      "wall_s": 36.399890661239624
+    }
+  }
+}

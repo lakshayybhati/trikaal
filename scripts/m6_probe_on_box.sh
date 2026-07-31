@@ -18,7 +18,12 @@ CELL_STEPS="${CELL_STEPS:-120}"
 mkdir -p "$OUTDIR"
 
 echo "=== [1/5] host provenance ==="
-nvidia-smi | head -12 | tee "$OUTDIR/nvidia_smi.txt"
+# NOT `nvidia-smi | head -12 | tee ...`. Under `set -o pipefail`, `head` closes the pipe as soon as
+# it has its 12 lines, nvidia-smi takes SIGPIPE (141), pipefail propagates it, and `set -e` kills
+# the script — which is exactly what happened on the first launch: the run died at step 1 having
+# written only nvidia_smi.txt. The pipefail rider biting its own author. Write, then read.
+nvidia-smi > "$OUTDIR/nvidia_smi.txt"
+head -12 "$OUTDIR/nvidia_smi.txt"
 
 echo "=== [2/5] uv + the PINNED env from the committed lockfile ==="
 if ! command -v uv >/dev/null 2>&1; then
@@ -52,6 +57,13 @@ echo "=== [5/5] pre-teardown digests (the box computes them; the Mac re-verifies
 cp -f runs_manifest/m6_determinism_feasibility_probe.json "$OUTDIR/" 2>/dev/null || true
 cp -f runs/m6_attention_bench.json "$OUTDIR/m6_attention_bench_last_arm.json" 2>/dev/null || true
 cd "$OUTDIR"
-find . -type f ! -name 'SHA256SUMS.box' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.box
-wc -l < SHA256SUMS.box | xargs echo "files digested:"
+# EXCLUDE THE LIVE LOG. This script's own stdout is still being appended to probe.log while these
+# digests are computed — the "[5/5]" and "BOX RUN COMPLETE" lines land AFTER the hash — so a
+# self-digested log is stale the instant it is written and the pre-teardown gate fails on a file
+# that is in fact intact. (It did, on this run: 8/9, probe.log only.) A digest that describes a
+# state which no longer exists is the same family as a guard that cannot fire. The log's integrity
+# is instead established by comparing box and local copies directly, after the process exits.
+find . -type f ! -name 'SHA256SUMS.box' ! -name 'probe.log' -print0 |
+  sort -z | xargs -0 sha256sum > SHA256SUMS.box
+wc -l < SHA256SUMS.box | xargs echo "files digested (probe.log excluded — still open):"
 echo "=== BOX RUN COMPLETE ==="

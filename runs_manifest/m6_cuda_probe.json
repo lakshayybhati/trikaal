@@ -1,0 +1,269 @@
+{
+  "EXTRAPOLATION_full_run_cost": {
+    "ASSUMPTIONS_every_one_of_which_could_be_wrong": [
+      "the measured end-to-end rate (90,293 bars/s) holds for the WHOLE run \u2014 it was measured over 120 steps/stage on ONE cell (cell4_fsq_micro) and 5 symbols, not 5 cells x 5 seeds over 40 symbols",
+      "5 cells x 5 seeds x 2 stages x 20,000 steps at batch 32 x seq 512; if the pinned step budget differs, this scales linearly",
+      "fixed overheads (15s measured for this cell) recur ONCE PER (cell, seed) and do NOT scale with symbol count \u2014 the real run loads 40 symbols, not 5, so the lake-load term is UNDERSTATED here",
+      "EVAL IS EXCLUDED ENTIRELY \u2014 this probe measured no scoring pass; the eval leg was previously observed at ~40 min/(cell,seed) on a 4090, which would DOMINATE this figure. Treat the number below as a TRAINING-ONLY floor, not a run cost",
+      "the spot price 0.3256/hr is the one observed on this rental and is not fixed",
+      "the determinism variant applies JOB 1's compute-only ratio to an end-to-end rate; the two need not share a penalty"
+    ],
+    "EXTRAPOLATED_overhead_hours": 0.1066825571987364,
+    "EXTRAPOLATED_total_hours": 50.51032416301746,
+    "EXTRAPOLATED_train_hours": 50.40364160581872,
+    "EXTRAPOLATED_usd_at_observed_dph": 16.446161547478486,
+    "EXTRAPOLATED_usd_if_determinism_forced": 18.936477511628915,
+    "STATUS": "EXTRAPOLATION \u2014 NOT A MEASUREMENT",
+    "dph_used": 0.3256
+  },
+  "amendment": "prereg \u00a77 v1.6 \u2014 the staged CUDA probe (supervisor-authorized, ~$1-2)",
+  "config": {
+    "batch": 32,
+    "bench_steps": 60,
+    "bench_warmup": 10,
+    "canonical_geometry": true,
+    "cell_steps_per_stage": 120,
+    "seq_len": 512
+  },
+  "job1_determinism_penalty": {
+    "forced": {
+      "actual_deterministic_algorithms": true,
+      "arm": "--forced-determinism",
+      "completed": true,
+      "determinism_record": {
+        "attention_mode": "sdpa_deterministic",
+        "bit_exact_claim": true,
+        "bit_exact_preconditions_met": true,
+        "determinism_flags": {
+          "cublas_workspace_config": ":4096:8",
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": true,
+          "torch_use_deterministic_algorithms": true
+        },
+        "deterministic_algorithms": true,
+        "device": "cuda",
+        "env": {
+          "numpy": "2.4.6",
+          "python": "3.11.9",
+          "torch": "2.12.1+cu130"
+        },
+        "hardware": {
+          "cuda_available": true,
+          "cuda_build": "13.0",
+          "cudnn_version": 92000,
+          "driver_version": "unavailable: AttributeError",
+          "gpu_capability": "8.9",
+          "gpu_count": 1,
+          "gpu_name": "NVIDIA GeForce RTX 4090",
+          "gpu_total_memory_bytes": 25250627584
+        },
+        "seed": 0,
+        "seeds": {
+          "run": 0
+        }
+      },
+      "final_loss": 18.106496810913086,
+      "requested_forced": true,
+      "stable": true,
+      "steps_per_s": 2.969033217647589,
+      "subprocess_wall_s": 26.51591944694519,
+      "throughput": {
+        "bars_per_s": 48644.640237938096,
+        "basis": "compute_only_step",
+        "batch": 32,
+        "device": "cuda",
+        "excludes": "data loading, tokenization, eval, checkpointing \u2014 UPPER BOUND, not a cost basis",
+        "measured": true,
+        "note": "AR training step on pre-resident random-token batches; warmup excluded",
+        "seq_len": 512,
+        "steps": 50,
+        "steps_per_s": 2.969033217647589,
+        "wall_s": 16.840498685836792
+      }
+    },
+    "forced_bars_per_s": 48644.640237938096,
+    "forced_over_unforced_ratio": 0.8682493916435998,
+    "penalty_pct": 13.175060835640014,
+    "postures_actually_differed": true,
+    "probe_valid": true,
+    "unforced": {
+      "actual_deterministic_algorithms": false,
+      "arm": "--no-forced-determinism",
+      "completed": true,
+      "determinism_record": {
+        "attention_mode": "sdpa_deterministic",
+        "bit_exact_caveat": "bit_exact_claim is TRUE on attention mode alone, but the preconditions are NOT met (see determinism_flags). Run-to-run bit-exactness is NOT established for this run: CUDA reduction order is unconstrained. Do not quote this run as bit-exact.",
+        "bit_exact_claim": true,
+        "bit_exact_preconditions_met": false,
+        "determinism_flags": {
+          "cublas_workspace_config": null,
+          "cudnn_benchmark": false,
+          "cudnn_deterministic": false,
+          "torch_use_deterministic_algorithms": false
+        },
+        "deterministic_algorithms": false,
+        "device": "cuda",
+        "env": {
+          "numpy": "2.4.6",
+          "python": "3.11.9",
+          "torch": "2.12.1+cu130"
+        },
+        "hardware": {
+          "cuda_available": true,
+          "cuda_build": "13.0",
+          "cudnn_version": 92000,
+          "driver_version": "unavailable: AttributeError",
+          "gpu_capability": "8.9",
+          "gpu_count": 1,
+          "gpu_name": "NVIDIA GeForce RTX 4090",
+          "gpu_total_memory_bytes": 25250627584
+        },
+        "seed": 0,
+        "seeds": {
+          "run": 0
+        }
+      },
+      "final_loss": 18.106475830078125,
+      "requested_forced": false,
+      "stable": true,
+      "steps_per_s": 3.4195626812098263,
+      "subprocess_wall_s": 23.328516006469727,
+      "throughput": {
+        "bars_per_s": 56026.114968941794,
+        "basis": "compute_only_step",
+        "batch": 32,
+        "device": "cuda",
+        "excludes": "data loading, tokenization, eval, checkpointing \u2014 UPPER BOUND, not a cost basis",
+        "measured": true,
+        "note": "AR training step on pre-resident random-token batches; warmup excluded",
+        "seq_len": 512,
+        "steps": 50,
+        "steps_per_s": 3.4195626812098263,
+        "wall_s": 14.621752738952637
+      }
+    },
+    "unforced_bars_per_s": 56026.114968941794,
+    "verdict": "forced/unforced = 0.8682 (+13.18% throughput change under forced determinism), both arms at canonical geometry, each in its own process, posture read from live torch flags."
+  },
+  "job2_end_to_end_throughput": {
+    "bars_loaded": 3732698,
+    "bars_per_s_into_gpu": 90293.2995735316,
+    "cell": "cell4_fsq_micro",
+    "determinism_record": {
+      "attention_mode": "sdpa_deterministic",
+      "bit_exact_caveat": "bit_exact_claim is TRUE on attention mode alone, but the preconditions are NOT met (see determinism_flags). Run-to-run bit-exactness is NOT established for this run: CUDA reduction order is unconstrained. Do not quote this run as bit-exact.",
+      "bit_exact_claim": true,
+      "bit_exact_preconditions_met": false,
+      "determinism_flags": {
+        "cublas_workspace_config": null,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "torch_use_deterministic_algorithms": false
+      },
+      "deterministic_algorithms": false,
+      "device": "cuda",
+      "env": {
+        "numpy": "2.4.6",
+        "python": "3.11.9",
+        "torch": "2.12.1+cu130"
+      },
+      "hardware": {
+        "cuda_available": true,
+        "cuda_build": "13.0",
+        "cudnn_version": 92000,
+        "driver_version": "unavailable: AttributeError",
+        "gpu_capability": "8.9",
+        "gpu_count": 1,
+        "gpu_name": "NVIDIA GeForce RTX 4090",
+        "gpu_total_memory_bytes": 25250627584
+      },
+      "seed": 0,
+      "seeds": {
+        "run": 0
+      }
+    },
+    "fixed_overheads_s": {
+      "lake_load_s": 4.0304038524627686,
+      "tokenize_and_checkpoint_s": 6.655202627182007,
+      "window_build_s": 4.676681756973267
+    },
+    "is_costable": true,
+    "measured": true,
+    "n_symbols_used": 5,
+    "params_gate": "21,301,248 enforced by OrchestratorConfig.expect_backbone_params",
+    "per_stage": {
+      "stage1": {
+        "bars_per_s": 275020.2390850678,
+        "basis": "end_to_end_training",
+        "batch": 32,
+        "device": "cuda",
+        "excludes": "nothing; wall-clock of the real invocation",
+        "measured": true,
+        "note": "Stage-1 tokenizer loop, wall-clock",
+        "seq_len": 512,
+        "steps": 120,
+        "steps_per_s": 16.78590326446947,
+        "wall_s": 7.148855686187744
+      },
+      "stage2": {
+        "bars_per_s": 54013.349059138185,
+        "basis": "end_to_end_training",
+        "batch": 32,
+        "device": "cuda",
+        "excludes": "nothing; wall-clock of the real invocation",
+        "measured": true,
+        "note": "Stage-2 AR loop, wall-clock (excludes the tokenize pass between stages)",
+        "seq_len": 512,
+        "steps": 120,
+        "steps_per_s": 3.2967131994102896,
+        "wall_s": 36.399890661239624
+      }
+    },
+    "pooled_training": {
+      "bars_per_s": 90293.2995735316,
+      "basis": "end_to_end_training",
+      "batch": 32,
+      "device": "cuda",
+      "excludes": "nothing; wall-clock of the real invocation",
+      "measured": true,
+      "note": "both stages pooled, wall-clock \u2014 the JOB-2 headline rate",
+      "seq_len": 512,
+      "steps": 240,
+      "steps_per_s": 5.51106564779856,
+      "wall_s": 43.54874634742737
+    },
+    "seed": 0,
+    "symbols_requested": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "KLAYUSDT",
+      "FRONTUSDT"
+    ],
+    "symbols_used": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT",
+      "KLAYUSDT",
+      "FRONTUSDT"
+    ],
+    "total_cell_wall_s": 50.203948974609375,
+    "train_wall_s": 43.54874634742737
+  },
+  "provenance": {
+    "cuda_available": true,
+    "cuda_build": "13.0",
+    "cudnn_version": 92000,
+    "device": "cuda",
+    "gpu_capability": "8.9",
+    "gpu_count": 1,
+    "gpu_name": "NVIDIA GeForce RTX 4090",
+    "gpu_total_memory_bytes": 25250627584,
+    "numpy": "2.4.6",
+    "nvidia_smi_header": "Fri Jul 31 13:09:13 2026       \n+-----------------------------------------------------------------------------------------+\n| NVIDIA-SMI 580.159.03             Driver Version: 580.159.03     CUDA Version: 13.0     |\n+-----------------------------------------+------------------------+----------------------+\n| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |\n| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |\n|                                         |                        |               MIG M. |\n|=========================================+========================+======================|\n|   0  NVIDIA GeForce RTX 4090        On  |   00000000:C1:00.0 Off |                  Off |\n| 30%   27C    P8             25W /  400W |       4MiB /  24564MiB |      0%      Default |\n|                                         |                        |                  N/A |\n+-----------------------------------------+------------------------+----------------------+",
+    "python": "3.11.9",
+    "torch": "2.12.1+cu130"
+  },
+  "receipt": "m6_cuda_probe",
+  "wall_s_total": 109.23526287078857
+}

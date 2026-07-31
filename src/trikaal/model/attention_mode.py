@@ -83,7 +83,16 @@ def _cuda_provenance() -> dict:
         ("gpu_count", torch.cuda.device_count),
         ("gpu_total_memory_bytes", lambda: torch.cuda.get_device_properties(0).total_memory),
         ("cudnn_version", torch.backends.cudnn.version),
-        ("driver_version", torch._C._cuda_getDriverVersion),  # not public API; guarded
+        # THE LOOKUP MUST BE DEFERRED, NOT JUST THE CALL. This entry previously passed the bound
+        # function directly — `torch._C._cuda_getDriverVersion` — which resolves the attribute
+        # while the tuple is being BUILT, i.e. before the try/except below. torch 2.12.1 (the
+        # pinned version) does not define it, so the AttributeError escaped the guard entirely and
+        # determinism_record() raised. Since orchestrator.run_cell calls determinism_record BEFORE
+        # training, the real M6 run would have died on CUDA at the first cell. It was invisible
+        # locally because every CPU/MPS path returns at the cuda_available check above and never
+        # reaches this tuple. The comment said "guarded" and the code was not: a guard that cannot
+        # fire is not a guard.
+        ("driver_version", lambda: torch._C._cuda_getDriverVersion()),
     ):
         try:
             out[key] = probe()
