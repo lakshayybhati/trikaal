@@ -152,11 +152,19 @@ def end_to_end_cell(*, device: str, steps: int, batch: int, seq_len: int, out: P
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     from scripts.m6_toy_rehearsal import load_symbol  # the rehearsal's own loader
 
+    # Use only the symbols actually present. The probe pushes a lake SLICE over the operator's
+    # home uplink, so a partial slice is a real possibility — and silently training on whatever
+    # happened to arrive, without saying so, would make lake_load_s (a REPORTED overhead) describe
+    # an unstated configuration. The count is recorded and travels with the extrapolation.
+    present = tuple(s for s in SYMBOLS if (LAKE / f"symbol={s}").is_dir())
+    if not present:
+        raise RuntimeError(f"no lake symbols present under {LAKE} — cannot measure end-to-end")
+
     overheads: dict[str, float] = {}
     t = time.time()
     boundary = calendar_boundary_ms(*TRAIN_WINDOW, TRAIN_FRAC)
     con = connect_lake(LAKE)
-    raw = {s: load_symbol(con, s, boundary) for s in SYMBOLS}
+    raw = {s: load_symbol(con, s, boundary) for s in present}
     overheads["lake_load_s"] = time.time() - t
     bars_loaded = int(sum(d["x"].shape[0] for d in raw.values()))
 
@@ -221,6 +229,9 @@ def end_to_end_cell(*, device: str, steps: int, batch: int, seq_len: int, out: P
     return {
         "cell": spec.name,
         "seed": 0,
+        "symbols_used": list(present),
+        "n_symbols_used": len(present),
+        "symbols_requested": list(SYMBOLS),
         "bars_loaded": bars_loaded,
         "per_stage": {"stage1": s1, "stage2": s2},
         "pooled_training": pooled,
@@ -236,6 +247,62 @@ def end_to_end_cell(*, device: str, steps: int, batch: int, seq_len: int, out: P
     }
 
 
+def full_run_extrapolation(job2: dict, job1: dict, *, dph: float) -> dict:
+    """Project the M6 run cost from the probe — LABELLED AS AN EXTRAPOLATION, assumptions listed.
+
+    An honest labelled extrapolation is acceptable; an unlabelled one is Finding 0. Every field
+    name here says ``EXTRAPOLATED``, the assumptions are enumerated beside the number, and the
+    whole block refuses to produce a figure if the measurement it would rest on is absent.
+    """
+    if not job2.get("is_costable"):
+        return {
+            "status": "NOT COMPUTED — no costable end-to-end measurement",
+            "why": "is_costable() was False, so there is nothing to extrapolate from",
+        }
+    rate = float(job2["bars_per_s_into_gpu"])  # end_to_end_training basis, both stages pooled
+    # The v1.5 run: 5 cells x 5 seeds, both stages, at the pinned budget.
+    cells, seeds = 5, 5
+    steps_per_stage = 20_000  # §3a canonical training budget per stage
+    batch, seq = (
+        int(job2["per_stage"]["stage2"]["batch"]),
+        int(job2["per_stage"]["stage2"]["seq_len"]),
+    )
+    bar_visits = cells * seeds * 2 * steps_per_stage * batch * seq
+    train_h = bar_visits / rate / 3600.0
+    overheads = job2.get("fixed_overheads_s", {})
+    per_cell_overhead_s = sum(float(v) for v in overheads.values())
+    overhead_h = per_cell_overhead_s * cells * seeds / 3600.0
+    pen = job1.get("forced_over_unforced_ratio")
+    return {
+        "STATUS": "EXTRAPOLATION — NOT A MEASUREMENT",
+        "EXTRAPOLATED_train_hours": train_h,
+        "EXTRAPOLATED_overhead_hours": overhead_h,
+        "EXTRAPOLATED_total_hours": train_h + overhead_h,
+        "EXTRAPOLATED_usd_at_observed_dph": (train_h + overhead_h) * dph,
+        "EXTRAPOLATED_usd_if_determinism_forced": (
+            (train_h / pen + overhead_h) * dph if pen else None
+        ),
+        "dph_used": dph,
+        "ASSUMPTIONS_every_one_of_which_could_be_wrong": [
+            f"the measured end-to-end rate ({rate:,.0f} bars/s) holds for the WHOLE run — it was "
+            f"measured over {job2['per_stage']['stage2']['steps']} steps/stage on ONE cell "
+            f"({job2['cell']}) and {job2.get('n_symbols_used')} symbols, not 5 cells x 5 seeds "
+            "over 40 symbols",
+            f"{cells} cells x {seeds} seeds x 2 stages x {steps_per_stage:,} steps at batch "
+            f"{batch} x seq {seq}; if the pinned step budget differs, this scales linearly",
+            f"fixed overheads ({per_cell_overhead_s:.0f}s measured for this cell) recur ONCE PER "
+            "(cell, seed) and do NOT scale with symbol count — the real run loads 40 symbols, not "
+            f"{job2.get('n_symbols_used')}, so the lake-load term is UNDERSTATED here",
+            "EVAL IS EXCLUDED ENTIRELY — this probe measured no scoring pass; the eval leg was "
+            "previously observed at ~40 min/(cell,seed) on a 4090, which would DOMINATE this "
+            "figure. Treat the number below as a TRAINING-ONLY floor, not a run cost",
+            f"the spot price {dph}/hr is the one observed on this rental and is not fixed",
+            "the determinism variant applies JOB 1's compute-only ratio to an end-to-end rate; "
+            "the two need not share a penalty",
+        ],
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--device", default="cuda")
@@ -247,6 +314,7 @@ def main() -> int:
     ap.add_argument("--out", type=Path, default=Path("runs/m6_cuda_probe"))
     # A CPU dry-run must NOT be able to leave a file that reads like the real CUDA receipt.
     ap.add_argument("--receipt", type=Path, default=OUT)
+    ap.add_argument("--dph", type=float, default=0.3256, help="observed $/hr for the extrapolation")
     args = ap.parse_args()
     t_start = time.time()
 
@@ -346,9 +414,12 @@ def main() -> int:
         }
         print(f"       JOB 2 FAILED: {job2['error'][:200]}")
 
+    extrapolation = full_run_extrapolation(job2, job1, dph=args.dph)
+
     out = {
         "receipt": "m6_cuda_probe",
         "amendment": "prereg §7 v1.6 — the staged CUDA probe (supervisor-authorized, ~$1-2)",
+        "EXTRAPOLATION_full_run_cost": extrapolation,
         "provenance": prov,
         "config": {
             "bench_steps": args.steps,
