@@ -41,6 +41,7 @@ from trikaal.data.universe_loader import build_symbol_windows, calendar_boundary
 from trikaal.eval.conformance import DECILES, cell_tokenizer_failures
 from trikaal.eval.costs import load_spread_deciles
 from trikaal.eval.verdict import (
+    ARTIFACT_SCHEMA,
     DSR_HORIZONS,
     PRIMARY_H,
     write_cell_eval_artifact,
@@ -409,7 +410,10 @@ def main() -> int:
             if not args.no_eval_resume and done_path.is_file():
                 try:
                     doc = json.loads(done_path.read_text())
-                    if doc.get("schema") == "m6_cell_eval_v1" and doc.get("cell_id") is not None:
+                    # the CONSTANT, not a literal (§7 v1.6 C-2): a hardcoded schema string would
+                    # keep resuming artifacts written under a superseded contract — here, ones
+                    # with no mu_diag, which is exactly what the schema bump exists to reject.
+                    if doc.get("schema") == ARTIFACT_SCHEMA and doc.get("cell_id") is not None:
                         entries[done_path.name] = hashlib.sha256(done_path.read_bytes()).hexdigest()
                         resumed_units.append(done_path.name)
                         print(f"[eval]  RESUMED {done_path.name} (already complete — skipped)")
@@ -451,6 +455,10 @@ def main() -> int:
                 kappa_star_by_h=kappa_by_h,
                 val_ir_by_kappa_by_h=val_by_h,
                 codebook=head_score.codebook,
+                # §7 v1.6 C-2: the degeneracy guard's ONLY inputs. Omitting this left the guard
+                # reporting armed:true having examined nothing — the run meant to validate the
+                # guards would have delivered a verdict word with one of them silently dead.
+                mu_diag=head_score.mu_diag,
                 meta={"checkpoints": ckpt_hashes[f"{spec.name}_seed{seed}"]},
             )
             entries[name] = sha

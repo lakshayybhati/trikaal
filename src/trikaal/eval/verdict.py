@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -72,7 +73,12 @@ FALLBACK_DESCRIPTIVE = "DESCRIPTIVE_ONLY"  # §5: reported with CIs, claimed as 
 # pre-run (it can never manufacture a positive or negative claim, only refuse to emit one).
 FRAC_NEG_BAND: tuple[float, float] = (0.05, 0.95)
 
-ARTIFACT_SCHEMA = "m6_cell_eval_v1"
+ARTIFACT_SCHEMA = "m6_cell_eval_v2"
+# §7 v1.6 C-2: the fields ``degeneracy_guard`` actually READS. The v1 contract made ``mu_diag``
+# optional, so an artifact could omit it, pass validation, and leave the guard reporting
+# ``armed: true`` having examined nothing — the schema bump is what makes a v1 artifact (written
+# before the requirement existed) fail loudly instead of resuming into a blind guard.
+MU_DIAG_REQUIRED_KEYS = ("frac_negative", "activity_decisions")
 INDEX_SCHEMA = "m6_eval_index_v1"
 INDEX_NAME = "index.json"
 VERDICT_SCHEMA = "m6_verdict_v1"
@@ -89,6 +95,30 @@ def _file_sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _mu_diag_problems(mu_diag: object, where: str) -> list[str]:
+    """Everything wrong with a ``mu_diag`` payload (empty list = usable by the guard).
+
+    §7 v1.6 C-2. ``degeneracy_guard`` is HALT-only and reads exactly two scalars; if either is
+    absent it compares against NaN, every comparison is False, and the guard passes silently. So
+    the contract is enforced HERE, at the single emission path, rather than discovered as a
+    non-event downstream."""
+    if not isinstance(mu_diag, dict) or not mu_diag:
+        return [f"{where}: mu_diag is missing or empty — degeneracy_guard would examine nothing"]
+    bad: list[str] = []
+    for k in MU_DIAG_REQUIRED_KEYS:
+        if k not in mu_diag:
+            bad.append(f"{where}: mu_diag lacks {k!r} — the guard's {k} leg would be a no-op")
+            continue
+        try:
+            v = float(mu_diag[k])
+        except (TypeError, ValueError):
+            bad.append(f"{where}: mu_diag[{k!r}] = {mu_diag[k]!r} is not a float")
+            continue
+        if not math.isfinite(v):
+            bad.append(f"{where}: mu_diag[{k!r}] = {v} is not finite — NaN disarms the guard")
+    return bad
+
+
 def write_cell_eval_artifact(
     out_dir: Path,
     *,
@@ -98,8 +128,8 @@ def write_cell_eval_artifact(
     headline_series: np.ndarray,
     kappa_star_by_h: dict[int, float],
     val_ir_by_kappa_by_h: dict[int, dict[float, float]],
+    mu_diag: dict,
     codebook: dict | None = None,
-    mu_diag: dict | None = None,
     meta: dict | None = None,
 ) -> tuple[str, str]:
     """Write ONE per-(cell, seed) eval artifact; returns ``(name, sha256)``.
@@ -108,7 +138,17 @@ def write_cell_eval_artifact(
     write through here, so the loader can never drift from the writer. ``headline_series`` is
     the pooled FULL-calendar money-grid series at κ* netted at the flat 0.30 % (h = PRIMARY_H);
     ``val_ir_by_kappa_by_h`` carries the ANNUALIZED VAL IR for every (h, κ) — the DSR trial
-    entries §3 clause 5 requires persisted."""
+    entries §3 clause 5 requires persisted.
+
+    ``mu_diag`` is REQUIRED (§7 v1.6 C-2) and must carry finite ``frac_negative`` and
+    ``activity_decisions``: they are the only inputs ``degeneracy_guard`` reads, so an artifact
+    without them turns a binding HALT gate into a no-op that still reports itself armed."""
+    bad = _mu_diag_problems(mu_diag, f"cell{cell_id}_seed{seed}")
+    if bad:
+        raise VerdictInputError(
+            "refusing to write an eval artifact the degeneracy guard could not read:\n  - "
+            + "\n  - ".join(bad)
+        )
     spec = _CELL_BY_ID[cell_id]
     doc = {
         "schema": ARTIFACT_SCHEMA,
@@ -131,8 +171,9 @@ def write_cell_eval_artifact(
         # per-cell utilization + effective bits, reported in the paper, never thresholded
         "codebook": codebook or {},
         # §7 v1.4.2 standing μ̂ receipt: per-cell mean/std/frac_negative of the decision signal
-        # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology)
-        "mu_diag": mu_diag or {},
+        # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology).
+        # REQUIRED since v1.6 C-2 — validated above, never defaulted to {}.
+        "mu_diag": dict(mu_diag),
         "meta": meta or {},
     }
     name = f"cell{cell_id}_seed{seed}_eval.json"
@@ -177,6 +218,8 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
             got_k = set(doc["val_ir_by_kappa_by_h"][h])
             if got_k != want_k:
                 bad.append(f"{name}: h={h} κ entries {sorted(got_k)} != pinned {sorted(want_k)}")
+    # §7 v1.6 C-2: the guard's inputs are part of the contract, not an optional extra.
+    bad.extend(_mu_diag_problems(doc.get("mu_diag"), name))
     return bad
 
 
@@ -276,10 +319,20 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
     values are now PERSISTED too, so an adjudication has the distribution rather than a mean.
 
     PURE READ — never touches the clause computation, so it cannot alter a SURVIVES/NULL outcome;
-    it only reports whether the verdict must HALT. A missing ``activity_decisions`` (pre-v1.4.4
-    artifact) skips the filter legs (NaN comparisons are False); the sign legs still apply.
+    it only reports whether the verdict must HALT.
+
+    §7 v1.6 C-2 — ``armed`` NOW MEANS IT EXAMINED DATA, AND THE GUARD FAILS CLOSED. The previous
+    contract let ``mu_diag`` be absent: every read became NaN, ``nan == nan`` is False so every
+    comparison was False, and the guard returned a hardcoded ``"armed": True`` with
+    ``halted: False`` having inspected nothing. ``m6_toy_rehearsal.py`` never passed ``mu_diag``,
+    so the end-to-end run that was to VALIDATE the guards would have produced a verdict word with
+    this gate silently dead — the project's own "a check that cannot fail" pattern, sitting in the
+    decision path. ``armed`` is now computed from whether every (cell, seed) yielded finite values,
+    and a guard that cannot read its inputs HALTS rather than passing. Still HALT-only: it can
+    never flip SURVIVES↔NULL.
     """
     lo, hi = FRAC_NEG_BAND
+    unreadable: list[str] = []
 
     def _locked(v: float) -> bool:
         return v == v and not (lo <= v <= hi)  # v==v excludes NaN
@@ -297,6 +350,13 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
         acts = [
             float(evals[(c, s)].get("mu_diag", {}).get("activity_decisions", float("nan")))
             for s in DSR_SEEDS
+        ]
+        # §7 v1.6 C-2: record WHICH inputs were unreadable, so "armed" is a measurement.
+        unreadable += [
+            f"cell{c}_seed{s}:{k}"
+            for s in DSR_SEEDS
+            for k in MU_DIAG_REQUIRED_KEYS
+            if not np.isfinite(float(evals[(c, s)].get("mu_diag", {}).get(k, float("nan"))))
         ]
         fn, act = float(np.mean(fns)), float(np.mean(acts))
         bad_fn = [s for s, v in zip(DSR_SEEDS, fns, strict=True) if _locked(v)]
@@ -341,7 +401,9 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
         if deg:
             degenerate.append(c)
     return {
-        "armed": True,
+        # §7 v1.6 C-2: a MEASUREMENT, not a literal. False iff any pinned input was unreadable.
+        "armed": not unreadable,
+        "unreadable_inputs": unreadable,
         "frac_neg_band": list(FRAC_NEG_BAND),
         "rule": "HALT-ONLY (§7 v1.4.6): a cell is a constant-direction book if frac_negative is "
         "outside the band OR decision-activity at kappa* is 0 or 1, evaluated on the seed-mean OR "
@@ -351,7 +413,9 @@ def degeneracy_guard(evals: dict[tuple[int, int], dict]) -> dict:
         "guard NEVER flips SURVIVES<->NULL — the clauses/primary below are computed identically.",
         "per_cell": per_cell,
         "degenerate_cells": degenerate,
-        "halted": bool(degenerate),
+        # FAIL-CLOSED (§7 v1.6 C-2): a guard that could not read its own inputs HALTS. Previously
+        # an unreadable input produced halted=False, which is the failure mode this closes.
+        "halted": bool(degenerate) or bool(unreadable),
     }
 
 

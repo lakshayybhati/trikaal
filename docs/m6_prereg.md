@@ -190,6 +190,53 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.1 (2026-08-01, AUDIT TIER-1 C-2 — A BINDING HALT GATE WAS SILENTLY DEAD IN THE DECISION
+  PATH. DEFECT FIX, NOT A SPECIFICATION CHANGE: no pin, threshold, seed, enumeration or gate VALUE
+  moved; the degeneracy guard stays HALT-only and per-seed. Gate-A anchor `3f86882a` re-proven
+  byte-identical ×2, exit 0, after the `src/` edit.)** Local, $0. Found by an independent audit,
+  reproduced here before being touched.
+  - **THE DEFECT.** `write_cell_eval_artifact` took `mu_diag: dict | None = None` and persisted
+    `mu_diag or {}`; `_validate_artifact` never inspected it; `degeneracy_guard` read its only two
+    inputs via `.get(..., nan)`, and since every NaN comparison is False it returned a **hardcoded**
+    `"armed": True` with `halted: False` having examined nothing. `m6_toy_rehearsal.py:445` — the
+    driver the end-to-end validation run goes through — had `head_score.mu_diag` available and
+    never passed it. That run would have delivered exactly its stated deliverable, a verdict word
+    with `dual_specification`, while a binding HALT gate was inert. This is the project's own
+    *"a check that cannot fail is not a check"* pattern, in the decision path, on the very run
+    meant to validate the guards. **Recorded as instance seven.**
+  - **REPRODUCED BEFORE FIXING.** Same 15-artifact fixture, cell 4 planted at
+    `frac_negative = 0.999`: with `mu_diag` present → `halted: True, degenerate: [4]`; with
+    `mu_diag` absent → `armed: True, halted: False`, per-cell values `None`, `reasons: []`.
+  - **ONE PART OF THE FINDING AS STATED IS REFUTED.** It was reported that *both* HALT guards were
+    non-functional. `power_guard` reads `headline_series` and computes IRs from it — it never
+    touches `mu_diag` — and in the blind arm it still produced a real `ir_range = 19.56`. Only the
+    degeneracy guard was disarmed. The blast radius is one guard, not two.
+  - **A SECOND SITE, NOT IN THE ORIGINAL FINDING.** `tests/eval/test_verdict.py:74` also omitted
+    `mu_diag`, so every clause KAT in the main verdict suite was exercising the blind path too.
+    Fixed with an explicit benign payload.
+  - **THE FIX, at all four layers.** (i) `mu_diag` is a REQUIRED keyword and is validated at the
+    single emission path — empty, missing-key and non-finite payloads raise `VerdictInputError`
+    and no file reaches disk; (ii) `_validate_artifact` rejects an on-disk artifact whose
+    `mu_diag` the guard could not read, so a hand-edited or pre-v1.6 file is refused by the
+    loader; (iii) `armed` is now COMPUTED from whether every `(cell, seed)` yielded finite values,
+    `unreadable_inputs` names what was missing, and the guard **fails closed** — unreadable inputs
+    HALT instead of passing; (iv) the driver forwards `head_score.mu_diag`, and the eval-resume
+    gate now compares against the `ARTIFACT_SCHEMA` constant instead of a hardcoded
+    `"m6_cell_eval_v1"` literal, which would have kept resuming artifacts written under the
+    superseded contract. `ARTIFACT_SCHEMA` → `m6_cell_eval_v2`; the bump is what makes a v1
+    artifact fail loudly rather than resume into a blind guard.
+  - **THE KATs THAT WERE MISSING** (`tests/eval/test_mu_diag_required.py`, 14 tests): writer
+    refuses; loader refuses; guard reports `armed: False` + `halted: True` and never the historical
+    `armed ∧ ¬halted ∧ nothing-examined` signature; a single unreadable seed still halts; and the
+    guard **still discriminates** benign from degenerate, so fail-closed has not become
+    halt-on-everything. Call-site coverage is checked on the AST — the "flag accepted but never
+    forwarded" class that actually bit here — and **that checker is itself mutation-tested**
+    against a synthetic call omitting `mu_diag`, per the fixture-discrimination norm.
+  - **THE FIX IS MUTATION-PROVEN.** Reverting `armed` to a literal → the guard KAT fails;
+    removing the `_validate_artifact` leg → the loader KAT fails; deleting the driver's
+    `mu_diag=` line (the original defect, restored exactly) → the call-site KAT fails. Suite
+    351 green, ruff clean.
+
 - **v1.6 (2026-07-31, PRE-RUN INSTRUCTIONS — NOT A SPECIFICATION CHANGE. The design stays FROZEN:
   no pin, threshold, seed, enumeration, guard or gate value moved; the Gate-A anchor `3f86882a` was
   re-proven byte-identical after `src/` and `pyproject.toml` edits.)** Local, $0, no spend.

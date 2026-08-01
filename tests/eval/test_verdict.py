@@ -60,6 +60,10 @@ MU_NULL = {1: 0.0002, 2: 0.0002, 3: 0.0000, 4: -0.0002, 5: 0.0002}
 MU_PLACEBO_HARMED = {1: 0.0017, 2: 0.0020, 3: 0.0010, 4: 0.0020, 5: -0.0040}
 MU_FALLBACK_CLAIMED = {1: 0.0000, 2: 0.0030, 3: 0.0010, 4: 0.0030, 5: 0.0030}
 
+# §7 v1.6 C-2: a mu_diag comfortably inside FRAC_NEG_BAND with a binding filter, so these clause
+# fixtures test the CLAUSES and never trip the degeneracy HALT for an unrelated reason.
+BENIGN_MU_DIAG = {"frac_negative": 0.5, "activity_decisions": 0.5}
+
 
 def _build_fixture(out_dir: Path, mu_by_cell: dict[int, float], *, fixture_seed: int) -> Path:
     """15 deterministic eval artifacts + index: series = common + idio + μ(cell)."""
@@ -79,6 +83,10 @@ def _build_fixture(out_dir: Path, mu_by_cell: dict[int, float], *, fixture_seed:
                 headline_series=series,
                 kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
                 val_ir_by_kappa_by_h=val,
+                # §7 v1.6 C-2: BENIGN, and now REQUIRED. Until the requirement landed this
+                # fixture omitted mu_diag entirely, so every clause KAT in this file was
+                # exercising the blind-guard path — the same hole the real driver had.
+                mu_diag=BENIGN_MU_DIAG,
                 meta={"fixture": True},
             )
             entries[name] = sha
