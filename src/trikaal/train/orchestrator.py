@@ -32,6 +32,7 @@ import torch
 from trikaal.data.universe_loader import MultiSymbolWindowSampler, SymbolWindows
 from trikaal.eval.conformance import (
     PINNED_BACKBONE_PARAMS,
+    PINNED_DSR,
     PINNED_MICRO_LEGIBILITY_MIN,
     PINNED_MONEY_SEQ_LEN,
     PINNED_SEEDS,
@@ -58,6 +59,20 @@ from trikaal.utils.seeding import set_determinism
 from trikaal.utils.throughput import BASIS_END_TO_END, throughput_record
 
 
+def _money_backbone_kwargs() -> dict:
+    """The backbone kwargs the money surface REQUIRES, derived from the pins (§7 v1.6 C-5 A9).
+
+    The KV-cached rollout addresses position ``seq_len - 1 + k`` for ``k`` up to ``h``, so the
+    model must be built with ``max_len >= seq_len + max(h)``. Found by the A9 dry run: at the
+    default ``max_len = seq_len`` the money run would have TRAINED every unit and then raised at
+    the first eval. ``max_len`` sizes RoPE buffers only — the realized parameter count is
+    21,301,248 either way (verified) — so this enables the rollout and moves no number.
+
+    A DEFAULT rather than something the driver restates: a driver-side literal would be a second
+    copy of a pinned-derived value, which is exactly the shape that produced C-6."""
+    return {"max_len": PINNED_MONEY_SEQ_LEN + max(PINNED_DSR["horizons"])}
+
+
 @dataclass
 class OrchestratorConfig:
     # §7 v1.6 C-6 — THESE REFERENCE THE PINS, THEY DO NOT RESTATE THEM. The defaults were
@@ -82,7 +97,7 @@ class OrchestratorConfig:
     # real training stream; hard stop below it. None disables (toy shells ONLY — the real
     # M6 run uses this default).
     micro_legibility_min: float | None = PINNED_MICRO_LEGIBILITY_MIN
-    backbone_kwargs: dict = field(default_factory=dict)
+    backbone_kwargs: dict = field(default_factory=_money_backbone_kwargs)
     expect_backbone_params: int | None = PINNED_BACKBONE_PARAMS  # None ONLY for tiny smoke shells
     enforce_parity: bool = True  # G-parity holds at canonical dims; tiny smoke shells skip
     device: str = "cpu"
@@ -131,6 +146,20 @@ class OrchestratorConfig:
             )
         if not self.enforce_parity:
             bad.append("enforce_parity is False — G-parity binds at canonical dims")
+        # §7 v1.6 C-5 A9, FOUND BY THE DRY RUN: the rollout addresses positions up to
+        # seq_len + h, so a backbone built at the default max_len = seq_len cannot score at all.
+        # The money run would have TRAINED every unit and then died at the first eval. Derived,
+        # not chosen: max(PINNED_DSR["horizons"]) is the largest h any VAL leg rolls out to, and
+        # max_len is param-neutral (21,301,248 either way — verified), so this enables the
+        # rollout without moving a single number.
+        need = int(self.seq_len) + max(PINNED_DSR["horizons"])
+        got = int(self.backbone_kwargs.get("max_len", 0)) or None
+        if got is None or got < need:
+            bad.append(
+                f"backbone_kwargs max_len={got!r} < seq_len + max(h) = {need} — the rollout "
+                f"addresses positions up to seq_len+h and would raise at the FIRST eval, after "
+                f"every unit had already been trained"
+            )
         if bad:
             raise ConformanceError(
                 "OrchestratorConfig diverges from the pinned money surface (§7 v1.6 C-6); pass "

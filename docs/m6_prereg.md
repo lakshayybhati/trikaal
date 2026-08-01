@@ -190,6 +190,83 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.7 (2026-08-01, AUDIT TIER-2 C-1 — THE SINGLE-BAR-DECODE GAP AT CANONICAL DIMS. REPORT
+  ONLY: nothing proposed, nothing changed, no design touched.)** Local, $0.
+  - **THE STRUCTURE (not in doubt, S-1).** The tokenizer decoder is a Transformer over the
+    SEQUENCE dimension and its reconstruction objective is optimised on FULL WINDOWS. The M6
+    decision path does not do that: `predict._rollout` calls `decode_latent(z)` with `z` of shape
+    `[n, 1, dim]` — **a length-1 sequence, no context** — and takes `[:, 0, 0]`, i.e. feature 0,
+    which is exactly the quantity μ̂ accumulates. The decoder is evaluated in a regime its
+    objective never trained.
+  - **MEASURED: canonical d256 / 3 layers, trained checkpoints, real lake, 3 symbols × 16 windows
+    × seq_len 512.** The auditor's four metrics, held identical for comparability:
+
+    | | auditor d64/2L toy | **cell4 ckpt** (`encoder_causal=True`) | **M3 ckpt** (`encoder_causal=False`) |
+    |---|---|---|---|
+    | variance ratio (dim 0) | 1.44 | **0.509** [0.445, 0.571] | **1.205** [1.145, 1.291] |
+    | sign agreement (dim 0) | 0.838 | **0.507** [0.498, 0.517] | **0.780** [0.766, 0.794] |
+    | recon MAE ratio | — | **2.27×** | **4.00×** |
+    | recon MAE dim 0 | — | 0.1269 → **0.5258** | 0.1085 → **0.4095** |
+    | mean \|Δ\| / sd(in-window) | — | 0.465 | 0.888 |
+
+  - **THE HEADLINE.** On the checkpoint carrying the **causal-encoder pin** — the v1.3 M6
+    requirement — **sign agreement is 0.507, indistinguishable from a coin flip**, consistent
+    across all three symbols (0.4982–0.5167). The toy's 16.2% flip rate **understated it**: the
+    real figure on the pinned-encoder instrument is ~49%. This is not a near-zero artifact:
+    mean|Δ| is 0.47× the in-window standard deviation and dim-0 reconstruction MAE is 4.1× worse.
+  - **THE TWO CHECKPOINTS DISAGREE ON THE VARIANCE RATIO'S DIRECTION** (0.51 deflation vs 1.21
+    inflation) while agreeing that MAE degrades severely. The causal checkpoint has the SMALLER
+    mean|Δ| but the WORSE sign agreement — a smaller, more centred single-bar output whose sign
+    is then essentially random. Reported, not explained.
+  - **WHAT THIS DOES AND DOES NOT IMPLY, stated because the distinction is load-bearing.** All
+    five cells share the decode regime, so by the same argument that makes the unpinned
+    hyperparameters harmless (§ C-5 A8) this cannot by itself manufacture or destroy ΔIR(4−5) —
+    it degrades every arm. What it plausibly does is destroy μ̂ QUALITY and therefore the design's
+    POWER. Whether it is symmetric across arms is **open and not investigated here**: the cells
+    differ in feature set, so a decode gap that differs by arm would not cancel. Naming it;
+    proposing nothing.
+  - **DISCLOSURE THAT BOUNDS THE CLAIM.** No trained tokenizer in the repo carries the FULL M6 pin
+    set — both canonical-dims checkpoints predate `fine_pointwise=True` and
+    `micro_point_weight=3.0`. Both were measured and both are reported rather than one being
+    chosen. Receipt: `runs_manifest/m6_c1_single_bar_decode.json`.
+
+- **v1.6.6 (2026-08-01, C-5 A9 CLOSED + RESOURCE PRECONDITIONS. Defect fixes; no pinned value
+  moved.)** Local, $0.
+  - **A9 AND A4 WERE CONFLATED — the reusable lesson, now written into the driver's docstring.**
+    A9 is LOCAL, $0, COMPLETE PATH COVERAGE (does every stage execute and hand off — a WIRING
+    proof, in minutes). A4 is the GPU validation at reduced scale (does it produce the right
+    numbers — a NUMERICAL proof, and it costs money). The first `--dry-run` zeroed training steps
+    but ran the REAL money eval, 1,402,560 decisions per unit — A4's job on A9's budget.
+  - **THE FIX USES THE MECHANISM C-6 ALREADY BUILT.** A dry run DECLARES `money_run=False`, which
+    is what lifts `xsection.py:71`'s cap prohibition — legitimate precisely because `money_run` is
+    a declaration and never an inference. Option **(a)**, shortened work with REAL scoring, not
+    (b): a synthetic score would skip the path A9 exists to prove. **Conformance still asserts the
+    FULL pinned 40-symbol surface first** — only the subsequent LOAD is bounded, and a KAT asserts
+    on the AST that the gated object is the untouched `cfg`.
+  - **STRUCTURALLY UN-QUOTABLE, not merely labelled:** every dry-run artifact carries
+    `money_run: false` / `grid_pinned: false` / `dry_run: true`, and `_validate_artifact` REFUSES
+    any of the three, so `load_cell_evals` cannot assemble one — including the dangerous case of
+    24 real units and one dry-run unit.
+  - **A REAL MONEY-CONFIGURATION DEFECT THE DRY RUN FOUND.** The backbone was built at the default
+    `max_len = seq_len`, but the KV-cached rollout addresses `seq_len - 1 + k` for k up to h. The
+    money run would have **TRAINED EVERY UNIT AND THEN RAISED AT THE FIRST EVAL**. Fixed as a
+    money assertion plus a pin-derived default (`seq_len + max(horizons)`); `max_len` sizes RoPE
+    buffers only and the realized count is 21,301,248 either way (verified), so it moves no number.
+  - **A COSMETIC KNOB OF MINE, REMOVED.** My first bounding also sliced the recorded grid. That
+    bounded nothing — `score_cell` builds its own grids from `cfg`, so the real bound is
+    `cap_per_symbol` — and it would have made the artifact's `n_periods` disagree with its own
+    `headline_series`, which `_validate_artifact` requires to match. `n_periods` is now DERIVED
+    from the scored series (true by construction) and is therefore no longer a resume-binding
+    field: it is a deterministic function of fields that ARE bound. Recorded so the omission reads
+    as a decision.
+  - **RESOURCE PRECONDITIONS, before any compute (`utils/preflight.py`).** The argument is the
+    measured one: 27.8 GiB on a 16.0 GiB host did NOT fail — it swapped, and one zero-step unit
+    took 2,581 s. **An OOM stops the meter; swap-thrash keeps billing while looking like ordinary
+    slowness.** Memory strategy is a HOST property (`--mem-strategy`, `auto` by default,
+    recorded in the manifest); both strategies are byte-identical and differ only in residency and
+    rebuild count, so the 3×/5× recompute is NOT paid on the 251 GB box that does not need it.
+    Disk is checked too; VRAM is recorded.
+
 - **v1.6.5 (2026-08-01, AUDIT TIER-1 C-5 — THE MONEY DRIVER. New code, no pinned value moved.)**
   Local, $0. Built to the supervisor's A1–A9 scope; the A9 dry run is what proved it.
   - **WHY IT EXISTS.** Pre-flight Item 2 promises ZERO first-time code paths on rented hardware,

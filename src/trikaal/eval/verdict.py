@@ -224,6 +224,17 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
                 bad.append(f"{name}: h={h} κ entries {sorted(got_k)} != pinned {sorted(want_k)}")
     # §7 v1.6 C-2: the guard's inputs are part of the contract, not an optional extra.
     bad.extend(_mu_diag_problems(doc.get("mu_diag"), name))
+    # §7 v1.6 C-5 A9: a DRY-RUN artifact is structurally un-quotable, not merely labelled. The
+    # dry run declares money_run=False and therefore scores a deliberately SHORTENED grid, so its
+    # numbers are wiring evidence and nothing else. Labelling alone would leave "someone reads the
+    # manifest carefully" as the only thing between a path proof and a reported result.
+    meta = doc.get("meta") or {}
+    if meta.get("dry_run") or meta.get("grid_pinned") is False or meta.get("money_run") is False:
+        bad.append(
+            f"{name}: DRY-RUN artifact (money_run={meta.get('money_run')!r}, "
+            f"grid_pinned={meta.get('grid_pinned')!r}) — produced on a shortened grid to prove "
+            "the path, and can never be assembled into a verdict"
+        )
     return bad
 
 

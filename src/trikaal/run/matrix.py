@@ -92,9 +92,20 @@ def load_symbol_arrays(con, symbol: str, *, boundary_ms: int, tail_bars: int | N
     }
 
 
-def windows_by_arm(raw: dict, *, seq_len: int, boundary_ms: int, seed: int) -> dict:
+def windows_by_arm(
+    raw: dict,
+    *,
+    seq_len: int,
+    boundary_ms: int,
+    seed: int,
+    arms: tuple[str, ...] | None = None,
+) -> dict:
     """Per-arm, per-symbol training windows for ONE seed — built once per arm so every cell
-    sharing an arm sees byte-identical inputs (m6_design §4). Shared by both drivers."""
+    sharing an arm sees byte-identical inputs (m6_design §4). Shared by both drivers.
+
+    ``arms=None`` builds all three (the 'fast' host strategy). Passing a subset builds only what
+    the unit needs (the 'low' strategy): byte-identical output, ~2.5x less resident memory, paid
+    for with rebuilds. Which is right is a property of the HOST, not of the specification."""
     return {
         arm: [
             build_symbol_windows(
@@ -110,7 +121,7 @@ def windows_by_arm(raw: dict, *, seq_len: int, boundary_ms: int, seed: int) -> d
             )
             for s, d in raw.items()
         ]
-        for arm in ARMS
+        for arm in (arms or ARMS)
     }
 
 
@@ -125,7 +136,7 @@ class MatrixSpec:
     # arm-transformed windows at the money configuration's 84.15M bars needs ~95 GiB; built one
     # seed at a time and released, the same numbers fit in ~19 GiB. Measured by the dry run, which
     # is what A9 exists for. This changes WHEN the windows are built, never what they contain.
-    windows_for_seed: Callable[[int], dict[str, list]]
+    windows_for_seed: Callable[..., dict[str, list]]
     art_dir: Path
     symbols: tuple[str, ...]
     eval_window: tuple[str, str]
@@ -194,7 +205,11 @@ def artifact_reuse_failures(doc: dict, *, expected: dict) -> list[str]:
             "scored from a DIFFERENT training generation; reusing it would silently mix "
             "generations inside one verdict"
         )
-    for key in ("symbols", "eval_window", "h", "n_periods", "start_ms"):
+    # NOTE (§7 v1.6 C-5): ``n_periods`` is deliberately NOT bound here. It is DERIVED from the
+    # scored series, so it cannot be known before scoring and cannot form a pre-scoring
+    # expectation. Nothing is lost: it is a deterministic function of (symbols, eval_window, h,
+    # start_ms), every one of which IS bound below, plus the checkpoints bound above.
+    for key in ("symbols", "eval_window", "h", "start_ms"):
         if meta.get(key) != expected[key]:
             fails.append(f"meta.{key} {meta.get(key)!r} != {expected[key]!r}")
     return fails
@@ -207,7 +222,7 @@ def train_matrix(spec: MatrixSpec, monitor=None, *, verbose: bool = True) -> dic
     for cell, seed in spec.units:
         t0 = time.time()
         # built HERE and dropped at the end of the iteration — the peak is one seed, not five
-        windows = spec.windows_for_seed(seed)
+        windows = spec.windows_for_seed(seed, (cell.arm,))
         m = run_cell(cell, seed, windows, spec.orch, monitor)
         del windows
         walls[m["run"]] = round(time.time() - t0, 1)
@@ -263,7 +278,6 @@ def eval_matrix(
             "symbols": list(spec.symbols),
             "eval_window": list(spec.eval_window),
             "h": PRIMARY_H,
-            "n_periods": int(spec.grid_n_periods),
             "start_ms": int(spec.grid_start_ms),
         }
         done = spec.art_dir / f"cell{cell.cell_id}_seed{seed}_eval.json"
@@ -309,6 +323,13 @@ def eval_matrix(
             if h == PRIMARY_H:
                 head = sc
 
+        # §7 v1.6 C-5: n_periods is the ACTUAL series length, never a separately-carried number.
+        # `_validate_artifact` requires len(headline_series) == grid.n_periods, so deriving it
+        # here makes that invariant true by construction instead of by two values agreeing. The
+        # A9 dry run exposed the gap: a grid truncated for the record does NOT bound what
+        # `score_cell` scores (it builds its own grids from cfg — the real bound is
+        # cap_per_symbol), so the recorded n_periods and the series could silently disagree.
+        n_periods = int(np.asarray(head.headline_series).size)
         det = None
         try:
             det = json.loads((rd / "run_manifest.json").read_text())["determinism"]
@@ -318,11 +339,7 @@ def eval_matrix(
             spec.art_dir,
             cell_id=cell.cell_id,
             seed=seed,
-            grid={
-                "h": PRIMARY_H,
-                "start_ms": int(spec.grid_start_ms),
-                "n_periods": int(spec.grid_n_periods),
-            },
+            grid={"h": PRIMARY_H, "start_ms": int(spec.grid_start_ms), "n_periods": n_periods},
             headline_series=head.headline_series,
             kappa_star_by_h=kappa_by_h,
             val_ir_by_kappa_by_h=val_by_h,
@@ -334,7 +351,7 @@ def eval_matrix(
                 "symbols": list(spec.symbols),
                 "eval_window": list(spec.eval_window),
                 "h": PRIMARY_H,
-                "n_periods": int(spec.grid_n_periods),
+                "n_periods": n_periods,
                 "start_ms": int(spec.grid_start_ms),
                 # the PROVENANCE STAMP (A7/C-18) — recorded, never chosen
                 "provenance": run_provenance(
@@ -342,6 +359,11 @@ def eval_matrix(
                 ),
                 "determinism": det,
                 "driver": spec.label,
+                # §7 v1.6 C-5 A9: mirrored into every artifact so a dry-run unit is refused by
+                # verdict._validate_artifact — structurally un-quotable, not merely labelled.
+                "money_run": bool(spec.orch.money_run),
+                "grid_pinned": bool(spec.orch.money_run),
+                "dry_run": not bool(spec.orch.money_run),
                 **spec.extra_meta,
             },
         )

@@ -27,6 +27,33 @@ A8  INVENT NO VALUE. Anything not pinned is READ from code and RECORDED, never c
     ``unpinned_parameters()`` below, which also records WHY each is legitimately unpinned so that
     a later reader cannot mistake an unpinned parameter for an unconsidered one.
 
+A9 AND A4 ARE DIFFERENT JOBS. CONFLATING THEM IS WHAT BROKE THE FIRST DRY RUN, so it is written
+down here rather than left to be rediscovered:
+
+  **A9 — the dry run.** LOCAL, $0, COMPLETE PATH COVERAGE. The question is *does every stage
+  execute and hand off to the next* — conformance, config assembly, symbol load, gate arming,
+  training loop, checkpoint round-trip, scoring, artifact schema, index, verdict wiring. It is a
+  WIRING proof. It must take minutes.
+  **A4 — the GPU validation.** REDUCED SCALE ON RENTED HARDWARE. The question is *does it produce
+  the right numbers*. That is a NUMERICAL proof and it costs money.
+
+The first version of ``--dry-run`` zeroed the training steps but ran the REAL money eval —
+1,402,560 decisions per unit at h=15, 8.4 h on a 4090 — i.e. it tried to do A4's job on A9's
+budget, and cost hours per unit instead of minutes while proving nothing A4 would not prove
+better. A dry run therefore DECLARES ``money_run=False`` and scores a deliberately SHORTENED grid:
+the real scoring path over a tiny number of decisions covers strictly more than a synthetic score
+would, at a cost A9 can actually pay.
+
+WHY THAT IS NOT AN A2 VIOLATION. A2 protects the MONEY run's config from being altered by a flag.
+``money_run`` is a DECLARATION, never an inference (C-6), and a dry run declares itself not a
+money run — so the money surface, including ``xsection.py:71``'s cap prohibition, does not apply
+to it. The mechanism already exists; this uses it rather than inventing a second one.
+
+AND A DRY-RUN ARTIFACT IS STRUCTURALLY UN-QUOTABLE, not merely labelled: it carries
+``money_run: false`` and ``grid_pinned: false``, and ``verdict._validate_artifact`` REFUSES to
+assemble any artifact so marked. Labelling alone would leave "someone reads the manifest
+carefully" as the only thing between a path proof and a reported result.
+
 WHAT IS DELIBERATELY NOT HERE: the verdict. This driver emits the 25 artifacts + index;
 ``scripts/m6_verdict.py`` remains the only code path allowed to produce SURVIVES/NULL.
 """
@@ -37,6 +64,7 @@ import argparse
 import json
 import sys
 import time
+from dataclasses import replace
 from pathlib import Path
 
 from trikaal.data.universe_loader import calendar_boundary_ms, connect_lake
@@ -65,9 +93,30 @@ from trikaal.run.matrix import (
 from trikaal.train.cells import CELLS
 from trikaal.train.orchestrator import OrchestratorConfig
 from trikaal.train.tripwire import TripwireConfig, TripwireMonitor
+from trikaal.utils.preflight import (
+    STRATEGIES,
+    STRATEGY_FAST,
+    STRATEGY_LOW,
+    memory_requirement_bytes,
+    physical_ram_bytes,
+    resource_failures,
+    resource_record,
+)
 from trikaal.utils.provenance import run_provenance
 
 LAKE = Path("processed/universe_bars")
+# A9 bounds. Small enough that the WIRING proof takes minutes; large enough that scoring, kappa
+# selection and the artifact schema are all genuinely exercised on real data.
+# THE REAL BOUND IS THE CAP, and it is the only one. A first draft also sliced the recorded grid,
+# which looked like a second bound and was not: ``score_cell`` builds its own grids from ``cfg``,
+# so a truncated grid changed only the METADATA and would have made the artifact's n_periods
+# disagree with its own headline_series. Removed rather than kept as decoration.
+DRY_RUN_CAP = 8  # decisions per symbol — legal ONLY because money_run is declared False
+# The DATA is bounded too, and for the same reason. A9 requires COMPLETE PATH COVERAGE in MINUTES;
+# the pinned 40 symbols are 84,153,600 bars, ~170 min just to load and 27.8 GiB to hold. Conformance
+# still asserts the FULL pinned surface first — that is the A3 proof and it is not weakened — and
+# only the subsequent LOAD is bounded, on the same declaration that lifts the cap prohibition.
+DRY_RUN_SYMBOLS = 4
 
 
 def unpinned_parameters(orch: OrchestratorConfig) -> dict:
@@ -127,6 +176,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="execute the FULL path with ZERO training steps (A9) — $0 local proof",
     )
     ap.add_argument("--lake", type=Path, default=LAKE, help="lake root (operational)")
+    # MEMORY STRATEGY IS A PROPERTY OF THE HOST, NOT OF THE SPECIFICATION. Both strategies compute
+    # byte-identical results and differ only in residency and rebuild count, so this is operational
+    # and cannot move a pinned value. "auto" picks from the machine's physical RAM.
+    ap.add_argument("--mem-strategy", default="auto", choices=("auto", *STRATEGIES))
     ap.add_argument("--wandb", default="disabled", choices=("disabled", "offline", "online"))
     return ap
 
@@ -156,7 +209,48 @@ def main(argv: list[str] | None = None) -> int:
         f"[gate]  conformance PASS over {len(symbols)} symbols, seeds {tuple(PINNED_SEEDS)}",
         flush=True,
     )
-    print(f"[gate]  symbols sha256 {symbols_sha256(symbols)[:16]}…")
+    print(f"[gate]  symbols sha256 {symbols_sha256(symbols)[:16]}…", flush=True)
+
+    # A9 option (a), and ONLY AFTER the gate above has asserted the full money surface. The dry
+    # run DECLARES itself not a money run, which is what lifts xsection.py:71's cap prohibition;
+    # REAL scoring over a shortened grid, because a synthetic score would skip the path A9 exists
+    # to prove. A SEPARATE object: `cfg` remains the money surface that was gated, `eval_cfg` is
+    # what the dry run actually scores, so the two can never be confused.
+    # (The first draft bounded `cfg` BEFORE the gate and conformance rejected it — the gate
+    # catching the driver's own ordering bug is exactly why it runs first.)
+    eval_cfg = replace(cfg, money=False, cap_per_symbol=DRY_RUN_CAP) if args.dry_run else cfg
+
+    # ---- RESOURCE PRECONDITIONS, before any compute (§7 v1.6 C-5, ruling 2) -----------------
+    # Same principle as conformance-first. A COUNT(*) is cheap; discovering the requirement
+    # thirty minutes into a swap-thrash on a rented box is not, and does not stop the meter.
+    con = connect_lake(args.lake) if Path(args.lake).exists() else None
+    if con is None:
+        print(f"LAKE MISSING at {args.lake} — refusing to invent data", file=sys.stderr)
+        return 1
+    # Conformance above ran over the FULL pinned 40; only the LOAD is bounded, and only in a run
+    # that has declared itself not a money run.
+    load_symbols = symbols[:DRY_RUN_SYMBOLS] if args.dry_run else symbols
+    n_bars = int(
+        con.execute("SELECT COUNT(*) FROM bars WHERE symbol IN ?", [load_symbols]).fetchone()[0]
+    )
+    ram = physical_ram_bytes() or 0
+    strategy = args.mem_strategy
+    if strategy == "auto":
+        fast_fits = memory_requirement_bytes(n_bars, STRATEGY_FAST)["peak_bytes"] <= ram
+        strategy = STRATEGY_FAST if fast_fits else STRATEGY_LOW
+    req = memory_requirement_bytes(n_bars, strategy)
+    print(
+        f"[gate]  {n_bars:,} bars; memory strategy {strategy!r} needs {req['peak_gib']:.2f} GiB, "
+        f"host has {ram / 2**30:.2f} GiB",
+        flush=True,
+    )
+    rfails = resource_failures(n_bars=n_bars, strategy=strategy, out_dir=args.out)
+    if rfails:
+        print(
+            "RESOURCE PRECONDITION FAILED — nothing was computed:\n  - " + "\n  - ".join(rfails),
+            file=sys.stderr,
+        )
+        return 1
 
     # ---- the orchestrator config: pins only, plus operational fields -----------------------
     orch = OrchestratorConfig(
@@ -164,6 +258,9 @@ def main(argv: list[str] | None = None) -> int:
         out_dir=args.out,
         wandb_mode=args.wandb,
         wandb_group="m6_money",
+        # backbone_kwargs is NOT restated here: OrchestratorConfig derives it from the pins
+        # (max_len >= seq_len + max(h)), and a driver-side literal would be a second copy of a
+        # pinned-derived value — the shape that produced C-6.
         autocast_bf16=args.device.startswith("cuda"),
         # A9: a dry run executes every step of the path with ZERO training work.
         steps_stage1=0 if args.dry_run else OrchestratorConfig.steps_stage1,
@@ -188,14 +285,12 @@ def main(argv: list[str] | None = None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
 
     # ---- data --------------------------------------------------------------------------------
-    con = connect_lake(args.lake) if args.lake.exists() else None
-    if con is None:
-        print(f"LAKE MISSING at {args.lake} — refusing to invent data", file=sys.stderr)
-        return 1
     boundary = calendar_boundary_ms(pinned["window"][0], pinned["window"][1], pinned["train_frac"])
     # tail_bars=None: the money configuration trains on the FULL pinned region, unlike the
     # rehearsal which deliberately slices a tail. Same function, different argument (C-5 A1).
-    raw = {s: load_symbol_arrays(con, s, boundary_ms=boundary, tail_bars=None) for s in symbols}
+    raw = {
+        s: load_symbol_arrays(con, s, boundary_ms=boundary, tail_bars=None) for s in load_symbols
+    }
     sym_evals = [
         SymbolEval(
             symbol=s,
@@ -209,20 +304,32 @@ def main(argv: list[str] | None = None) -> int:
         for s, d in raw.items()
     ]
 
-    def windows_for_seed(seed: int) -> dict:
-        # LAZY (A9): eager construction across all seeds needs ~95 GiB at the money
-        # configuration's 84.15M bars. Same inputs, same numbers, one seed resident.
-        return windows_by_arm(raw, seq_len=orch.seq_len, boundary_ms=boundary, seed=seed)
+    _cache: dict = {}
 
-    grid = primary_region_grid_ms(cfg)
+    def windows_for_seed(seed: int, arms: tuple[str, ...] | None = None) -> dict:
+        """LAZY, and under 'low' only the arm the unit needs is materialised.
+
+        Both strategies produce byte-identical windows (``shuffle_micro`` is seeded on
+        ``(symbol, seed)``); they differ in residency and rebuild count only. 'fast' caches the
+        seed's three arms; 'low' keeps exactly one and pays the rebuild."""
+        want = tuple(arms) if (arms and strategy == STRATEGY_LOW) else None
+        key = (seed, want)
+        if key not in _cache:
+            _cache.clear()  # one seed resident at a time — the A9 finding
+            _cache[key] = windows_by_arm(
+                raw, seq_len=orch.seq_len, boundary_ms=boundary, seed=seed, arms=want
+            )
+        return _cache[key]
+
+    grid = primary_region_grid_ms(cfg)  # money geometry; the dry run bounds via cap_per_symbol
 
     spec = MatrixSpec(
         orch=orch,
-        base_eval_cfg=cfg,
+        base_eval_cfg=eval_cfg,
         sym_evals=sym_evals,
         windows_for_seed=windows_for_seed,
         art_dir=args.out / "eval",
-        symbols=tuple(symbols),
+        symbols=tuple(load_symbols),
         eval_window=tuple(pinned["window"]),
         grid_start_ms=int(grid[0]),
         grid_n_periods=int(grid.size),
@@ -247,12 +354,19 @@ def main(argv: list[str] | None = None) -> int:
         "shard": {"index": shard_i, "n_shards": n_shards, "units": len(mine)},
         "conformance": "PASS (assert_conformance, first action, full money surface)",
         "symbols_sha256": symbols_sha256(symbols),
-        "n_symbols": len(symbols),
+        "n_symbols": len(load_symbols),
+        "n_symbols_conformance_asserted": len(symbols),
         "eval_window": list(pinned["window"]),
         "grid": {"h": PRIMARY_H, "start_ms": int(grid[0]), "n_periods": int(grid.size)},
         "seeds": list(PINNED_SEEDS),
         "seq_len": orch.seq_len,
         "dry_run": bool(args.dry_run),
+        # LOUD, and mirrored into every artifact where the verdict loader REFUSES them
+        "money_run": bool(orch.money_run),
+        "grid_pinned": not bool(args.dry_run),
+        "dry_run_bounds": ({"cap_per_symbol": DRY_RUN_CAP} if args.dry_run else None),
+        "memory_strategy": strategy,
+        "resources": resource_record(n_bars=n_bars, strategy=strategy, out_dir=args.out),
         "unpinned_parameters": unpinned_parameters(orch),
         "provenance": run_provenance(args.device),
         "eval_artifacts": outcome.entries,

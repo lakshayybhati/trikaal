@@ -281,16 +281,24 @@ def test_a_retrained_checkpoint_invalidates_the_artifact():
         {"symbols": ["ETHUSDT"]},
         {"eval_window": ["2020-01-01", "2021-01-01"]},
         {"h": 60},
-        {"n_periods": 65},
         {"start_ms": 18},
         {"schema": "m6_cell_eval_v1"},
         {"cell_id": 3},
         {"seed": 1},
     ],
-    ids=["symbols", "window", "h", "n_periods", "start_ms", "old_schema", "cell", "seed"],
+    ids=["symbols", "window", "h", "start_ms", "old_schema", "cell", "seed"],
 )
 def test_every_binding_field_blocks_reuse(over):
     assert artifact_reuse_failures(_doc(**over), expected=_expected()), f"{over} was accepted"
+
+
+def test_n_periods_is_deliberately_not_a_binding_field():
+    """It is DERIVED from the scored series, so it cannot form a PRE-scoring expectation.
+
+    Nothing is lost: n_periods is a deterministic function of (symbols, eval_window, h, start_ms)
+    and the checkpoints, every one of which IS bound. Recorded explicitly so the omission reads
+    as a decision rather than an oversight."""
+    assert artifact_reuse_failures(_doc(n_periods=99), expected=_expected()) == []
 
 
 # ------------------------------------------------------------------ A1: ONE shared path
