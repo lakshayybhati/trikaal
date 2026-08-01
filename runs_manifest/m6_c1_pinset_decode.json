@@ -1,26 +1,34 @@
 {
   "LEG_II_ARM_SYMMETRY": {
     "m6_pin_set": {
-      "cross_width_4_vs_2_abs_difference": 0.046875,
+      "cross_width_4_vs_2_abs_difference": 0.0107421875,
       "cross_width_any_arm_degenerate": false,
-      "cross_width_reading": "SYMMETRIC across widths \u2014 clause 3 and the \u00a75 fallback unaffected",
-      "primary_4_vs_5_abs_difference": 0.0341796875,
+      "cross_width_diff_over_own_spread": 0.354286144520457,
+      "cross_width_reading": "SYMMETRIC across widths \u2014 inside the within-arm spread",
+      "cross_width_within_arm_sd": 0.03032065370363286,
+      "primary_4_vs_5_abs_difference": 0.10709635416666663,
       "primary_any_arm_degenerate": false,
-      "primary_reading": "SYMMETRIC across the PRIMARY pair \u2014 costs POWER, cannot bias dIR(4-5)",
-      "sign_agreement_micro_16dim": 0.919921875,
-      "sign_agreement_micro_shuffled_16dim": 0.9541015625,
-      "sign_agreement_ohlcv_7dim": 0.966796875
+      "primary_diff_over_own_spread": 1.1010613311782735,
+      "primary_reading": "ASYMMETRIC across the PRIMARY pair \u2014 the between-arm gap EXCEEDS the within-arm across-seed spread, so it is a measured difference and does NOT cancel in dIR(4-5)",
+      "primary_within_arm_sd": 0.09726647474946752,
+      "sign_agreement_micro_16dim": 0.951171875,
+      "sign_agreement_micro_shuffled_16dim": 0.8440755208333334,
+      "sign_agreement_ohlcv_7dim": 0.9404296875
     },
     "pre_v1_4": {
-      "cross_width_4_vs_2_abs_difference": 0.0966796875,
+      "cross_width_4_vs_2_abs_difference": 0.1123046875,
       "cross_width_any_arm_degenerate": false,
-      "cross_width_reading": "WIDTH-DEPENDENT \u2014 lands on clause 3's dIR(4-2) and the \u00a75 fallback dIR(2-1), NOT on the primary dIR(4-5)",
-      "primary_4_vs_5_abs_difference": 0.1337890625,
+      "cross_width_diff_over_own_spread": 1.339172301330597,
+      "cross_width_reading": "WIDTH-DEPENDENT \u2014 exceeds the within-arm spread; lands on clause 3's dIR(4-2) and the \u00a75 fallback dIR(2-1), NOT on the primary dIR(4-5)",
+      "cross_width_within_arm_sd": 0.08386126817916892,
+      "primary_4_vs_5_abs_difference": 0.10188802083333326,
       "primary_any_arm_degenerate": true,
+      "primary_diff_over_own_spread": 1.2149592183086277,
       "primary_reading": "INCONCLUSIVE \u2014 an arm's single-bar decode collapsed to a constant, so its sign agreement is an artifact and no symmetry claim is made (control-arm rule)",
-      "sign_agreement_micro_16dim": 0.8662109375,
-      "sign_agreement_micro_shuffled_16dim": 1.0,
-      "sign_agreement_ohlcv_7dim": 0.962890625
+      "primary_within_arm_sd": 0.08386126817916892,
+      "sign_agreement_micro_16dim": 0.8489583333333334,
+      "sign_agreement_micro_shuffled_16dim": 0.9508463541666666,
+      "sign_agreement_ohlcv_7dim": 0.9612630208333334
     }
   },
   "POINT_DECODER_NOTE": "With fine_pointwise on, model.py:95-102 builds point_decoder, a genuinely per-bar zero-cross-bar head, whose own comment says 'Train-time only; the AR interface and the main decode path are unchanged.' predict._rollout calls decode_latent, i.e. the window decoder. Its numbers are reported as a MEASUREMENT of the gap's nature and explicitly NOT as a proposal to wire it into the decision path.",
@@ -30,7 +38,11 @@
     "d_model": 256,
     "lr": 0.001,
     "n_layers": 3,
-    "seed": 0,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
     "seq_len": 128,
     "steps": 400,
     "symbol": "BTCUSDT",
@@ -45,6 +57,7 @@
   },
   "results": {
     "micro_shuffled|m6_pin_set": {
+      "any_seed_degenerate": false,
       "arm": "micro_shuffled",
       "bars_compared": 1024,
       "config": "m6_pin_set",
@@ -57,7 +70,12 @@
         0.15394
       ],
       "mean_abs_delta_dim0": 0.22375640063137325,
-      "mean_abs_delta_over_sd_dim0": 0.26173702681599154,
+      "mean_abs_delta_over_sd_dim0": 0.2870585039179991,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        0.26173702681599154,
+        0.2991799007811224,
+        0.3002585841568833
+      ],
       "n_features": 16,
       "pins": {
         "encoder_causal": true,
@@ -75,14 +93,37 @@
         "variance_ratio_dim0": 1.0152369920932447
       },
       "recon_mae_in_window_dim0": 0.2122177296859178,
-      "recon_mae_ratio_dim0": 1.4758595853755185,
+      "recon_mae_ratio_dim0": 1.3769401243787065,
+      "recon_mae_ratio_dim0_by_seed": [
+        1.4758595853755185,
+        1.2826627567278082,
+        1.3722980310327924
+      ],
       "recon_mae_single_bar_dim0": 0.3132035705435925,
-      "sign_agreement_dim0": 0.9541015625,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        0.9541015625,
+        0.76953125,
+        0.80859375
+      ],
+      "sign_agreement_dim0": 0.8440755208333334,
+      "sign_agreement_mean": 0.8440755208333334,
+      "sign_agreement_sd": 0.09726647474946752,
       "single_bar_degenerate": false,
       "steps": 400,
-      "variance_ratio_dim0": 0.48652386546943094
+      "variance_ratio_dim0": 0.5091706755449693,
+      "variance_ratio_dim0_by_seed": [
+        0.48652386546943094,
+        0.5400271186161504,
+        0.5009610425493266
+      ]
     },
     "micro_shuffled|pre_v1_4": {
+      "any_seed_degenerate": true,
       "arm": "micro_shuffled",
       "bars_compared": 1024,
       "config": "pre_v1_4",
@@ -95,7 +136,12 @@
         0.4115
       ],
       "mean_abs_delta_dim0": 1.189487193187233e-07,
-      "mean_abs_delta_over_sd_dim0": 1.2462338399120219,
+      "mean_abs_delta_over_sd_dim0": 0.5480650026071295,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        1.2462338399120219,
+        0.24943961827403563,
+        0.14852154963533112
+      ],
       "n_features": 16,
       "pins": {
         "encoder_causal": true,
@@ -104,14 +150,37 @@
       },
       "point_decoder_regime": null,
       "recon_mae_in_window_dim0": 0.6416121620942903,
-      "recon_mae_ratio_dim0": 1.0000000017244066,
+      "recon_mae_ratio_dim0": 1.4555971939094714,
+      "recon_mae_ratio_dim0_by_seed": [
+        1.0000000017244066,
+        1.9821153122158277,
+        1.3846762677881796
+      ],
       "recon_mae_single_bar_dim0": 0.6416121632006906,
-      "sign_agreement_dim0": 1.0,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        1.0,
+        0.9248046875,
+        0.927734375
+      ],
+      "sign_agreement_dim0": 0.9508463541666666,
+      "sign_agreement_mean": 0.9508463541666666,
+      "sign_agreement_sd": 0.0425935023359607,
       "single_bar_degenerate": true,
       "steps": 400,
-      "variance_ratio_dim0": 0.0
+      "variance_ratio_dim0": 0.44863514387005926,
+      "variance_ratio_dim0_by_seed": [
+        0.0,
+        0.5771333398010783,
+        0.7687720918090994
+      ]
     },
     "micro|m6_pin_set": {
+      "any_seed_degenerate": false,
       "arm": "micro",
       "bars_compared": 1024,
       "config": "m6_pin_set",
@@ -124,7 +193,12 @@
         0.07879
       ],
       "mean_abs_delta_dim0": 0.26948837564177097,
-      "mean_abs_delta_over_sd_dim0": 0.28187601471095425,
+      "mean_abs_delta_over_sd_dim0": 0.22225632865795406,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        0.28187601471095425,
+        0.18803578927650746,
+        0.19685718198640043
+      ],
       "n_features": 16,
       "pins": {
         "encoder_causal": true,
@@ -142,14 +216,37 @@
         "variance_ratio_dim0": 0.8989290783846376
       },
       "recon_mae_in_window_dim0": 0.15091662800968209,
-      "recon_mae_ratio_dim0": 1.8308767979200458,
+      "recon_mae_ratio_dim0": 1.390408051111616,
+      "recon_mae_ratio_dim0_by_seed": [
+        1.8308767979200458,
+        1.0130435209641855,
+        1.3273038344506167
+      ],
       "recon_mae_single_bar_dim0": 0.2763097526432574,
-      "sign_agreement_dim0": 0.919921875,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        0.919921875,
+        0.98046875,
+        0.953125
+      ],
+      "sign_agreement_dim0": 0.951171875,
+      "sign_agreement_mean": 0.951171875,
+      "sign_agreement_sd": 0.03032065370363286,
       "single_bar_degenerate": false,
       "steps": 400,
-      "variance_ratio_dim0": 0.45596057843897436
+      "variance_ratio_dim0": 0.5459346369342891,
+      "variance_ratio_dim0_by_seed": [
+        0.45596057843897436,
+        0.6282450227582176,
+        0.5535983096056754
+      ]
     },
     "micro|pre_v1_4": {
+      "any_seed_degenerate": false,
       "arm": "micro",
       "bars_compared": 1024,
       "config": "pre_v1_4",
@@ -162,7 +259,12 @@
         0.04021
       ],
       "mean_abs_delta_dim0": 0.314542908860588,
-      "mean_abs_delta_over_sd_dim0": 0.3217568061010113,
+      "mean_abs_delta_over_sd_dim0": 0.28847488079068434,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        0.3217568061010113,
+        0.37426950267409115,
+        0.16939833359695067
+      ],
       "n_features": 16,
       "pins": {
         "encoder_causal": true,
@@ -171,14 +273,37 @@
       },
       "point_decoder_regime": null,
       "recon_mae_in_window_dim0": 0.12346635047880739,
-      "recon_mae_ratio_dim0": 2.631483926711606,
+      "recon_mae_ratio_dim0": 2.3689870304977743,
+      "recon_mae_ratio_dim0_by_seed": [
+        2.631483926711606,
+        2.989362918078865,
+        1.4861142467028514
+      ],
       "recon_mae_single_bar_dim0": 0.3248997167747234,
-      "sign_agreement_dim0": 0.8662109375,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        0.8662109375,
+        0.7578125,
+        0.9228515625
+      ],
+      "sign_agreement_dim0": 0.8489583333333334,
+      "sign_agreement_mean": 0.8489583333333334,
+      "sign_agreement_sd": 0.08386126817916892,
       "single_bar_degenerate": false,
       "steps": 400,
-      "variance_ratio_dim0": 0.462332249172465
+      "variance_ratio_dim0": 0.5200598264839065,
+      "variance_ratio_dim0_by_seed": [
+        0.462332249172465,
+        0.43418520875213734,
+        0.6636620215271172
+      ]
     },
     "ohlcv|m6_pin_set": {
+      "any_seed_degenerate": false,
       "arm": "ohlcv",
       "bars_compared": 1024,
       "config": "m6_pin_set",
@@ -191,7 +316,12 @@
         0.03886
       ],
       "mean_abs_delta_dim0": 0.20455966644675527,
-      "mean_abs_delta_over_sd_dim0": 0.21814707964675759,
+      "mean_abs_delta_over_sd_dim0": 0.17147360496913686,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        0.21814707964675759,
+        0.12316873987343585,
+        0.17310499538721713
+      ],
       "n_features": 7,
       "pins": {
         "encoder_causal": true,
@@ -209,14 +339,37 @@
         "variance_ratio_dim0": 1.0115609747258345
       },
       "recon_mae_in_window_dim0": 0.09701966261106065,
-      "recon_mae_ratio_dim0": 2.498690276892731,
+      "recon_mae_ratio_dim0": 1.878957866106412,
+      "recon_mae_ratio_dim0_by_seed": [
+        2.498690276892731,
+        1.4794894850666922,
+        1.6586938363598123
+      ],
       "recon_mae_single_bar_dim0": 0.24242208763367046,
-      "sign_agreement_dim0": 0.966796875,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        0.966796875,
+        0.939453125,
+        0.9150390625
+      ],
+      "sign_agreement_dim0": 0.9404296875,
+      "sign_agreement_mean": 0.9404296875,
+      "sign_agreement_sd": 0.025892721842896194,
       "single_bar_degenerate": false,
       "steps": 400,
-      "variance_ratio_dim0": 1.5923652750184225
+      "variance_ratio_dim0": 1.119953473592167,
+      "variance_ratio_dim0_by_seed": [
+        1.5923652750184225,
+        1.1318993348204796,
+        0.6355958109375992
+      ]
     },
     "ohlcv|pre_v1_4": {
+      "any_seed_degenerate": false,
       "arm": "ohlcv",
       "bars_compared": 1024,
       "config": "pre_v1_4",
@@ -229,7 +382,12 @@
         0.01498
       ],
       "mean_abs_delta_dim0": 0.10342290514191177,
-      "mean_abs_delta_over_sd_dim0": 0.10446486059373003,
+      "mean_abs_delta_over_sd_dim0": 0.1056467890784899,
+      "mean_abs_delta_over_sd_dim0_by_seed": [
+        0.10446486059373003,
+        0.09074917817303123,
+        0.12172632846870844
+      ],
       "n_features": 7,
       "pins": {
         "encoder_causal": true,
@@ -238,12 +396,34 @@
       },
       "point_decoder_regime": null,
       "recon_mae_in_window_dim0": 0.08289406640845698,
-      "recon_mae_ratio_dim0": 1.5650505877223735,
+      "recon_mae_ratio_dim0": 1.5734883347013213,
+      "recon_mae_ratio_dim0_by_seed": [
+        1.5650505877223735,
+        1.317969778259704,
+        1.837444638121887
+      ],
       "recon_mae_single_bar_dim0": 0.12973340735125305,
-      "sign_agreement_dim0": 0.962890625,
+      "seeds": [
+        0,
+        1,
+        2
+      ],
+      "sign_agreement_by_seed": [
+        0.962890625,
+        0.9638671875,
+        0.95703125
+      ],
+      "sign_agreement_dim0": 0.9612630208333334,
+      "sign_agreement_mean": 0.9612630208333334,
+      "sign_agreement_sd": 0.003697205954297053,
       "single_bar_degenerate": false,
       "steps": 400,
-      "variance_ratio_dim0": 0.8408220300972706
+      "variance_ratio_dim0": 0.8415043943256432,
+      "variance_ratio_dim0_by_seed": [
+        0.8408220300972706,
+        0.8950325578992704,
+        0.7886585949803882
+      ]
     }
   }
 }

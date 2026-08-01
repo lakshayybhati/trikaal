@@ -82,6 +82,38 @@ is claimed". If the gate fails, the pre-committed protocol requires a **full 5-c
 retrain**, i.e. the entire training budget again. **That contingency is not in any cost estimate
 I have produced**, and it should be, because it roughly doubles the worst-case spend.
 
+## 4a. THE RETRAIN CONTINGENCY — costed, with its trigger, pre-registered
+
+Supervisor-ordered: *"Name it, cost it, and pre-register it as a contingency with its trigger."*
+
+**TRIGGER (already pre-committed in prereg §6, restated here so it is findable):** Cell 1,
+universe-trained, scores **RankIC < 0.85 × published Kronos-small RankIC** on the pinned common
+slice. On that trigger the protocol is: **halt before any Δ is computed → fix Cell 1 ONLY → full
+5-cell same-seed retrain.** It is not a re-run licence; the earlier "materially off / fix" wording
+was superseded precisely because it was unlimited.
+
+**COST.** The contingency is a **second full training leg** — 5 cells × 5 seeds = 25 units. Eval
+need not repeat for cells whose checkpoints are unchanged, but under the protocol *all five* cells
+retrain at the same seeds, so in practice **both legs repeat**.
+
+| | |
+|---|---|
+| nominal whole-run estimate on record | **$33–50** (S=5), **$43–65** with forced determinism |
+| retrain contingency | **+1× the training leg**, i.e. **roughly doubling worst-case spend** |
+| worst case if it fires | **~$66–100**, or **~$86–130** under forced determinism |
+
+**EVERY FIGURE HERE IS ESTIMATED, NOT MEASURED**, and inherits the §7 v1.6 re-labelling of the
+$20–30 / $33–50 / $43–65 / "2–3 GPU-days" / 1.3× family — see the claims-audit appendix §2. The
+contingency multiplier (×2) is arithmetic on the protocol, not a measurement.
+
+**WHY IT IS NAMED RATHER THAN ABSORBED.** A doubling discovered at the moment it fires is a crisis;
+a doubling written down in advance is a budget line. It has appeared in **no** cost estimate the
+builder has produced to date, which is the defect this entry closes.
+
+**WHAT WOULD RETIRE IT.** The trigger cannot fire until Cell 1 is universe-trained and compared,
+so the contingency is live from the start of the training leg until G-§8.C.3 passes. It retires on
+the first pass, not before.
+
 ## 5. Cost and risk, unestimated on purpose
 
 I have not costed this. The unknowns that dominate — whether Kronos's inference path can be

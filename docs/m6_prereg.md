@@ -190,6 +190,90 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.10 (2026-08-02, TWO STANDING NORMS + A SUPERVISOR FRAMING ERROR CORRECTED BY THE BUILDER
+  + the C-4 retrain contingency budgeted. No pinned value moved; no clause touched.)** Local, $0.
+  - **A SUPERVISOR FRAMING ERROR, VERIFIED AND RECORDED AS SUCH.** The C-1 leg (ii) ruling asked
+    whether an arm-dependent decode gap would fail to cancel in ΔIR(4−5), specifying an
+    **ohlcv-vs-micro** comparison. **Cells 4 and 5 are BOTH fsq / 16-dim** (`micro` vs
+    `micro_shuffled`), so that comparison cannot touch the primary at all — it lands on clause 3's
+    ΔIR(4−2) and the §5 fallback ΔIR(2−1), which do compare across widths. The builder substituted
+    **micro vs micro_shuffled at matched width**, which is the leg (ii) that was meant. Recorded
+    because the failure mode is instructive: **had the specified comparison been run and reported
+    "symmetric", we would have been reassured about a contrast that was never at risk.**
+  - **NEW STANDING NORM — A PERFECT AGREEMENT SCORE IS AS SUSPICIOUS AS A FAILING ONE.** Any
+    agreement, correlation or match statistic must carry a **degeneracy check on its own inputs
+    before its value is read**; a collapsed input scores perfectly for free. Instance:
+    `micro_shuffled/pre_v1_4` scored **1.0000 sign agreement with `variance_ratio = 0.000`** and
+    |Δ| at **1.246× the in-window sd** — a decode collapsed to a constant. Without the flag the
+    primary would have read `|diff| = 0.1338 → ASYMMETRIC` on an artifact. This is the project's
+    own pathology (frac_neg lock, activity pinned at 0/1) reappearing **inside a metric** rather
+    than inside a result. Landed in `CLAUDE.md`.
+  - **NEW STANDING NORM — DO NOT INVENT A BAND; SCALE AGAINST THE CLAIM OR THE STATISTIC'S OWN
+    SPREAD.** My first C-1 symmetry reading used a hand-chosen **0.05** band and the value landed
+    at **0.0469** — the conclusion rested on a convention I had invented. Replaced with the
+    self-scaling form: the between-arm gap is compared to the **across-seed spread of the same
+    statistic**, the shape `verdict.power_guard` already uses when it refuses to report a ΔIR
+    smaller than its own inputs' wobble. A difference inside its own measurement noise is not a
+    measured difference. Landed in `CLAUDE.md`.
+  - **★ THE SELF-SCALING RULING IMMEDIATELY REVERSED A CONCLUSION I HAD REPORTED — C-1 LEG (ii) IS
+    REOPENED. ★** Re-measured at 3 seeds (receipt `runs_manifest/m6_c1_pinset_decode.json`):
+
+    | arm / config | mean | **across-seed sd** | per-seed |
+    |---|---|---|---|
+    | micro / m6_pin_set | 0.9512 | 0.0303 | 0.9199, 0.9805, 0.9531 |
+    | micro_shuffled / m6_pin_set | **0.8441** | **0.0973** | 0.9541, 0.7695, 0.8086 |
+
+    **PRIMARY (4 vs 5): |diff| 0.1071 vs own sd 0.0973 → ratio 1.10 → ASYMMETRIC.** The
+    between-arm gap EXCEEDS the within-arm spread, so it is a measured difference and **does NOT
+    cancel in ΔIR(4−5)**. The cross-width pair reversed the other way: 0.0107 vs 0.0303, ratio
+    0.35 → **symmetric**. Both single-seed readings were wrong, in opposite directions; the
+    reassuring 0.0342 was `micro_shuffled` seed 0 at the top of a spread reaching down to 0.7695.
+  - **THE DIRECTION IS ADVERSE AND COMPOUNDS C-12.** Cell 4's arm (real micro, 0.9512) decodes
+    more faithfully than Cell 5's (shuffled micro, 0.8441), so the PLACEBO's μ̂ is the noisier one
+    and its IR is degraded for a reason unrelated to microstructure information. That **inflates
+    ΔIR(4−5)** — the same direction as the C-12 capacity handicap, and the two compound.
+  - **TWO CAVEATS THIS MUST NOT BE QUOTED WITHOUT.** (1) n = 3 seeds and the ratio is **1.10**,
+    barely over its own bar: this is a **weak-evidence reversal**. It establishes that "symmetric"
+    was unsupported, NOT that "asymmetric" is now established. (2) The scope limit stands —
+    briefly-trained tokenizers at reduced seq_len; the contrast between rows is the result,
+    absolute levels are not a claim about a trained M6 cell.
+  - **WHAT THE RULING PREVENTED.** A hand-chosen 0.05 band applied to these 3-seed means would
+    have read `0.1071 > 0.05 → asymmetric` **by accident**, with no visibility that `sd = 0.0973`
+    makes it a coin-toss call. The self-scaling form reports the ratio, so the weakness of the
+    evidence is visible in the number itself.
+  - **TWO DEFECTS OF MINE IN THAT RUN.** A leftover `args.seed` after the multi-seed change (the
+    "flag accepted but never forwarded" family, caught by the crash rather than by me); and worse,
+    a **MIXED ROW** — `sign_agree` printed as the 3-seed mean beside `var_ratio` from seed 0 only.
+    A row whose columns come from different populations is unreadable and would have misled the
+    same way the degenerate 1.0000 did. Every reported column is now the seed-mean with its
+    per-seed values carried.
+  - **THE M1 INTERPRETATION RULE IS DRAFTED, NOT ADOPTED** —
+    `docs/m6_m1_interpretation_draft.md`, put to the supervisor for ruling. Written **now, before
+    any real cell runs**, because "how do we read M1's number" cannot be decided after the number
+    exists without choosing an interpretation from the result. Three bands (A: handicap
+    indistinguishable from zero → headline stands; B: measurable but small against the claimed
+    effect → headline stands, magnitude **in the abstract**, claim bounded as "inflated by at most
+    this"; C: comparable to or larger than the claimed effect → **the microstructure information
+    result is not claimed**, and the C-12 mechanism becomes the substantive contribution), each
+    expressed **relative to the claimed ΔIR(4−5)**, never against an absolute. It is explicitly a
+    **CLAIM rule, not a verdict rule**: M1 is non-gating, the verdict still emits
+    SURVIVES/NULL/INCONCLUSIVE from the five clauses alone, and the freeze is untouched. **Two
+    limits are stated inside the draft rather than papered over:** H and Δ are in different units
+    (reconstruction MAE vs annualized IR), so "comparable to" cannot be a direct numeric
+    comparison and none was written; and M1 measures the handicap's size in reconstruction space,
+    not its transmission to IR — treating H as an upper bound on inflation is the conservative
+    direction and the draft says so. Band boundaries are deliberately left to the ruling, because
+    proposing them would re-introduce the invented constant the ruling forbade.
+  - **C-4 RETRAIN CONTINGENCY, COSTED AND PRE-REGISTERED WITH ITS TRIGGER**
+    (`docs/m6_c4_kronos_gate_requirements.md` §4a). Trigger: Cell 1 scores **RankIC < 0.85 ×
+    published Kronos-small** on the pinned slice → halt before any Δ → fix Cell 1 only → **full
+    5-cell same-seed retrain**. Cost: **+1× the training leg**, taking the worst case from the
+    recorded **$33–50** (S=5) / **$43–65** (forced determinism) to **~$66–100 / ~$86–130**. Every
+    figure inherits the §7 v1.6 ESTIMATED-NOT-MEASURED labelling; the ×2 is arithmetic on the
+    protocol, not a measurement. Named because a doubling discovered when it fires is a crisis and
+    a doubling written down in advance is a budget line — and it had appeared in **no** estimate
+    the builder produced to date.
+
 - **v1.6.9 (2026-08-01, C-12 M1 ADOPTED — the placebo CAPACITY disclosure, REQUIRED in the
   results. A non-gating disclosure: no clause, no threshold, cannot flip SURVIVES↔NULL.)** Local,
   $0.
@@ -262,10 +346,16 @@ three stacked judgment calls = an unlimited re-run license):**
     | pre-v1.4 | **INCONCLUSIVE** (degenerate arm) | 0.0967 — width-dependent |
     | **M6 pin set** | **0.0342 — SYMMETRIC** | 0.0469 — symmetric |
 
-    **Under the pinned configuration the gap is symmetric on the primary pair**, so on this
+    ~~**Under the pinned configuration the gap is symmetric on the primary pair**, so on this
     evidence it costs POWER and cannot bias ΔIR(4−5). The cross-width figure 0.0469 sits just
-    under the 0.05 band and **that band is arbitrary** — it is a reporting convention I chose,
-    not a derived threshold, and 0.0469 should be read as "close to the line", not as "passed".
+    under the 0.05 band and **that band is arbitrary**.~~
+  - **★ WITHDRAWN 2026-08-02 — BOTH READINGS ABOVE WERE SINGLE-SEED AND BOTH REVERSED. ★** See
+    §7 v1.6.10. Re-measured across 3 seeds with the self-scaling yardstick: the PRIMARY pair is
+    **ASYMMETRIC** (|diff| 0.1071 vs its own across-seed sd 0.0973, ratio 1.10) and the
+    cross-width pair is **SYMMETRIC** (0.0107 vs 0.0303, ratio 0.35). The reassuring 0.0342 came
+    from `micro_shuffled` seed 0 landing at 0.9541, the high end of a spread running down to
+    0.7695. **C-1 leg (ii) is REOPENED**; the "costs POWER, cannot bias the primary" reading does
+    not stand.
   - **A DEGENERACY GUARD ADDED MID-EXPERIMENT, WHICH CHANGED A CONCLUSION.**
     `micro_shuffled/pre_v1_4` scored a **perfect 1.0000 sign agreement with `variance_ratio =
     0.000`** — the single-bar decode collapsed to a CONSTANT, whose sign trivially agrees

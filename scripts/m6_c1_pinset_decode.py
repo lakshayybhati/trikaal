@@ -153,13 +153,14 @@ def main() -> int:
     ap.add_argument("--windows", type=int, default=256)
     ap.add_argument("--steps", type=int, default=400)
     ap.add_argument("--lr", type=float, default=1e-3)
-    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--seeds", default="0,1,2", help="replicates — the spread is the yardstick")
     ap.add_argument("--lake", type=Path, default=Path("processed/universe_bars"))
     args = ap.parse_args()
 
+    seeds = [int(v) for v in str(args.seeds).split(",") if v != ""]
     con = connect_lake(args.lake)
     raw = load_symbol_arrays(con, args.symbol, boundary_ms=0, tail_bars=400_000)
-    rng = np.random.default_rng(args.seed)
+    rng = np.random.default_rng(seeds[0])
     starts = rng.choice(raw["x"].shape[0] - args.seq_len - 1, size=args.windows, replace=False)
     x_full = np.stack([raw["x"][s : s + args.seq_len] for s in starts]).astype(np.float32)
     m_full = np.stack([raw["mask"][s : s + args.seq_len] for s in starts]).astype(np.float32)
@@ -171,7 +172,7 @@ def main() -> int:
     # between REAL micro and SHUFFLED micro at the same width.
     seg = raw["segment_id"]
     xs_full, ms_full = shuffle_micro(
-        raw["x"].astype(np.float64), raw["mask"], seg, symbol=args.symbol, seed=args.seed
+        raw["x"].astype(np.float64), raw["mask"], seg, symbol=args.symbol, seed=seeds[0]
     )
     xs_w = np.stack([xs_full[s : s + args.seq_len] for s in starts]).astype(np.float32)
     ms_w = np.stack([ms_full[s : s + args.seq_len] for s in starts]).astype(np.float32)
@@ -183,15 +184,31 @@ def main() -> int:
         xw = torch.from_numpy(np.ascontiguousarray(src_x[..., idx]))
         mw = torch.from_numpy(np.ascontiguousarray(src_m[..., idx]))
         for cfg_name in CONFIGS:
-            r = train_and_measure(
-                arm=arm,
-                cfg_name=cfg_name,
-                xw=xw,
-                mw=mw,
-                steps=args.steps,
-                seed=args.seed,
-                lr=args.lr,
-            )
+            reps = [
+                train_and_measure(
+                    arm=arm,
+                    cfg_name=cfg_name,
+                    xw=xw,
+                    mw=mw,
+                    steps=args.steps,
+                    seed=sd,
+                    lr=args.lr,
+                )
+                for sd in seeds
+            ]
+            r = dict(reps[0])
+            sa = [x["sign_agreement_dim0"] for x in reps]
+            r["sign_agreement_by_seed"] = sa
+            r["sign_agreement_mean"] = float(np.mean(sa))
+            r["sign_agreement_sd"] = float(np.std(sa, ddof=1)) if len(sa) > 1 else float("nan")
+            r["seeds"] = seeds
+            r["any_seed_degenerate"] = any(x["single_bar_degenerate"] for x in reps)
+            r["sign_agreement_dim0"] = r["sign_agreement_mean"]
+            for k in ("variance_ratio_dim0", "recon_mae_ratio_dim0", "mean_abs_delta_over_sd_dim0"):
+                vals = [x[k] for x in reps if x[k] == x[k]]
+                r[k] = float(np.mean(vals)) if vals else float("nan")
+                r[f"{k}_by_seed"] = [x[k] for x in reps]
+            r["single_bar_degenerate"] = r["any_seed_degenerate"]
             results[f"{arm}|{cfg_name}"] = r
             pdr = r["point_decoder_regime"]
             print(
@@ -212,6 +229,14 @@ def main() -> int:
         deg_a = results[f"{ARM_OHLCV}|{cfg_name}"]["single_bar_degenerate"]
         deg_b = results[f"{ARM_MICRO}|{cfg_name}"]["single_bar_degenerate"]
         deg_c = results[f"{ARM_MICRO_SHUFFLED}|{cfg_name}"]["single_bar_degenerate"]
+
+        def _sd(arm: str, _cfg: str = cfg_name) -> float:  # bind the loop var explicitly (B023)
+            return float(results[f"{arm}|{_cfg}"].get("sign_agreement_sd", float("nan")))
+
+        sds_pair = [v for v in (_sd(ARM_MICRO), _sd(ARM_MICRO_SHUFFLED)) if v == v]
+        sds_cross = [v for v in (_sd(ARM_MICRO), _sd(ARM_OHLCV)) if v == v]
+        sd_pair = float(max(sds_pair)) if sds_pair else 0.0
+        sd_cross = float(max(sds_cross)) if sds_cross else 0.0
         symmetry[cfg_name] = {
             "sign_agreement_ohlcv_7dim": a,
             "sign_agreement_micro_16dim": b,
@@ -219,24 +244,38 @@ def main() -> int:
             # THE PRIMARY: cells 4 and 5, same width, real vs shuffled micro
             "primary_4_vs_5_abs_difference": abs(b - c),
             "primary_any_arm_degenerate": deg_b or deg_c,
+            "primary_within_arm_sd": sd_pair,
+            "primary_diff_over_own_spread": (abs(b - c) / sd_pair) if sd_pair > 0 else float("inf"),
             "primary_reading": (
                 "INCONCLUSIVE — an arm's single-bar decode collapsed to a constant, so its sign "
                 "agreement is an artifact and no symmetry claim is made (control-arm rule)"
                 if (deg_b or deg_c)
-                else "SYMMETRIC across the PRIMARY pair — costs POWER, cannot bias dIR(4-5)"
-                if abs(b - c) < 0.05
-                else "ASYMMETRIC across the PRIMARY pair — does NOT cancel in dIR(4-5)"
+                # SELF-SCALING (§7 v1.6, supervisor ruling): the yardstick is the statistic's OWN
+                # across-seed spread, not an invented band. Same shape as the power guard, which
+                # refuses to report a dIR smaller than its inputs' spread. A between-arm gap
+                # inside the within-arm noise is not a measured asymmetry.
+                else "SYMMETRIC across the PRIMARY pair — the between-arm gap is INSIDE the "
+                "within-arm across-seed spread, so it is not distinguishable from measurement "
+                "noise; costs POWER, cannot bias dIR(4-5)"
+                if sd_pair > 0 and abs(b - c) <= sd_pair
+                else "ASYMMETRIC across the PRIMARY pair — the between-arm gap EXCEEDS the "
+                "within-arm across-seed spread, so it is a measured difference and does NOT "
+                "cancel in dIR(4-5)"
             ),
             # CLAUSE 3 / §5 FALLBACK: these DO compare across widths
             "cross_width_4_vs_2_abs_difference": abs(b - a),
             "cross_width_any_arm_degenerate": deg_a or deg_b,
+            "cross_width_within_arm_sd": sd_cross,
+            "cross_width_diff_over_own_spread": (
+                (abs(b - a) / sd_cross) if sd_cross > 0 else float("inf")
+            ),
             "cross_width_reading": (
                 "INCONCLUSIVE — a degenerate arm (control-arm rule)"
                 if (deg_a or deg_b)
-                else "SYMMETRIC across widths — clause 3 and the §5 fallback unaffected"
-                if abs(b - a) < 0.05
-                else "WIDTH-DEPENDENT — lands on clause 3's dIR(4-2) and the §5 fallback dIR(2-1), "
-                "NOT on the primary dIR(4-5)"
+                else "SYMMETRIC across widths — inside the within-arm spread"
+                if sd_cross > 0 and abs(b - a) <= sd_cross
+                else "WIDTH-DEPENDENT — exceeds the within-arm spread; lands on clause 3's "
+                "dIR(4-2) and the §5 fallback dIR(2-1), NOT on the primary dIR(4-5)"
             ),
         }
 
@@ -258,7 +297,7 @@ def main() -> int:
             "windows": args.windows,
             "steps": args.steps,
             "lr": args.lr,
-            "seed": args.seed,
+            "seeds": seeds,
             "d_model": 256,
             "n_layers": 3,
         },
