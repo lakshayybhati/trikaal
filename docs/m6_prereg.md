@@ -245,9 +245,19 @@ three stacked judgment calls = an unlimited re-run license):**
     - **OUTPUT LOST ON KILL.** Every `print` was block-buffered to the redirect, so a SIGKILL
       discarded the entire progress log — a run that dies must still show how far it got. The
       driver's prints now flush.
-    - **THE RESIDUAL IS A SUPERVISOR DECISION, NOT A BUILDER ONE.** Even lazy, ~27.8 GiB exceeds
-      the 16 GiB local machine, so A9's "prove the whole thing locally at $0" **cannot be
-      satisfied at the money configuration's scale on this hardware**. A `--dry-run-symbols` flag
+    - **CORRECTION TO MY OWN PREDICTION, ON THE RECORD.** I reported the lazy run would also die
+      of memory. **It did not.** It cleared training and the checkpoint reload. What actually
+      happens is worse than a clean failure: macOS absorbed the overflow in **swap**, and the
+      arithmetic is confirmed almost exactly by the outcome — **16.0 GiB RAM + ~11.96 GiB swap in
+      use ≈ 28 GiB, against the predicted ~27.8 GiB peak**. The visible cost is that ONE unit with
+      **ZERO training steps** took **2,581 s (43 min)** of wall-clock, essentially all of it
+      swap-thrashing through the lake load and window build. On rented hardware this failure mode
+      is the dangerous one: the run does not stop, it silently burns money at a fraction of the
+      expected rate. The memory FINDING stands and is now measured rather than predicted; my
+      "it will be killed" prediction is withdrawn.
+    - **THE RESIDUAL IS A SUPERVISOR DECISION, NOT A BUILDER ONE.** ~27.8 GiB against 16 GiB of
+      RAM means A9's "prove the whole thing locally at $0" is satisfiable here only by swapping,
+      which makes the proof take hours per unit rather than failing honestly. A `--dry-run-symbols` flag
       would resolve it and is deliberately **NOT** added: symbols are pinned and A2 forbids a flag
       that can move a pinned value. Options are the operator's — authorise an explicitly
       operational reduced-symbol dry run, run the dry run on the rented box (which forfeits the
