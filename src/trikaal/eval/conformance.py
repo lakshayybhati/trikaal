@@ -9,7 +9,9 @@ Checks (hard-fail on ANY diff; every failure listed, not just the first):
 window + train_frac vs ``runs_manifest/m6_mde_inputs.json`` · money mode ON with the headline =
 ONE continuous grid over forward blocks 1–5 matching the JSON's ``primary_region_ms`` (VAL
 block 0 excluded) · the evaluated symbol set == ``symbols_sampled`` with its pinned sha256 ·
-κ grid {1.0, 1.5, 2.0, 3.0} · seeds exactly {0, 1, 2} · no ``cap_per_symbol`` · per-symbol
+κ grid {1.0, 1.5, 2.0, 3.0} · seeds exactly {0, 1, 2, 3, 4} (§7 v1.5 S=5; this line read
+"{0, 1, 2}" until §7 v1.6 C-6 — stale prose in the gate's own description) · no
+``cap_per_symbol`` · per-symbol
 spread deciles in use (from the committed artifact; not flat) · ``shuffle_micro`` seed-threading
 bit-identical between the TRAIN path (``build_symbol_windows``) and the EVAL path (the
 ``score_cell`` transform) for every pinned seed · headline cost 0.30 % · the §3a bootstrap
@@ -34,6 +36,16 @@ PINNED_SYMBOLS_SHA256 = "60e24f598de9601260099e3f11e537814385df23c837073035b9f7c
 PINNED_KAPPAS: tuple[float, ...] = (1.0, 1.5, 2.0, 3.0)
 PINNED_SEEDS: tuple[int, ...] = (0, 1, 2, 3, 4)  # §7 v1.5 item D/C.1 Option 2: S=5 UP FRONT
 PINNED_HEADLINE_COST = 0.0030
+# §7 v1.6 C-6 — THE MONEY-SURFACE TRAINING PINS. These exist because the eval side and the
+# training side each held their OWN copy of the truth and diverged: OrchestratorConfig carried
+# seeds (0,1,2) and seq_len 128 against the pinned (0,1,2,3,4) and 512. The orchestrator now
+# REFERENCES these rather than restating them, so there is no second copy left to drift, and
+# asserts against them on a money run so a caller cannot re-introduce the divergence by argument.
+PINNED_MONEY_SEQ_LEN = 512  # the money eval surface; ALSO the training context (see C-6 finding 2)
+PINNED_MICRO_LEGIBILITY_MIN = (
+    0.9  # §7 v1.4 standing six-micro-dims gate — a HARD STOP, was unpinned
+)
+PINNED_BACKBONE_PARAMS = 21_301_248  # the realized count (CLAUDE.md invariant), was unpinned
 PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 DECILES = Path("runs_manifest/m6_spread_deciles.json")
@@ -191,7 +203,13 @@ class ConformanceError(AssertionError):
     """The money-run config diverged from the pre-registered §3a surface."""
 
 
-def money_config(h: int = 15, *, seq_len: int = 512, device: str = "cpu", seed: int = 0):
+def money_config(
+    h: int = 15,
+    *,
+    seq_len: int = PINNED_MONEY_SEQ_LEN,  # §7 v1.6 C-6: ONE constant feeds eval AND training
+    device: str = "cpu",
+    seed: int = 0,
+):
     """The money-run :class:`XSectionConfig` — the ONE way any driver builds it.
 
     Both real drivers (`scripts/m6_conformance.py`, `scripts/m6_verdict.py`) construct the
@@ -467,12 +485,15 @@ def assert_conformance(
 __all__ = [
     "DECILES",
     "MDE_INPUTS",
+    "PINNED_BACKBONE_PARAMS",
     "PINNED_DSR",
     "PINNED_ENCODER_CAUSAL",
     "PINNED_FINE_POINTWISE",
     "PINNED_HEADLINE_COST",
     "PINNED_KAPPAS",
+    "PINNED_MICRO_LEGIBILITY_MIN",
     "PINNED_MICRO_POINT_WEIGHT",
+    "PINNED_MONEY_SEQ_LEN",
     "PINNED_SEEDS",
     "PINNED_SYMBOLS_SHA256",
     "PINNED_THRESHOLDS",

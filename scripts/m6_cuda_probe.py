@@ -190,6 +190,7 @@ def end_to_end_cell(*, device: str, steps: int, batch: int, seq_len: int, out: P
 
     spec = CELLS[3]  # cell4 fsq_micro — the treatment cell, the most expensive arm
     cfg = OrchestratorConfig(
+        money_run=False,  # §7 v1.6 C-6: a throughput probe, one seed, declared
         seeds=(0,),
         seq_len=seq_len,
         batch_size=batch,

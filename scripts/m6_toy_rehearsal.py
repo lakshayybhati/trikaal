@@ -309,6 +309,9 @@ def main() -> int:
 
     # ---- 5 cells × 3 seeds through the REAL orchestrator path ------------------------------
     cfg = OrchestratorConfig(
+        # §7 v1.6 C-6: the toy rehearsal is NOT the money driver (that is C-5, unwritten) —
+        # it varies dims/steps/symbols by flag, so it declares itself rather than asserting.
+        money_run=False,
         seeds=SEEDS,
         seq_len=args.seq_len,
         batch_size=args.batch,

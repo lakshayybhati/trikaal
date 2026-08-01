@@ -30,6 +30,13 @@ import numpy as np
 import torch
 
 from trikaal.data.universe_loader import MultiSymbolWindowSampler, SymbolWindows
+from trikaal.eval.conformance import (
+    PINNED_BACKBONE_PARAMS,
+    PINNED_MICRO_LEGIBILITY_MIN,
+    PINNED_MONEY_SEQ_LEN,
+    PINNED_SEEDS,
+    ConformanceError,
+)
 from trikaal.model.attention_mode import (
     determinism_record,
     resolve_attention_mode,
@@ -53,9 +60,15 @@ from trikaal.utils.throughput import BASIS_END_TO_END, throughput_record
 
 @dataclass
 class OrchestratorConfig:
-    seeds: tuple[int, ...] = (0, 1, 2)
+    # §7 v1.6 C-6 — THESE REFERENCE THE PINS, THEY DO NOT RESTATE THEM. The defaults were
+    # ``(0, 1, 2)`` and ``128`` against a pinned ``(0, 1, 2, 3, 4)`` and money ``512``: the S=5 the
+    # operator approved and funded never reached the training side, and 128-trained models would
+    # have been scored on 512 of context. Restoring correct literals here would have been a fix;
+    # removing the second copy is the guarantee, and ``__post_init__`` asserts on top of it so a
+    # caller cannot re-introduce the divergence by argument either.
+    seeds: tuple[int, ...] = PINNED_SEEDS
     cells: tuple[CellSpec, ...] = CELLS
-    seq_len: int = 128
+    seq_len: int = PINNED_MONEY_SEQ_LEN
     batch_size: int = 32
     steps_stage1: int = 2000
     steps_stage2: int = 2000
@@ -68,9 +81,9 @@ class OrchestratorConfig:
     # six micro dims from bar t's own id, measured post-Stage-1 / pre-Stage-2 on the run's
     # real training stream; hard stop below it. None disables (toy shells ONLY — the real
     # M6 run uses this default).
-    micro_legibility_min: float | None = 0.9
+    micro_legibility_min: float | None = PINNED_MICRO_LEGIBILITY_MIN
     backbone_kwargs: dict = field(default_factory=dict)
-    expect_backbone_params: int | None = 21_301_248  # None ONLY for tiny smoke shells
+    expect_backbone_params: int | None = PINNED_BACKBONE_PARAMS  # None ONLY for tiny smoke shells
     enforce_parity: bool = True  # G-parity holds at canonical dims; tiny smoke shells skip
     device: str = "cpu"
     prefer_flash: bool = False
@@ -80,6 +93,49 @@ class OrchestratorConfig:
     wandb_mode: str = "disabled"  # "disabled" | "offline" | "online"
     wandb_project: str = "trikaal-m6"
     wandb_group: str | None = None  # one group = one W&B page holding all 15 cell-runs' curves
+    # §7 v1.6 C-6: TRUE by default so the DANGEROUS direction is the one that must be declared.
+    # A toy shell announcing itself is safe; a money run silently inheriting toy values is what
+    # this defect was. Toy drivers set money_run=False explicitly.
+    money_run: bool = True
+
+    def __post_init__(self) -> None:
+        """HARD-FAIL if a money run diverges from the pinned surface (§7 v1.6 C-6).
+
+        An assertion, not a corrected default: the defect existed because two files each held
+        their own copy of the truth, so a right-looking default fixes today and guarantees
+        nothing about tomorrow. Toy/smoke/probe shells legitimately run tiny geometry and opt out
+        via ``money_run=False`` — an explicit declaration, never an inference from the values
+        themselves (inferring it would re-create the hole: a 128-seq money run would simply be
+        classified as a toy and skip the check)."""
+        if not self.money_run:
+            return
+        bad = []
+        if tuple(self.seeds) != tuple(PINNED_SEEDS):
+            bad.append(f"seeds {tuple(self.seeds)} != pinned {tuple(PINNED_SEEDS)} (§7 v1.5 S=5)")
+        if int(self.seq_len) != int(PINNED_MONEY_SEQ_LEN):
+            bad.append(
+                f"seq_len {self.seq_len} != the money surface {PINNED_MONEY_SEQ_LEN} — training "
+                "on a shorter context than the model is SCORED on is a train/eval regime "
+                "mismatch, not a stale default"
+            )
+        if self.micro_legibility_min != PINNED_MICRO_LEGIBILITY_MIN:
+            bad.append(
+                f"micro_legibility_min {self.micro_legibility_min!r} != pinned "
+                f"{PINNED_MICRO_LEGIBILITY_MIN} (§7 v1.4 standing gate — a HARD STOP; None "
+                "disables it entirely and is for toy shells only)"
+            )
+        if self.expect_backbone_params != PINNED_BACKBONE_PARAMS:
+            bad.append(
+                f"expect_backbone_params {self.expect_backbone_params!r} != pinned "
+                f"{PINNED_BACKBONE_PARAMS} (the realized count the ablation reports)"
+            )
+        if not self.enforce_parity:
+            bad.append("enforce_parity is False — G-parity binds at canonical dims")
+        if bad:
+            raise ConformanceError(
+                "OrchestratorConfig diverges from the pinned money surface (§7 v1.6 C-6); pass "
+                "money_run=False for a toy/smoke/probe shell:\n  - " + "\n  - ".join(bad)
+            )
 
 
 def _wandb_run(cfg: OrchestratorConfig, name: str, run_config: dict):

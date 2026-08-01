@@ -129,6 +129,8 @@ def main() -> int:
         print(f"[draw]  {sw.symbol}: {sw.n_windows:,} fold-legal train windows")
 
     cfg = OrchestratorConfig(
+        # §7 v1.6 C-6: a smoke shell, declared — tiny geometry, not the money surface
+        money_run=False,
         seeds=(args.seed,),
         seq_len=SEQ_LEN,
         batch_size=16,

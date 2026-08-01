@@ -74,6 +74,7 @@ def _per_symbol_by_arm(n=400, seed=0):
 
 def _cfg(tmp_path, steps=6) -> OrchestratorConfig:
     return OrchestratorConfig(
+        money_run=False,  # §7 v1.6 C-6: toy shells on synthetic fixtures, declared
         seeds=(0,),
         seq_len=16,
         batch_size=4,

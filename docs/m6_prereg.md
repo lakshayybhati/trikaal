@@ -190,6 +190,59 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.4 (2026-08-01, AUDIT TIER-1 C-6 — THE TRAINING SIDE AND THE EVAL SIDE EACH HELD THEIR OWN
+  COPY OF THE TRUTH. DEFECT FIX: no pinned VALUE moved; the eval side was already authoritative and
+  is now the only statement. Gate-A anchor `3f86882a` re-proven byte-identical ×2, exit 0.)**
+  Local, $0.
+  - **THE DEFECT, AND THE PART THAT IS LARGER THAN THE FINDING AS STATED.**
+    `OrchestratorConfig` carried `seeds = (0, 1, 2)` and `seq_len = 128` against a pinned
+    `PINNED_SEEDS = (0, 1, 2, 3, 4)` and a money eval surface of **512**. Two consequences:
+    (1) the S=5 the operator approved and funded on 2026-07-31 never reached the training side;
+    (2) a **TRAIN/EVAL REGIME MISMATCH** — a model optimised over 128 bars of context and then
+    scored on 512. That is not a stale default, it is a different experiment, and it is the same
+    class as C-1's single-bar decode through a window-trained decoder; the two compound.
+  - **PROVENANCE — WAS ANY PRIOR RESULT PRODUCED UNDER A 128/512 SPLIT? NO.** Exhaustive sweep of
+    every manifest and eval artifact on disk: `seq_len = 32` in 103 files (toy/dryrun shells),
+    `512` in 45 (every real cell run, including the CUDA validation), `1` in 2 (a decode probe),
+    and `128` in **exactly one** — `runs_manifest/gate_a_run_manifest.json`, the **M5 Gate-A
+    anchor**, which is a different and earlier instrument running 128 *consistently* for both
+    rollout and scoring. **No M6 result was produced under a mismatched split.** It stayed
+    invisible exactly as predicted: all four `OrchestratorConfig` call sites override both fields,
+    and the money driver that would have inherited the dataclass defaults (C-5) does not exist.
+  - **IMPLEMENTED AS AN ASSERTION, PLUS THE REMOVAL OF THE SECOND COPY.** The fields now
+    **reference** `PINNED_SEEDS` / `PINNED_MONEY_SEQ_LEN` rather than restating them — a
+    right-looking literal fixes today and guarantees nothing about tomorrow, and the defect
+    existed *because* two files each restated one truth. On top of that, `__post_init__`
+    hard-fails (`ConformanceError`) on divergence, which additionally catches a caller passing
+    bad values **by argument** — something no default can do. `money_config`'s `seq_len` default
+    now reads the same constant, so eval and training are one statement.
+  - **`money_run` IS A DECLARATION, NEVER AN INFERENCE, and defaults to TRUE.** Deciding toy-ness
+    from the values would re-create the hole precisely: a 128-context money run would be
+    classified as a toy and skip the check. Defaulting to True makes the **dangerous** direction
+    the one that must be declared — a toy shell announcing itself is safe; a money run silently
+    inheriting toy values is the defect. The four toy/smoke/probe call sites now declare
+    `money_run=False`.
+  - **THE SHADOWED-FIELD SWEEP, as ordered.** Two more fields held standing commitments with **no
+    pin at all**, both now pinned and asserted: `micro_legibility_min = 0.9` (the §7 v1.4 standing
+    six-micro-dims gate — a **HARD STOP** whose threshold nothing guarded) and
+    `expect_backbone_params = 21_301_248` (the realized count, a `CLAUDE.md` invariant).
+    `enforce_parity` must be True on a money run. **REPORTED, NOT PINNED:** `steps_stage1`/
+    `steps_stage2` (2000), `peak_lr_stage1/2`, `warmup_frac`, `batch_size` and `alpha` shadow
+    **nothing** — no prereg constant states them. §7 v1.6 records the step budget as *read from
+    code*, not as a pin. Whether any of these should become pins is a **ruling**, not a builder
+    decision, and none was invented here.
+  - **A STALE DOC IN THE GATE'S OWN DESCRIPTION**, found while editing it and corrected:
+    `conformance.py`'s module docstring advertised "seeds exactly {0, 1, 2}" — the gate describing
+    itself by the superseded value it exists to enforce against. (C-9 remains open for the §3/§3a
+    body text.)
+  - **KATs** (`tests/train/test_money_surface_assertion.py`, 14): a clean-surface pre-check so no
+    mutation can pass vacuously; seven divergence mutations including **both exact historical
+    values** `(0,1,2)` and `128` plus a near-miss `(0,1,2,3)`; a declared-toy exemption proving
+    fail-closed did not become fail-on-everything; a toy-ness-is-not-inferred case; a
+    one-constant check tying `money_config().seq_len` to `OrchestratorConfig().seq_len`; an AST
+    check that no dataclass default **re-types** a pinned literal; and an AST sweep of every
+    caller — itself discrimination-tested. Suite 379 green, ruff clean.
+
 - **v1.6.3 (2026-08-01, RECORD CORRECTIONS — NO BEHAVIOURAL CHANGE TO ANY MEASUREMENT, NO
   CONCLUSION MOVED. Deliberately kept OUT of the C-6 commit: a wording fix must not ride along
   with a hard-failing assertion that can break callers.)** Local, $0.
