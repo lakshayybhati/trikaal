@@ -190,6 +190,71 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.8 (2026-08-01, AUDIT TIER-2 C-1 LEGS (i)+(ii) — the single-bar decode under the FULL M6
+  PIN SET, per arm. REPORT ONLY.)** Local, $0. Receipt:
+  `runs_manifest/m6_c1_pinset_decode.json`.
+  - **WHY LEG 1 DID NOT SETTLE IT.** Neither trained checkpoint carries `fine_pointwise=True`.
+    Under §7 v1.4 the fine subtoken becomes a PER-BAR encoding of bar *t*'s own features
+    (`model.py:83-86`), which is exactly the mechanism that could make a single-bar decode
+    meaningful — and it is pinned for every M6 cell. The 0.507 measured the **pre-v1.4**
+    architecture.
+  - **THE COMPARISON IS MATCHED, WHICH LEG 1'S WAS NOT.** Data, seed, steps, optimizer, dims and
+    quantizer identical; only the pin set varies. d256/3L, real BTCUSDT, 400 steps, seq_len 128.
+
+    | arm | pre-v1.4 | **M6 pin set** |
+    |---|---|---|
+    | ohlcv (7d) | 0.9629 | 0.9668 |
+    | micro (16d) | 0.8662 | **0.9199** |
+    | micro_shuffled (16d) | 1.0000 ⚠ degenerate | **0.9541** |
+
+    Reference points: auditor's d64/2L toy **0.838**; leg-1 checkpoint **0.507**.
+  - **LEG (i) — THE PIN SET HELPS, AND THE HONEST READING IS NARROWER THAN THE HEADLINE.** Under
+    the full pin set sign agreement is **0.92–0.97**, decisively toward 1.0, so C-1 is
+    substantially mitigated by a fix already in the design. **But the matched contrast isolates
+    the pin at +0.054 (0.8662 → 0.9199), not +0.41.** The leg-1 **0.507 was largely a property of
+    THAT CHECKPOINT's training, not of `fine_pointwise=False` as such** — an identically-trained
+    pre-v1.4 tokenizer here scores 0.8662. Crediting the pin with closing the 0.507 gap would be
+    over-claiming, and this entry does not.
+  - **LEG (ii) — SEVERITY, AND A CORRECTION TO THE FRAMING OF THE QUESTION.** The ruling asked
+    whether an arm-dependent gap would fail to cancel in ΔIR(4−5). **Cells 4 and 5 are BOTH
+    16-dim micro-shaped** (`micro` vs `micro_shuffled`), so an ohlcv-vs-micro asymmetry cannot
+    reach the primary at all — it lands on clause 3's ΔIR(4−2) and the §5 fallback ΔIR(2−1),
+    which do compare across widths. The comparison that decides the PRIMARY is real micro vs
+    shuffled micro at the same width, and it was added for that reason.
+
+    | | PRIMARY (4 vs 5) | cross-width (4 vs 2) |
+    |---|---|---|
+    | pre-v1.4 | **INCONCLUSIVE** (degenerate arm) | 0.0967 — width-dependent |
+    | **M6 pin set** | **0.0342 — SYMMETRIC** | 0.0469 — symmetric |
+
+    **Under the pinned configuration the gap is symmetric on the primary pair**, so on this
+    evidence it costs POWER and cannot bias ΔIR(4−5). The cross-width figure 0.0469 sits just
+    under the 0.05 band and **that band is arbitrary** — it is a reporting convention I chose,
+    not a derived threshold, and 0.0469 should be read as "close to the line", not as "passed".
+  - **A DEGENERACY GUARD ADDED MID-EXPERIMENT, WHICH CHANGED A CONCLUSION.**
+    `micro_shuffled/pre_v1_4` scored a **perfect 1.0000 sign agreement with `variance_ratio =
+    0.000`** — the single-bar decode collapsed to a CONSTANT, whose sign trivially agrees
+    wherever the window sign is also constant, while |Δ| was **1.246× the in-window sd**. Without
+    the flag the primary comparison would have read `|diff| = 0.1338 → ASYMMETRIC` **on the basis
+    of an artifact**. The probe now refuses to conclude from a degenerate arm (control-arm rule).
+    This is the project's own pathology — the frac_neg lock, activity pinned at 0/1 — reappearing
+    inside a *metric*, and it is the reason sign agreement must never be read without the
+    variance ratio beside it.
+  - **THE `point_decoder` REGIME, MEASURED BECAUSE IT EXISTS AND NOT PROPOSED.** With
+    `fine_pointwise` on, `model.py:95-102` builds a genuinely per-bar zero-cross-bar head whose
+    own comment says *"Train-time only; the AR interface and the main decode path are
+    unchanged."* Its sign agreement is 0.9463 / 0.9453 / 0.8477 — **comparable to, and for the
+    placebo arm WORSE than, the window decoder**. So "the fix exists but is not wired in" is
+    NOT supported by measurement, and that expectation of mine is withdrawn.
+  - **STANDING FACT, unchanged by any of this.** `model.py:104-105` constructs
+    `TokenizerDecoder(..., False, ...)` — the decoder is hardcoded **bidirectional and
+    window-trained** in every row above, so a length-1 decode remains out of distribution.
+    `fine_pointwise` changes what the ENCODER puts in the fine dims, not what the DECODER does.
+  - **SCOPE LIMIT.** These tokenizers are trained briefly at reduced seq_len for a $0 local
+    comparison. **The CONTRAST between rows is the result; the absolute level is not a claim
+    about a fully-trained M6 cell.** Sensitivity is real: at 20 steps micro read 0.5352/0.7207,
+    at 400 steps 0.8662/0.9199 — the ordering held, the levels moved a lot.
+
 - **v1.6.7 (2026-08-01, AUDIT TIER-2 C-1 — THE SINGLE-BAR-DECODE GAP AT CANONICAL DIMS. REPORT
   ONLY: nothing proposed, nothing changed, no design touched.)** Local, $0.
   - **THE STRUCTURE (not in doubt, S-1).** The tokenizer decoder is a Transformer over the

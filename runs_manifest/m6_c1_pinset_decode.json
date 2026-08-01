@@ -1,0 +1,249 @@
+{
+  "LEG_II_ARM_SYMMETRY": {
+    "m6_pin_set": {
+      "cross_width_4_vs_2_abs_difference": 0.046875,
+      "cross_width_any_arm_degenerate": false,
+      "cross_width_reading": "SYMMETRIC across widths \u2014 clause 3 and the \u00a75 fallback unaffected",
+      "primary_4_vs_5_abs_difference": 0.0341796875,
+      "primary_any_arm_degenerate": false,
+      "primary_reading": "SYMMETRIC across the PRIMARY pair \u2014 costs POWER, cannot bias dIR(4-5)",
+      "sign_agreement_micro_16dim": 0.919921875,
+      "sign_agreement_micro_shuffled_16dim": 0.9541015625,
+      "sign_agreement_ohlcv_7dim": 0.966796875
+    },
+    "pre_v1_4": {
+      "cross_width_4_vs_2_abs_difference": 0.0966796875,
+      "cross_width_any_arm_degenerate": false,
+      "cross_width_reading": "WIDTH-DEPENDENT \u2014 lands on clause 3's dIR(4-2) and the \u00a75 fallback dIR(2-1), NOT on the primary dIR(4-5)",
+      "primary_4_vs_5_abs_difference": 0.1337890625,
+      "primary_any_arm_degenerate": true,
+      "primary_reading": "INCONCLUSIVE \u2014 an arm's single-bar decode collapsed to a constant, so its sign agreement is an artifact and no symmetry claim is made (control-arm rule)",
+      "sign_agreement_micro_16dim": 0.8662109375,
+      "sign_agreement_micro_shuffled_16dim": 1.0,
+      "sign_agreement_ohlcv_7dim": 0.962890625
+    }
+  },
+  "POINT_DECODER_NOTE": "With fine_pointwise on, model.py:95-102 builds point_decoder, a genuinely per-bar zero-cross-bar head, whose own comment says 'Train-time only; the AR interface and the main decode path are unchanged.' predict._rollout calls decode_latent, i.e. the window decoder. Its numbers are reported as a MEASUREMENT of the gap's nature and explicitly NOT as a proposal to wire it into the decision path.",
+  "SCOPE_LIMIT": "These tokenizers are trained briefly at reduced seq_len for a $0 local comparison. The CONTRAST between rows is the result; the absolute level is not a claim about a fully-trained M6 cell.",
+  "STANDING_FACT": "model.py:104-105 constructs TokenizerDecoder(..., False, ...) \u2014 the decoder is hardcoded BIDIRECTIONAL and window-trained regardless of fine_pointwise, so a length-1 decode is out of distribution in every row here. fine_pointwise changes what the ENCODER puts in the fine dims, not what the DECODER does with them.",
+  "config": {
+    "d_model": 256,
+    "lr": 0.001,
+    "n_layers": 3,
+    "seed": 0,
+    "seq_len": 128,
+    "steps": 400,
+    "symbol": "BTCUSDT",
+    "windows": 256
+  },
+  "finding": "AUDIT TIER-2 C-1 legs (i) and (ii) \u2014 REPORT ONLY",
+  "matched_comparison": "data, seed, steps, optimizer, dims and quantizer identical across rows; ONLY the pin set varies. The first C-1 measurement compared two CHECKPOINTS that differed in training as well as architecture and so could not isolate the pin.",
+  "receipt": "m6_c1_pinset_decode",
+  "reference_points": {
+    "auditor_toy_d64_2L_sign_agreement": 0.838,
+    "c1_leg1_causal_ckpt_no_fine_pointwise": 0.507
+  },
+  "results": {
+    "micro_shuffled|m6_pin_set": {
+      "arm": "micro_shuffled",
+      "bars_compared": 1024,
+      "config": "m6_pin_set",
+      "loss_trace": [
+        0.79156,
+        0.2062,
+        0.15462,
+        0.17345,
+        0.17149,
+        0.15394
+      ],
+      "mean_abs_delta_dim0": 0.22375640063137325,
+      "mean_abs_delta_over_sd_dim0": 0.26173702681599154,
+      "n_features": 16,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": true,
+        "micro_point_weight": 3.0
+      },
+      "point_decoder_regime": {
+        "mean_abs_delta_dim0": 0.2508685415556329,
+        "mean_abs_delta_over_sd_dim0": 0.2934512085605512,
+        "recon_mae_in_window_dim0": 0.2122177296859178,
+        "recon_mae_ratio_dim0": 1.462967455920959,
+        "recon_mae_single_bar_dim0": 0.3104676320999289,
+        "sign_agreement_dim0": 0.84765625,
+        "single_bar_degenerate": false,
+        "variance_ratio_dim0": 1.0152369920932447
+      },
+      "recon_mae_in_window_dim0": 0.2122177296859178,
+      "recon_mae_ratio_dim0": 1.4758595853755185,
+      "recon_mae_single_bar_dim0": 0.3132035705435925,
+      "sign_agreement_dim0": 0.9541015625,
+      "single_bar_degenerate": false,
+      "steps": 400,
+      "variance_ratio_dim0": 0.48652386546943094
+    },
+    "micro_shuffled|pre_v1_4": {
+      "arm": "micro_shuffled",
+      "bars_compared": 1024,
+      "config": "pre_v1_4",
+      "loss_trace": [
+        0.61146,
+        0.48958,
+        0.38376,
+        0.38109,
+        0.45125,
+        0.4115
+      ],
+      "mean_abs_delta_dim0": 1.189487193187233e-07,
+      "mean_abs_delta_over_sd_dim0": 1.2462338399120219,
+      "n_features": 16,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": false,
+        "micro_point_weight": 1.0
+      },
+      "point_decoder_regime": null,
+      "recon_mae_in_window_dim0": 0.6416121620942903,
+      "recon_mae_ratio_dim0": 1.0000000017244066,
+      "recon_mae_single_bar_dim0": 0.6416121632006906,
+      "sign_agreement_dim0": 1.0,
+      "single_bar_degenerate": true,
+      "steps": 400,
+      "variance_ratio_dim0": 0.0
+    },
+    "micro|m6_pin_set": {
+      "arm": "micro",
+      "bars_compared": 1024,
+      "config": "m6_pin_set",
+      "loss_trace": [
+        0.76509,
+        0.17972,
+        0.11445,
+        0.10612,
+        0.11071,
+        0.07879
+      ],
+      "mean_abs_delta_dim0": 0.26948837564177097,
+      "mean_abs_delta_over_sd_dim0": 0.28187601471095425,
+      "n_features": 16,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": true,
+        "micro_point_weight": 3.0
+      },
+      "point_decoder_regime": {
+        "mean_abs_delta_dim0": 0.1564438972025357,
+        "mean_abs_delta_over_sd_dim0": 0.16363519266567492,
+        "recon_mae_in_window_dim0": 0.15091662800968209,
+        "recon_mae_ratio_dim0": 1.4120567844369907,
+        "recon_mae_single_bar_dim0": 0.21310284846542515,
+        "sign_agreement_dim0": 0.9453125,
+        "single_bar_degenerate": false,
+        "variance_ratio_dim0": 0.8989290783846376
+      },
+      "recon_mae_in_window_dim0": 0.15091662800968209,
+      "recon_mae_ratio_dim0": 1.8308767979200458,
+      "recon_mae_single_bar_dim0": 0.2763097526432574,
+      "sign_agreement_dim0": 0.919921875,
+      "single_bar_degenerate": false,
+      "steps": 400,
+      "variance_ratio_dim0": 0.45596057843897436
+    },
+    "micro|pre_v1_4": {
+      "arm": "micro",
+      "bars_compared": 1024,
+      "config": "pre_v1_4",
+      "loss_trace": [
+        0.63616,
+        0.27541,
+        0.11007,
+        0.05462,
+        0.04561,
+        0.04021
+      ],
+      "mean_abs_delta_dim0": 0.314542908860588,
+      "mean_abs_delta_over_sd_dim0": 0.3217568061010113,
+      "n_features": 16,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": false,
+        "micro_point_weight": 1.0
+      },
+      "point_decoder_regime": null,
+      "recon_mae_in_window_dim0": 0.12346635047880739,
+      "recon_mae_ratio_dim0": 2.631483926711606,
+      "recon_mae_single_bar_dim0": 0.3248997167747234,
+      "sign_agreement_dim0": 0.8662109375,
+      "single_bar_degenerate": false,
+      "steps": 400,
+      "variance_ratio_dim0": 0.462332249172465
+    },
+    "ohlcv|m6_pin_set": {
+      "arm": "ohlcv",
+      "bars_compared": 1024,
+      "config": "m6_pin_set",
+      "loss_trace": [
+        0.65644,
+        0.05474,
+        0.04096,
+        0.03281,
+        0.03889,
+        0.03886
+      ],
+      "mean_abs_delta_dim0": 0.20455966644675527,
+      "mean_abs_delta_over_sd_dim0": 0.21814707964675759,
+      "n_features": 7,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": true,
+        "micro_point_weight": 3.0
+      },
+      "point_decoder_regime": {
+        "mean_abs_delta_dim0": 0.10439301218161745,
+        "mean_abs_delta_over_sd_dim0": 0.11132708191463452,
+        "recon_mae_in_window_dim0": 0.09701966261106065,
+        "recon_mae_ratio_dim0": 1.1624838121468366,
+        "recon_mae_single_bar_dim0": 0.11278378724530569,
+        "sign_agreement_dim0": 0.9462890625,
+        "single_bar_degenerate": false,
+        "variance_ratio_dim0": 1.0115609747258345
+      },
+      "recon_mae_in_window_dim0": 0.09701966261106065,
+      "recon_mae_ratio_dim0": 2.498690276892731,
+      "recon_mae_single_bar_dim0": 0.24242208763367046,
+      "sign_agreement_dim0": 0.966796875,
+      "single_bar_degenerate": false,
+      "steps": 400,
+      "variance_ratio_dim0": 1.5923652750184225
+    },
+    "ohlcv|pre_v1_4": {
+      "arm": "ohlcv",
+      "bars_compared": 1024,
+      "config": "pre_v1_4",
+      "loss_trace": [
+        0.73199,
+        0.05928,
+        0.02703,
+        0.01777,
+        0.01298,
+        0.01498
+      ],
+      "mean_abs_delta_dim0": 0.10342290514191177,
+      "mean_abs_delta_over_sd_dim0": 0.10446486059373003,
+      "n_features": 7,
+      "pins": {
+        "encoder_causal": true,
+        "fine_pointwise": false,
+        "micro_point_weight": 1.0
+      },
+      "point_decoder_regime": null,
+      "recon_mae_in_window_dim0": 0.08289406640845698,
+      "recon_mae_ratio_dim0": 1.5650505877223735,
+      "recon_mae_single_bar_dim0": 0.12973340735125305,
+      "sign_agreement_dim0": 0.962890625,
+      "single_bar_degenerate": false,
+      "steps": 400,
+      "variance_ratio_dim0": 0.8408220300972706
+    }
+  }
+}
