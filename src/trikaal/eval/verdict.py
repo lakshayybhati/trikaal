@@ -38,7 +38,7 @@ from pathlib import Path
 
 import numpy as np
 
-from trikaal.eval.conformance import ConformanceError, verdict_dsr_failures
+from trikaal.eval.conformance import PINNED_DSR, ConformanceError, verdict_dsr_failures
 from trikaal.eval.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from trikaal.eval.metrics import information_ratio, periods_per_year
 from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
@@ -580,9 +580,18 @@ def assemble_verdict(
             "pass": bool(pb45.delta_ir >= ECON_FLOOR_IR),
         },
         "5_dsr": {
-            "rule": f"DSR ≥ {DSR_THRESHOLD}; statistic = Cell 4's seed-mean pooled headline "
-            f"series; SR0 from N={DSR_N_TRIALS} enumerated trials; var_sr over the 180 "
-            "de-annualized VAL IRs (ddof=0)",
+            # §7 v1.6 C-7: BUILT FROM THE PINS, never restated. The hardcoded predecessor said
+            # "var_sr over the 180 de-annualized VAL IRs" — a description v1.5 superseded on BOTH
+            # counts (N is 60, and the basis is the cell-5 placebo subset, not all arms), which
+            # would have shipped inside the verdict manifest as a false account of how its own
+            # var_sr was computed. A rule string that cannot disagree with the recipe is the fix.
+            "rule": (
+                f"DSR ≥ {DSR_THRESHOLD}; statistic = {PINNED_DSR['statistic']}; "
+                f"SR0 from N={DSR_N_TRIALS} enumerated trials "
+                f"({' x '.join(PINNED_DSR['n_trials_factorization'])}, seeds excluded as "
+                f"replicates); var_sr = the ddof={PINNED_DSR['var_sr_ddof']} variance of the "
+                f"CELL-{DSR_VAR_SR_BASIS_CELL} (placebo) VAL-IR trials, seeds retained"
+            ),
             "dsr": dsr,
             "threshold": DSR_THRESHOLD,
             "n_trials": DSR_N_TRIALS,

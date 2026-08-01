@@ -98,7 +98,10 @@ PINNED_DSR = {
     # adjustment cannot legitimately get STRICTER because you replicated the same configuration more
     # times; a spec that penalises collecting more data on one hypothesis is misspecified.
     "n_trials": 60,  # 5 cells × 3 horizons × 4 κ — SEEDS EXCLUDED
-    "n_trials_factorization": "cells x horizons x kappas (seeds are replicates, not trials)",
+    # §7 v1.6 C-7: WAS the prose "cells x horizons x kappas (seeds are replicates, not trials)" and
+    # was never read. It is now the AXIS TUPLE the multiplicity count is computed FROM, so adding
+    # "seeds" here changes n_trials and fails the gate instead of merely describing it.
+    "n_trials_factorization": ("cells", "horizons", "kappas"),
     "cells": (1, 2, 3, 4, 5),
     # seeds are still ENUMERATED (audit trail + the var_sr basis) but are NOT counted in n_trials
     "seeds": PINNED_SEEDS,
@@ -115,15 +118,73 @@ PINNED_DSR = {
     # mismatch. Seeds REMAIN inside var_sr (dispersion) while being absent from n_trials
     # (multiplicity): deliberately different sets.
     "var_sr_basis_cell": 5,
-    "var_sr": (
-        "population variance (ddof=0) of the de-annualized VAL IRs of the CELL-5 (placebo) trials"
-    ),
+    # §7 v1.6 C-7: WAS the prose "population variance (ddof=0) of the de-annualized VAL IRs of the
+    # CELL-5 (placebo) trials" and was never read. The ddof is now the MACHINE-READABLE value the
+    # expected-variance re-derivation uses, and is separately asserted to be 0 — so a drift to a
+    # sample variance is caught rather than described.
+    "var_sr_ddof": 0,
+    # §7 v1.6 C-7: READ — the verdict manifest's clause-5 rule string is BUILT from this key, so
+    # the shipped artifact cannot carry a description that disagrees with the pinned recipe.
     "statistic": "Cell 4's seed-mean pooled headline series at the 0.30% flat netting",
     # §7 v1.5 A.4.3 tripwire: pb(5−2) is a LEVEL statement and var_sr is a DISPERSION statistic, so
     # placebo-victim behaviour does not move a variance at first order. The second-order risk
     # (degraded training → more variable models) errs CONSERVATIVE and is measured, not assumed.
+    # §7 v1.6 C-7: READ, and cross-checked against verdict.PLACEBO_DISPERSION_TRIPWIRE — the two
+    # 1.5s were independent copies of the same truth, the exact shape that produced C-6.
     "placebo_dispersion_tripwire": 1.5,  # × the median across-seed IR dispersion of cells 1,2,3
 }
+
+# §7 v1.6 C-7 — THRESHOLDS THAT DECIDE THE VERDICT AND WERE UNDER NO GATE AT ALL. Each lives as a
+# module constant in the file that uses it, and until now nothing asserted those constants still
+# held their pre-registered values: an edit to any of them would have moved a §3 clause silently.
+# This is the same defect class as C-2 (a gate that examines nothing) one level up — a pinned
+# surface that pins nothing. The registry is INDEPENDENT of the definitions, so it is a real
+# second statement of the value and not an alias.
+PINNED_THRESHOLDS: dict[str, float] = {
+    "ECON_FLOOR_IR": 0.5,  # §3 clause 4 materiality floor, fixed pre-data (verdict.py)
+    "BOOT_POWER": 0.80,  # §3 clause 2 power point inside MDE_paired (paired_bootstrap.py)
+    "PLACEBO_DISPERSION_TRIPWIRE": 1.5,  # §7 v1.5 A.4.3 (verdict.py)
+}
+
+
+def pinned_threshold_failures() -> list[str]:
+    """Divergences between the LIVE verdict/bootstrap constants and their pins (empty = OK).
+
+    §7 v1.6 C-7. Imported locally because ``verdict`` imports THIS module — the dependency runs
+    one way and a module-level import here would be circular. Called at runtime from both gates,
+    long after import, so the local import is free.
+    """
+    from trikaal.eval.paired_bootstrap import BOOT_POWER
+    from trikaal.eval.verdict import (
+        DSR_VAR_SR_BASIS_CELL,
+        ECON_FLOOR_IR,
+        PLACEBO_DISPERSION_TRIPWIRE,
+    )
+
+    live = {
+        "ECON_FLOOR_IR": float(ECON_FLOOR_IR),
+        "BOOT_POWER": float(BOOT_POWER),
+        "PLACEBO_DISPERSION_TRIPWIRE": float(PLACEBO_DISPERSION_TRIPWIRE),
+    }
+    fails = [
+        f"{name} = {live[name]!r} != pinned {want!r} (§7 v1.6 C-7)"
+        for name, want in PINNED_THRESHOLDS.items()
+        if live[name] != float(want)
+    ]
+    # the duplicate-source-of-truth leg: two independent 1.5s must agree
+    if float(PINNED_DSR["placebo_dispersion_tripwire"]) != live["PLACEBO_DISPERSION_TRIPWIRE"]:
+        fails.append(
+            f"PINNED_DSR['placebo_dispersion_tripwire'] "
+            f"{PINNED_DSR['placebo_dispersion_tripwire']!r} != "
+            f"verdict.PLACEBO_DISPERSION_TRIPWIRE {live['PLACEBO_DISPERSION_TRIPWIRE']!r} — two "
+            "copies of one truth, the shape that produced the C-6 seed/seq_len split-brain"
+        )
+    if int(DSR_VAR_SR_BASIS_CELL) != int(PINNED_DSR["var_sr_basis_cell"]):
+        fails.append(
+            f"verdict.DSR_VAR_SR_BASIS_CELL {DSR_VAR_SR_BASIS_CELL} != pinned "
+            f"{PINNED_DSR['var_sr_basis_cell']} — the §7 v1.5 A.4 placebo basis"
+        )
+    return fails
 
 
 class ConformanceError(AssertionError):
@@ -310,11 +371,25 @@ def verdict_dsr_failures(
         fails.append(f"DSR n_trials {n_trials} != pinned {PINNED_DSR['n_trials']} (§3 clause 5)")
     if float(threshold) != PINNED_DSR["threshold"]:
         fails.append(f"DSR threshold {threshold} != pinned {PINNED_DSR['threshold']}")
-    # (2) the MULTIPLICITY count must equal the seed-free factorization
-    want_n = len(PINNED_DSR["cells"]) * len(PINNED_DSR["horizons"]) * len(PINNED_DSR["kappas"])
+    # §7 v1.6 C-7: the pinned surface must hold its own registered values before it is used to
+    # judge anything. A pin that is never read is decoration, and decoration gives false assurance.
+    fails += pinned_threshold_failures()
+    # (2) the MULTIPLICITY count must equal the seed-free factorization. The AXES come from the
+    # pin (§7 v1.6 C-7) rather than being hardcoded here, so "seeds" cannot be re-introduced
+    # into the multiplicity count without the count changing and this check firing.
+    axes = tuple(PINNED_DSR["n_trials_factorization"])
+    if "seeds" in axes:
+        fails.append(
+            f"n_trials_factorization {axes} contains 'seeds' — §7 v1.5 A.5: seeds are REPLICATES, "
+            "and a multiplicity adjustment must not get stricter because a configuration was "
+            "replicated more times"
+        )
+    want_n = 1
+    for a in axes:
+        want_n *= len(PINNED_DSR[a])
     if int(PINNED_DSR["n_trials"]) != want_n:
         fails.append(
-            f"PINNED_DSR n_trials {PINNED_DSR['n_trials']} != cells x horizons x kappas = "
+            f"PINNED_DSR n_trials {PINNED_DSR['n_trials']} != {' x '.join(axes)} = "
             f"{want_n} (§7 v1.5 A.5: seeds are replicates and must NOT be counted)"
         )
     # (1) the ENUMERATION is still the FULL cross-product INCLUDING seeds (the audit trail)
@@ -337,11 +412,20 @@ def verdict_dsr_failures(
         )
     # (3) var_sr is the PLACEBO-arm dispersion — a null estimate must not contain the contrast
     basis_cell = int(PINNED_DSR["var_sr_basis_cell"])
+    # §7 v1.6 C-7: the ddof is READ from the pin, and separately asserted to be the population
+    # value — so a drift to a sample variance cannot pass by quietly moving the expectation too.
+    ddof = int(PINNED_DSR["var_sr_ddof"])
+    if ddof != 0:
+        fails.append(
+            f"PINNED_DSR var_sr_ddof {ddof} != 0 — §7 v1.5 A.4 pins the POPULATION variance"
+        )
     basis_keys = sorted(k for k in trials if k[0] == basis_cell)
     if not basis_keys:
         fails.append(f"var_sr basis cell {basis_cell} absent from the enumerated trial set")
     else:
-        expected_var = float(np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64)))
+        expected_var = float(
+            np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64), ddof=ddof)
+        )
         if float(var_sr) != expected_var:
             fails.append(
                 f"var_sr {var_sr!r} != the ddof=0 variance of the CELL-{basis_cell} (placebo) "
@@ -370,6 +454,9 @@ def assert_conformance(
         mde_inputs_path=mde_inputs_path,
         deciles_path=deciles_path,
     )
+    # §7 v1.6 C-7: the verdict-deciding thresholds are checked at the MONEY-RUN gate too, not only
+    # on the verdict path — a run must not start under an edited floor and discover it at the end.
+    fails += pinned_threshold_failures()
     if fails:
         raise ConformanceError(
             "money-run config diverges from the pre-registered §3a surface:\n  - "
@@ -388,10 +475,12 @@ __all__ = [
     "PINNED_MICRO_POINT_WEIGHT",
     "PINNED_SEEDS",
     "PINNED_SYMBOLS_SHA256",
+    "PINNED_THRESHOLDS",
     "ConformanceError",
     "assert_conformance",
     "conformance_failures",
     "money_config",
+    "pinned_threshold_failures",
     "symbols_sha256",
     "verdict_dsr_failures",
 ]

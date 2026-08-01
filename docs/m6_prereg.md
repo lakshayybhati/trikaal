@@ -190,6 +190,58 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.2 (2026-08-01, AUDIT TIER-1 C-7 — THE THRESHOLDS THAT DECIDE THE VERDICT WERE UNDER NO
+  GATE. DEFECT FIX, NOT A SPECIFICATION CHANGE: every pinned VALUE is unchanged; what changed is
+  that they are now READ. Gate-A anchor `3f86882a` re-proven byte-identical ×2, exit 0.)** Local,
+  $0.
+  - **THE DEFECT.** `ECON_FLOOR_IR` (§3 clause 4's materiality floor), `BOOT_POWER` (the power
+    point inside MDE_paired) and `PLACEBO_DISPERSION_TRIPWIRE` (§7 v1.5 A.4.3) appeared **nowhere**
+    in `conformance.py`. Each was a bare module constant in the file that consumes it, so editing
+    any one of them would have moved a §3 clause with nothing objecting. This is C-2 one level up:
+    not a gate that examines nothing, but a **pinned surface that pins nothing**.
+  - **THE FOUR DECORATIVE `PINNED_DSR` KEYS, resolved by wiring rather than deletion** — each was
+    carried in the dict and read by no code path:
+    - `n_trials_factorization` was the prose *"cells x horizons x kappas (seeds are replicates,
+      not trials)"*. It is now the **axis tuple the multiplicity count is computed from**, so
+      re-introducing `seeds` changes `n_trials` and fails the gate instead of merely describing
+      the rule it was supposed to protect.
+    - the `var_sr` prose became `var_sr_ddof: 0`, **read** by the expected-variance re-derivation
+      and **separately asserted to be 0** — a drift to a sample variance cannot pass by quietly
+      moving the expectation along with the computation.
+    - `placebo_dispersion_tripwire` was worse than unread: a **second independent copy** of the
+      1.5 that `verdict.PLACEBO_DISPERSION_TRIPWIRE` also holds — the same two-files-own-the-truth
+      shape that produced C-6. The two are now cross-checked. `DSR_VAR_SR_BASIS_CELL` was
+      audited for the same shape and given an explicit equality check (it had been enforced only
+      indirectly, via a confusing downstream variance mismatch).
+    - `statistic` is now **read by the shipped manifest**: the clause-5 `rule` string is BUILT
+      from the pins.
+  - **A TIER-3 SITE CLOSED AS A SIDE EFFECT, AND ITS LOCATION CORRECTED.** The clause-5 `rule`
+    string persisted into the verdict manifest read *"var_sr over the 180 de-annualized VAL IRs
+    (ddof=0)"* — wrong on **both** counts after v1.5 (N is 60; the basis is the cell-5 placebo
+    subset, not all arms). The shipped artifact would have carried a false account of how its own
+    `var_sr` was computed. Building the string from the pins makes that disagreement structurally
+    impossible. **The audit located this at `verdict.py:519-521`; the actual site is the
+    `5_dsr` block (pre-fix `583-585`) — `519-521` is inside `_per_seed_delta` and carries no rule
+    string.** The rest of C-17 remains open Tier 3.
+  - **NEW GATE.** `PINNED_THRESHOLDS` + `pinned_threshold_failures()`, an **independent second
+    statement** of each value rather than an alias, called from **both** entry points — the
+    money-run gate (`assert_conformance`) and the verdict gate (`verdict_dsr_failures`) — so a run
+    cannot start under an edited floor and discover it only at the verdict. Imported locally
+    because `verdict` imports `conformance`; the dependency runs one way.
+  - **EVERY KAT IS A MUTATION TEST** (`tests/eval/test_pinned_surface.py`, 14). Asserting a pin
+    equals itself is circular and would pass against a gate that does nothing, so each case
+    perturbs the live constant and requires the gate to name it: halving `ECON_FLOOR_IR`,
+    weakening `BOOT_POWER` to 0.5, loosening the tripwire to 3.0, desynchronising the two
+    tripwire copies, moving the basis cell, re-adding `seeds` to the factorization, dropping an
+    axis, and switching to a sample variance. Plus a clean-surface pre-check so no mutation can
+    pass vacuously, and an unread-key detector that is **itself** discrimination-tested.
+  - **ONE OF MY OWN CHECKS FAILED ITS FIRST RUN AND WAS FIXED AT THE RIGHT LEVEL.** The
+    `statistic` KAT initially asserted on `verdict.py`'s SOURCE TEXT and flagged this very file's
+    comment explaining the string's removal — a source-substring check cannot distinguish a live
+    rule string from a comment about a dead one. Replaced with an assertion on the **emitted
+    manifest**, via a real 25-artifact fixture through the shipped path, plus a sentinel mutation
+    proving the pin is read. Suite 365 green, ruff clean.
+
 - **v1.6.1 (2026-08-01, AUDIT TIER-1 C-2 — A BINDING HALT GATE WAS SILENTLY DEAD IN THE DECISION
   PATH. DEFECT FIX, NOT A SPECIFICATION CHANGE: no pin, threshold, seed, enumeration or gate VALUE
   moved; the degeneracy guard stays HALT-only and per-seed. Gate-A anchor `3f86882a` re-proven
