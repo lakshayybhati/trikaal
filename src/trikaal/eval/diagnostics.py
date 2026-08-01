@@ -183,3 +183,55 @@ __all__ = [
     "tstr_trtr",
     "vol_mae_r2",
 ]
+
+
+# --------------------------------------------------------------- §7 v1.6 C-12 M1 (ADOPTED)
+def ohlcv_recon_diagnostic(
+    model, x_arm: np.ndarray, m_arm: np.ndarray, *, n_ohlcv: int = 7, device: str = "cpu"
+) -> dict:
+    """Reconstruction quality restricted to the OHLCV dims — the C-12 capacity disclosure.
+
+    WHAT IT IS FOR. The Cell-5 placebo does not merely remove microstructure information: the
+    block permutation destroys the contemporaneous micro↔OHLCV dependence too (**measured
+    0.2037 → 0.0005**), so Cell 5's micro channels become six dims of INDEPENDENT NOISE. Noise
+    with a preserved marginal is incompressible and shares no structure with OHLCV, so any bits
+    spent representing it are bits taken from OHLCV — and ``micro_point_weight = 3.0`` aims triple
+    gradient pressure at fitting it. ΔIR(4−5) therefore contains (information) + (capacity
+    handicap) and the two are not separable from the contrast alone.
+
+    THIS CONVERTS AN UNBOUNDED CONFOUND INTO A MEASURED MAGNITUDE. The OHLCV dims are present and
+    IDENTICAL in both arms — ``block_time_permute`` never touches them (verified: the OHLCV columns
+    come back byte-identical) — so OHLCV reconstruction is a like-for-like comparison. If Cell 5
+    reconstructs OHLCV measurably worse than Cell 4 on the same bars, capacity was diverted.
+
+    NON-GATING BY CONSTRUCTION. It is a DISCLOSURE reported beside the headline, never a clause,
+    never a threshold. It cannot flip SURVIVES↔NULL and no value here is compared against a bar.
+    """
+    import torch
+
+    model.eval()
+    xt = torch.as_tensor(np.asarray(x_arm, dtype=np.float32), device=device)
+    mt = torch.as_tensor(np.asarray(m_arm, dtype=np.float32), device=device)
+    if xt.ndim == 2:  # [T, F] -> one window
+        xt, mt = xt.unsqueeze(0), mt.unsqueeze(0)
+    with torch.no_grad():
+        z_hat, _c, _ci, _fi = model.quant(model.latent(xt, mt))
+        recon = model.decode_latent(z_hat)
+    r = recon.detach().cpu().numpy().astype(np.float64)
+    t = xt.detach().cpu().numpy().astype(np.float64)
+    k = min(int(n_ohlcv), r.shape[-1])
+    per_dim = [float(np.abs(r[..., i] - t[..., i]).mean()) for i in range(k)]
+    return {
+        "ohlcv_recon_mae": float(np.mean(per_dim)),
+        "ohlcv_recon_mae_by_dim": per_dim,
+        "ohlcv_recon_mae_dim0_return": per_dim[0] if per_dim else float("nan"),
+        "n_ohlcv_dims": k,
+        "bars": int(r.shape[0] * r.shape[1]),
+        "non_gating": True,
+        "what_it_measures": (
+            "C-12 M1: OHLCV reconstruction is like-for-like across arms because the placebo "
+            "permutation leaves the OHLCV columns byte-identical. Cell 5 reconstructing OHLCV "
+            "worse than Cell 4 is capacity diverted to encoding six dims of independent noise "
+            "under a 3x micro weight. DISCLOSURE ONLY — never a clause, never a threshold."
+        ),
+    }

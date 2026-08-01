@@ -345,6 +345,7 @@ def eval_matrix(
             val_ir_by_kappa_by_h=val_by_h,
             codebook=head.codebook,
             mu_diag=head.mu_diag,
+            ohlcv_recon=head.ohlcv_recon,
             meta={
                 # the RESUME BINDING (C-14): an artifact is a checkpoint of THIS run, and says so
                 "checkpoints": ckpt_hashes.get(unit),

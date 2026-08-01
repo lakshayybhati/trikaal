@@ -42,6 +42,10 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
+OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
+
+
 REPO = Path(__file__).resolve().parents[2]
 BENIGN = {"frac_negative": 0.5, "activity_decisions": 0.5}
 DEGENERATE = {"frac_negative": 0.999, "activity_decisions": 0.5}
@@ -59,6 +63,7 @@ def _write(out_dir: Path, *, cell_id: int, seed: int, mu_diag: dict, mu: float =
         kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
         val_ir_by_kappa_by_h={h: {k: 0.5 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
         mu_diag=mu_diag,
+        ohlcv_recon=OHLCV_RECON_OK,
         meta={},
     )
 

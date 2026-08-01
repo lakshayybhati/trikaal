@@ -29,6 +29,9 @@ from trikaal.eval import conformance as C
 from trikaal.eval import paired_bootstrap as PB
 from trikaal.eval import verdict as V
 
+# §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
+OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
+
 
 def _trials() -> dict[tuple[int, int, int, float], float]:
     """The full pinned cross-product, values distinct so a wrong var_sr basis is detectable."""
@@ -69,8 +72,10 @@ def _assemble(tmp_path) -> dict:
                     for h in V.DSR_HORIZONS
                 },
                 mu_diag={"frac_negative": 0.5, "activity_decisions": 0.5},
+                ohlcv_recon=OHLCV_RECON_OK,
                 meta={},
             )
+
             entries[name] = sha
     V.write_eval_index(out, entries)
     evals, shas = V.load_cell_evals(out)

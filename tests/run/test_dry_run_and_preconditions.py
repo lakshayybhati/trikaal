@@ -49,6 +49,9 @@ from trikaal.utils.preflight import (
     window_bytes_per_bar,
 )
 
+# §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
+OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
+
 REPO = Path(__file__).resolve().parents[2]
 DRIVER = REPO / "scripts/m6_money_run.py"
 BENIGN_MU = {"frac_negative": 0.5, "activity_decisions": 0.5}
@@ -77,6 +80,7 @@ def _write_set(tmp, meta_extra):
                 kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
                 val_ir_by_kappa_by_h={h: {k: 0.4 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
                 mu_diag=BENIGN_MU,
+                ohlcv_recon=OHLCV_RECON_OK,
                 meta=meta_extra(c, s),
             )
             entries[name] = sha

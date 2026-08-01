@@ -190,6 +190,41 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.9 (2026-08-01, C-12 M1 ADOPTED — the placebo CAPACITY disclosure, REQUIRED in the
+  results. A non-gating disclosure: no clause, no threshold, cannot flip SURVIVES↔NULL.)** Local,
+  $0.
+  - **WHAT IT BOUNDS.** The Cell-5 permutation destroys the contemporaneous micro↔OHLCV dependence
+    as well as the intended temporal alignment (**measured 0.2037 → 0.0005**), so Cell 5's micro
+    channels are six dims of **independent noise** rather than "Cell 4 minus information". Noise
+    with a preserved marginal is incompressible and shares no structure with OHLCV, so bits spent
+    on it are bits taken from OHLCV — and `micro_point_weight = 3.0` aims triple gradient pressure
+    at fitting it. ΔIR(4−5) therefore carries (information) + (capacity handicap), inseparable
+    from the contrast alone. It **inflates rather than manufactures**: Cell 4 must still clear the
+    MDE and the 0.5 economic floor on its own.
+  - **WHY THE COMPARISON IS LIKE-FOR-LIKE.** `block_time_permute` never touches the OHLCV columns
+    — they come back **byte-identical** — so both arms reconstruct the SAME OHLCV targets. Cell 5
+    doing it worse is capacity diverted, and the ratio is a measured magnitude where there was
+    previously an unbounded confound.
+  - **WHERE IT LIVES.** `diagnostics.ohlcv_recon_diagnostic` → `score_cell` (`CellScore.ohlcv_recon`)
+    → the per-(cell, seed) artifact, **REQUIRED** like `mu_diag` for the C-2 reason (a disclosure
+    that may be absent is a disclosure that will be absent) → `verdict.placebo_capacity_disclosure`
+    → emitted in the manifest **beside `dual_specification`**, i.e. in the results, not an
+    appendix.
+  - **TWO PROPERTIES PINNED, AND THEY PULL OPPOSITE WAYS — which is the point.** Required (writer
+    refuses, loader refuses, both mutation-tested) **and NON-GATING**: a dedicated KAT assembles
+    two verdicts differing ONLY in the OHLCV-recon numbers — benign vs a 10× placebo handicap —
+    and asserts the emitted word, the primary, the failing-clause list and every clause's `pass`
+    are IDENTICAL, while separately asserting the two disclosures DID differ (fixture
+    discrimination — otherwise the test proves nothing). Plus a source check that the function
+    contains no comparison to any constant: **a disclosure with a bar is a clause in disguise**.
+  - **COMPUTED, NOT RESTATED.** Mutation KAT: moving Cell 5's OHLCV recon from 0.10 to 0.30 moves
+    the reported ratio 1.0 → 3.0 and the excess 0.0 → 0.20.
+  - **A BUILDER PROCESS SLIP, DISCLOSED.** My first pass inserted the fixture constant with a
+    line-heuristic that matched a `@pytest.mark.parametrize(` closing paren, landing a module
+    constant **inside a function body** in two test files. Caught by ruff, then fixed properly by
+    locating the end of the import block with the **AST** and re-parsing each file to prove it
+    before moving on — the same "don't guess structure from text" lesson as the C-1 source-scrape.
+
 - **v1.6.8 (2026-08-01, AUDIT TIER-2 C-1 LEGS (i)+(ii) — the single-bar decode under the FULL M6
   PIN SET, per arm. REPORT ONLY.)** Local, $0. Receipt:
   `runs_manifest/m6_c1_pinset_decode.json`.

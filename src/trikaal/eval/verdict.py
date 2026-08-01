@@ -130,6 +130,7 @@ def write_cell_eval_artifact(
     kappa_star_by_h: dict[int, float],
     val_ir_by_kappa_by_h: dict[int, dict[float, float]],
     mu_diag: dict,
+    ohlcv_recon: dict,
     codebook: dict | None = None,
     meta: dict | None = None,
 ) -> tuple[str, str]:
@@ -145,6 +146,11 @@ def write_cell_eval_artifact(
     ``activity_decisions``: they are the only inputs ``degeneracy_guard`` reads, so an artifact
     without them turns a binding HALT gate into a no-op that still reports itself armed."""
     bad = _mu_diag_problems(mu_diag, f"cell{cell_id}_seed{seed}")
+    if not isinstance(ohlcv_recon, dict) or "ohlcv_recon_mae" not in ohlcv_recon:
+        bad.append(
+            f"cell{cell_id}_seed{seed}: ohlcv_recon missing 'ohlcv_recon_mae' — the C-12 capacity "
+            "disclosure is REQUIRED beside the headline, not an appendix"
+        )
     if bad:
         raise VerdictInputError(
             "refusing to write an eval artifact the degeneracy guard could not read:\n  - "
@@ -175,6 +181,9 @@ def write_cell_eval_artifact(
         # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology).
         # REQUIRED since v1.6 C-2 — validated above, never defaulted to {}.
         "mu_diag": dict(mu_diag),
+        # §7 v1.6 C-12 M1 (supervisor-adopted): the placebo CAPACITY disclosure. REQUIRED, for the
+        # C-2 reason — a disclosure that may be absent is a disclosure that will be absent.
+        "ohlcv_recon": dict(ohlcv_recon),
         # §7 v1.6 C-5 A7: every artifact is attributable. Auto-filled when the caller did not
         # supply one, so an unattributable unit cannot exist rather than being merely
         # discouraged — the C-2 lesson applied to provenance.
@@ -224,6 +233,9 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
                 bad.append(f"{name}: h={h} κ entries {sorted(got_k)} != pinned {sorted(want_k)}")
     # §7 v1.6 C-2: the guard's inputs are part of the contract, not an optional extra.
     bad.extend(_mu_diag_problems(doc.get("mu_diag"), name))
+    rec = doc.get("ohlcv_recon")
+    if not isinstance(rec, dict) or not math.isfinite(float(rec.get("ohlcv_recon_mae", "nan"))):
+        bad.append(f"{name}: ohlcv_recon.ohlcv_recon_mae missing or non-finite (§7 v1.6 C-12 M1)")
     # §7 v1.6 C-5 A9: a DRY-RUN artifact is structurally un-quotable, not merely labelled. The
     # dry run declares money_run=False and therefore scores a deliberately SHORTENED grid, so its
     # numbers are wiring evidence and nothing else. Labelling alone would leave "someone reads the
@@ -236,6 +248,54 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
             "the path, and can never be assembled into a verdict"
         )
     return bad
+
+
+def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
+    """§7 v1.6 C-12 M1 (supervisor-adopted) — the placebo's CAPACITY handicap, measured.
+
+    THE CONFOUND THIS BOUNDS. The Cell-5 permutation destroys the contemporaneous micro↔OHLCV
+    dependence as well as the intended temporal alignment (**measured 0.2037 → 0.0005**), so
+    Cell 5's micro channels are six dims of INDEPENDENT NOISE rather than "Cell 4 minus
+    information". Noise with a preserved marginal is incompressible and shares no structure with
+    OHLCV, so bits spent on it are bits taken from OHLCV — and ``micro_point_weight = 3.0`` aims
+    triple gradient pressure at fitting it. ΔIR(4−5) therefore contains (information) + (capacity
+    handicap), inseparable from the contrast alone. It INFLATES rather than manufactures: Cell 4
+    must still clear the MDE and the 0.5 economic floor on its own.
+
+    WHY THE COMPARISON IS LIKE-FOR-LIKE. ``block_time_permute`` never touches the OHLCV columns —
+    they come back byte-identical — so both arms reconstruct the SAME OHLCV targets. Cell 5 doing
+    it worse is capacity diverted.
+
+    REQUIRED IN THE RESULTS, NOT AN APPENDIX, and NON-GATING: it is emitted beside the headline,
+    is never a clause, has no threshold, and cannot flip SURVIVES↔NULL.
+    """
+
+    def mae(cell: int) -> float:
+        vals = [
+            float(evals[(cell, s)]["ohlcv_recon"]["ohlcv_recon_mae"])
+            for s in DSR_SEEDS
+            if (cell, s) in evals
+        ]
+        return float(np.mean(vals)) if vals else float("nan")
+
+    m4, m5, m2 = mae(4), mae(5), mae(2)
+    ratio = (m5 / m4) if (m4 and math.isfinite(m4) and m4 > 0) else float("nan")
+    return {
+        "ohlcv_recon_mae_cell4": m4,
+        "ohlcv_recon_mae_cell5_placebo": m5,
+        "ohlcv_recon_mae_cell2_ohlcv_only": m2,
+        "cell5_over_cell4_ratio": ratio,
+        "excess_ohlcv_recon_error_of_the_placebo": (m5 - m4),
+        "reading": (
+            "ratio > 1 means the PLACEBO reconstructs the SAME OHLCV targets worse than the "
+            "treatment, i.e. capacity was diverted to encoding six dims of independent noise "
+            "under a 3x micro weight — the C-12 handicap, measured rather than bounded by "
+            "assumption. ratio ~ 1 means the handicap is small and dIR(4-5) is correspondingly "
+            "cleaner."
+        ),
+        "non_gating": True,
+        "status": "REQUIRED DISCLOSURE (§7 v1.6 C-12 M1) — reported beside the headline",
+    }
 
 
 def provenance_failures(evals: dict[tuple[int, int], dict]) -> list[str]:
@@ -833,6 +893,9 @@ def assemble_verdict(
         },
         "clauses": clauses,
         "dual_specification": dual_specification,
+        # §7 v1.6 C-12 M1: REQUIRED beside the headline. Non-gating, no threshold, cannot flip
+        # SURVIVES<->NULL — it bounds the placebo's capacity handicap with a measured magnitude.
+        "placebo_capacity_disclosure": placebo_capacity_disclosure(evals),
         "placebo_dispersion_tripwire": placebo_tripwire,
         "degeneracy_guard": guard,
         "power_guard": power,

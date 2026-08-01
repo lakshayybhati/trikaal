@@ -60,6 +60,9 @@ FORBIDDEN_FLAG_SUBSTRINGS = (
     "param",
 )
 
+# §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
+OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
+
 
 def _load_driver():
     spec = importlib.util.spec_from_file_location("m6_money_run", DRIVER)
@@ -170,6 +173,7 @@ def _write_set(tmp, provenance_for):
                 kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
                 val_ir_by_kappa_by_h={h: {k: 0.4 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
                 mu_diag={"frac_negative": 0.5, "activity_decisions": 0.5},
+                ohlcv_recon=OHLCV_RECON_OK,
                 meta={"provenance": provenance_for(c, s)},
             )
             entries[name] = sha

@@ -47,6 +47,9 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
+OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
+
 REPO = Path(__file__).resolve().parents[2]
 T = 1500  # toy grid length — the script's grid pin is exercised separately
 SIGMA_COMMON = 0.02  # the shared market component (cancels in every paired Δ)
@@ -87,6 +90,7 @@ def _build_fixture(out_dir: Path, mu_by_cell: dict[int, float], *, fixture_seed:
                 # fixture omitted mu_diag entirely, so every clause KAT in this file was
                 # exercising the blind-guard path — the same hole the real driver had.
                 mu_diag=BENIGN_MU_DIAG,
+                ohlcv_recon=OHLCV_RECON_OK,
                 meta={"fixture": True},
             )
             entries[name] = sha

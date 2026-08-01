@@ -27,7 +27,7 @@ import numpy as np
 
 from trikaal.data.universe_loader import calendar_boundary_ms, eval_block_bounds_ms
 from trikaal.eval.costs import SPREAD_DECILE_FRAC, CostModel
-from trikaal.eval.diagnostics import cell_codebook_diagnostic
+from trikaal.eval.diagnostics import cell_codebook_diagnostic, ohlcv_recon_diagnostic
 from trikaal.eval.dsr import pbo_cscv, time_aligned_pbo_matrix
 from trikaal.eval.harness import HEADLINE_COST, KAPPAS, _per_bar_cost, forward_log_returns
 from trikaal.eval.metrics import break_even_cost, information_ratio
@@ -105,6 +105,10 @@ class CellScore:
     # non-gating referee-preempt diagnostic (CO2 item 5): per-cell codebook utilization +
     # empirical code entropy (effective bits) for coarse and fine, over the evaluated streams
     codebook: dict = field(default_factory=dict)
+    # §7 v1.6 C-12 M1 (supervisor-adopted): OHLCV-restricted reconstruction, the capacity
+    # disclosure that bounds the placebo's handicap. NON-GATING — reported beside the headline,
+    # never a clause.
+    ohlcv_recon: dict = field(default_factory=dict)
     # the pooled FULL-calendar headline series itself (flat periods = 0.0) — what the verdict
     # artifacts persist (verdict.write_cell_eval_artifact) and the paired bootstrap resamples.
     # None under val_only (no headline grid was scored).
@@ -227,6 +231,15 @@ def score_cell(
         v_f=tok.v_f,
     )
 
+    # §7 v1.6 C-12 M1: computed on the FIRST symbol's arm-selected window, the same tensors the
+    # tokenizer was fed. The OHLCV dims are byte-identical across arms (the placebo permutation
+    # never touches them), so this is like-for-like between cell 4 and cell 5.
+    _first = next(iter(prepared.values()))["se"]
+    _x0, _m0 = select_arm(_first.x, _first.mask, arm)
+    ohlcv_recon = ohlcv_recon_diagnostic(
+        tok, _x0[: cfg.seq_len], _m0[: cfg.seq_len], device=cfg.device
+    )
+
     def grid_series(
         grid: np.ndarray,
     ) -> tuple[dict[float, np.ndarray], dict[float, np.ndarray], dict[str, int], int, dict]:
@@ -327,6 +340,7 @@ def score_cell(
             n_decisions=0,
             per_symbol_decisions={},
             codebook=codebook,
+            ohlcv_recon=ohlcv_recon,
             headline_series=None,
         )
 
