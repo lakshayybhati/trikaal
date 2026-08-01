@@ -58,6 +58,7 @@ def predict_mu(
     estimator: str = "expectation",
     mc_samples: int = MC_DEFAULT_SAMPLES,
     mc_seed: int = MC_DEFAULT_SEED,
+    prefill: bool = False,  # §7 v1.6 — NON-DEFAULT until condition (a) passes on GPU
 ) -> np.ndarray:
     """Rollout μ̂_{t,h} (raw cumulative log-return) for each decision bar in ``decisions``.
 
@@ -107,10 +108,51 @@ def predict_mu(
             estimator=estimator,
             mc_samples=mc_samples,
             mc_seed=mc_seed,
+            prefill=prefill,
         )
         for c0 in range(0, d_all.shape[0], chunk)
     ]
     return np.concatenate(parts)
+
+
+def _fill_context_prefill(model, cc, cf, cts, seq_len):
+    """PREFILL: one causal forward over the whole KNOWN context, then read the last position.
+
+    §7 v1.6. The sequential ``_fill_context`` issues ``seq_len`` single-token ``model.step`` calls
+    to populate a KV cache from context that is entirely known in advance — measured at 96.8-98.5%
+    of eval wall-clock, the whole of the ~50x gap against the hardware floor. A causal model gives
+    each position exactly its predecessors either way, so this computes the SAME object with one
+    kernel launch per block instead of ``seq_len``.
+
+    NON-DEFAULT until condition (a) passes on GPU: the discrete chain (``coarse_cond``) is
+    identical and the continuous delta is ~1e-6 on mu-hat — inside the 1e-4 tolerance the project
+    already sanctions BETWEEN THESE TWO PATHS (tests/model/test_rollout.py:53-56) — but "decisions
+    do not move" must be demonstrated at a sample size where flips are possible, not assumed.
+    """
+    import torch.nn.functional as _F
+
+    from trikaal.model.attention import apply_rope
+    from trikaal.model.predictor import BackboneOutput
+
+    caches = model.init_caches()
+    x = model.token_embed(cc, cf) + model.temporal(cts)
+    for blk, cache in zip(model.blocks, caches, strict=True):
+        xn = blk.norm1(x)
+        attn = blk.attn
+        b, length, _ = xn.shape
+        q, k, v = attn._project(xn)
+        cos, sin = attn.rope_cos[:length], attn.rope_sin[:length]
+        q, k = apply_rope(q, cos, sin), apply_rope(k, cos, sin)
+        cache["k"], cache["v"] = k, v
+        a = _F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        h_ = x + attn.out(a.transpose(1, 2).reshape(b, length, attn.d_model))
+        x = h_ + blk.ffn(blk.norm2(h_))
+    h = model.norm_final(x)[:, -1:, :]
+    logits_c = model.w_c(h)
+    coarse_cond = logits_c.argmax(dim=-1)
+    return caches, BackboneOutput(
+        h, logits_c, logits_f=model.fine_logits(h, coarse_cond), coarse_cond=coarse_cond
+    )
 
 
 def _fill_context(model, cc, cf, cts, seq_len):
@@ -137,6 +179,7 @@ def _predict_mu_batch(
     estimator: str,
     mc_samples: int,
     mc_seed: int,
+    prefill: bool = False,
 ) -> np.ndarray:
     """One chunk of decisions through the KV-cache rollout, under the selected estimator."""
     dev = torch.device(device)
@@ -154,14 +197,19 @@ def _predict_mu_batch(
             model, tok, cc, cf, cts, ts_dec, n, h, seq_len, dev, mc_samples, mc_seed
         )
     else:
-        cum = _rollout_greedy(model, tok, cc, cf, cts, ts_dec, n, h, seq_len, dev, estimator)
+        cum = _rollout_greedy(
+            model, tok, cc, cf, cts, ts_dec, n, h, seq_len, dev, estimator, prefill
+        )
     return cum.cpu().numpy().astype(np.float64) * sig_t  # vol-relative → raw (§3.4 contract)
 
 
-def _rollout_greedy(model, tok, cc, cf, cts, ts_dec, n, h, seq_len, dev, estimator) -> torch.Tensor:
+def _rollout_greedy(
+    model, tok, cc, cf, cts, ts_dec, n, h, seq_len, dev, estimator, prefill=False
+) -> torch.Tensor:
     """Greedy token chain; per-step contribution = mode decode (``argmax``) or mean decode
     (``expectation``: ``decode_latent(E[z])``). Both advance the cache identically."""
-    _caches, out = _fill_context(model, cc, cf, cts, seq_len)
+    fill = _fill_context_prefill if prefill else _fill_context
+    _caches, out = fill(model, cc, cf, cts, seq_len)
     caches = _caches
     cum = torch.zeros(n, dtype=torch.float32, device=dev)
     if estimator == "expectation":

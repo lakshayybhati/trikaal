@@ -196,6 +196,11 @@ def main() -> int:
         "CODE PATH needs exercising, not the toy window's length)",
     )
     ap.add_argument(
+        "--no-eval-resume",
+        action="store_true",
+        help="recompute every (cell, seed) even if a valid artifact exists (default: resume)",
+    )
+    ap.add_argument(
         "--symbols",
         default=None,
         help="comma-separated lake symbols; default SYMBOLS. Every symbol must have pre-boundary "
@@ -377,6 +382,7 @@ def main() -> int:
     entries: dict[str, str] = {}
     eval_secs: dict[str, float] = {}  # per (cell, seed) — the last unmeasured run-cost input
     eval_decisions: dict[str, dict] = {}  # per (cell, seed) — decisions actually SCORED
+    resumed_units: list[str] = []  # units skipped because a valid artifact already existed
     sym_evals = [
         SymbolEval(
             symbol=s,
@@ -392,6 +398,24 @@ def main() -> int:
     for spec in CELLS:
         for seed in SEEDS:
             t_eval0 = time.time()
+            # ---- EVAL RESUME, at (cell, seed) granularity -------------------------------
+            # The eval loop previously had NO existence check: a restart recomputed all 25
+            # units from scratch. Against a multi-hour leg on preemptible infrastructure that
+            # loses the entire elapsed run to one preemption. The per-(cell, seed) artifact is
+            # already atomic and content-hashed, so it IS the natural checkpoint — this just
+            # uses it. An artifact is only honoured if it parses AND carries the schema key;
+            # a truncated write is recomputed rather than trusted.
+            done_path = art_dir / f"cell{spec.cell_id}_seed{seed}_eval.json"
+            if not args.no_eval_resume and done_path.is_file():
+                try:
+                    doc = json.loads(done_path.read_text())
+                    if doc.get("schema") == "m6_cell_eval_v1" and doc.get("cell_id") is not None:
+                        entries[done_path.name] = hashlib.sha256(done_path.read_bytes()).hexdigest()
+                        resumed_units.append(done_path.name)
+                        print(f"[eval]  RESUMED {done_path.name} (already complete — skipped)")
+                        continue
+                except (json.JSONDecodeError, OSError) as exc:
+                    print(f"[eval]  {done_path.name} unreadable ({exc}) — recomputing", flush=True)
             rd = Path(cfg.out_dir) / f"{spec.name}_seed{seed}"
             tok = load_checkpoint(rd / "tokenizer.pt", TokenizerAE, map_location=args.device)
             pred = load_checkpoint(rd / "predictor.pt", TrikaalAR, map_location=args.device)
@@ -569,6 +593,8 @@ def main() -> int:
                 "eval_window": list(eval_window),
                 "periods_x_symbols": int(grid.size) * len(sym_evals),
             },
+            "resumed_units": resumed_units,
+            "n_resumed": len(resumed_units),
             "seconds_by_run": eval_secs,
             "n_runs": len(eval_secs),
             "mean_seconds_per_cell_seed": (

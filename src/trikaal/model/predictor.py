@@ -147,7 +147,12 @@ class TrikaalAR(nn.Module):
     ) -> BackboneOutput:
         """One cached AR step: feed bar ``pos``'s tokens, get its next-bar logits (coarse+fine).
 
-        Bit-equivalent to the parallel ``forward`` read at position ``pos`` (verified in tests).
+        AGREEMENT WITH THE PARALLEL ``forward``, STATED AS WHAT IS ACTUALLY VERIFIED (§7 v1.6):
+        the DISCRETE chain is EXACT — ``tests/model/test_rollout.py:53`` asserts ``torch.equal``
+        on ``coarse_cond`` — while the CONTINUOUS values agree to **1e-4**, asserted at
+        ``:54-56``, not bit-exactly. This docstring previously said "Bit-equivalent to the
+        parallel ``forward`` (verified in tests)", which the cited test does not establish: prose
+        over-claiming its own artifact, in the one place a later performance question turned on.
         ``sample`` draws the conditioning coarse from the softmax; else argmax (matches forward)."""
         h = self.trunk_step(b_c_t, b_f_t, ts_t, caches, pos)
         logits_c = self.w_c(h)
