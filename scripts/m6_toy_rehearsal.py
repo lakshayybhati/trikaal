@@ -31,29 +31,31 @@ import subprocess
 import sys
 import threading
 import time
-from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
 
-from trikaal.constants import N_FEATURES
-from trikaal.data.universe_loader import build_symbol_windows, calendar_boundary_ms, connect_lake
-from trikaal.eval.conformance import DECILES, cell_tokenizer_failures
+from trikaal.data.universe_loader import calendar_boundary_ms, connect_lake
+from trikaal.eval.conformance import DECILES
 from trikaal.eval.costs import load_spread_deciles
 from trikaal.eval.verdict import (
-    ARTIFACT_SCHEMA,
     DSR_HORIZONS,
     PRIMARY_H,
-    write_cell_eval_artifact,
     write_eval_index,
 )
-from trikaal.eval.xsection import SymbolEval, XSectionConfig, primary_region_grid_ms, score_cell
-from trikaal.model.predictor import TrikaalAR
-from trikaal.tokenizer.model import TokenizerAE
-from trikaal.train.arms import ARM_MICRO, ARM_MICRO_SHUFFLED, ARMS
+from trikaal.eval.xsection import SymbolEval, XSectionConfig, primary_region_grid_ms
+from trikaal.run.matrix import (
+    MatrixSpec,
+    all_units,
+    eval_matrix,
+    load_symbol_arrays,
+    reload_checkpoints,
+    train_matrix,
+    windows_by_arm,
+)
+from trikaal.train.arms import ARM_MICRO, ARM_MICRO_SHUFFLED
 from trikaal.train.cells import CELLS, assert_cells_parity
-from trikaal.train.checkpoint import load_checkpoint
-from trikaal.train.orchestrator import OrchestratorConfig, run_cell
+from trikaal.train.orchestrator import OrchestratorConfig
 from trikaal.train.tripwire import TripwireConfig, TripwireMonitor
 from trikaal.utils.throughput import (
     BASIS_END_TO_END,
@@ -115,31 +117,9 @@ class GpuSampler(threading.Thread):
         }
 
 
-def load_symbol(con, symbol: str, boundary_ms: int) -> dict:
-    """Full arrays sliced to [boundary − TRAIN_TAIL_BARS, end) — train tail + full eval region."""
-    xcols = ", ".join(f"x_{i}" for i in range(N_FEATURES))
-    mcols = ", ".join(f"m_{i}" for i in range(N_FEATURES))
-    t = con.execute(
-        f"SELECT bar_open_ms, segment_id, sigma, raw_ret_close, {xcols}, {mcols} "
-        "FROM bars WHERE symbol = ? ORDER BY bar_open_ms",
-        [symbol],
-    ).to_arrow_table()
-    n = t.num_rows
-    ts = t.column("bar_open_ms").to_numpy().astype(np.int64)
-    lo = max(0, int(np.searchsorted(ts, boundary_ms)) - TRAIN_TAIL_BARS)
-    x = np.empty((n, N_FEATURES), dtype=np.float32)
-    m = np.empty((n, N_FEATURES), dtype=np.uint8)
-    for i in range(N_FEATURES):
-        x[:, i] = t.column(f"x_{i}").to_numpy()
-        m[:, i] = t.column(f"m_{i}").to_numpy()
-    return {
-        "x": x[lo:],
-        "mask": m[lo:],
-        "ts": ts[lo:],
-        "segment_id": t.column("segment_id").to_numpy().astype(np.int64)[lo:],
-        "sigma": t.column("sigma").to_numpy().astype(np.float64)[lo:],
-        "raw_ret_close": t.column("raw_ret_close").to_numpy().astype(np.float64)[lo:],
-    }
+# §7 v1.6 C-5 A1: `load_symbol` lived here and was about to be COPIED into the money
+# driver. It is now `run.matrix.load_symbol_arrays`, called by both — duplication is
+# how C-6 happened.
 
 
 def assert_cell5_trains_on_permuted_micro(per_symbol_by_arm: dict) -> dict:
@@ -277,30 +257,23 @@ def main() -> int:
     con = connect_lake(LAKE)
     raw = {}
     for s in SYMBOLS:
-        raw[s] = load_symbol(con, s, boundary)
+        raw[s] = load_symbol_arrays(con, s, boundary_ms=boundary, tail_bars=TRAIN_TAIL_BARS)
         print(f"[lake] {s}: {raw[s]['x'].shape[0]:,} bars loaded")
 
+    _win_cache: dict[int, dict] = {}
+
     def windows_for_seed(seed: int) -> dict:
-        return {
-            arm: [
-                build_symbol_windows(
-                    s,
-                    d["x"],
-                    d["mask"],
-                    d["segment_id"],
-                    d["ts"],
-                    arm=arm,
-                    seq_len=args.seq_len,
-                    boundary_ms=boundary,
-                    seed=seed,
-                )
-                for s, d in raw.items()
-            ]
-            for arm in ARMS
-        }
+        # LAZY, shared with the money driver (§7 v1.6 C-5 A9). The rehearsal's slices are small
+        # enough to cache; the money configuration's are not, which is why the shared path takes
+        # a CALLABLE rather than a prebuilt dict.
+        if seed not in _win_cache:
+            _win_cache[seed] = windows_by_arm(
+                raw, seq_len=args.seq_len, boundary_ms=boundary, seed=seed
+            )
+        return _win_cache[seed]
 
     per_seed_windows = {
-        seed: windows_for_seed(seed) for seed in (SEEDS if not args.eval_only else SEEDS[:1])
+        seed: windows_for_seed(seed) for seed in (SEEDS[:1] if args.eval_only else SEEDS)
     }
     cell5_check = assert_cell5_trains_on_permuted_micro(per_seed_windows[SEEDS[0]])
     print(f"[cell5] permuted-micro training input verified for {len(cell5_check)} symbols")
@@ -345,27 +318,31 @@ def main() -> int:
                 mp = Path(cfg.out_dir) / f"{spec.name}_seed{seed}" / "run_manifest.json"
                 manifests[f"{spec.name}_seed{seed}"] = json.loads(mp.read_text())
         print(f"[eval-only] reusing {len(manifests)} trained runs from {cfg.out_dir}")
-    for spec in CELLS if not args.eval_only else []:
-        for seed in SEEDS:
-            t0 = time.time()
-            m = run_cell(spec, seed, per_seed_windows[seed], cfg, monitor)
-            run_walls[m["run"]] = round(time.time() - t0, 1)
-            manifests[m["run"]] = m
-            print(
-                f"[train] {m['run']}: s1={m['final_loss']['stage1']:.3f} "
-                f"s2={m['final_loss']['stage2']:.3f} wall={run_walls[m['run']]}s "
-                f"mode={m['determinism']['attention_mode']}"
-            )
-    gpu_stats = sampler.stop() if args.device.startswith("cuda") else None
+    units = all_units(CELLS, SEEDS)
+    spec_kw = dict(
+        orch=cfg,
+        windows_for_seed=windows_for_seed,
+        symbols=tuple(SYMBOLS),
+        eval_window=tuple(eval_window),
+        units=() if args.eval_only else units,
+        label="m6_toy_rehearsal",
+    )
+    if not args.eval_only:
+        # §7 v1.6 C-5 A1: the SHARED train loop. The rehearsal and the money driver run the
+        # same code and differ only in the config handed to it.
+        from trikaal.run.matrix import MatrixSpec as _MS
 
-    # ---- reload every checkpoint (the reloadable-proof) ------------------------------------
-    ckpt_hashes = {}
-    for run, m in manifests.items():
-        rd = Path(cfg.out_dir) / run
-        load_checkpoint(rd / "tokenizer.pt", TokenizerAE, map_location=args.device)
-        load_checkpoint(rd / "predictor.pt", TrikaalAR, map_location=args.device)
-        ckpt_hashes[run] = m["artifacts"]
-    print(f"[ckpt] all {len(ckpt_hashes)} (cell, seed) checkpoints reloaded OK")
+        train_spec = _MS(
+            base_eval_cfg=None,
+            sym_evals=[],
+            art_dir=Path(cfg.out_dir) / "eval",
+            grid_start_ms=0,
+            grid_n_periods=0,
+            **spec_kw,
+        )
+        manifests = train_matrix(train_spec, monitor)
+        run_walls = {r: m.get("wall_s", 0.0) for r, m in manifests.items()}
+    gpu_stats = sampler.stop() if args.device.startswith("cuda") else None
 
     # ---- money-CODE-PATH eval per (cell, seed) → the verdict artifacts ---------------------
     deciles = load_spread_deciles(DECILES)
@@ -383,10 +360,6 @@ def main() -> int:
     grid = primary_region_grid_ms(base_cfg)
     art_dir = Path(cfg.out_dir) / "eval"
     art_dir.mkdir(parents=True, exist_ok=True)
-    entries: dict[str, str] = {}
-    eval_secs: dict[str, float] = {}  # per (cell, seed) — the last unmeasured run-cost input
-    eval_decisions: dict[str, dict] = {}  # per (cell, seed) — decisions actually SCORED
-    resumed_units: list[str] = []  # units skipped because a valid artifact already existed
     sym_evals = [
         SymbolEval(
             symbol=s,
@@ -399,84 +372,28 @@ def main() -> int:
         )
         for s, d in raw.items()
     ]
-    for spec in CELLS:
-        for seed in SEEDS:
-            t_eval0 = time.time()
-            # ---- EVAL RESUME, at (cell, seed) granularity -------------------------------
-            # The eval loop previously had NO existence check: a restart recomputed all 25
-            # units from scratch. Against a multi-hour leg on preemptible infrastructure that
-            # loses the entire elapsed run to one preemption. The per-(cell, seed) artifact is
-            # already atomic and content-hashed, so it IS the natural checkpoint — this just
-            # uses it. An artifact is only honoured if it parses AND carries the schema key;
-            # a truncated write is recomputed rather than trusted.
-            done_path = art_dir / f"cell{spec.cell_id}_seed{seed}_eval.json"
-            if not args.no_eval_resume and done_path.is_file():
-                try:
-                    doc = json.loads(done_path.read_text())
-                    # the CONSTANT, not a literal (§7 v1.6 C-2): a hardcoded schema string would
-                    # keep resuming artifacts written under a superseded contract — here, ones
-                    # with no mu_diag, which is exactly what the schema bump exists to reject.
-                    if doc.get("schema") == ARTIFACT_SCHEMA and doc.get("cell_id") is not None:
-                        entries[done_path.name] = hashlib.sha256(done_path.read_bytes()).hexdigest()
-                        resumed_units.append(done_path.name)
-                        print(f"[eval]  RESUMED {done_path.name} (already complete — skipped)")
-                        continue
-                except (json.JSONDecodeError, OSError) as exc:
-                    print(f"[eval]  {done_path.name} unreadable ({exc}) — recomputing", flush=True)
-            rd = Path(cfg.out_dir) / f"{spec.name}_seed{seed}"
-            tok = load_checkpoint(rd / "tokenizer.pt", TokenizerAE, map_location=args.device)
-            pred = load_checkpoint(rd / "predictor.pt", TrikaalAR, map_location=args.device)
-            model, tokm = pred.model.to(args.device).eval(), tok.model.to(args.device).eval()
-            # §7 v1.3 conformance: the eval-loaded tokenizer must BE causal — hard stop
-            fails = cell_tokenizer_failures(tokm.get_config(), run=f"{spec.name}_seed{seed}")
-            if fails:
-                print("EVAL REFUSED — " + "; ".join(fails), file=sys.stderr)
-                return 1
-            val_by_h, kappa_by_h, head_score = {}, {}, None
-            dec_by_h: dict[int, int] = {}
-            for h in DSR_HORIZONS:
-                sc = score_cell(
-                    f"{spec.name}_seed{seed}_h{h}",
-                    model,
-                    tokm,
-                    spec.arm,
-                    sym_evals,
-                    replace(base_cfg, h=h, seed=seed),
-                    val_only=(h != PRIMARY_H),
-                )
-                val_by_h[h] = sc.val_ir_by_kappa
-                kappa_by_h[h] = sc.kappa_chosen
-                dec_by_h[h] = int(sc.n_decisions)
-                if h == PRIMARY_H:
-                    head_score = sc
-            name, sha = write_cell_eval_artifact(
-                art_dir,
-                cell_id=spec.cell_id,
-                seed=seed,
-                grid={"h": PRIMARY_H, "start_ms": int(grid[0]), "n_periods": int(grid.size)},
-                headline_series=head_score.headline_series,
-                kappa_star_by_h=kappa_by_h,
-                val_ir_by_kappa_by_h=val_by_h,
-                codebook=head_score.codebook,
-                # §7 v1.6 C-2: the degeneracy guard's ONLY inputs. Omitting this left the guard
-                # reporting armed:true having examined nothing — the run meant to validate the
-                # guards would have delivered a verdict word with one of them silently dead.
-                mu_diag=head_score.mu_diag,
-                meta={"checkpoints": ckpt_hashes[f"{spec.name}_seed{seed}"]},
-            )
-            entries[name] = sha
-            eval_secs[f"{spec.name}_seed{seed}"] = round(time.time() - t_eval0, 3)
-            eval_decisions[f"{spec.name}_seed{seed}"] = {
-                "by_h": dict(dec_by_h),
-                # the time bought ALL scored horizons, so the rate's denominator is their sum
-                "total_scored": int(sum(dec_by_h.values())),
-                "primary_h": int(dec_by_h.get(PRIMARY_H, 0)),
-            }
-            print(
-                f"[eval]  {spec.name}_seed{seed}: IR@0.30%={head_score.ir_headline:+.2f} "
-                f"κ*={head_score.kappa_chosen} decisions={head_score.n_decisions} "
-                f"effbits={head_score.codebook['effective_bits_per_token']:.2f} → {name}"
-            )
+    # §7 v1.6 C-5 A1: ONE MatrixSpec, then the SHARED reload-proof and eval loop. Everything the
+    # rehearsal used to do inline — resume, tokenizer conformance, per-h scoring, artifact
+    # emission — now happens in run.matrix, so the money driver cannot drift from it. The
+    # rehearsal also INHERITS the C-14 resume binding and the C-5 A7 provenance stamp for free.
+    mspec = MatrixSpec(
+        orch=cfg,
+        base_eval_cfg=base_cfg,
+        sym_evals=sym_evals,
+        windows_for_seed=windows_for_seed,
+        art_dir=art_dir,
+        symbols=tuple(SYMBOLS),
+        eval_window=tuple(eval_window),
+        grid_start_ms=int(grid[0]),
+        grid_n_periods=int(grid.size),
+        units=all_units(CELLS, SEEDS),
+        label="m6_toy_rehearsal",
+    )
+    ckpt_hashes = reload_checkpoints(mspec, manifests)
+    print(f"[ckpt] all {len(ckpt_hashes)} (cell, seed) checkpoints reloaded OK")
+    outcome = eval_matrix(mspec, ckpt_hashes, resume=not args.no_eval_resume)
+    entries, eval_secs = outcome.entries, outcome.seconds
+    eval_decisions, resumed_units = outcome.decisions, outcome.resumed
     write_eval_index(art_dir, entries)
     # COUNT, not a literal: --seeds makes this 5 x len(SEEDS), and a hardcoded "15" printed while
     # 10 files were written is prose contradicting its own datum — the defect this project polices.

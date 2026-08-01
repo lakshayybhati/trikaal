@@ -190,6 +190,75 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.5 (2026-08-01, AUDIT TIER-1 C-5 — THE MONEY DRIVER. New code, no pinned value moved.)**
+  Local, $0. Built to the supervisor's A1–A9 scope; the A9 dry run is what proved it.
+  - **WHY IT EXISTS.** Pre-flight Item 2 promises ZERO first-time code paths on rented hardware,
+    and the money configuration had **no driver at all**. `m6_toy_rehearsal.py` differs from it on
+    symbols, window, seeds, step budget, grid, conformance and the legibility gate — so validating
+    the rehearsal validates the wrong code. The outstanding CUDA validation is re-scoped to run
+    THROUGH `scripts/m6_money_run.py` at reduced scale.
+  - **A1 — ONE PATH, NOT TWO.** The shared orchestration moved into `trikaal/run/matrix.py`
+    (train loop, reload-proof, resume, per-unit scoring, artifact emission, lake I/O, window
+    build) and **both** drivers call it. `m6_toy_rehearsal.py` was refactored onto it rather than
+    left as a second copy — duplication is exactly how C-6 happened. The rehearsal thereby
+    inherits the C-14 resume binding and the A7 provenance stamp for free.
+  - **A2 — NO FLAG MAY MOVE A PIN.** The driver's argparse is `--out --shard --device --no-resume
+    --dry-run --lake --wandb`. There is no `--seeds`, `--seq-len`, `--steps`, `--symbols`,
+    `--cost`. Enforced by a KAT that reads the parser and rejects any flag name containing a
+    pin-shaped token; the filter is itself discrimination-tested.
+  - **A3 — CONFORMANCE FIRST, asserted on the AST**, not merely written first: a KAT parses
+    `main()` and requires `assert_conformance` to precede every lake/train/eval call. Verified
+    live in the dry run — `conformance PASS over 40 symbols, seeds (0,1,2,3,4)`, symbols sha256
+    `60e24f598de96012…`, before any compute.
+  - **A5 — FAN-OUT.** `--shard i/N` strided over the 25 units, with `shard_partition_failures`
+    proving the shards are an exact disjoint cover (tested at N ∈ {1,2,3,5,7,25}) and balanced to
+    ±1. **The verdict now REFUSES to assemble across mixed hardware**: `provenance_failures`
+    compares eleven identity fields across artifacts and `load_cell_evals` raises on divergence
+    or on any unattributable unit. The index is withheld unless the matrix is complete — a partial
+    index looks authoritative while describing a fraction of the matrix.
+  - **A6 / C-14 — RESUME BINDS TO THE CHECKPOINTS.** Schema equality alone let a rerun *after
+    retraining* silently mix generations: the stale artifact parses, carries the right schema, and
+    hashes consistently with itself, so `load_cell_evals` content-verifies the mixture happily. An
+    artifact is now honoured only if `meta.checkpoints` matches the checkpoints on disk **and**
+    symbols, window, h, n_periods and start_ms all match. Eight binding fields, one KAT each.
+  - **A7 / C-18 — PROVENANCE PER UNIT**, auto-filled at the single emission path so an
+    unattributable artifact cannot be written rather than merely being discouraged: GPU name,
+    driver, CUDA build, torch, numpy, **Python**, platform, attention mode and every determinism
+    flag. The interpreter is called out because `uv.lock` pins packages, not python — `>=3.11`
+    admits 3.14 and a rented box silently ran 3.14.6.
+  - **A8 — NOTHING INVENTED.** `unpinned_parameters()` records the values READ from code
+    (`steps_stage1/2`, `peak_lr_*`, `warmup_frac`, `batch_size`, `alpha`) **with the reasoning
+    beside them**: ablation validity does not depend on them because all five cells share them, so
+    a too-small budget weakens every arm identically and cannot manufacture or destroy ΔIR(4−5);
+    only reproducibility depends on them. Stage-2's budget is recorded as derivable from
+    m6_design.md:59 (16,479–18,311 steps/stage at canonical geometry) and Stage-1's as genuinely
+    free.
+  - **A9 — THE DRY RUN FOUND A BLOCKER, WHICH IS WHAT IT IS FOR.** The first invocation died
+    **SIGKILL (exit 137) with zero output**. Two defects, both fixed:
+    - **MEMORY, MEASURED NOT GUESSED.** The money configuration is 40 symbols × **84,153,600
+      bars**. The raw arrays alone are **8.78 GiB**; building all 5 seeds × 3 arms of
+      arm-transformed windows up front adds **95.22 GiB** for a **~104 GiB peak**. Window
+      construction is now LAZY in the shared path — one seed resident, built inside the loop and
+      released — which changes *when* windows are built and never what they contain, taking the
+      peak to **~27.8 GiB**. The rehearsal never hit this because it slices to 200k bars × 5
+      symbols (≈1M bars) against the money configuration's 84.15M.
+    - **OUTPUT LOST ON KILL.** Every `print` was block-buffered to the redirect, so a SIGKILL
+      discarded the entire progress log — a run that dies must still show how far it got. The
+      driver's prints now flush.
+    - **THE RESIDUAL IS A SUPERVISOR DECISION, NOT A BUILDER ONE.** Even lazy, ~27.8 GiB exceeds
+      the 16 GiB local machine, so A9's "prove the whole thing locally at $0" **cannot be
+      satisfied at the money configuration's scale on this hardware**. A `--dry-run-symbols` flag
+      would resolve it and is deliberately **NOT** added: symbols are pinned and A2 forbids a flag
+      that can move a pinned value. Options are the operator's — authorise an explicitly
+      operational reduced-symbol dry run, run the dry run on the rented box (which forfeits the
+      "$0 before it sees a GPU" property), or reduce the driver's footprint further.
+    - **A HYPOTHESIS FORMED AND REFUTED RATHER THAN REPORTED.** The 40-symbol load ran at roughly
+      4.3 min/symbol, and I suspected the per-symbol query was scanning all 7,024 parquet files
+      instead of pruning. `EXPLAIN` shows `File Filters: (symbol = '…')` for both parameterised
+      and literal predicates — **pruning works, the hypothesis is wrong.** The load cost is real
+      but unexplained, was measured under contention from a concurrent test run, and must be
+      re-measured cleanly before it is quoted as a cost input.
+
 - **v1.6.4 (2026-08-01, AUDIT TIER-1 C-6 — THE TRAINING SIDE AND THE EVAL SIDE EACH HELD THEIR OWN
   COPY OF THE TRUTH. DEFECT FIX: no pinned VALUE moved; the eval side was already authoritative and
   is now the only statement. Gate-A anchor `3f86882a` re-proven byte-identical ×2, exit 0.)**

@@ -45,6 +45,7 @@ from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_boots
 from trikaal.eval.xsection import ablation_verdict
 from trikaal.train.cells import CELLS
 from trikaal.utils.hashing import content_hash
+from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
 
 # ---- prereg pins (literals mirror docs/m6_prereg.md §3/§3a/§5) -------------------------------
 PRIMARY_H = 15  # §3: h=15 is the primary; no horizon-shopping
@@ -174,7 +175,10 @@ def write_cell_eval_artifact(
         # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology).
         # REQUIRED since v1.6 C-2 — validated above, never defaulted to {}.
         "mu_diag": dict(mu_diag),
-        "meta": meta or {},
+        # §7 v1.6 C-5 A7: every artifact is attributable. Auto-filled when the caller did not
+        # supply one, so an unattributable unit cannot exist rather than being merely
+        # discouraged — the C-2 lesson applied to provenance.
+        "meta": {"provenance": run_provenance(), **(meta or {})},
     }
     name = f"cell{cell_id}_seed{seed}_eval.json"
     path = Path(out_dir) / name
@@ -223,6 +227,44 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
     return bad
 
 
+def provenance_failures(evals: dict[tuple[int, int], dict]) -> list[str]:
+    """Refuse to assemble a verdict across mixed hardware (§7 v1.6 C-5 A5).
+
+    Fan-out makes this reachable: with ``--shard i/N`` the 25 units are computed on N boxes, and
+    the hard constraint is that every shard shares provenance — same GPU model, same environment,
+    same INTERPRETER. The 25 units are ONE paired comparison; a cell trained and scored on a
+    different instrument is a different experiment, and ΔIR(4−5) across two instruments measures
+    the instruments as much as the tokenizer.
+
+    Artifacts written before the stamp existed carry no ``meta.provenance``; those are reported as
+    a divergence rather than skipped, because "some units are unattributable" is exactly the state
+    this refuses to certify. Empty list = one instrument."""
+    by_key: dict[str, dict[str, list[str]]] = {}
+    missing: list[str] = []
+    for (cell, seed), doc in sorted(evals.items()):
+        prov = (doc.get("meta") or {}).get("provenance")
+        unit = f"cell{cell}_seed{seed}"
+        if not isinstance(prov, dict) or not prov:
+            missing.append(unit)
+            continue
+        for key in PROVENANCE_IDENTITY_KEYS:
+            by_key.setdefault(key, {}).setdefault(repr(prov.get(key)), []).append(unit)
+    fails = []
+    if missing:
+        fails.append(
+            f"{len(missing)} artifact(s) carry no meta.provenance ({missing[:3]}...) — a unit "
+            "that cannot be attributed to an instrument cannot be certified as sharing one"
+        )
+    for key, groups in sorted(by_key.items()):
+        if len(groups) > 1:
+            detail = "; ".join(f"{v} on {sorted(u)[:2]}" for v, u in sorted(groups.items()))
+            fails.append(
+                f"artifacts disagree on provenance.{key}: {detail} — the verdict REFUSES to "
+                "assemble across mixed hardware/environments (§7 v1.6 C-5 A5)"
+            )
+    return fails
+
+
 def load_cell_evals(art_dir: Path) -> tuple[dict[tuple[int, int], dict], dict[str, str]]:
     """Load the 15 artifacts **by content hash** → ``({(cell_id, seed): doc}, {name: sha256})``.
 
@@ -268,6 +310,7 @@ def load_cell_evals(art_dir: Path) -> tuple[dict[tuple[int, int], dict], dict[st
         grids.add((int(g["h"]), int(g["start_ms"]), int(g["n_periods"])))
     if len(grids) > 1:
         problems.append(f"artifacts disagree on the grid: {sorted(grids)} — pairing needs ONE")
+    problems += provenance_failures(evals)
     if problems:
         raise VerdictInputError("eval-artifact set rejected:\n  - " + "\n  - ".join(problems))
     return evals, entries
