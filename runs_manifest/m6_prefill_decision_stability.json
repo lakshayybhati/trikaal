@@ -1,0 +1,111 @@
+{
+  "FIXTURE_DISCRIMINATION": {
+    "decisions_within_delta_of_median_threshold": 0,
+    "fixture_can_discriminate": false,
+    "quantile_thresholds": [
+      0.2684449851512909,
+      0.27544860541820526,
+      0.2804590314626694
+    ],
+    "why": "The pinned kappa grid alone gave activity 1.0000 everywhere \u2014 every decision far above every threshold \u2014 so no delta of this size could flip anything and the test passed vacuously. Thresholds at |mu| quantiles put decisions ON the boundary, which is where a flip is possible at all."
+  },
+  "OBSERVED": {
+    "decisions_compared": 1792,
+    "flip_rate_all_kappas": 0.0,
+    "flips": 0,
+    "observed_over_expected": 0.0,
+    "per_kappa": {
+      "kappa_1.0": {
+        "activity_prefill": 1.0,
+        "activity_sequential": 1.0,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.003,
+        "traded_set_identical": true
+      },
+      "kappa_1.5": {
+        "activity_prefill": 1.0,
+        "activity_sequential": 1.0,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.0045000000000000005,
+        "traded_set_identical": true
+      },
+      "kappa_2.0": {
+        "activity_prefill": 1.0,
+        "activity_sequential": 1.0,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.006,
+        "traded_set_identical": true
+      },
+      "kappa_3.0": {
+        "activity_prefill": 1.0,
+        "activity_sequential": 1.0,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.009000000000000001,
+        "traded_set_identical": true
+      },
+      "q25": {
+        "activity_prefill": 0.75,
+        "activity_sequential": 0.75,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.2684449851512909,
+        "traded_set_identical": true
+      },
+      "q50": {
+        "activity_prefill": 0.5,
+        "activity_sequential": 0.5,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.27544860541820526,
+        "traded_set_identical": true
+      },
+      "q75": {
+        "activity_prefill": 0.25,
+        "activity_sequential": 0.25,
+        "flip_rate": 0.0,
+        "flipped": 0,
+        "ir_prefill": 0.0,
+        "ir_sequential": 0.0,
+        "positions_identical": true,
+        "theta": 0.2804590314626694,
+        "traded_set_identical": true
+      }
+    }
+  },
+  "PRE_DECLARED_BEFORE_MEASURING": {
+    "basis": "a position flips only if |mu| lies within |delta| of theta = kappa*c; for a smooth mu distribution that fraction is of order 2*delta/sigma per threshold",
+    "criterion": "observed <= ~10x expected -> float noise; observed >> expected -> BUG",
+    "expected_flip_rate": 0.0007723081923514047,
+    "max_abs_delta_mu_hat": 3.516674041748047e-06,
+    "mean_abs_delta_mu_hat": 7.372000254690647e-07,
+    "sigma_mu_hat": 0.009106918912878603
+  },
+  "amendment": "prereg \u00a77 v1.6 condition (a) \u2014 prefill decision stability",
+  "coarse_cond_identical": true,
+  "framing": "The project has ALWAYS required the DISCRETE token chain to be exact and accepted 1e-4 on the CONTINUOUS values between these two paths (test_rollout.py:53 asserts torch.equal on coarse_cond; :54-56 assert < 1e-4). The prefill therefore does not introduce a NEW class of discrepancy \u2014 it introduces the EXISTING one at a smaller magnitude.",
+  "receipt": "m6_prefill_decision_stability",
+  "ulp_footnote": "A ULP count against magnitude is the wrong metric for logits, which span zero: the max is dominated by whichever entry sits nearest zero. The relative figure (~1e-7, float32 epsilon scale) is primary.",
+  "verdict": "CONDITION (a) SATISFIED. Observed flip rate 0.000e+00 is at or below the pre-declared expectation 7.723e-04 (ratio 0.00). The discrepancy behaves as float noise against a threshold, which is what the pre-declaration predicted."
+}

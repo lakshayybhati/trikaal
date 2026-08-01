@@ -1,0 +1,19 @@
+{
+  "assumptions": [
+    "per-flip |dr| bounded by 2*(cost + an adverse move of the same size) = 0.012 \u2014 generous, since a flipped decision is BY CONSTRUCTION at the threshold and therefore near break-even",
+    "sigma_r = 0.004 per-period net return dispersion (order of the money-leg series)",
+    "mean_r = 0.0002 for the dispersion-correction term only",
+    "flips distributed independently across periods; a clustered adversarial arrangement would raise the dispersion term but not the leading mean term",
+    "REAL grid 35,064 periods x 40 symbols per (cell,seed), 5 cells x 5 seeds"
+  ],
+  "dIR_bound_total": 0.035921772750351424,
+  "d_mean_r": 7.635600000000001e-07,
+  "flipped_fraction": 6.363e-05,
+  "flips_all_25": 2231.12232,
+  "flips_per_cell_seed": 89.2448928,
+  "per_flip_dr_bound": 0.012,
+  "ratio_scale_invariant": 6.363e-05,
+  "receipt": "m6_prefill_impact_bound",
+  "vs_economic_floor_0p5": 0.07184354550070285,
+  "vs_mde_3p518": 0.010210850696518314
+}

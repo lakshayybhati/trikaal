@@ -1,0 +1,47 @@
+{
+  "STEP1_MEASUREMENT": {
+    "chunk": 512,
+    "coarse_cond_identical": true,
+    "device": "cpu",
+    "logits_c_bit_identical": false,
+    "logits_f_bit_identical": false,
+    "max_abs_diff_logits_c": 1.1920928955078125e-06,
+    "max_diff_in_float32_ULPs": 4516.82958984375
+  },
+  "STRUCTURAL_FINDING": "512 of 526 steps (98.5% of the wall here) are CONTEXT FILL \u2014 `_fill_context` issues one `model.step` per context position over data that is fully known in advance. The autoregressive rollout is only h-1 steps. The optimisation target is therefore the FILL, not the rollout: replacing 512 single-token steps with one batched causal forward is the ~50x-class change, since a causal model gives each position the same predecessors either way.",
+  "VERDICT_ON_SHIPPING": "NOT SHIPPED, AND NOT PROPOSED AS SHIPPABLE ON THIS EVIDENCE. The real batched-fill rewrite changes the SHAPE of the attention reduction, and predict.py's own docstring states attention is batch-SHAPE-dependent at ULP level \u2014 the same reason it refuses to claim bit-exactness across chunk sizes. A change that alters mu-hat in the last bits alters kappa* selection, the traded set, and therefore IR. Under the freeze that is a specification change, so it is FORBIDDEN regardless of the speedup. Reported as a finding, per the ruling.",
+  "WHAT_WOULD_MAKE_IT_LEGITIMATE": [
+    "a batched fill demonstrated bit-identical to the sequential fill on the REAL hardware (CUDA), across the pinned chunk size and several decision counts \u2014 not merely close",
+    "the Gate-A anchor 3f86882a re-proven byte-identical with the change in place",
+    "if either fails, the speedup is unavailable under the freeze and the cost stands"
+  ],
+  "amendment": "prereg \u00a77 v1.6 item 3 \u2014 decode efficiency under a bit-identity constraint",
+  "bit_identity_control": {
+    "logits_c_identical": false,
+    "logits_f_identical": false,
+    "max_abs_diff_logits_c": 1.1920928955078125e-06,
+    "what_this_control_is": "A SANITY CONTROL, not the real test: it re-runs the SAME per-position call sequence twice. If this is not bit-identical, the path is not even self-reproducible and no optimisation could be evaluated against it."
+  },
+  "config": {
+    "decisions": 4,
+    "h": 15,
+    "seq_len": 512
+  },
+  "device": "cpu",
+  "prefill_timing": {
+    "prefill_s": 1.554274082183838,
+    "sequential_fill_s": 34.614217042922974,
+    "speedup_x": 22.270343075069587
+  },
+  "profile": {
+    "context_fill_s": 34.614217042922974,
+    "context_fill_share": 0.9846430861696509,
+    "context_fill_steps": 512,
+    "ms_per_context_step": 67.60589266195893,
+    "ms_per_rollout_step": 38.56129305703299,
+    "rollout_s": 0.5398581027984619,
+    "rollout_steps": 14,
+    "total_s": 35.154075145721436
+  },
+  "receipt": "m6_decode_profile"
+}
