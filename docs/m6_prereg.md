@@ -190,6 +190,51 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.3 (2026-08-01, RECORD CORRECTIONS — NO BEHAVIOURAL CHANGE TO ANY MEASUREMENT, NO
+  CONCLUSION MOVED. Deliberately kept OUT of the C-6 commit: a wording fix must not ride along
+  with a hard-failing assertion that can break callers.)** Local, $0.
+  - **NEW STANDING NORM — CHECK A CLAIM ABOUT A FILE AGAINST THE COMMIT THE CLAIM WAS MADE
+    ABOUT.** A **distinct** member of the "a check that cannot fail" family: not a check that
+    cannot fail, but a check run against the **wrong baseline**, which looks identical from the
+    inside because the check *does* fail — honestly — on the file you actually read. Line numbers
+    drift under our own fixes. **The instance:** the audit cited a false rule string at
+    `verdict.py:519-521`; I read the CURRENT file, found `_per_seed_delta` there, and reported the
+    audit wrong. My own C-2 fix had added **64 lines** (758 → 822), moving the string from 520 to
+    584. `git show 74b6094:src/trikaal/eval/verdict.py | sed -n '520p'` returns it verbatim. **The
+    auditor's citation was accurate; my correction is WITHDRAWN** (struck in the v1.6.2 entry
+    below). The supervisor caught it before it propagated. Landed in `CLAUDE.md` beside the other
+    five.
+  - **A SUPERVISOR CLAIM CORRECTED AND OWNED, recorded with attribution as directed.** The C-2
+    ruling stated *"both HALT guards were silently non-functional."* **That is false.**
+    `power_guard` reads `headline_series` and never touches `mu_diag`; in the blind arm it
+    produced a real `ir_range = 19.56`. Only the degeneracy guard was disarmed — blast radius one
+    guard, not two. The supervisor took the auditor's phrasing and asserted it without checking,
+    and records it as the third propagated-unverified-claim of the week. **The more important half
+    was the builder's extension, which the audit missed:** `tests/eval/test_verdict.py:74` also
+    omitted `mu_diag`, so the entire verdict KAT suite was exercising the blind path — the tests
+    could not have caught the defect they exist to catch, one layer deeper than where the auditor
+    found it.
+  - **RECEIPT CORRECTED — `m6_prefill_decision_stability`.** The n=256 receipt persisted
+    `fixture_can_discriminate: false` **and** the verdict "CONDITION (a) SATISFIED" from an
+    observed flip rate of 0. At that size the spacing between adjacent |μ̂| order statistics near
+    the median is ~1e-4 against a max|δ| of 3.5e-06, so no decision could straddle a threshold:
+    zero flips was the only attainable outcome. Fixed **in the script and regenerated** — not by
+    hand-patching a committed artifact, which is a process error already on this record. The flag
+    is now BINDING: when it is false the verdict is `PROBE INDETERMINATE` and no conclusion is
+    drawn from the flip rate. Verified by diff: **every measured field is bit-identical**; only
+    `verdict` and two new documentation keys changed. **The ruling is unaffected** — condition (a)
+    was closed on the ANALYTIC impact bound, which never used the observed count; the flip
+    observation was corroboration and was never able to carry the conclusion. The new branch was
+    discrimination-checked both ways before regenerating (real n=256 spacing → INDETERMINATE;
+    decisions placed on the boundary → a conclusion permitted).
+  - **THE Z1 CRITERION ERROR, recorded as the control-arm norm working.** In the (now paused)
+    zero-mean probe I set the allowed flip-direction imbalance at 1/√2231 — the flip count
+    **pooled** across all 25 (cell, seed) units — when IR is computed **per unit**, making the
+    correct half-width 1/√89.2449 = 0.10585, a 5× over-tightening. Confirmed by reconstructing the
+    bound: `worst/rms = 9.496 = √89.2449`. It surfaced because my own sign-randomised control
+    **failed**, and the probe emitted `PROBE INVALID` rather than a conclusion about the real
+    perturbation. That is the control-arm rule doing exactly its job.
+
 - **v1.6.2 (2026-08-01, AUDIT TIER-1 C-7 — THE THRESHOLDS THAT DECIDE THE VERDICT WERE UNDER NO
   GATE. DEFECT FIX, NOT A SPECIFICATION CHANGE: every pinned VALUE is unchanged; what changed is
   that they are now READ. Gate-A anchor `3f86882a` re-proven byte-identical ×2, exit 0.)** Local,
@@ -220,9 +265,17 @@ three stacked judgment calls = an unlimited re-run license):**
     (ddof=0)"* — wrong on **both** counts after v1.5 (N is 60; the basis is the cell-5 placebo
     subset, not all arms). The shipped artifact would have carried a false account of how its own
     `var_sr` was computed. Building the string from the pins makes that disagreement structurally
-    impossible. **The audit located this at `verdict.py:519-521`; the actual site is the
-    `5_dsr` block (pre-fix `583-585`) — `519-521` is inside `_per_seed_delta` and carries no rule
-    string.** The rest of C-17 remains open Tier 3.
+    impossible. The rest of C-17 remains open Tier 3.
+    - **WITHDRAWN (2026-08-01) — MY CORRECTION TO THE AUDIT'S CITATION WAS ITSELF WRONG.** This
+      entry first read: *"The audit located this at `verdict.py:519-521`; the actual site is the
+      `5_dsr` block (pre-fix `583-585`) — `519-521` is inside `_per_seed_delta` and carries no rule
+      string."* **That is false and is withdrawn.** `git show 74b6094:src/trikaal/eval/verdict.py |
+      sed -n '520p'` returns exactly
+      `f"series; SR0 from N={DSR_N_TRIALS} enumerated trials; var_sr over the 180 "`. The
+      auditor's citation was accurate against the commit they read. I checked it against the
+      CURRENT file, which **my own C-2 fix had lengthened by 64 lines** (758 → 822), moving the
+      string from 520 to 584 — and then declared the audit wrong rather than diffing against the
+      audited commit. The supervisor caught it before it propagated.
   - **NEW GATE.** `PINNED_THRESHOLDS` + `pinned_threshold_failures()`, an **independent second
     statement** of each value rather than an alias, called from **both** entry points — the
     money-run gate (`assert_conformance`) and the verdict gate (`verdict_dsr_failures`) — so a run

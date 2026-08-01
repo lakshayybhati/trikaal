@@ -175,7 +175,26 @@ def main() -> int:
     observed = flips_total / dec_total if dec_total else float("nan")
     ratio = observed / expected_flip_rate if expected_flip_rate > 0 else float("inf")
 
-    if observed <= max(expected_flip_rate, 1e-12) * 10.0:
+    if not discriminating:
+        # §7 v1.6.3 CONTROL-ARM RULE, applied to this script's own fixture. The first run of this
+        # probe printed "fixture check: 0 decisions ... -> CANNOT discriminate", persisted
+        # `fixture_can_discriminate: false`, and then reported "CONDITION (a) SATISFIED" from an
+        # observed flip rate of 0. At n=256 the spacing between adjacent |mu| order statistics near
+        # the median is ~1e-4 against a max|delta| of 3.5e-06, so NO decision could straddle a
+        # threshold: zero flips was the only attainable outcome and the leg could not have failed.
+        # A probe must refuse to emit a verdict when its own control arm fails.
+        verdict = (
+            "PROBE INDETERMINATE — NO CONCLUSION IS DRAWN FROM THE FLIP RATE. The fixture could "
+            f"not discriminate: 0 decisions lie within max|delta| ({max_d:.3e}) of the median "
+            f"threshold at n={n}, so a flip was not POSSIBLE here and the observed rate "
+            f"{observed:.3e} carries no information — it would read the same against a correct "
+            "path and a broken one. Re-run at a sample size where decisions straddle a threshold. "
+            "This does NOT reopen condition (a): the ruling closed (a) on the ANALYTIC impact "
+            "bound (2|delta|/sigma = 6.363e-05 -> 89.2 flips per (cell,seed), |dIR| RMS 3.783e-03 "
+            "= 0.76% of the 0.5 economic floor), which never used the observed count. The flip "
+            "observation was corroboration and was never able to carry the conclusion."
+        )
+    elif observed <= max(expected_flip_rate, 1e-12) * 10.0:
         verdict = (
             f"CONDITION (a) SATISFIED. Observed flip rate {observed:.3e} is at or below the "
             f"pre-declared expectation {expected_flip_rate:.3e} (ratio {ratio:.2f}). The "
@@ -220,6 +239,12 @@ def main() -> int:
                 "test passed vacuously. Thresholds at |mu| quantiles put decisions ON the "
                 "boundary, which is where a flip is possible at all."
             ),
+            # §7 v1.6.3: the flag is now BINDING, not advisory. It was persisted as false beside a
+            # "CONDITION (a) SATISFIED" verdict — a receipt stating a conclusion its own
+            # discrimination flag contradicts, which is precisely what these norms exist to stop.
+            "flag_is_binding": True,
+            "on_false": "the verdict becomes PROBE INDETERMINATE and no conclusion is drawn from "
+            "the flip rate; the analytic impact bound is unaffected and is what closed (a)",
         },
         "framing": (
             "The project has ALWAYS required the DISCRETE token chain to be exact and accepted "

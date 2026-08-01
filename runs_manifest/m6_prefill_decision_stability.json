@@ -2,6 +2,8 @@
   "FIXTURE_DISCRIMINATION": {
     "decisions_within_delta_of_median_threshold": 0,
     "fixture_can_discriminate": false,
+    "flag_is_binding": true,
+    "on_false": "the verdict becomes PROBE INDETERMINATE and no conclusion is drawn from the flip rate; the analytic impact bound is unaffected and is what closed (a)",
     "quantile_thresholds": [
       0.2684449851512909,
       0.27544860541820526,
@@ -107,5 +109,5 @@
   "framing": "The project has ALWAYS required the DISCRETE token chain to be exact and accepted 1e-4 on the CONTINUOUS values between these two paths (test_rollout.py:53 asserts torch.equal on coarse_cond; :54-56 assert < 1e-4). The prefill therefore does not introduce a NEW class of discrepancy \u2014 it introduces the EXISTING one at a smaller magnitude.",
   "receipt": "m6_prefill_decision_stability",
   "ulp_footnote": "A ULP count against magnitude is the wrong metric for logits, which span zero: the max is dominated by whichever entry sits nearest zero. The relative figure (~1e-7, float32 epsilon scale) is primary.",
-  "verdict": "CONDITION (a) SATISFIED. Observed flip rate 0.000e+00 is at or below the pre-declared expectation 7.723e-04 (ratio 0.00). The discrepancy behaves as float noise against a threshold, which is what the pre-declaration predicted."
+  "verdict": "PROBE INDETERMINATE \u2014 NO CONCLUSION IS DRAWN FROM THE FLIP RATE. The fixture could not discriminate: 0 decisions lie within max|delta| (3.517e-06) of the median threshold at n=256, so a flip was not POSSIBLE here and the observed rate 0.000e+00 carries no information \u2014 it would read the same against a correct path and a broken one. Re-run at a sample size where decisions straddle a threshold. This does NOT reopen condition (a): the ruling closed (a) on the ANALYTIC impact bound (2|delta|/sigma = 6.363e-05 -> 89.2 flips per (cell,seed), |dIR| RMS 3.783e-03 = 0.76% of the 0.5 economic floor), which never used the observed count. The flip observation was corroboration and was never able to carry the conclusion."
 }
