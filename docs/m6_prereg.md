@@ -252,6 +252,17 @@ three stacked judgment calls = an unlimited re-run license):**
       that can move a pinned value. Options are the operator's — authorise an explicitly
       operational reduced-symbol dry run, run the dry run on the rented box (which forfeits the
       "$0 before it sees a GPU" property), or reduce the driver's footprint further.
+    - **A FURTHER REDUCTION IS AVAILABLE AND IS NOT TAKEN UNILATERALLY, BECAUSE IT IS A
+      TRADE-OFF.** `run_cell` uses exactly ONE arm (`orchestrator.py:238`,
+      `per_symbol = per_symbol_by_arm[spec.arm]`), while `windows_by_arm` builds all three.
+      Building only the arm a unit needs takes the peak from **~27.8 GiB to ~16.3 GiB**
+      (8.78 raw + 7.52 for the `micro` arm) — but it buys that with RECOMPUTE, and how much
+      depends on unit ordering: the current cell-major order would rebuild 25 times instead of 5
+      (5×), a seed-major order with a within-seed arm cache would rebuild 15 times (3×) at the
+      same 7.52 GiB peak. Rebuilds are byte-identical (`shuffle_micro` is seeded on
+      `(symbol, seed)`), so nothing numerical moves either way — this is purely memory vs
+      wall-clock on rented hardware, i.e. a **cost decision, not a builder decision**. Reported
+      with the numbers; not implemented.
     - **A HYPOTHESIS FORMED AND REFUTED RATHER THAN REPORTED.** The 40-symbol load ran at roughly
       4.3 min/symbol, and I suspected the per-symbol query was scanning all 7,024 parquet files
       instead of pruning. `EXPLAIN` shows `File Filters: (symbol = '…')` for both parameterised
