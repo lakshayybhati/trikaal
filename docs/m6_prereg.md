@@ -285,6 +285,39 @@ three stacked judgment calls = an unlimited re-run license):**
     **idempotence asserted, not assumed**; and the first severity pass **buried the 3 real hits
     under 35 benign NaNs**, which is how the original defect survived in the first place.
   - **ITEM 5 — final pre-flight board re-run; see the v1.6 board section of the report.**
+  - **THE STAGE-1 STEP BUDGET — A GAP THAT EXISTED UNNOTICED (documentation of an existing default;
+    NOT a specification change, so the freeze is untouched).** The §4 budget line — "~1 effective
+    pass over the quality-weighted draw (~270–300M effective bars)" — is a **Chinchilla derivation
+    for the 21.3M AR** (540M tokens ÷ ~2 subtokens/bar ≈ 270M bars, per the
+    `training-saturation-budget` note), so it pins **STAGE-2 ONLY**: 16,479–18,311 steps at batch
+    32 × seq 512. **"Effective bars" = raw bar-visits**, confirmed three independent ways: the
+    sampler draws windows **with replacement** (`universe_loader.py:229`) so bars are revisited;
+    270–300M **exceeds** the ~213M distinct train-region bars, which is coherent only as a visit
+    count; and the canary recipe already computes `bar_visits = steps × batch × seq_len` against
+    distinct `train_bars`.
+    **READ FROM CODE, NOT CHOSEN:** `OrchestratorConfig.steps_stage1` defaults to **2000** (as does
+    `steps_stage2`), and **every driver in the repo** — `m6_smoke.py`, `m6_toy_rehearsal.py`,
+    `m6_cuda_probe.py` — sets `steps_stage1 == steps_stage2` from a **single `--steps` flag**. No
+    driver sets them independently; no separate Stage-1 budget exists anywhere; no real-run driver
+    exists yet. So Stage-1 **inherits** the Stage-2 count **by code convention, not by written
+    specification**.
+    **WHY THIS MATTERS AND WHY IT DOES NOT.** Ablation **VALIDITY is UNAFFECTED** — all five cells
+    take the same Stage-1 budget from the same flag, so the comparison stays clean and the only
+    varied factor is still quantizer × arm. **REPRODUCIBILITY IS AFFECTED**: the prereg pins the AR
+    budget and is silent on Stage-1, so a replicator would have to read three driver scripts to
+    discover the coupling. Recorded here and in `runs_manifest/m6_cuda_validation.json`
+    (`stage1_budget_from_code`) as a documented operational parameter.
+  - **STANDING CREDENTIAL RULE (§7 v1.6, landed in `docs/cloud_runbook.md` §3 as a hard
+    precondition on any cloud transfer leg).** **Never ship a write-capable or non-fine-grained
+    credential to rented third-party infrastructure.** The risk is **INTEGRITY, not
+    confidentiality**: the lake derives from public Binance data, so read exposure is low-stakes,
+    but a write-capable token can **overwrite or delete the Merkle-`5dfd667d` anchor** the entire
+    reproducibility claim rests on — on a machine rented by the hour from an anonymous host. A
+    fine-grained read-scoped token reduces the residual to acceptable read exposure. The available
+    HF token is `role: write`, `fineGrained: false`, so the **HF pull is DEFERRED, not cancelled**;
+    the rsync fallback is proven, so the real run is **not blocked** — HF is a transfer-time
+    optimisation, to be proven as a cheap **standalone** step before the run, never at hour zero of
+    a ~50-hour rental.
   - **VERDICT ON THE RUN: NO-GO, unchanged.** Three blockers: **B1** (invariant 7 — needs the
     probe), **GPU credentials**, and now **the absence of a receipt-backed cost**. No rental
     instruction issued; the probe stays STAGED.

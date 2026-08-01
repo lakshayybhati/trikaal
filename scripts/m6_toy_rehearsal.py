@@ -172,7 +172,12 @@ def assert_cell5_trains_on_permuted_micro(per_symbol_by_arm: dict) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--device", default="cuda")
-    ap.add_argument("--steps", type=int, default=300)
+    # default None so --local-smoke can supply its own default WITHOUT clobbering an explicit
+    # --steps. It used to overwrite unconditionally, so `--local-smoke --steps 200` silently ran
+    # 30 steps — and 30 steps is not enough for the loss to drop, so the tripwire (correctly)
+    # aborted on whichever seed drew unluckily. A flag that is accepted and discarded is the same
+    # defect as the probe's dropped --warmup.
+    ap.add_argument("--steps", type=int, default=None)
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--seq-len", type=int, default=512)
     ap.add_argument("--wandb", default="online", choices=["disabled", "offline", "online"])
@@ -191,6 +196,13 @@ def main() -> int:
         "CODE PATH needs exercising, not the toy window's length)",
     )
     ap.add_argument(
+        "--symbols",
+        default=None,
+        help="comma-separated lake symbols; default SYMBOLS. Every symbol must have pre-boundary "
+        "history — post-boundary listings have zero fold-legal train windows and the sampler "
+        "raises.",
+    )
+    ap.add_argument(
         "--seeds",
         default=None,
         help="comma-separated seeds; default keeps the historical (0,1,2). NOTE: the VERDICT path "
@@ -206,14 +218,20 @@ def main() -> int:
     )
     args = ap.parse_args()
     t_start = time.time()
-    global SEEDS
+    global SEEDS, SYMBOLS
     if args.seeds:
         SEEDS = tuple(int(x) for x in args.seeds.split(","))
+    if args.symbols:
+        SYMBOLS = tuple(x.strip() for x in args.symbols.split(",") if x.strip())
     eval_window = tuple(args.eval_window) if args.eval_window else EVAL_WINDOW
 
     if args.local_smoke:
-        args.device, args.steps, args.batch = "cpu", 30, 16
+        args.device, args.batch = "cpu", 16
         args.seq_len, args.wandb = 32, "disabled"
+        if args.steps is None:
+            args.steps = 30
+    elif args.steps is None:
+        args.steps = 300
     if not LAKE.exists():
         print("missing lake — copy processed/universe_bars in first (runbook §3)")
         return 1
@@ -358,6 +376,7 @@ def main() -> int:
     art_dir.mkdir(parents=True, exist_ok=True)
     entries: dict[str, str] = {}
     eval_secs: dict[str, float] = {}  # per (cell, seed) — the last unmeasured run-cost input
+    eval_decisions: dict[str, dict] = {}  # per (cell, seed) — decisions actually SCORED
     sym_evals = [
         SymbolEval(
             symbol=s,
@@ -383,6 +402,7 @@ def main() -> int:
                 print("EVAL REFUSED — " + "; ".join(fails), file=sys.stderr)
                 return 1
             val_by_h, kappa_by_h, head_score = {}, {}, None
+            dec_by_h: dict[int, int] = {}
             for h in DSR_HORIZONS:
                 sc = score_cell(
                     f"{spec.name}_seed{seed}_h{h}",
@@ -395,6 +415,7 @@ def main() -> int:
                 )
                 val_by_h[h] = sc.val_ir_by_kappa
                 kappa_by_h[h] = sc.kappa_chosen
+                dec_by_h[h] = int(sc.n_decisions)
                 if h == PRIMARY_H:
                     head_score = sc
             name, sha = write_cell_eval_artifact(
@@ -410,6 +431,12 @@ def main() -> int:
             )
             entries[name] = sha
             eval_secs[f"{spec.name}_seed{seed}"] = round(time.time() - t_eval0, 3)
+            eval_decisions[f"{spec.name}_seed{seed}"] = {
+                "by_h": dict(dec_by_h),
+                # the time bought ALL scored horizons, so the rate's denominator is their sum
+                "total_scored": int(sum(dec_by_h.values())),
+                "primary_h": int(dec_by_h.get(PRIMARY_H, 0)),
+            }
             print(
                 f"[eval]  {spec.name}_seed{seed}: IR@0.30%={head_score.ir_headline:+.2f} "
                 f"κ*={head_score.kappa_chosen} decisions={head_score.n_decisions} "
@@ -453,6 +480,7 @@ def main() -> int:
                 tput, carried_from = dict(prior_rec), "prior invocation at this out_dir"
         except (json.JSONDecodeError, OSError) as exc:  # a broken prior must not mask the NaN
             print(f"[throughput] prior manifest unreadable ({exc}) — no carry-forward", flush=True)
+    total_decisions_scored = sum(d["total_scored"] for d in eval_decisions.values())
     thin_drawn = {
         run: m["draw"]["drawn_by_symbol_stage1"].get(THIN, 0) for run, m in manifests.items()
     }
@@ -510,6 +538,37 @@ def main() -> int:
         # under the SAME measured/is_costable discipline as training — eval is real run cost, so
         # end_to_end_eval is costable, while a compute-only micro-benchmark still is not.
         "eval_leg": {
+            # PRIMARY FIELD = SECONDS PER DECISION, not the per-(cell,seed) total. A total
+            # measured over a few thousand TOY decisions cost-estimates nothing for the real
+            # headline grid (~35,064 periods x 40 symbols ~= 1.4M decisions per cell-seed) —
+            # quoting it as "the eval cost" would be the compute-only bench in a new costume.
+            # money mode FORBIDS cap_per_symbol (xsection.py:71, §3a uncapped primary), so there
+            # is NO knob to bound the real eval leg: the per-decision RATE is the only thing that
+            # says what it costs, and the total is a DERIVED value.
+            "seconds_per_decision": (
+                round(sum(eval_secs.values()) / max(1, total_decisions_scored), 9)
+                if total_decisions_scored
+                else float("nan")
+            ),
+            "total_decisions_scored": total_decisions_scored,
+            "DENOMINATOR_SEMANTICS": (
+                "decisions are produced at the PRIMARY h only; the other DSR horizons are scored "
+                "val_only (kappa selection) and report 0 decisions. So the rate is SECONDS PER "
+                "PRIMARY-H DECISION *INCLUDING* the cost of the val-only passes at the other "
+                "horizons. That is the correct unit to extrapolate with, because the real run "
+                "also pays for all scored horizons per (cell, seed) — but do NOT re-divide it by "
+                "a horizon count, and do not compare it to a rate measured over a different "
+                "horizon set."
+            ),
+            "decisions_by_run": eval_decisions,
+            "grid_dims": {
+                "n_periods": int(grid.size),
+                "n_symbols": len(sym_evals),
+                "horizons_scored": list(DSR_HORIZONS),
+                "primary_h": PRIMARY_H,
+                "eval_window": list(eval_window),
+                "periods_x_symbols": int(grid.size) * len(sym_evals),
+            },
             "seconds_by_run": eval_secs,
             "n_runs": len(eval_secs),
             "mean_seconds_per_cell_seed": (

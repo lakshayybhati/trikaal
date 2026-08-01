@@ -75,6 +75,30 @@ vastai ssh-url <IID>                  # → ssh://root@<host>:<port>
 
 ## 3. Transfer the ~27 GB lake — minimize GPU $/hr during upload
 
+> ### HARD PRECONDITION ON ANY CLOUD TRANSFER LEG (standing rule, §7 v1.6)
+>
+> **Never ship a write-capable or non-fine-grained credential to rented third-party
+> infrastructure.** Any token that reaches a rented box must be **fine-grained and read-scoped to
+> exactly the resource being read**, and must be passed at runtime via env only — never written to
+> the box's disk, never printed, never committed.
+>
+> **The risk is INTEGRITY, not confidentiality.** The lake derives from public Binance data, so
+> read exposure is low-stakes. But a write-capable token can **overwrite or delete** the
+> Merkle-`5dfd667d` anchor that the entire reproducibility claim rests on — on a machine we rent
+> by the hour from an anonymous host. A read-scoped fine-grained token reduces the residual to
+> low-stakes read exposure, which is acceptable.
+>
+> **Status (2026-07-31):** the only HuggingFace token available is **write-scoped and not
+> fine-grained** (`whoami-v2` → `role: write`, `fineGrained: false`), so the HF pull path is
+> **DEFERRED, not cancelled**. Remediation is one operator action: mint a fine-grained **Read**
+> token scoped to `lakshayybhati/trikaal-m6-snapshot`.
+>
+> **The real run is NOT blocked either way** — the rsync fallback is proven (the v1.6 CUDA probe
+> and validation both used it). HF is a **transfer-time optimisation**. When the read token
+> exists, prove the pull as a **cheap standalone step BEFORE the real run** — never at hour zero
+> of a ~50-hour rental, where a broken path burns the box; the timing number rides along with
+> that first proof.
+
 **Precondition:** the lake at `processed/universe_bars/` must be the **COMPLETE** M4b universe ingest
 (expected ~27 GB; its content-hash/Merkle root is the reproducibility gate in §6). A partial lake
 invalidates M6. Check first:
