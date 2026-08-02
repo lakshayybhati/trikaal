@@ -1,0 +1,62 @@
+{
+  "adjudicated_historical": [
+    {
+      "kind": "measured history, not a recipe value",
+      "numbers": [
+        "1.10",
+        "1.82",
+        "2.62"
+      ],
+      "path": "/decode_agreement_disclosure/why_a_two_sample_test",
+      "source": "prereg \u00a77 v1.6.11 (docs/m6_prereg.md:470-473)",
+      "verified": "1.10 = |diff| 0.1071 / one arm's sd 0.0973; 1.82 = t 1.821 to 3sf; 2.62 = the Welch df-2.385 critical value 2.6226 to 3sf"
+    },
+    {
+      "kind": "worked example of the v1.4.4 guard hole, not a recipe value",
+      "numbers": [
+        "0.55",
+        "0.55",
+        "0.700",
+        "0.999"
+      ],
+      "path": "/degeneracy_guard/rule",
+      "source": "prereg \u00a77 v1.4.6",
+      "verified": "(0.999 + 0.55 + 0.55) / 3 = 0.69967, i.e. 0.700 to 3dp"
+    }
+  ],
+  "branches_swept": {
+    "fallback_claimed": 67,
+    "null": 69,
+    "placebo_harmed": 64,
+    "planted_survives": 59
+  },
+  "citations_only": [
+    "/placebo_capacity_disclosure/reading",
+    "/placebo_capacity_disclosure/status"
+  ],
+  "control": {
+    "clean_flagged": false,
+    "clean_string": "SR0 from N=60 enumerated trials, threshold 0.95",
+    "discriminates": true,
+    "stale_flagged": true,
+    "stale_hits": [
+      {
+        "kind": "prose_number",
+        "number": "180",
+        "value": 180.0
+      },
+      {
+        "kind": "prose_number",
+        "number": "180",
+        "value": 180.0
+      }
+    ],
+    "stale_string": "SR0 from N=180 enumerated trials; var_sr over the 180 de-annualized VAL IRs"
+  },
+  "n_pinned_numbers": 21,
+  "n_strings_in_manifest": 162,
+  "n_unverified_strings": 0,
+  "unverified_prose_numbers": [],
+  "verdict": "CLEAN",
+  "what": "OPEN RULING (a) \u2014 prose strings persisted into the verdict manifest"
+}

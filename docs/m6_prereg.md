@@ -94,9 +94,21 @@ evidence.
      enumerated trials** (5 cells × 3 horizons {5,15,60} × 4 κ — **seeds are REPLICATES, not
      configurations, and are excluded from the multiplicity count** (§7 v1.5 A.5) — **h=1 is not evaluated
      anywhere in M6**; the earlier "4 horizons / 240" budget text is corrected here), var_sr =
-     the variance of the 180 recorded per-trial de-annualized IRs (every cell × seed × horizon ×
-     κ VAL entry is persisted, so the trial set is enumerable, not assumed), higher moments from
-     the same pooled headline series.
+     the **ddof=0 variance of the CELL-5 (placebo) per-trial de-annualized IRs** — 5 seeds × 3
+     horizons × 4 κ = **60 values**, seeds retained inside the basis (§7 v1.5 A.4). The full
+     5 × 5 × 3 × 4 = **300**-entry cross product is still persisted as the audit trail, so the
+     trial set is enumerable, not assumed. Higher moments come from the same pooled headline
+     series.
+     *(§7 v1.6.13, disclosed: this sentence read "the variance of the 180 recorded per-trial
+     de-annualized IRs (every cell × seed × horizon × κ …)" — the superseded all-arms basis at
+     the superseded 3-seed count — until the ruling-(a) sweep. The C-9 fix corrected `N = 180 →
+     60` two lines above and stopped at the clause boundary it had been pointed at. **Both halves
+     of one sentence, one edit apart.** The var_sr basis has been the cell-5 placebo in code since
+     v1.5 (`DSR_VAR_SR_BASIS_CELL`, mutation-KAT'd); only this description was stale.)*
+     *(§7 v1.6.13, AUDIT C-3, REPORTED NOT FIXED: "de-annualized" divides each trial by
+     `sqrt(periods_per_year(h))`, so the basis mixes per-5, per-15 and per-60-minute Sharpes —
+     a 3.4641× span — while SR₀ is compared against a per-15-minute Sharpe. Measured, receipted,
+     and awaiting ruling; the recipe is frozen and unchanged.)*
 - **Otherwise: the pre-committed NULL** — the microstructure leg is withdrawn and the
   contribution is FSQ-vs-BSQ on OHLCV alone (Cells 1–2), governed by §5's fallback rule (v1.2).
   No re-thresholding, no horizon-shopping: h=15 is the primary; h=5/60 are reported as
@@ -192,6 +204,110 @@ three stacked judgment calls = an unlimited re-run license):**
   other legitimate path to a re-run.
 
 ## 7. Amendment log
+
+- **v1.6.13 (2026-08-02, AUDIT TIER-4 C-3 MEASURED AND REPORTED (nothing fixed, ruling pending) +
+  the ruling-(a) MANIFEST PROSE SWEEP + the ruling-(b) OPERATIONAL CONSTRAINT. Two prose strings
+  now derive from constants and render byte-identically; no pinned value moved, no clause touched,
+  no measurement changed.)** Local, $0.
+  - **C-3 — CONFIRMED IN PART, AND IT IS OUTCOME-MATERIAL. REPORTED, NOT FIXED.** Receipt
+    `runs_manifest/m6_c3_dsr_units.json`, probe `scripts/m6_c3_dsr_units.py`.
+    - **CONTROL ARM FIRST** (standing norm): the probe re-derives the toy manifest's own all-arms
+      `var_sr` from its per-cell artifacts and requires a bit-exact match before comparing
+      anything. `0.052821905816472746` re-derived == recorded. Had it differed, the probe emits
+      `PROBE INVALID` and no conclusion about units.
+    - **THE 3.46× SPAN IS CONFIRMED, EXACTLY.** `enumerate_dsr_trials` divides each annualized VAL
+      IR by `sqrt(periods_per_year(h))`, and those divisors are 324.2221…/187.1897…/93.5948… for
+      h = 5/15/60. Their ratio is **√12 = 3.4641016151377544**, bit-equal to `math.sqrt(12)`. One
+      and the same annualized IR therefore enters the trial set **3.4641× larger at h=60 than at
+      h=5**, purely from the horizon it was measured at. The trial set is not in one unit; it is a
+      blend of three.
+    - **THE UNIT MISMATCH IS REAL, FROM THE CODE.** `deflated_sharpe_ratio` turns `var_sr` into SR₀
+      via `expected_max_sharpe`, and `probabilistic_sharpe_ratio` compares SR₀ against
+      `_sharpe(headline_series)` — whose grid `_validate_artifact` pins to `PRIMARY_H = 15`. So
+      **SR₀ is compared against a per-15-minute Sharpe while it is built from a per-5/15/60-minute
+      blend.**
+    - **THE 5.8056e-4 HAND-CALCULATION IS *NOT* REPRODUCED.** The closest construction I can
+      identify is the pure unit-mismatch variance — every trial carrying the SAME annualized IR, so
+      that all dispersion is the artifact alone: `var = IR²·Var({1/√ppy(h)})` with
+      `Var = 1.0155267159845607e-05`. At |IR| = 7.56 (this project's own sign-saturated IR, quoted
+      to 3sf) that gives **5.804100771469519e-04**, agreeing to **0.026%**; at the exact saturated
+      value 7.563377128272953 it gives 5.809287430421818e-04. To *display* as 5.8056e-4 the
+      construction needs |IR| ∈ [7.560944, 7.561009], and no value in the repo sits there. **I am
+      not asserting the auditor is wrong** — the agreement is far too close for coincidence and the
+      residual is intermediate-rounding scale. I am reporting that **I cannot reproduce the exact
+      figure without the auditor's own arithmetic**, and the sensible next step is to ask for it
+      rather than to adopt a number I could not rebuild.
+    - **FIXTURE DISCRIMINATION, DECLARED (standing norm).** The only real multi-cell artifact set in
+      the repo (the 3-seed toy) **cannot discriminate the clause-5 OUTCOME**: cell 4's DSR
+      saturates at **0.0 under all four unit bases**, so its pass/fail column is uninformative and
+      must not be read as "the mismatch does not matter". What it does discriminate is the INPUT —
+      `var_sr` **0.0270932** as pinned vs **0.0325023** with every trial at h=15, i.e. the pinned
+      basis is **0.8336×** the unit-consistent one and SR₀ is **understated by 8.70%**.
+    - **SO THE OUTCOME QUESTION IS ANSWERED BY CONSTRUCTION INSTEAD.** With a deterministic n=1128
+      unit-sd series whose mean is exactly SR̂, the minimum passing SR̂ is **0.43840** under the
+      pinned basis and **0.47569** under the h=15-consistent one. **Witness SR̂ = 0.45705 gives
+      DSR = 0.9868 (PASS) as pinned and 0.8577 (FAIL) unit-consistent.** The mismatch is therefore
+      **outcome-material, not merely input-material**: a non-empty band of cell-4 Sharpes passes
+      clause 5 under the frozen recipe and fails under a unit-consistent one.
+    - **THE DIRECTION IS NOT SIGNED PRE-DATA, AND THAT IS THE WORST PROPERTY.** Converting to the
+      h=15 unit rescales the h=5 group by 0.5774 and the h=60 group by 2.0 **about zero**, so the
+      sign depends on the realized per-horizon means and spreads. On the toy it is
+      **anti-conservative** (bar lowered). It could be conservative on the real cells. **An
+      unknown-direction distortion of a gating threshold cannot be defended as "errs safe"** — the
+      defence available for the C-12 tripwire is not available here.
+    - **NOTHING WAS CHANGED.** §3 clause 5, `PINNED_DSR` and `enumerate_dsr_trials` are frozen and
+      untouched; only the docstring gained the disclosure. **This is a NEEDS-RULING item**, and it
+      is the one Tier-4 finding that moves a threshold rather than a description.
+  - **RULING (a) — THE MANIFEST PROSE SWEEP. Receipt `runs_manifest/m6_manifest_prose_sweep.json`,
+    probe `scripts/m6_manifest_prose_sweep.py`.** It sweeps the **emitted artifact**, not the
+    source, across **four verdict branches** (planted-SURVIVES, NULL, placebo-harmed,
+    fallback-claimed) — **162 strings** — because a string emitted only on the NULL path is still a
+    shipped string. Every number in every string must resolve to a live pin, a value derived from
+    pins, or an adjudicated non-recipe number.
+    - **TWO STRINGS STATED A RECIPE NUMBER AS A LITERAL AND NOW DERIVE.** `PINNED_DSR["statistic"]`
+      hardcoded *"the 0.30% flat netting"* → now `f"{PINNED_HEADLINE_COST:.2%}"`; the tripwire's
+      `action_if_fired` hardcoded *"7 vs 16 dims"* → now `arm_n_features(ARM_OHLCV)` /
+      `arm_n_features(ARM_MICRO)`. **Both render byte-identically**, so no manifest content moved —
+      the change is that they can no longer drift from the cost the money path charges or from the
+      widths the cells actually have.
+    - **TWO NUMBERS ARE HISTORY, NOT RECIPE, AND ARE ADJUDICATED WITH A BINDING THAT CAN FAIL.**
+      The decode disclosure's 1.10 / 1.82 / 2.62 (verified: 0.1071 ÷ 0.0973; t = 1.821; crit
+      2.6226) and the degeneracy guard's worked triple (verified: (0.999+0.55+0.55)/3 = 0.69967 →
+      0.700). The adjudication is bound to the exact number set read, so **any change to those
+      strings re-opens them** — mutation-proven both ways.
+    - **THE SWEEP FOUND A HOLE IN ITSELF FIRST, AND IT IS MINE.** My initial pattern ended in
+      `(?![\w.])`, which **silently skipped every number glued to a letter** — `3x` (the micro
+      weight) and `1.5x` (the dispersion tripwire), i.e. **the two recipe numbers most worth
+      checking**. A sweep that cannot see the strings it exists to check is the *"a check that
+      cannot fail"* shape again, in the tool built to enforce it. Fixed, disclosed in the source,
+      and both values then verified against `PINNED_MICRO_POINT_WEIGHT` and
+      `PLACEBO_DISPERSION_TRIPWIRE`. The probe also carries its own control arm (a known-stale
+      string must flag, a current one must not) and emits `PROBE INVALID` if it cannot separate
+      them.
+    - **RESULT: 0 unverified prose numbers across 162 strings on 4 branches.**
+  - **TWO STALE STRINGS OUTSIDE THE MANIFEST, BOTH MISSED BY MY OWN TIER-3 PASS. DISCLOSED.**
+    - **§3 clause 5's own body** still read *"var_sr = the variance of the **180** recorded
+      per-trial de-annualized IRs (**every cell** × seed × horizon × κ …)"* — the superseded
+      all-arms basis at the superseded 3-seed count. **The C-9 fix corrected `N = 180 → 60` two
+      lines above and stopped.** Both halves of one sentence, one edit apart. Corrected to the
+      cell-5 placebo basis (60 values) with the 300-entry enumeration named as the audit trail.
+    - **`verdict.py:509`'s `enumerate_dsr_trials` docstring** read *"exactly the 5 × 3 × 3 × 4 =
+      180 cross product"* — the pre-v1.5 3-seed count — and it survived the C-17 pass **that
+      corrected this very file's module docstring**. The lesson is the one the sweep exists to
+      encode: **C-17 was fixed at the strings the audit named, not at the file.**
+    - Neither was ever read by code; both were false accounts of the recipe in the two documents a
+      referee reads first.
+  - **RULING (b) — OC-1, THE S=3 CONSTRAINT, RECORDED AT ITS SITE (§7 v1.5 item D).** Not "closed":
+    if the budget runs short mid-run the options are **fund it** or **declare INCONCLUSIVE per
+    R3** — never drop to three seeds, which would now mean moving `PINNED_SEEDS` post-hoc under
+    freeze. **Recorded together with the compounding**, because separated each reads as survivable:
+    C-4's retrain contingency takes worst case to **~$66–100 / ~$86–130 forced-deterministic**, and
+    that is precisely the scenario in which someone would reach for the cheaper seed budget. **No
+    reachability restored** — the C-6 assertion is correct and the freeze is worth more than the
+    hatch.
+  - **C-8 stands REFUTED as stated** (v1.6.12), recorded as a refuted finding with the reasoning
+    rather than as a silent correction. The audit was right 19 times and wrong once; the once is
+    recorded in both directions.
 
 - **v1.6.12 (2026-08-02, AUDIT TIER-3 — PRE-REGISTRATION INTEGRITY. Documentation corrections; NO
   pinned value moved, NO clause touched, NO behaviour changed except one manifest string that now
@@ -1083,7 +1199,26 @@ three stacked judgment calls = an unlimited re-run license):**
       so an S=3 run cannot be executed or assembled without moving a pin. Since the contingency was
       RESOLVED in favour of S=5 this costs nothing — but the fallback must be read as **CLOSED**,
       not as a live option, and re-opening it would be a specification change requiring its own
-      dated entry.** Recorded here as what it
+      dated entry.**
+
+      **★ NAMED OPERATIONAL CONSTRAINT OC-1 (§7 v1.6.13) — THE CHEAP EXIT FROM A BUDGET OVERRUN IS
+      SHUT, DELIBERATELY.** "Resolved" and "unavailable" are different statements and only the
+      second binds what happens next, so it is recorded as a constraint rather than as a closed
+      item:
+      - **If the budget runs short mid-run the options are exactly two: (i) fund it, or
+        (ii) declare INCONCLUSIVE per R3. Dropping to three seeds is NOT among them** — it would
+        require moving `PINNED_SEEDS` after seeing part of the data, i.e. a post-hoc specification
+        change under freeze, which is the precise thing the pre-registration exists to forbid.
+      - **The compounding is the part that can actually bite.** C-4's retrain contingency
+        (`docs/m6_c4_kronos_gate_requirements.md`) takes worst-case spend to **~$66–100**, or
+        **~$86–130 under forced determinism** — and that is exactly the scenario in which someone
+        reaches for a cheaper seed budget. The hatch is shut in that scenario too. Both facts are
+        recorded together here on purpose; separated, each reads as survivable.
+      - **This is NOT a request to restore reachability.** The C-6 assertion is correct and the
+        freeze is worth more than the hatch. The constraint is written down so it is discovered
+        now rather than at the worst moment.
+
+      Recorded here as what it
       is: a **BUDGET approval of a pre-registered primary**, taken with **no M6 result in hand and
       nothing seen** — it selects which of two paths already written down on 2026-07-30 gets funded,
       and it is **not a specification choice**. Nothing about the v1.5 specification moved with it:

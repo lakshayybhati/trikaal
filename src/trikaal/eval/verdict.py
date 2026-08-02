@@ -46,6 +46,7 @@ from trikaal.eval.metrics import information_ratio, periods_per_year
 from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
 from trikaal.eval.tdist import student_t_ppf, welch_satterthwaite_df
 from trikaal.eval.xsection import ablation_verdict
+from trikaal.train.arms import ARM_MICRO, ARM_OHLCV, arm_n_features
 from trikaal.train.cells import CELLS
 from trikaal.utils.hashing import content_hash
 from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
@@ -505,8 +506,23 @@ def enumerate_dsr_trials(
 ) -> dict[tuple[int, int, int, float], float]:
     """The §3-clause-5 trial set: every (cell, seed, horizon, κ) VAL IR, **de-annualized**.
 
-    Returns exactly the 5 × 3 × 3 × 4 = 180 cross product keyed by (cell_id, seed, h, κ);
-    the caller asserts the enumeration against the pinned recipe before any DSR is computed."""
+    Returns the full cells × seeds × horizons × κ cross product keyed by (cell_id, seed, h, κ) —
+    at the v1.5 pins that is 5 × 5 × 3 × 4 = 300 enumerated values, of which the cell-5 subset
+    (5 × 3 × 4 = 60) is the ``var_sr`` basis and ``DSR_N_TRIALS`` = 60 counts CONFIGURATIONS
+    (seeds excluded as replicates). The caller asserts the enumeration against the pinned recipe
+    before any DSR is computed.
+
+    **§7 v1.6.13, DISCLOSED:** this docstring read "exactly the 5 × 3 × 3 × 4 = 180 cross product"
+    until the ruling-(a) sweep. That is the pre-v1.5 3-seed count, and it survived the C-17 pass
+    that corrected this very file's module docstring — the fix was scoped to the strings the audit
+    named instead of to the file.
+
+    **§7 v1.6.13, AUDIT C-3 — REPORTED, NOT FIXED:** each value is divided by
+    ``sqrt(periods_per_year(h))``, so a trial's unit is a per-**h**-minute Sharpe and the set mixes
+    three of them (h = 5/15/60, a 3.4641× span). ``expected_max_sharpe`` turns their variance into
+    SR₀, which ``probabilistic_sharpe_ratio`` compares against the Sharpe of the headline series at
+    ``PRIMARY_H``. The recipe is FROZEN and this function is unchanged; see
+    ``scripts/m6_c3_dsr_units.py`` and its receipt."""
     trials: dict[tuple[int, int, int, float], float] = {}
     for (cid, seed), doc in evals.items():
         for h in DSR_HORIZONS:
@@ -905,7 +921,10 @@ def assemble_verdict(
         "action_if_fired": (
             "report clause 5 under BOTH the cell-5 and the within-cell-4 bases and disclose; "
             "NEVER fall back to cell 2 — §5's NULL-fallback can CLAIM IR(2)-IR(1), which makes "
-            "cell 2 a treatment arm, and 7 vs 16 dims is a dispersion mismatch"
+            # §7 v1.6.13 (ruling (a) sweep): the two arm widths derive from the arm registry, so
+            # the manifest cannot describe a width the cells do not have. Renders byte-identically.
+            f"cell 2 a treatment arm, and {arm_n_features(ARM_OHLCV)} vs "
+            f"{arm_n_features(ARM_MICRO)} dims is a dispersion mismatch"
         ),
     }
 

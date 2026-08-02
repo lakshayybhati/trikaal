@@ -137,7 +137,12 @@ PINNED_DSR = {
     "var_sr_ddof": 0,
     # §7 v1.6 C-7: READ — the verdict manifest's clause-5 rule string is BUILT from this key, so
     # the shipped artifact cannot carry a description that disagrees with the pinned recipe.
-    "statistic": "Cell 4's seed-mean pooled headline series at the 0.30% flat netting",
+    # §7 v1.6.13 (ruling (a) sweep): the netting rate was the LAST literal recipe number left in a
+    # manifest prose string. It now derives from PINNED_HEADLINE_COST, so it cannot drift from the
+    # cost the money path actually charges. Renders byte-identically to the predecessor ("0.30%").
+    "statistic": (
+        f"Cell 4's seed-mean pooled headline series at the {PINNED_HEADLINE_COST:.2%} flat netting"
+    ),
     # §7 v1.5 A.4.3 tripwire: pb(5−2) is a LEVEL statement and var_sr is a DISPERSION statistic, so
     # placebo-victim behaviour does not move a variance at first order. The second-order risk
     # (degraded training → more variable models) errs CONSERVATIVE and is measured, not assumed.

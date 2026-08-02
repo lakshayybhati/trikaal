@@ -1,0 +1,112 @@
+{
+  "claim_1_span": {
+    "auditor_said": 3.46,
+    "closed_form": "sqrt(60/5) = sqrt(12)",
+    "closed_form_value": 3.4641016151377544,
+    "deannualization_divisors_sqrt_ppy": {
+      "5": 324.2221460665511,
+      "15": 187.18974330876145,
+      "60": 93.59487165438073
+    },
+    "exact": true,
+    "meaning": "one and the same ANNUALIZED IR enters the trial set as a value 3.4641x LARGER at h=60 than at h=5, purely from the horizon it was measured at",
+    "span_h5_over_h60": 3.4641016151377544,
+    "verdict": "CONFIRMED"
+  },
+  "claim_2_hand_calc": {
+    "auditor_said": 0.00058056,
+    "candidates": {
+      "|IR|=7.56 (the saturated IR, as quoted to 3sf)": 0.0005804100771469519,
+      "|IR|=7.563377128272953 (the saturated IR, exact)": 0.0005809287430421818
+    },
+    "construction_tried": "pure unit mismatch: every trial carries the SAME annualized IR, so all dispersion in var_sr is the time-unit artifact alone -> var = IR_ann^2 * Var({1/sqrt(ppy(h))})",
+    "display_bracket_for_5.8056e-4": [
+      7.560943770990077,
+      7.561008888947998
+    ],
+    "implied_abs_IR_ann": 7.560976330039141,
+    "var_per_unit_ir_squared": 1.0155267159845607e-05,
+    "verdict": "NOT REPRODUCED EXACTLY \u2014 closest construction agrees to 0.026%"
+  },
+  "claim_3_materiality": {
+    "basis_cell": 5,
+    "but_var_sr_is": "a blend of per-5, per-15 and per-60-minute Sharpes",
+    "direction_is_data_dependent": "x_h = y_h * sqrt(h/15) rescales the h=5 group by 0.5774 and the h=60 group by 2.0 about ZERO, so the sign of the change depends on the realized per-horizon means and spreads. It is NOT fixed pre-data, which is the part that matters: an unknown-direction distortion of a gating threshold cannot be signed as conservative.",
+    "direction_on_this_fixture": "ANTI-CONSERVATIVE: the pinned mixed basis is SMALLER than the h=15-consistent basis, so SR0 is understated and clause 5 is EASIER to pass than the recipe intends",
+    "legs": {
+      "all trials in h=15 units": {
+        "clause5_passes": false,
+        "dsr_cell4": 0.0,
+        "ratio_var_vs_pinned": 1.1996480327961574,
+        "sr0": 0.4228269234318554,
+        "var_sr": 0.032502330107555405
+      },
+      "all trials in h=5 units": {
+        "clause5_passes": false,
+        "dsr_cell4": 0.0,
+        "ratio_var_vs_pinned": 0.39988267759871937,
+        "sr0": 0.24411923806400307,
+        "var_sr": 0.010834110035851809
+      },
+      "all trials in h=60 units": {
+        "clause5_passes": false,
+        "dsr_cell4": 0.0,
+        "ratio_var_vs_pinned": 4.79859213118463,
+        "sr0": 0.8456538468637108,
+        "var_sr": 0.13000932043022162
+      },
+      "as-pinned (MIXED units)": {
+        "clause5_passes": false,
+        "dsr_cell4": 0.0,
+        "ratio_var_vs_pinned": 1.0,
+        "sr0": 0.38604302499386645,
+        "var_sr": 0.0270932216941985
+      }
+    },
+    "n_basis_values": 36,
+    "pinned_over_correct_var_ratio": 0.8335778267140448,
+    "so_SR_hat_is": "a per-15-minute Sharpe",
+    "sr0_shortfall_vs_h15_units": 0.03678389843798896,
+    "tested_series": "cell-4 seed-mean headline_series, grid h=15 (artifact gate pins it)"
+  },
+  "control": {
+    "bit_exact": true,
+    "claim": "re-deriving the toy manifest's own all-arms var_sr must be BIT-EXACT",
+    "recorded_in_manifest": 0.052821905816472746,
+    "rederived_here": 0.052821905816472746
+  },
+  "existence_proof_outcome_flip": {
+    "construction": "a deterministic n=1128 series with population sd 1 and mean = SR_hat (seed 0, standardized), so SR_hat is exact; both bases scored with the SAME series",
+    "flip_window_width_in_annualized_IR": 6.981039271780956,
+    "flip_window_width_per_15min_sharpe": 0.03729391978633162,
+    "min_SR_hat_passing_under_h15_consistent_basis": 0.47569310299032647,
+    "min_SR_hat_passing_under_pinned_mixed_basis": 0.43839918320399485,
+    "so": "the time-unit mismatch is OUTCOME-MATERIAL, not merely input-material: there is a non-empty band of cell-4 Sharpes for which clause 5 PASSES under the pinned recipe and FAILS under a unit-consistent one. Whether the real cell-4 lands in that band is unknown and unknowable pre-data.",
+    "witness_SR_hat": 0.45704614309716063,
+    "witness_dsr_under_h15_consistent": 0.8576728838333958,
+    "witness_dsr_under_pinned": 0.9867917667063774,
+    "witness_flips": true
+  },
+  "fixture_discrimination": {
+    "answer": "NO",
+    "distinct_clause5_outcomes": 1,
+    "distinct_dsr_values": 1,
+    "question": "does the toy fixture separate PASS from FAIL across the four unit bases?",
+    "why": "the toy cell-4 series is so far from the bar that DSR saturates at 0.0 under EVERY basis, so the pass/fail column above is uninformative and must not be read as 'the mismatch does not matter'. What the fixture DOES discriminate is the INPUT: var_sr and SR0 differ materially between bases. The outcome question is answered by the existence proof below instead."
+  },
+  "headline": {
+    "sr0_h15_consistent": 0.4228269234318554,
+    "sr0_pinned": 0.38604302499386645,
+    "sr0_relative_shortfall": -0.08699516610587166,
+    "statement": "on this fixture the pinned mixed-unit basis understates SR0 by 8.70%, i.e. it lowers the clause-5 bar. SR0 scales as sqrt(var_sr), so the shift is a pure ratio and carries to any scale; only its SIGN is data-dependent."
+  },
+  "reported_not_fixed": "\u00a73 clause 5 and PINNED_DSR are frozen. No value moved, no clause touched, no code changed.",
+  "seeds_present": [
+    0,
+    1,
+    2
+  ],
+  "source": "runs_cloud/runs/m6_toy/eval",
+  "source_note": "The ONLY real multi-cell artifact set in the repo. 3 seeds, toy scale, and its manifest predates the v1.5 cell-5 basis \u2014 so the DIRECTION it shows is illustrative, NOT the M6 value. The unit ALGEBRA below is exact and data-independent.",
+  "what": "AUDIT TIER-4 C-3 \u2014 clause-5 var_sr time-unit audit. VERIFY ONLY, nothing fixed."
+}
