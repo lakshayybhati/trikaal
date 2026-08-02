@@ -1,42 +1,14 @@
 {
   "C-10_micro_legibility_gate": {
     "all_dims_thin": {
-      "raised": false,
-      "receipt": {
-        "min_acc": 0.9,
-        "pass": true,
-        "per_dim": {
-          "10": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          },
-          "11": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          },
-          "12": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          },
-          "7": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          },
-          "8": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          },
-          "9": {
-            "n": 500,
-            "skipped": "masked (n < 10k unmasked bars)"
-          }
-        }
-      }
+      "error": ": \u00a77 v1.4 MICRO LEGIBILITY GATE FAILED before Stage-2 (6 dim(s) could not be measured at all [7, 8, 9, 10, 11, 12]) \u2014 {'min_acc': 0.9, 'per_dim': {'7': {'skippe",
+      "raised": true
     },
+    "as_originally_measured_2026_08_02": "CONFIRMED: 6/6 micro dims skipped, pass=True, raised=False",
     "claim": "the hard stop passes when every micro dim is too thin to measure",
-    "n_dims_skipped": 6,
+    "n_dims_skipped": 0,
     "n_micro_dims": 6,
-    "verdict": "CONFIRMED \u2014 returned pass=True with EVERY dim skipped, i.e. measured nothing"
+    "verdict": "FIXED \u2014 the gate now HALTS on unmeasurable dims (\u00a77 v1.6.15); the defect it originally confirmed is recorded in the prereg entry and in git history"
   },
   "C-15_causal_gate_parameters": {
     "claim": "the causal CI gate runs only at reduced params, and is VACUOUS at production ones",

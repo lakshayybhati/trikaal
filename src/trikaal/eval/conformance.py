@@ -46,6 +46,15 @@ PINNED_MICRO_LEGIBILITY_MIN = (
     0.9  # §7 v1.4 standing six-micro-dims gate — a HARD STOP, was unpinned
 )
 PINNED_BACKBONE_PARAMS = 21_301_248  # the realized count (CLAUDE.md invariant), was unpinned
+# §7 v1.6.15 C-18 — TWO VALUES THAT DECIDED THE RUN WHILE UNDER NO GUARD. Neither is a NEW pin:
+# the μ estimator is the v1.4.2 pre-registration and the step budget is the recipe every receipt
+# already reports. The defect was that the code did not ENFORCE what was already pre-registered —
+# the C-7 shape. ``predict_mu(estimator=...)`` existed only as a Python function default, so a
+# caller passing "argmax" would silently restore the biased mode-decode that v1.4.2 was written to
+# remove, and nothing anywhere would notice.
+PINNED_MU_ESTIMATOR = "expectation"  # §7 v1.4.2: the conditional-MEAN decode
+PINNED_STEPS_STAGE1 = 2000
+PINNED_STEPS_STAGE2 = 2000
 PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 DECILES = Path("runs_manifest/m6_spread_deciles.json")
@@ -183,11 +192,35 @@ def pinned_threshold_failures() -> list[str]:
         "BOOT_POWER": float(BOOT_POWER),
         "PLACEBO_DISPERSION_TRIPWIRE": float(PLACEBO_DISPERSION_TRIPWIRE),
     }
+    # §7 v1.6.15 (fail-open sweep): iterate over the LIVE constant set, not over PINNED_THRESHOLDS.
+    # The predecessor iterated the pin dict, so DELETING a pin removed its own check and the gate
+    # returned clean — a pin that stops existing stopped being enforced, silently. Every live
+    # threshold must now have a pin, and a missing pin is a failure rather than an absence.
     fails = [
+        f"{name} has NO entry in PINNED_THRESHOLDS — a threshold under no pin decides the "
+        "verdict unguarded (§7 v1.6.15)"
+        for name in live
+        if name not in PINNED_THRESHOLDS
+    ]
+    fails += [
         f"{name} = {live[name]!r} != pinned {want!r} (§7 v1.6 C-7)"
         for name, want in PINNED_THRESHOLDS.items()
-        if live[name] != float(want)
+        if name in live and live[name] != float(want)
     ]
+    fails += [
+        f"PINNED_THRESHOLDS carries {name!r}, which is not a live verdict constant (§7 v1.6.15)"
+        for name in PINNED_THRESHOLDS
+        if name not in live
+    ]
+    # §7 v1.6.15 C-18: two copies, one truth — the shape that produced C-6. xsection owns the
+    # constant it uses; this asserts it against the pin rather than letting them drift apart.
+    from trikaal.eval.xsection import MU_ESTIMATOR
+
+    if MU_ESTIMATOR != PINNED_MU_ESTIMATOR:
+        fails.append(
+            f"xsection.MU_ESTIMATOR {MU_ESTIMATOR!r} != pinned {PINNED_MU_ESTIMATOR!r} "
+            "(§7 v1.4.2 expectation-decode)"
+        )
     # the duplicate-source-of-truth leg: two independent 1.5s must agree
     if float(PINNED_DSR["placebo_dispersion_tripwire"]) != live["PLACEBO_DISPERSION_TRIPWIRE"]:
         fails.append(
@@ -294,6 +327,14 @@ def conformance_failures(
     # 2) money mode + the primary region (blocks 1-5, VAL excluded, ONE continuous grid)
     if not cfg.money:
         fails.append("cfg.money is False — the real eval must run in money mode (§3a)")
+    # §7 v1.6.15 C-18: asserted at the GATE too, not only in XSectionConfig.__post_init__ — a
+    # config constructed before the field existed, or mutated after construction, still reaches
+    # here. Same defence-in-depth the seq_len and seeds pins already have.
+    if getattr(cfg, "mu_estimator", None) != PINNED_MU_ESTIMATOR:
+        fails.append(
+            f"mu_estimator {getattr(cfg, 'mu_estimator', None)!r} != pinned "
+            f"{PINNED_MU_ESTIMATOR!r} (§7 v1.4.2 — 'argmax' is the biased mode-decode it removed)"
+        )
     if cfg.val_block != 0 or cfg.n_blocks != 6:
         fails.append(f"fold plan (val_block={cfg.val_block}, n_blocks={cfg.n_blocks}) != (0, 6)")
     grid = primary_region_grid_ms(cfg)
@@ -499,7 +540,10 @@ __all__ = [
     "PINNED_MICRO_LEGIBILITY_MIN",
     "PINNED_MICRO_POINT_WEIGHT",
     "PINNED_MONEY_SEQ_LEN",
+    "PINNED_MU_ESTIMATOR",
     "PINNED_SEEDS",
+    "PINNED_STEPS_STAGE1",
+    "PINNED_STEPS_STAGE2",
     "PINNED_SYMBOLS_SHA256",
     "PINNED_THRESHOLDS",
     "ConformanceError",

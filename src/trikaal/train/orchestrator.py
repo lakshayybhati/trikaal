@@ -36,6 +36,8 @@ from trikaal.eval.conformance import (
     PINNED_MICRO_LEGIBILITY_MIN,
     PINNED_MONEY_SEQ_LEN,
     PINNED_SEEDS,
+    PINNED_STEPS_STAGE1,
+    PINNED_STEPS_STAGE2,
     ConformanceError,
 )
 from trikaal.model.attention_mode import (
@@ -85,8 +87,9 @@ class OrchestratorConfig:
     cells: tuple[CellSpec, ...] = CELLS
     seq_len: int = PINNED_MONEY_SEQ_LEN
     batch_size: int = 32
-    steps_stage1: int = 2000
-    steps_stage2: int = 2000
+    # §7 v1.6.15 C-18: REFERENCE the pins, never restate them (the C-6 guarantee shape).
+    steps_stage1: int = PINNED_STEPS_STAGE1
+    steps_stage2: int = PINNED_STEPS_STAGE2
     peak_lr_stage1: float = 1e-3
     peak_lr_stage2: float = 3e-4
     warmup_frac: float = 0.1
@@ -146,6 +149,15 @@ class OrchestratorConfig:
             )
         if not self.enforce_parity:
             bad.append("enforce_parity is False — G-parity binds at canonical dims")
+        # §7 v1.6.15 C-18: the step budget was a bare dataclass default. The money driver RECORDED
+        # it in its manifest, but recording is not pinning — a different budget would have run and
+        # been faithfully reported as the recipe.
+        for name, want in (
+            ("steps_stage1", PINNED_STEPS_STAGE1),
+            ("steps_stage2", PINNED_STEPS_STAGE2),
+        ):
+            if int(getattr(self, name)) != int(want):
+                bad.append(f"{name} {getattr(self, name)} != pinned {want} (§7 v1.6.15 C-18)")
         # §7 v1.6 C-5 A9, FOUND BY THE DRY RUN: the rollout addresses positions up to
         # seq_len + h, so a backbone built at the default max_len = seq_len cannot score at all.
         # The money run would have TRAINED every unit and then died at the first eval. Derived,

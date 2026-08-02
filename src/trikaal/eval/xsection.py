@@ -44,6 +44,10 @@ from trikaal.train.token_stream import tokenize_features
 BAR_MS = 60_000
 
 
+# §7 v1.4.2 / v1.6.15 C-18: the pinned decode. conformance.PINNED_MU_ESTIMATOR must agree.
+MU_ESTIMATOR = "expectation"
+
+
 @dataclass
 class XSectionConfig:
     window_start: str = "2021-01-01"
@@ -68,9 +72,21 @@ class XSectionConfig:
     # (VAL block 0 excluded) — the exact MDE-recompute basis — with no dev cap and per-symbol
     # deciles mandatory. Dev/smoke mode (money=False) keeps the single-block headline.
     money: bool = False
+    # §7 v1.6.15 C-18: the mu estimator was the v1.4.2 PIN existing only as a predict_mu function
+    # default, so nothing on the money path asserted it. It is now a config field the conformance
+    # gate reads, cross-checked against conformance.PINNED_MU_ESTIMATOR (two copies, one truth —
+    # the shape used for DSR_VAR_SR_BASIS_CELL). Declared here rather than imported to keep the
+    # dependency running one way: conformance imports xsection, never the reverse.
+    mu_estimator: str = MU_ESTIMATOR
 
     def __post_init__(self) -> None:
         if self.money:
+            if self.mu_estimator != MU_ESTIMATOR:
+                raise ValueError(
+                    f"money mode pins mu_estimator={MU_ESTIMATOR!r} (§7 v1.4.2 "
+                    f"expectation-decode); got {self.mu_estimator!r} — 'argmax' is the biased "
+                    "mode-decode v1.4.2 removed"
+                )
             if self.cap_per_symbol is not None:
                 raise ValueError("money mode forbids cap_per_symbol (§3a: uncapped primary)")
             if self.spread_frac_by_symbol is None:
@@ -293,6 +309,7 @@ def score_cell(
                 h=cfg.h,
                 seq_len=cfg.seq_len,
                 device=cfg.device,
+                estimator=cfg.mu_estimator,
             )
             mu_pool.append(mu)
             y_d = d["y"][dec]

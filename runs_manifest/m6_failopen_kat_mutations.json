@@ -1,0 +1,56 @@
+{
+  "all_discriminate": true,
+  "n": 8,
+  "rows": [
+    {
+      "fails_on_predecessor": true,
+      "fix": "power_guard armed/halted are measurements (S-2)",
+      "kat": "test_power_guard_is_armed_only_when_it_read_its_inputs",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "decode_agreement_disclosure reports unmeasurable",
+      "kat": "test_decode_disclosure_reports_unmeasurable_instead_of_a_quiet_null",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "a DELETED pin is a failure, not an absence",
+      "kat": "test_deleting_a_pin_is_a_failure_not_an_absence",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "an EMPTY unit matrix is not a covered partition",
+      "kat": "test_empty_unit_matrix_is_rejected",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "C-10 leg 1 \u2014 a SKIPPED dim can never contribute to a pass",
+      "kat": "test_a_skipped_dim_can_never_contribute_to_a_pass",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "C-10 leg 2 \u2014 the sample is stratified by symbol",
+      "kat": "test_stratified_split_covers_every_symbol_and_blocks_in_time",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "C-18 \u2014 mu_estimator pinned on the money path",
+      "kat": "test_mu_estimator_pin_is_enforced_on_the_money_path",
+      "passes_on_current_code": true
+    },
+    {
+      "fails_on_predecessor": true,
+      "fix": "C-18 \u2014 the Stage-1/2 step budget is pinned",
+      "kat": "test_step_budget_is_pinned_on_a_money_run",
+      "passes_on_current_code": true
+    }
+  ],
+  "verdict": "ALL KATS DISCRIMINATE",
+  "what": "every \u00a77 v1.6.15 fail-open KAT, proven capable of failing"
+}

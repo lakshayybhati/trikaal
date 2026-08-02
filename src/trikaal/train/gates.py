@@ -123,19 +123,49 @@ def digit_onehots(tok, b_c: np.ndarray, b_f: np.ndarray) -> np.ndarray:
 
 
 def id_legibility_sign_acc(
-    tok, values: np.ndarray, b_c: np.ndarray, b_f: np.ndarray, *, n: int = 150_000
+    tok,
+    values: np.ndarray,
+    b_c: np.ndarray,
+    b_f: np.ndarray,
+    *,
+    n: int = 150_000,
+    groups: np.ndarray | None = None,
 ) -> float:
     """Logistic sign-accuracy of ``values[t]`` from bar t's OWN (c_id, f_id) digits.
 
     The §7 v1.4 legibility instrument: 80/20 split, 300 Adam steps, torch seed 0 —
-    deterministic given its inputs."""
+    deterministic given its inputs.
+
+    ``groups`` (§7 v1.6.15, C-10 leg 2) labels each row with the stratum it came from — in the
+    M6 gate, its SYMBOL. When given, the 80/20 split is taken **within each stratum** rather than
+    as one contiguous cut of the concatenation. Both properties matter and they pull in opposite
+    directions:
+
+    * the split must stay **BLOCKED IN TIME** — 1-minute bars are autocorrelated, so an
+      interleaved or shuffled split puts near-duplicate neighbours on both sides and inflates
+      accuracy. The contiguous cut had this right.
+    * the split must **COVER THE UNIVERSE** — the contiguous cut did not. Measured on the real
+      lake, the head-150k window spans **1 of 200 symbols**
+      (``runs_manifest/m6_c10_micro_density.json``), so the gate that decides whether Stage-2
+      spend proceeds was reading one symbol and calling it "the run's real training stream".
+
+    Per-stratum blocking gives both: every symbol contributes, and within each symbol train is the
+    earlier block and val the later one. ``groups=None`` preserves the old single-block behaviour
+    for callers with one stream (``m6_canary.py``), where stratification is meaningless.
+    """
     n = min(n, b_c.size)
-    feats = digit_onehots(tok, b_c[:n], b_f[:n])
-    y = (values[:n] > 0).astype(np.float32)
-    n_tr = int(0.8 * n)
-    xt = torch.from_numpy(feats[:n_tr])
-    xv = torch.from_numpy(feats[n_tr:])
-    yt = torch.from_numpy(y[:n_tr])
+    if groups is None:
+        sel = np.arange(n)
+        tr_mask = np.zeros(n, dtype=bool)
+        tr_mask[: int(0.8 * n)] = True
+    else:
+        sel, tr_flags = _stratified_blocked_split(np.asarray(groups), n)
+        tr_mask = tr_flags
+    feats = digit_onehots(tok, b_c[sel], b_f[sel])
+    y = (values[sel] > 0).astype(np.float32)
+    xt = torch.from_numpy(feats[tr_mask])
+    xv = torch.from_numpy(feats[~tr_mask])
+    yt = torch.from_numpy(y[tr_mask])
     torch.manual_seed(0)
     logit = nn.Linear(feats.shape[1], 1)
     opt = torch.optim.Adam(logit.parameters(), lr=1e-2)
@@ -145,7 +175,36 @@ def id_legibility_sign_acc(
         loss.backward()
         opt.step()
     with torch.no_grad():
-        return float(((logit(xv).squeeze(-1) > 0).numpy() == (y[n_tr:] > 0.5)).mean())
+        return float(((logit(xv).squeeze(-1) > 0).numpy() == (y[~tr_mask] > 0.5)).mean())
+
+
+def _stratified_blocked_split(groups: np.ndarray, n: int) -> tuple[np.ndarray, np.ndarray]:
+    """(selected row indices, train mask) — an equal-ish quota per stratum, blocked in time.
+
+    Deterministic: strata in first-appearance order, quotas by integer division with the
+    remainder handed to the earliest strata, and within a stratum the rows are taken in their
+    existing (time) order with the first 80% as train. No RNG, so the gate stays reproducible.
+    """
+    order, starts = [], {}
+    for i, g in enumerate(groups):
+        if g not in starts:
+            starts[g] = i
+            order.append(g)
+    quota, extra = divmod(n, max(1, len(order)))
+    sel_parts, tr_parts = [], []
+    for k, g in enumerate(order):
+        idx = np.flatnonzero(groups == g)
+        take = min(len(idx), quota + (1 if k < extra else 0))
+        if take <= 0:
+            continue
+        chosen = idx[:take]
+        flags = np.zeros(take, dtype=bool)
+        flags[: max(1, int(0.8 * take))] = True
+        sel_parts.append(chosen)
+        tr_parts.append(flags)
+    if not sel_parts:  # fail closed rather than return an empty design matrix
+        raise ValueError("stratified split selected no rows — the grouping carried no members")
+    return np.concatenate(sel_parts), np.concatenate(tr_parts)
 
 
 def micro_legibility_gate(
@@ -181,29 +240,54 @@ def micro_legibility_gate(
     seeds, vs the original real-data failure) — see the dated prereg entry."""
     per_dim: dict[str, dict] = {}
     ok = True
+    unmeasured: list[int] = []
     for dim in MICRO_DIMS:
-        vals, bcs, bfs = [], [], []
+        vals, bcs, bfs, grps = [], [], [], []
         for sw in per_symbol:
             b_c, b_f = tokens[sw.symbol]
             keep = sw.mask[:, dim] == 0
             vals.append(sw.x[keep, dim])
             bcs.append(b_c[keep])
             bfs.append(b_f[keep])
+            # §7 v1.6.15 C-10 leg 2: carry the SYMBOL through so the probe can stratify by it.
+            grps.append(np.full(int(keep.sum()), sw.symbol, dtype=object))
         v = np.concatenate(vals)
-        if v.size < 10_000:  # a dim masked ~everywhere cannot be gated meaningfully
+        if v.size < 10_000:
+            # §7 v1.6.15 C-10 leg 1: SKIPPED IS A THIRD STATE AND IT HALTS. The predecessor
+            # `continue`d BEFORE `ok = ok and acc >= min_acc`, so a skipped dim could not lower
+            # `ok` — all six thin returned pass=True having measured nothing, and five thin plus
+            # one dense passing dim returned pass=True on a gate whose contract is all six. Both
+            # reproduced (runs_manifest/m6_tier4_vacuous_gates.json). "We could not measure the
+            # channel this whole gate exists to measure" is not a pass.
             per_dim[str(dim)] = {"skipped": "masked (n < 10k unmasked bars)", "n": int(v.size)}
+            unmeasured.append(dim)
+            ok = False
             continue
-        acc = id_legibility_sign_acc(tok, v, np.concatenate(bcs), np.concatenate(bfs))
+        acc = id_legibility_sign_acc(
+            tok, v, np.concatenate(bcs), np.concatenate(bfs), groups=np.concatenate(grps)
+        )
         per_dim[str(dim)] = {
             "sign_acc": round(acc, 4),
             "n": int(min(150_000, v.size)),
+            "n_symbols_in_sample": len({sw.symbol for sw in per_symbol}),
             "base_rate_positive": round(float((v > 0).mean()), 4),
         }
         ok = ok and acc >= min_acc
-    receipt = {"min_acc": min_acc, "per_dim": per_dim, "pass": bool(ok)}
+    receipt = {
+        "min_acc": min_acc,
+        "per_dim": per_dim,
+        "pass": bool(ok),
+        "unmeasured_dims": unmeasured,
+        "sampling": "stratified by symbol, 80/20 blocked in time WITHIN each symbol (§7 v1.6.15)",
+    }
     if not ok:
+        why = (
+            f"{len(unmeasured)} dim(s) could not be measured at all {unmeasured}"
+            if unmeasured
+            else "at least one dim fell below min_acc"
+        )
         raise RuntimeError(
-            f"{run_name}: §7 v1.4 MICRO LEGIBILITY GATE FAILED before Stage-2 — {receipt} "
+            f"{run_name}: §7 v1.4 MICRO LEGIBILITY GATE FAILED before Stage-2 ({why}) — {receipt} "
             "(pre-authorized fallback: micro-weighted w_feat in the bottleneck leg, "
             "real-data failures only, dated §7 entry required BEFORE use)"
         )

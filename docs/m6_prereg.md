@@ -205,6 +205,87 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.15 (2026-08-02, TRANCHE 1 — THE FAIL-OPEN CLASS SWEPT AND CLOSED. Guard/gate fixes, two
+  values pinned that were already pre-registered, one test rewritten. No pinned VALUE moved and no
+  clause was touched; every change makes a check harder to pass, never easier.)** Local, $0.
+  - **THE SWEEP IS THE DELIVERABLE — `scripts/m6_failopen_sweep.py`, receipt
+    `runs_manifest/m6_failopen_sweep.json`.** 14 functions × 6 degenerate inputs
+    (absent/empty/None/NaN/inf/wrong-type) = **84 rows**, each recording the value actually
+    returned and whether it FAILS OPEN (a quiet pass) or CLOSED (raised, or reported). Coverage is
+    listed explicitly in the receipt, because *"we swept and found one"* and *"our sweep only
+    looked at one"* produce the same table otherwise.
+    - **MUTATION CONTROL FIRED.** A known-CLOSED guard — `degeneracy_guard`, the C-2 site, the one
+      we most believe is fixed — is wrapped to return a quiet pass, and the sweep must name it. It
+      named it on 6/6 rows. A sweep that cannot catch a regression at C-2's own site would be
+      decoration, so the script exits non-zero rather than printing a table nobody should trust.
+    - **12 FAIL-OPEN ROWS FOUND → 0 REMAIN.**
+    - **THE SWEEP FOUND THREE OF ITS OWN HARNESS BUGS FIRST, AND THEY WOULD HAVE BEEN FALSE
+      FINDINGS.** `provenance_failures` reads `meta.provenance`; my first registry mutated a
+      top-level `provenance`, so the guard never saw a degenerate input and all six rows read
+      FAIL OPEN. `artifact_reuse_failures` and `shard_partition_failures` were called with wrong
+      signatures, so every case died of the same `TypeError` — both arms failing alike, which is
+      `PROBE INVALID` by the control-arm rule, not a verdict. And
+      `pinned_threshold_failures` takes no arguments, so six no-op rows inflated the count.
+      **21 rows before the harness was correct; 12 after.** A defect count is worthless until the
+      probe can tell the failure it is testing for from its own.
+  - **S-2 CONFIRMED — `power_guard` carried a HARDCODED `armed: True`.** With non-finite per-seed
+    IRs, `finite` is empty, every range is `None`, `worst` is `None`, `trips` is False, and the
+    guard reported armed/not-halted having evaluated nothing. **This is C-2 verbatim, in the
+    sibling guard, and it survived because the C-2 fix was applied at C-2's site.** `armed` is now
+    a measurement, the unreadable units are NAMED, a non-finite CLAIM is treated as unreadable
+    too, and the guard HALTs. Still HALT-only: it can never flip SURVIVES↔NULL.
+  - **`decode_agreement_disclosure` silently dropped unreadable units** — a disclosure computed
+    from nothing was indistinguishable from one computed from five seeds. It now reports
+    `unmeasurable` with the named units, and `assemble_verdict` raises that to HALT_ADJUDICATE.
+    `_validate_artifact` already refuses such artifacts at load, so this sat behind a closed
+    door — **which is exactly how C-2 read until the rehearsal path bypassed it.**
+  - **`pinned_threshold_failures` iterated the PIN dict, so DELETING a pin deleted its own check**
+    and the gate returned clean. It now iterates the LIVE constants: every live threshold must
+    have a pin, and a pin with no live constant is also a failure.
+  - **`shard_partition_failures` certified the EMPTY matrix** — a partition of nothing is a
+    perfect disjoint cover. In fan-out that is the dangerous case, not the trivial one.
+  - **C-10 FIXED, BOTH LEGS, AND THE SUPERVISOR'S PARTIAL-SKIP CLAIM IS CONFIRMED NOT REFUTED.**
+    Reproduced with a control: **5 thin + 1 dense passing dim returned `pass: True`**, while a
+    failing dense dim still raised (so the fixture discriminates). The `continue` sat BEFORE
+    `ok = ok and acc >= min_acc`, so a skipped dim could not lower `ok`. **Skipped is now a third
+    state that HALTS**, naming the unmeasured dims.
+    - **MATERIALITY MEASURED ON THE REAL LAKE (`runs_manifest/m6_c10_micro_density.json`, $0,
+      DuckDB-aggregated under a 4 GB cap).** All 200 symbols, 304,625,181 bars — the recorded lake
+      total, which is also a cross-check. **Every micro dim 7–12 clears the 10,000-bar floor by
+      orders of magnitude: minimum ACROSS SYMBOLS is 277,758 and the totals are ~300.3–300.8M.**
+      So the defect is real but **cannot fire on this lake** — which is what makes the halt-on-skip
+      fix safe: it cannot halt a legitimate run at the universe we have.
+    - **LEG 2 IS THE MATERIAL ONE AND IT IS WORSE THAN SUSPECTED.** `id_legibility_sign_acc` read
+      the FIRST 150,000 rows of a symbol-ordered concatenation with a CONTIGUOUS 80/20 split.
+      Measured: **that window spans 1 of 200 symbols.** The standing gate that decides whether
+      Stage-2 spend proceeds was reading **one symbol** and calling it *"the run's real training
+      stream"*. Now stratified by symbol — every symbol contributes — while keeping the split
+      **BLOCKED IN TIME within each symbol**, because 1-minute bars are autocorrelated and an
+      interleaved split would put near-duplicate neighbours on both sides and inflate accuracy.
+      The contiguous cut had that right; it simply did not cover the universe. **Direction: the
+      gate now measures 200× more of the universe and must hold across all of it — the TIGHTENING
+      direction, the same argument as C-3.**
+  - **C-18 — THE TWO OPEN LEGS PINNED. This does NOT reopen the freeze:** the μ estimator is the
+    v1.4.2 pre-registration and the step budget is the recipe every receipt already reports. The
+    code simply failed to enforce what was already pre-registered — the C-7 shape.
+    `PINNED_MU_ESTIMATOR` and `PINNED_STEPS_STAGE1/2` now exist; `XSectionConfig.mu_estimator`
+    is asserted in money mode AND at the conformance gate (defence in depth — a config built
+    before the field existed, or mutated after construction, still reaches the gate), and
+    `xsection.MU_ESTIMATOR` is cross-checked against the pin so the two copies cannot drift.
+    `OrchestratorConfig` now REFERENCES the step pins and asserts them on a money run.
+  - **A PRE-EXISTING TEST ASSERTED THE FAIL-OPEN BEHAVIOUR AS CORRECT, AND THAT IS WHY C-10
+    SURVIVED.** `test_gate_skips_masked_everywhere_dims` asserted only that the dim was recorded
+    as skipped, under the docstring *"never trivially passed"* — and passed while the gate
+    returned `pass: True` on exactly that input. **The defect was not an oversight; it was written
+    down as the contract.** Rewritten to assert the halt, to check the diagnostic survives the
+    halt, and to prove the same fixture still passes unmasked.
+  - **EVERY NEW KAT PROVEN CAPABLE OF FAILING** — `scripts/m6_failopen_kat_mutations.py`, receipt
+    `runs_manifest/m6_failopen_kat_mutations.json`: 8 fixes, each run against a predecessor-
+    equivalent implementation, each KAT required to FAIL there and PASS here. 8/8 discriminate.
+  - Suite **439 → 458**, the entire delta being the 19 tests in the new
+    `tests/eval/test_failopen_class.py` — coverage, not fixtures. Ruff clean. Gate-A anchor
+    **3f86882a re-proven byte-identical ×2, exit code 0 both** (`src/` changed).
+
 - **v1.6.14 (2026-08-02, THE C-3 AMENDMENT DRAFTED AND HELD + AUDIT TIER-4 TRIAGE + one standing
   norm. No pinned value moved, no clause touched, no code changed except two new verify-only
   probes.)** Local, $0. *(Numbering note: if the C-3 amendment is approved it lands as **v1.6.15**;

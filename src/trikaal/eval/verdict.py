@@ -331,14 +331,27 @@ def decode_agreement_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
     NON-GATING: no clause, no threshold, cannot flip SURVIVES↔NULL.
     """
 
+    # §7 v1.6.15 (fail-open sweep): a unit whose decode_agreement is absent/empty/None/non-dict was
+    # SILENTLY DROPPED by the `if "sign_agreement_dim0" in da` filter, so a disclosure computed
+    # from nothing was indistinguishable from one computed from five seeds. `_validate_artifact`
+    # refuses such artifacts at load, so this was behind a closed door — which is exactly how C-2
+    # read before the rehearsal path bypassed it. Named, counted, and surfaced instead.
+    unreadable: list[str] = []
+
     def per_cell(cell: int) -> dict:
         vals, degen = [], []
         for s in DSR_SEEDS:
-            da = (evals.get((cell, s)) or {}).get("decode_agreement") or {}
-            if "sign_agreement_dim0" in da:
-                vals.append(float(da["sign_agreement_dim0"]))
-                if da.get("single_bar_degenerate"):
-                    degen.append(s)
+            da = (evals.get((cell, s)) or {}).get("decode_agreement")
+            if not isinstance(da, dict) or "sign_agreement_dim0" not in da:
+                unreadable.append(f"cell{cell}_seed{s}:decode_agreement")
+                continue
+            val = float(da["sign_agreement_dim0"])
+            if not np.isfinite(val):
+                unreadable.append(f"cell{cell}_seed{s}:sign_agreement_dim0={val!r}")
+                continue
+            vals.append(val)
+            if da.get("single_bar_degenerate"):
+                degen.append(s)
         return {
             "sign_agreement_mean": float(np.mean(vals)) if vals else float("nan"),
             "sign_agreement_sd": float(np.std(vals, ddof=1)) if len(vals) > 1 else float("nan"),
@@ -392,9 +405,22 @@ def decode_agreement_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
                     "'symmetric' nor 'asymmetric' is supported"
                 ),
             }
+    if unreadable:
+        test = {
+            "reading": (
+                "UNMEASURABLE — one or more units carried no readable decode_agreement, so this "
+                "disclosure examined less than the full design; no claim is made either way"
+            ),
+            "any_degenerate": degen,
+            "significant": False,
+        }
     return {
         "per_cell": {str(k): v for k, v in cells.items()},
         "primary_pair_test_cell4_vs_cell5": test,
+        # §7 v1.6.15: fails CLOSED. A disclosure that measured nothing must not be readable as a
+        # null result — assemble_verdict raises it to HALT_ADJUDICATE.
+        "unmeasurable": bool(unreadable),
+        "unreadable_inputs": sorted(unreadable),
         "why_a_two_sample_test": (
             "comparing two arms' means requires the SE of their DIFFERENCE, not one arm's spread. "
             "The spread form is the power guard's REFUSAL rule and does not answer an INFERENCE "
@@ -678,6 +704,7 @@ def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) ->
     uninterpretable (the same symmetry ``degeneracy_guard`` already has).
     """
     per_cell: dict[str, dict] = {}
+    unreadable: list[str] = []
     for c in (1, 2, 3, 4, 5):
         irs = [
             float(
@@ -688,6 +715,12 @@ def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) ->
             for s in DSR_SEEDS
         ]
         finite = [v for v in irs if np.isfinite(v)]
+        # §7 v1.6.15 S-2: record WHICH inputs were unreadable, so "armed" is a MEASUREMENT.
+        unreadable += [
+            f"cell{c}_seed{s}:headline_ir"
+            for s, v in zip(DSR_SEEDS, irs, strict=True)
+            if not np.isfinite(v)
+        ]
         per_cell[str(c)] = {
             "ir_by_seed": {str(s): v for s, v in zip(DSR_SEEDS, irs, strict=True)},
             "ir_range_across_seeds": (max(finite) - min(finite)) if finite else None,
@@ -702,6 +735,10 @@ def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) ->
         ranges = [per_cell[c]["ir_range_across_seeds"] for c in cells]
         worst = max((r for r in ranges if r is not None), default=None)
         trips = bool(worst is not None and np.isfinite(delta) and worst >= abs(delta))
+        # §7 v1.6.15 S-2: a non-finite CLAIM is as unreadable as non-finite data. Previously
+        # `np.isfinite(delta)` False made `trips` False — a quiet pass on an unevaluable claim.
+        if not np.isfinite(delta) or worst is None:
+            unreadable.append(f"claim[{name}]:delta_ir={delta!r},worst_range={worst!r}")
         checks[name] = {
             "delta_ir_claimed": delta,
             "cells": cells,
@@ -711,7 +748,13 @@ def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) ->
         if trips:
             tripped.append(name)
     return {
-        "armed": True,
+        # §7 v1.6.15 S-2 — THE C-2 DEFECT'S UNSWEPT SIBLING. This was a hardcoded `True`: with
+        # non-finite per-seed IRs `finite` is empty, every range is None, `worst` is None, `trips`
+        # is False, and the guard returned armed/not-halted having evaluated nothing. C-2 was
+        # fixed at `degeneracy_guard` and nothing swept the siblings — the ninth standing norm
+        # (fix the class, not the instance) violated by the pass that wrote it.
+        "armed": not unreadable,
+        "unreadable_inputs": sorted(unreadable),
         "rule": "HALT-ONLY (§7 v1.4.7): if the WITHIN-cell across-seed IR range of the cells a "
         "claimed between-cell dIR is built from meets or exceeds |dIR|, the claim is smaller than "
         "the seed-to-seed wobble of its own inputs and the verdict is HALT_ADJUDICATE. The tabled "
@@ -721,7 +764,9 @@ def power_guard(evals: dict[tuple[int, int], dict], claimed: dict[str, dict]) ->
         "per_cell": per_cell,
         "checks": checks,
         "underpowered_claims": tripped,
-        "halted": bool(tripped),
+        # §7 v1.6.15 S-2: fails CLOSED. A guard that could not read its inputs HALTs rather than
+        # reporting a quiet pass. Still HALT-only — it can never flip SURVIVES<->NULL.
+        "halted": bool(tripped) or bool(unreadable),
     }
 
 
@@ -990,7 +1035,16 @@ def assemble_verdict(
             "clause3_delta_4_minus_2": {"delta_ir": pb42.delta_ir, "cells": (4, 2)},
         },
     )
-    emitted = HALT_ADJUDICATE if (guard["halted"] or power["halted"]) else primary
+    # §7 v1.6.15 (fail-open sweep): a REQUIRED disclosure that could not read its inputs joins the
+    # HALT set. It stays NON-GATING in the only sense that matters — it can never flip
+    # SURVIVES<->NULL, the clauses below are computed identically — but "we measured nothing" must
+    # not be emitted as a verdict, which is the same rule the two guards already follow.
+    decode_disc = decode_agreement_disclosure(evals)
+    emitted = (
+        HALT_ADJUDICATE
+        if (guard["halted"] or power["halted"] or decode_disc.get("unmeasurable"))
+        else primary
+    )
 
     grid = next(iter(evals.values()))["grid"]
     manifest = {
@@ -1025,7 +1079,7 @@ def assemble_verdict(
         # SURVIVES<->NULL — it bounds the placebo's capacity handicap with a measured magnitude.
         "placebo_capacity_disclosure": placebo_capacity_disclosure(evals),
         # §7 v1.6.11 C-1: the SECOND handicap channel. Both inflate dIR(4-5) if real; they compound.
-        "decode_agreement_disclosure": decode_agreement_disclosure(evals),
+        "decode_agreement_disclosure": decode_disc,
         "placebo_dispersion_tripwire": placebo_tripwire,
         "degeneracy_guard": guard,
         "power_guard": power,
@@ -1037,6 +1091,7 @@ def assemble_verdict(
             "primary": primary,
             "halted_for_degeneracy": guard["halted"],
             "halted_for_power": power["halted"],
+            "halted_for_unmeasurable_disclosure": bool(decode_disc.get("unmeasurable")),
             "failing_clauses": failing,
             "fallback": fallback,
             "double_null": bool(

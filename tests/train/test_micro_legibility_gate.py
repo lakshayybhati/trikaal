@@ -54,8 +54,17 @@ def test_gate_receipt_shape_on_pass():
         assert 0.0 <= rec["base_rate_positive"] <= 1.0
 
 
-def test_gate_skips_masked_everywhere_dims():
-    """A micro dim masked on every bar is SKIPPED (recorded), never trivially passed."""
+def test_a_masked_everywhere_dim_HALTS_the_gate():
+    """§7 v1.6.15 C-10 — REWRITTEN, and the rewrite is the finding.
+
+    This test previously asserted only ``"skipped" in receipt["per_dim"]["8"]`` under the
+    docstring *"SKIPPED (recorded), never trivially passed"* — and it PASSED while the gate
+    returned ``pass=True`` on exactly that input. **The test codified the defect**, which is why
+    C-10 survived every prior pass: it was not an oversight, it was written down as correct.
+
+    The contract is all six micro dims legible before Stage-2 spend. "We could not measure one"
+    is not a pass, so the dim is still recorded as skipped AND the gate now halts.
+    """
     tok, per_symbol, tokens = _fixture()
     sw = per_symbol[0]
     mask = sw.mask.copy()
@@ -68,8 +77,13 @@ def test_gate_skips_masked_everywhere_dims():
         ts=sw.ts,
         starts=sw.starts,
     )
-    receipt = micro_legibility_gate(tok, [sw2], tokens, min_acc=0.0, run_name="kat")
-    assert "skipped" in receipt["per_dim"]["8"]
+    with pytest.raises(RuntimeError, match=r"1 dim\(s\) could not be measured at all \[8\]") as ei:
+        micro_legibility_gate(tok, [sw2], tokens, min_acc=0.0, run_name="kat")
+    # the receipt still NAMES the dim as skipped — halting did not cost the diagnostic
+    assert "'8': {'skipped'" in str(ei.value)
+    # DISCRIMINATION: the same fixture with nothing masked must still PASS at min_acc=0.0,
+    # or the raise above would prove nothing about the skip path specifically.
+    assert micro_legibility_gate(tok, [sw], tokens, min_acc=0.0, run_name="kat")["pass"] is True
 
 
 # ------------------------------------------------- §7 v1.5 item E: the λ calibration slice

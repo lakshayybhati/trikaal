@@ -75,10 +75,19 @@ def c10() -> dict:
         and thin.get("receipt", {}).get("pass") is True
         and all("skipped" in v for v in thin.get("receipt", {}).get("per_dim", {}).values())
     )
+    # HISTORY NOTE (§7 v1.6.15): this probe measured the PRE-FIX gate and CONFIRMED the defect
+    # (6/6 dims skipped, pass=True, no raise). The fix has since landed, so re-running it now
+    # reports the gate HALTING. A receipt whose reading silently flips under a later fix would
+    # misrepresent what was found, so both states are named here rather than one overwriting the
+    # other.
     rep["verdict"] = (
         "CONFIRMED — returned pass=True with EVERY dim skipped, i.e. measured nothing"
         if passed_blind
-        else "NOT CONFIRMED on this construction"
+        else "FIXED — the gate now HALTS on unmeasurable dims (§7 v1.6.15); the defect it "
+        "originally confirmed is recorded in the prereg entry and in git history"
+    )
+    rep["as_originally_measured_2026_08_02"] = (
+        "CONFIRMED: 6/6 micro dims skipped, pass=True, raised=False"
     )
     rep["n_dims_skipped"] = sum(
         1 for v in thin.get("receipt", {}).get("per_dim", {}).values() if "skipped" in v

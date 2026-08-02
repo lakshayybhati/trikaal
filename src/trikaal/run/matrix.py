@@ -175,6 +175,11 @@ def shard_partition_failures(units, n_shards: int) -> list[str]:
         seen += [(s.name, sd) for s, sd in shard_units(units, i, n_shards)]
     want = [(s.name, sd) for s, sd in units]
     fails = []
+    # §7 v1.6.15 (fail-open sweep): an EMPTY matrix is a perfect disjoint cover of nothing, so the
+    # predecessor certified it clean. In fan-out that is the dangerous case, not the trivial one —
+    # a shard spec that resolves to zero units would pass this gate and then produce no artifacts.
+    if not want:
+        return ["the unit matrix is EMPTY — a partition of no units is not a covered matrix"]
     if len(seen) != len(set(seen)):
         fails.append("shards overlap — a unit would be computed twice")
     if sorted(seen) != sorted(want):

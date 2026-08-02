@@ -1,0 +1,857 @@
+{
+  "cases": [
+    "absent",
+    "empty",
+    "none",
+    "nan",
+    "inf",
+    "wrongtype"
+  ],
+  "coverage": [
+    "verdict.power_guard",
+    "verdict.power_guard [claimed delta]",
+    "verdict.degeneracy_guard",
+    "verdict.placebo_capacity_disclosure",
+    "verdict.decode_agreement_disclosure",
+    "verdict.provenance_failures",
+    "verdict._mu_diag_problems",
+    "verdict._validate_artifact",
+    "verdict.enumerate_dsr_trials",
+    "conformance.verdict_dsr_failures [var_sr]",
+    "conformance.verdict_dsr_failures [trials]",
+    "conformance.pinned_threshold_failures",
+    "matrix.artifact_reuse_failures",
+    "matrix.shard_partition_failures"
+  ],
+  "definitions": {
+    "CLOSED (raised)": "raised \u2014 acceptable, but a worse quality of closed than reporting",
+    "CLOSED (reported)": "named the problem in its return value",
+    "OPEN": "returned a value a caller reads as fine (empty failures / halted False / armed True / pass True) despite a degenerate input \u2014 the defect class"
+  },
+  "fail_open_rows": [],
+  "mutation_control": {
+    "claim": "a known-CLOSED guard made to return a quiet pass must appear as FAIL OPEN",
+    "mutant_named_by_the_sweep": true,
+    "mutant_open_rows": 6,
+    "target": "verdict.degeneracy_guard (the C-2 site \u2014 the one we most believe is fixed)"
+  },
+  "n_fail_open": 0,
+  "n_functions": 14,
+  "n_rows": 84,
+  "rows": [
+    {
+      "case": "absent",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": "KeyError: 'headline_series'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'dict'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": {
+        "armed": false,
+        "halted": true,
+        "underpowered_claims": []
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": {
+        "armed": false,
+        "halted": true,
+        "underpowered_claims": []
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": {
+        "armed": false,
+        "halted": true,
+        "underpowered_claims": []
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "headline_series",
+      "function": "verdict.power_guard",
+      "guards": "refuses a claim smaller than its own inputs' seed spread",
+      "returned": "ValueError: could not convert string to float: 'not-a-number'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": {
+        "armed": true,
+        "halted": true,
+        "underpowered_claims": [
+          "dIR(4-5)"
+        ]
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'dict'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'NoneType'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": {
+        "armed": false,
+        "halted": true,
+        "underpowered_claims": []
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": {
+        "armed": false,
+        "halted": true,
+        "underpowered_claims": []
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "claimed[delta_ir]",
+      "function": "verdict.power_guard [claimed delta]",
+      "guards": "same guard, degenerate CLAIM rather than degenerate data",
+      "returned": "ValueError: could not convert string to float: 'not-a-number'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": {
+        "armed": false,
+        "halted": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'dict'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'NoneType'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": {
+        "armed": false,
+        "halted": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": {
+        "armed": false,
+        "halted": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "mu_diag.frac_negative",
+      "function": "verdict.degeneracy_guard",
+      "guards": "HALTs on a constant-direction book (C-2's site, already fixed)",
+      "returned": "ValueError: could not convert string to float: 'not-a-number'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "KeyError: 'ohlcv_recon'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "KeyError: 'ohlcv_recon_mae'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "TypeError: 'NoneType' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "TypeError: 'float' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "TypeError: 'float' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "ohlcv_recon",
+      "function": "verdict.placebo_capacity_disclosure",
+      "guards": "the C-12 capacity handicap channel (M1)",
+      "returned": "TypeError: string indices must be integers, not 'str'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "decode_agreement",
+      "function": "verdict.decode_agreement_disclosure",
+      "guards": "the C-1 decode handicap channel",
+      "returned": {
+        "unmeasurable": true
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "meta.provenance",
+      "function": "verdict.provenance_failures",
+      "guards": "the A7 per-unit provenance stamp (fan-out instrument identity)",
+      "returned": {
+        "first": "25 artifact(s) carry no meta.provenance (['cell1_seed0', 'cell1_seed1', 'cell1_seed2']...) \u2014 a unit that cannot be attri",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "mu_diag (whole object)",
+      "function": "verdict._mu_diag_problems",
+      "guards": "the mu_diag REQUIRED-field contract",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "mu_diag",
+      "function": "verdict._validate_artifact",
+      "guards": "the per-artifact schema/grid/field gate",
+      "returned": {
+        "first": "cell4_seed0_eval.json: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "KeyError: 'val_ir_by_kappa_by_h'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "KeyError: '5'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "TypeError: 'NoneType' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "TypeError: 'float' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "TypeError: 'float' object is not subscriptable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "val_ir_by_kappa_by_h",
+      "function": "verdict.enumerate_dsr_trials",
+      "guards": "the clause-5 trial enumeration",
+      "returned": "TypeError: string indices must be integers, not 'str'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": {
+        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'dict'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'NoneType'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": {
+        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": {
+        "first": "var_sr inf != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "var_sr",
+      "function": "conformance.verdict_dsr_failures [var_sr]",
+      "guards": "clause-5 recipe conformance",
+      "returned": "ValueError: could not convert string to float: 'not-a-number'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": {
+        "first": "DSR trial set is not the pinned 300-trial cross product: 0 trials (300 missing, 0 outside the pin; e.g. missing [(1, 0, ",
+        "n_failures": 2
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": {
+        "first": "DSR trial set is not the pinned 300-trial cross product: 0 trials (300 missing, 0 outside the pin; e.g. missing [(1, 0, ",
+        "n_failures": 2
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": "TypeError: 'NoneType' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": "TypeError: 'float' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": "TypeError: 'float' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "trials",
+      "function": "conformance.verdict_dsr_failures [trials]",
+      "guards": "same gate, degenerate TRIAL SET",
+      "returned": {
+        "first": "DSR trial set is not the pinned 300-trial cross product: 10 trials (300 missing, 10 outside the pin; e.g. extra ['-', 'a",
+        "n_failures": 2
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": {
+        "first": "ECON_FLOOR_IR has NO entry in PINNED_THRESHOLDS \u2014 a threshold under no pin decides the verdict unguarded (\u00a77 v1.6.15)",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'dict'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": "TypeError: float() argument must be a string or a real number, not 'NoneType'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": {
+        "first": "ECON_FLOOR_IR = 0.5 != pinned nan (\u00a77 v1.6 C-7)",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": {
+        "first": "ECON_FLOOR_IR = 0.5 != pinned inf (\u00a77 v1.6 C-7)",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "PINNED_THRESHOLDS entry",
+      "function": "conformance.pinned_threshold_failures",
+      "guards": "the pinned surface holds its own registered values",
+      "returned": "ValueError: could not convert string to float: 'not-a-number'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": {
+        "first": "schema None != 'm6_cell_eval_v2'",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": {
+        "first": "schema None != 'm6_cell_eval_v2'",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": "AttributeError: 'NoneType' object has no attribute 'get'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": "AttributeError: 'float' object has no attribute 'get'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": "AttributeError: 'float' object has no attribute 'get'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "the stored artifact doc",
+      "function": "matrix.artifact_reuse_failures",
+      "guards": "C-14 resume binding (artifact <-> checkpoints)",
+      "returned": "AttributeError: 'str' object has no attribute 'get'",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "absent",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": {
+        "first": "the unit matrix is EMPTY \u2014 a partition of no units is not a covered matrix",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "empty",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": {
+        "first": "the unit matrix is EMPTY \u2014 a partition of no units is not a covered matrix",
+        "n_failures": 1
+      },
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "case": "none",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": "TypeError: 'NoneType' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "nan",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": "TypeError: 'float' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "inf",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": "TypeError: 'float' object is not iterable",
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "case": "wrongtype",
+      "degenerate_input": "the unit list",
+      "function": "matrix.shard_partition_failures",
+      "guards": "A5 fan-out shard disjointness/coverage",
+      "returned": "ValueError: not enough values to unpack (expected 2, got 1)",
+      "verdict": "CLOSED (raised)"
+    }
+  ],
+  "verdict": "0 FAIL-OPEN rows across 14 functions",
+  "what": "THE FAIL-OPEN SWEEP \u2014 every M6-path guard against every degenerate input"
+}
