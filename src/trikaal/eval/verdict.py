@@ -42,6 +42,7 @@ from trikaal.eval.conformance import PINNED_DSR, ConformanceError, verdict_dsr_f
 from trikaal.eval.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from trikaal.eval.metrics import information_ratio, periods_per_year
 from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
+from trikaal.eval.tdist import student_t_ppf, welch_satterthwaite_df
 from trikaal.eval.xsection import ablation_verdict
 from trikaal.train.cells import CELLS
 from trikaal.utils.hashing import content_hash
@@ -131,6 +132,7 @@ def write_cell_eval_artifact(
     val_ir_by_kappa_by_h: dict[int, dict[float, float]],
     mu_diag: dict,
     ohlcv_recon: dict,
+    decode_agreement: dict,
     codebook: dict | None = None,
     meta: dict | None = None,
 ) -> tuple[str, str]:
@@ -146,6 +148,11 @@ def write_cell_eval_artifact(
     ``activity_decisions``: they are the only inputs ``degeneracy_guard`` reads, so an artifact
     without them turns a binding HALT gate into a no-op that still reports itself armed."""
     bad = _mu_diag_problems(mu_diag, f"cell{cell_id}_seed{seed}")
+    if not isinstance(decode_agreement, dict) or "sign_agreement_dim0" not in decode_agreement:
+        bad.append(
+            f"cell{cell_id}_seed{seed}: decode_agreement missing 'sign_agreement_dim0' — the C-1 "
+            "handicap disclosure is REQUIRED beside the headline"
+        )
     if not isinstance(ohlcv_recon, dict) or "ohlcv_recon_mae" not in ohlcv_recon:
         bad.append(
             f"cell{cell_id}_seed{seed}: ohlcv_recon missing 'ohlcv_recon_mae' — the C-12 capacity "
@@ -184,6 +191,8 @@ def write_cell_eval_artifact(
         # §7 v1.6 C-12 M1 (supervisor-adopted): the placebo CAPACITY disclosure. REQUIRED, for the
         # C-2 reason — a disclosure that may be absent is a disclosure that will be absent.
         "ohlcv_recon": dict(ohlcv_recon),
+        # §7 v1.6.11 C-1: the SECOND handicap channel. REQUIRED for the same C-2 reason.
+        "decode_agreement": dict(decode_agreement),
         # §7 v1.6 C-5 A7: every artifact is attributable. Auto-filled when the caller did not
         # supply one, so an unattributable unit cannot exist rather than being merely
         # discouraged — the C-2 lesson applied to provenance.
@@ -236,6 +245,9 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
     rec = doc.get("ohlcv_recon")
     if not isinstance(rec, dict) or not math.isfinite(float(rec.get("ohlcv_recon_mae", "nan"))):
         bad.append(f"{name}: ohlcv_recon.ohlcv_recon_mae missing or non-finite (§7 v1.6 C-12 M1)")
+    da = doc.get("decode_agreement")
+    if not isinstance(da, dict) or not math.isfinite(float(da.get("sign_agreement_dim0", "nan"))):
+        bad.append(f"{name}: decode_agreement.sign_agreement_dim0 missing/non-finite (§7 v1.6.11)")
     # §7 v1.6 C-5 A9: a DRY-RUN artifact is structurally un-quotable, not merely labelled. The
     # dry run declares money_run=False and therefore scores a deliberately SHORTENED grid, so its
     # numbers are wiring evidence and nothing else. Labelling alone would leave "someone reads the
@@ -295,6 +307,99 @@ def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
         ),
         "non_gating": True,
         "status": "REQUIRED DISCLOSURE (§7 v1.6 C-12 M1) — reported beside the headline",
+    }
+
+
+def decode_agreement_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
+    """§7 v1.6.11 C-1 — the DECODE-NOISE handicap channel, measured on the real cells.
+
+    THE SECOND HANDICAP CHANNEL, after ``placebo_capacity_disclosure``. Both would inflate
+    ΔIR(4−5) in the SAME direction if real, and they compound: C-12's capacity handicap makes the
+    placebo spend bits on incompressible noise, and a decode-agreement gap makes the placebo's μ̂
+    noisier — each degrading cell 5 for a reason unrelated to microstructure information.
+
+    Measured here rather than on a toy because the toy came back INDETERMINATE at n=3 (t = 1.821,
+    Welch df 2.385, crit 2.6226) and resolving it there needs n ≈ 13 per arm on briefly-trained
+    tokenizers that may not transfer. The real cells exist and 5 seeds are already paid for.
+
+    DEGENERACY TRAVELS WITH THE SCORE (§7 v1.6.10): a collapsed single-bar decode scores a perfect
+    agreement for free, so any degenerate (cell, seed) is named and the comparison refuses.
+
+    NON-GATING: no clause, no threshold, cannot flip SURVIVES↔NULL.
+    """
+
+    def per_cell(cell: int) -> dict:
+        vals, degen = [], []
+        for s in DSR_SEEDS:
+            da = (evals.get((cell, s)) or {}).get("decode_agreement") or {}
+            if "sign_agreement_dim0" in da:
+                vals.append(float(da["sign_agreement_dim0"]))
+                if da.get("single_bar_degenerate"):
+                    degen.append(s)
+        return {
+            "sign_agreement_mean": float(np.mean(vals)) if vals else float("nan"),
+            "sign_agreement_sd": float(np.std(vals, ddof=1)) if len(vals) > 1 else float("nan"),
+            "sign_agreement_by_seed": vals,
+            "degenerate_seeds": degen,
+        }
+
+    cells = {c: per_cell(c) for c in (1, 2, 3, 4, 5)}
+    a, b = cells[4], cells[5]
+    n = min(len(a["sign_agreement_by_seed"]), len(b["sign_agreement_by_seed"]))
+    degen = bool(a["degenerate_seeds"] or b["degenerate_seeds"])
+    # DEGENERACY IS REPORTED FIRST AND ALWAYS (§7 v1.6.10). An earlier draft only set it inside
+    # the se>0 branch, so a collapsed arm with zero across-seed spread fell through to
+    # "INSUFFICIENT REPLICATES" and the flag was LOST — the degeneracy check has to survive the
+    # very case it exists to catch.
+    test: dict = {
+        "reading": "INSUFFICIENT REPLICATES",
+        "any_degenerate": degen,
+        "significant": False,
+    }
+    if degen:
+        test["reading"] = (
+            "INDETERMINATE — a degenerate single-bar decode makes the agreement an artifact "
+            "(§7 v1.6.10); no claim is made"
+        )
+    if n >= 2 and a["sign_agreement_sd"] == a["sign_agreement_sd"] and not degen:
+        diff = abs(a["sign_agreement_mean"] - b["sign_agreement_mean"])
+        se = float(np.sqrt(a["sign_agreement_sd"] ** 2 / n + b["sign_agreement_sd"] ** 2 / n))
+        if se > 0:
+            t = diff / se
+            df = welch_satterthwaite_df(
+                a["sign_agreement_sd"] / np.sqrt(n),
+                n - 1,
+                b["sign_agreement_sd"] / np.sqrt(n),
+                n - 1,
+            )
+            crit = student_t_ppf(0.95, df)
+            test = {
+                "abs_diff_cell4_minus_cell5": diff,
+                "se_of_diff": se,
+                "t": float(t),
+                "welch_df": float(df),
+                "t_crit_0p95": float(crit),
+                "significant": bool(t > crit),
+                "any_degenerate": degen,
+                "reading": (
+                    "DISTINGUISHABLE — cells 4 and 5 differ in decode agreement by more than "
+                    "the SE of their difference; the handicap channel is real at this n"
+                    if t > crit
+                    else "INDETERMINATE — not distinguishable from zero at this n; neither "
+                    "'symmetric' nor 'asymmetric' is supported"
+                ),
+            }
+    return {
+        "per_cell": {str(k): v for k, v in cells.items()},
+        "primary_pair_test_cell4_vs_cell5": test,
+        "why_a_two_sample_test": (
+            "comparing two arms' means requires the SE of their DIFFERENCE, not one arm's spread. "
+            "The spread form is the power guard's REFUSAL rule and does not answer an INFERENCE "
+            "question; applied here on the toy it read 1.10 -> 'asymmetric' where the correct "
+            "statistic read t = 1.82 vs crit 2.62 -> indeterminate."
+        ),
+        "non_gating": True,
+        "status": "REQUIRED DISCLOSURE (§7 v1.6.11) — the second handicap channel",
     }
 
 
@@ -896,6 +1001,8 @@ def assemble_verdict(
         # §7 v1.6 C-12 M1: REQUIRED beside the headline. Non-gating, no threshold, cannot flip
         # SURVIVES<->NULL — it bounds the placebo's capacity handicap with a measured magnitude.
         "placebo_capacity_disclosure": placebo_capacity_disclosure(evals),
+        # §7 v1.6.11 C-1: the SECOND handicap channel. Both inflate dIR(4-5) if real; they compound.
+        "decode_agreement_disclosure": decode_agreement_disclosure(evals),
         "placebo_dispersion_tripwire": placebo_tripwire,
         "degeneracy_guard": guard,
         "power_guard": power,

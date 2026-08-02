@@ -32,6 +32,14 @@ from trikaal.eval.verdict import (  # noqa: E402
     write_eval_index,
 )
 
+# §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
+DECODE_AGREEMENT_OK = {
+    "sign_agreement_dim0": 0.95,
+    "variance_ratio_dim0": 1.0,
+    "single_bar_degenerate": False,
+}
+
+
 # §7 v1.6 C-12 M1: the capacity disclosure is REQUIRED on every artifact.
 OHLCV_RECON_OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
 
@@ -85,6 +93,7 @@ def _fixture(out_dir: Path, mu_by_cell, mudiag_by_cell, *, seed):
                 val_ir_by_kappa_by_h=val,
                 mu_diag=mudiag_by_cell[cell],
                 ohlcv_recon=OHLCV_RECON_OK,
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"fixture": True},
             )
             entries[name] = sha
@@ -113,6 +122,7 @@ def _fixture_per_seed(out_dir: Path, mu_by_cell, mudiag_by_cell_seed, *, seed):
                 val_ir_by_kappa_by_h=val,
                 mu_diag=mudiag_by_cell_seed[cell][sd],
                 ohlcv_recon=OHLCV_RECON_OK,
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"fixture": True},
             )
             entries[name] = sha
@@ -291,6 +301,7 @@ def _fixture_per_seed_mu(out_dir: Path, mu_by_cell_seed, mudiag, *, seed):
                 val_ir_by_kappa_by_h=val,
                 mu_diag=mudiag,
                 ohlcv_recon=OHLCV_RECON_OK,
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"fixture": True},
             )
             entries[name] = sha

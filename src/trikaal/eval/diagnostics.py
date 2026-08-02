@@ -235,3 +235,68 @@ def ohlcv_recon_diagnostic(
             "under a 3x micro weight. DISCLOSURE ONLY — never a clause, never a threshold."
         ),
     }
+
+
+# --------------------------------------------- §7 v1.6.11 C-1 (supervisor-adopted, non-gating)
+def single_bar_decode_diagnostic(
+    model, x_arm: np.ndarray, m_arm: np.ndarray, *, device: str = "cpu"
+) -> dict:
+    """Single-bar vs in-window decode agreement — the C-1 handicap channel, on the REAL cells.
+
+    WHY IT IS HERE RATHER THAN ON A TOY. The tokenizer decoder is a sequence Transformer trained on
+    FULL WINDOWS, but ``predict._rollout`` calls ``decode_latent`` with a LENGTH-1 sequence and
+    takes ``[:, 0, 0]`` — exactly the quantity μ̂ accumulates. The gap is therefore structural. Its
+    MAGNITUDE was chased on briefly-trained toys and came back **indeterminate at n=3** (t = 1.82,
+    Welch df 2.39, crit 2.62): resolving it on the proxy needs n ≈ 13 per arm, and the proxy may
+    not transfer anyway. On the real run the M6 tokenizers already exist and 5 seeds are already
+    paid for, so the question is answered at the actual scale for the cost of a forward pass.
+
+    THE SECOND DIAGNOSTIC WIRED TO BOUND A HANDICAP CHANNEL, after ``ohlcv_recon_diagnostic``.
+    **Both point the same direction if real:** C-12's capacity handicap and a decode-noise
+    handicap would each degrade the PLACEBO arm more than the treatment arm, and each would
+    therefore INFLATE ΔIR(4−5). They compound.
+
+    DEGENERACY IS CHECKED BEFORE THE AGREEMENT IS READ (§7 v1.6.10). A single-bar decode collapsed
+    to a constant scores a PERFECT sign agreement for free — measured live at
+    ``variance_ratio = 0.000`` with agreement 1.0000 — so the variance ratio travels with the
+    score and a degenerate row is flagged, never quietly read.
+
+    NON-GATING: reported per (cell, seed), never a clause, never a threshold.
+    """
+    import torch
+
+    model.eval()
+    xt = torch.as_tensor(np.asarray(x_arm, dtype=np.float32), device=device)
+    mt = torch.as_tensor(np.asarray(m_arm, dtype=np.float32), device=device)
+    if xt.ndim == 2:
+        xt, mt = xt.unsqueeze(0), mt.unsqueeze(0)
+    with torch.no_grad():
+        z_hat, _c, _ci, _fi = model.quant(model.latent(xt, mt))
+        win = model.decode_latent(z_hat)
+        one = torch.cat(
+            [model.decode_latent(z_hat[:, t : t + 1, :]) for t in range(z_hat.shape[1])], dim=1
+        )
+    w = win.detach().cpu().numpy().astype(np.float64)[..., 0]
+    o = one.detach().cpu().numpy().astype(np.float64)[..., 0]
+    vw, vo = float(w.var()), float(o.var())
+    degenerate = bool(vo <= 1e-8 * max(vw, 1e-30) or float(o.std()) <= 1e-8)
+    return {
+        "sign_agreement_dim0": float((np.sign(o) == np.sign(w)).mean()),
+        "variance_ratio_dim0": (vo / vw) if vw > 0 else float("nan"),
+        "single_bar_degenerate": degenerate,
+        "mean_abs_delta_dim0": float(np.abs(o - w).mean()),
+        "mean_abs_delta_over_sd_dim0": float(np.abs(o - w).mean() / max(float(w.std()), 1e-30)),
+        "bars": int(w.size),
+        "non_gating": True,
+        "read_with": (
+            "sign_agreement_dim0 is MEANINGLESS when single_bar_degenerate is true — a collapsed "
+            "constant decode scores 1.0 for free. Always read the variance ratio beside it."
+        ),
+        "what_it_measures": (
+            "C-1: the decision path decodes ONE BAR through a decoder trained on FULL WINDOWS. "
+            "Lower agreement on the PLACEBO arm than the treatment arm would degrade cell 5's "
+            "mu-hat for a reason unrelated to microstructure information, INFLATING dIR(4-5) — "
+            "the same direction as the C-12 capacity handicap, with which it compounds. "
+            "DISCLOSURE ONLY — never a clause, never a threshold."
+        ),
+    }

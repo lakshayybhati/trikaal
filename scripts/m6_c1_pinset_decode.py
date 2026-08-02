@@ -47,6 +47,7 @@ import numpy as np
 import torch
 
 from trikaal.data.universe_loader import connect_lake
+from trikaal.eval.tdist import student_t_cdf, student_t_ppf, welch_satterthwaite_df
 from trikaal.run.matrix import load_symbol_arrays
 from trikaal.tokenizer.model import TokenizerAE
 from trikaal.train.arms import (
@@ -233,10 +234,46 @@ def main() -> int:
         def _sd(arm: str, _cfg: str = cfg_name) -> float:  # bind the loop var explicitly (B023)
             return float(results[f"{arm}|{_cfg}"].get("sign_agreement_sd", float("nan")))
 
-        sds_pair = [v for v in (_sd(ARM_MICRO), _sd(ARM_MICRO_SHUFFLED)) if v == v]
-        sds_cross = [v for v in (_sd(ARM_MICRO), _sd(ARM_OHLCV)) if v == v]
-        sd_pair = float(max(sds_pair)) if sds_pair else 0.0
-        sd_cross = float(max(sds_cross)) if sds_cross else 0.0
+        def _n(arm: str, _cfg: str = cfg_name) -> int:
+            return len(results[f"{arm}|{_cfg}"].get("sign_agreement_by_seed", []) or [1])
+
+        def _welch(arm_a: str, arm_b: str, mean_a: float, mean_b: float) -> dict:
+            """A TWO-SAMPLE TEST, not a spread comparison.
+
+            §7 v1.6.11. The previous form divided |diff| by ONE ARM'S sd and read >1 as
+            "asymmetric". That is the power guard's shape, which is a REFUSAL rule (never report a
+            claim smaller than its own inputs' spread) applied to an INFERENCE question (are these
+            two means different?). Comparing two means needs the standard error OF THEIR
+            DIFFERENCE, which combines both arms and is sqrt(n) smaller. On these data the wrong
+            denominator read 1.10 -> "asymmetric" where the right one reads t = 1.82 against a
+            Welch critical value of 2.62 -> NOT DISTINGUISHABLE."""
+            sa, sb = _sd(arm_a), _sd(arm_b)
+            na, nb = _n(arm_a), _n(arm_b)
+            diff = abs(mean_a - mean_b)
+            if not (sa == sa and sb == sb) or na < 2 or nb < 2:
+                return {"t": float("nan"), "df": float("nan"), "reading": "INSUFFICIENT REPLICATES"}
+            se = float(np.sqrt(sa**2 / na + sb**2 / nb))
+            if se <= 0:
+                return {"t": float("inf"), "df": float("nan"), "reading": "zero SE"}
+            t = diff / se
+            df = welch_satterthwaite_df(sa / np.sqrt(na), na - 1, sb / np.sqrt(nb), nb - 1)
+            crit = student_t_ppf(0.95, df)
+            return {
+                "abs_diff": diff,
+                "se_of_diff": se,
+                "t": float(t),
+                "welch_df": float(df),
+                "t_crit_0p95": float(crit),
+                "p_one_sided": float(1.0 - student_t_cdf(t, df)),
+                "significant": bool(t > crit),
+                "reading": (
+                    "DISTINGUISHABLE — the two arms differ by more than the SE of their difference"
+                    if t > crit
+                    else "INDETERMINATE — |diff| is not distinguishable from zero at this n; "
+                    "neither 'symmetric' nor 'asymmetric' is supported"
+                ),
+            }
+
         symmetry[cfg_name] = {
             "sign_agreement_ohlcv_7dim": a,
             "sign_agreement_micro_16dim": b,
@@ -244,38 +281,21 @@ def main() -> int:
             # THE PRIMARY: cells 4 and 5, same width, real vs shuffled micro
             "primary_4_vs_5_abs_difference": abs(b - c),
             "primary_any_arm_degenerate": deg_b or deg_c,
-            "primary_within_arm_sd": sd_pair,
-            "primary_diff_over_own_spread": (abs(b - c) / sd_pair) if sd_pair > 0 else float("inf"),
+            "primary_test": _welch(ARM_MICRO, ARM_MICRO_SHUFFLED, b, c),
             "primary_reading": (
                 "INCONCLUSIVE — an arm's single-bar decode collapsed to a constant, so its sign "
-                "agreement is an artifact and no symmetry claim is made (control-arm rule)"
+                "agreement is an artifact and no claim is made (control-arm rule)"
                 if (deg_b or deg_c)
-                # SELF-SCALING (§7 v1.6, supervisor ruling): the yardstick is the statistic's OWN
-                # across-seed spread, not an invented band. Same shape as the power guard, which
-                # refuses to report a dIR smaller than its inputs' spread. A between-arm gap
-                # inside the within-arm noise is not a measured asymmetry.
-                else "SYMMETRIC across the PRIMARY pair — the between-arm gap is INSIDE the "
-                "within-arm across-seed spread, so it is not distinguishable from measurement "
-                "noise; costs POWER, cannot bias dIR(4-5)"
-                if sd_pair > 0 and abs(b - c) <= sd_pair
-                else "ASYMMETRIC across the PRIMARY pair — the between-arm gap EXCEEDS the "
-                "within-arm across-seed spread, so it is a measured difference and does NOT "
-                "cancel in dIR(4-5)"
+                else _welch(ARM_MICRO, ARM_MICRO_SHUFFLED, b, c)["reading"]
             ),
             # CLAUSE 3 / §5 FALLBACK: these DO compare across widths
             "cross_width_4_vs_2_abs_difference": abs(b - a),
             "cross_width_any_arm_degenerate": deg_a or deg_b,
-            "cross_width_within_arm_sd": sd_cross,
-            "cross_width_diff_over_own_spread": (
-                (abs(b - a) / sd_cross) if sd_cross > 0 else float("inf")
-            ),
+            "cross_width_test": _welch(ARM_MICRO, ARM_OHLCV, b, a),
             "cross_width_reading": (
                 "INCONCLUSIVE — a degenerate arm (control-arm rule)"
                 if (deg_a or deg_b)
-                else "SYMMETRIC across widths — inside the within-arm spread"
-                if sd_cross > 0 and abs(b - a) <= sd_cross
-                else "WIDTH-DEPENDENT — exceeds the within-arm spread; lands on clause 3's "
-                "dIR(4-2) and the §5 fallback dIR(2-1), NOT on the primary dIR(4-5)"
+                else _welch(ARM_MICRO, ARM_OHLCV, b, a)["reading"]
             ),
         }
 
@@ -333,13 +353,18 @@ def main() -> int:
         )
         print(
             f"    PRIMARY (4 vs 5, same width) |diff|="
-            f"{v['primary_4_vs_5_abs_difference']:.4f}  degenerate="
-            f"{v['primary_any_arm_degenerate']}\n      -> {v['primary_reading']}"
+            f"{v['primary_4_vs_5_abs_difference']:.4f}  "
+            f"t={v['primary_test'].get('t', float('nan')):.2f}"
+            f" crit={v['primary_test'].get('t_crit_0p95', float('nan')):.2f}"
+            f"  degenerate={v['primary_any_arm_degenerate']}\n      -> {v['primary_reading']}"
         )
         print(
             f"    cross-width (4 vs 2)         |diff|="
-            f"{v['cross_width_4_vs_2_abs_difference']:.4f}  degenerate="
-            f"{v['cross_width_any_arm_degenerate']}\n      -> {v['cross_width_reading']}"
+            f"{v['cross_width_4_vs_2_abs_difference']:.4f}  "
+            f"t={v['cross_width_test'].get('t', float('nan')):.2f}"
+            f" crit={v['cross_width_test'].get('t_crit_0p95', float('nan')):.2f}"
+            f"  degenerate={v['cross_width_any_arm_degenerate']}\n"
+            f"      -> {v['cross_width_reading']}"
         )
     print(f"\n[receipt] -> {OUT}")
     return 0

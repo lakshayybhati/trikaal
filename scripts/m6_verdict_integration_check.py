@@ -44,6 +44,14 @@ from trikaal.eval.verdict import (  # noqa: E402
     write_eval_index,
 )
 
+# §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
+DECODE_AGREEMENT_OK = {
+    "sign_agreement_dim0": 0.95,
+    "variance_ratio_dim0": 1.0,
+    "single_bar_degenerate": False,
+}
+
+
 OUT = Path("runs_manifest/m6_verdict_integration_check.json")
 T = 1500
 SIGMA_COMMON, SIGMA_IDIO = 0.02, 0.01
@@ -86,6 +94,7 @@ def _fixture(out_dir: Path, *, mu_by_cell_seed, mudiag_by_cell_seed, seed: int) 
                 val_ir_by_kappa_by_h=val,
                 mu_diag=mudiag_by_cell_seed[cell][sd],
                 ohlcv_recon=OHLCV_RECON_OK,
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"fixture": True, "integration_check": True},
             )
             entries[name] = sha

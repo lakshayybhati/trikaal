@@ -190,6 +190,59 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.11 (2026-08-02, C-1 RECORDED AS INDETERMINATE + the DECODE-AGREEMENT disclosure wired to
+  the real cells + the handicap interpretation draft extended to BOTH channels. No pinned value
+  moved, no clause touched; both disclosures are NON-GATING.)** Local, $0.
+  - **THE STATISTIC WAS THE SUPERVISOR'S AND IT WAS THE WRONG ONE — verified independently before
+    acting on it.** Their instruction, quoted: *"Express asymmetry RELATIVE TO THE CLAIMED EFFECT —
+    self-scaling, the same shape as the power guard, which refuses to report a dIR smaller than its
+    own inputs' spread."* The power guard's form is a **REFUSAL rule**; it was applied to an
+    **INFERENCE question**. Comparing two means needs the SE of their DIFFERENCE, which combines
+    both arms and is √n smaller.
+
+    | form | value | reads |
+    |---|---|---|
+    | as specified: \|diff\| ÷ one arm's sd | 1.10 | "asymmetric" |
+    | **correct: \|diff\| ÷ SE(diff)** = 0.1071 ÷ 0.0588 | **t = 1.821**, Welch df 2.385, crit **2.6226**, p = 0.0947 | **not distinguishable** |
+
+    Reproduced with the repo's own `eval/tdist.py`. **One refinement to the ruling's arithmetic:**
+    the quoted critical value 2.92 is the df=2 figure; at the actual Welch df 2.385 it is
+    **2.6226**. Same conclusion either way.
+  - **THE PATTERN, WHICH IS MORE USEFUL THAN THE INSTANCE.** This is the **third** statistical error
+    of the same shape in this project — after the MDE floor (mutually exclusive limits of one
+    formula combined) and the scaled-over-unscaled ratio: **a formula used outside the regime it
+    was derived for.**
+  - **EVERY C-1 COMPARISON IS NOW INDETERMINATE AT n=3**, including the cross-width one previously
+    called "symmetric" (t = 0.47 vs crit 2.15). **Failing to reject is not evidence of equality** —
+    so "symmetric" was never established either. The only durable finding is that the single-seed
+    reading was an artifact of `micro_shuffled` seed 0 at the top of its spread.
+  - **DO NOT BUY MORE SEEDS ON THE PROXY (ruling).** n ≈ 13 per arm would be needed, on
+    briefly-trained tokenizers at reduced seq_len that may not transfer.
+  - **MEASURED ON THE REAL CELLS INSTEAD — `single_bar_decode_diagnostic`**, wired
+    `score_cell` → `CellScore.decode_agreement` → the artifact (**REQUIRED**, per the C-2 rule) →
+    `verdict.decode_agreement_disclosure` in the manifest. Per-arm sign agreement with its
+    **variance-ratio degeneracy flag**, seed-mean and per-seed values carried, and a proper
+    **two-sample Welch test** on the cell-4 vs cell-5 pair. 5 seeds already paid for.
+  - **THE SECOND DIAGNOSTIC WIRED TO BOUND A HANDICAP CHANNEL, and BOTH POINT THE SAME WAY IF
+    REAL.** C-12's capacity handicap and this decode-noise handicap each degrade the PLACEBO arm
+    more than the treatment arm, so each **inflates ΔIR(4−5)** — and they **compound**. Neither can
+    deflate it.
+  - **THE INTERPRETATION DRAFT IS RE-DRAFTED OVER BOTH CHANNELS** (`docs/m6_m1_interpretation_draft.md`):
+    band membership is a function of the TOTAL measured handicap H = H₁ (capacity) + H₂ (decode),
+    with a channel counting only if distinguishable on its own statistic and a degenerate arm
+    contributing nothing. Boundaries remain the supervisor's, to be set once both instruments exist
+    and BEFORE either produces a number.
+  - **THREE DEFECTS OF MINE IN THIS PASS, ALL CAUGHT BY THE TESTS.** (1) A no-threshold KAT sliced
+    `verdict.py` between two NAMED functions and silently scanned a neighbour once a new function
+    was inserted between them — a fixture whose boundaries move when unrelated code moves is not
+    measuring what it claims; now AST-bounded. (2) The decode disclosure lost its degeneracy flag
+    when an arm had zero across-seed spread, falling through to "INSUFFICIENT REPLICATES" — the
+    check has to survive the very case it exists to catch; degeneracy is now reported first and
+    always. (3) A fixture assumed n=3 while `DSR_SEEDS` is 5, so the two statistics **agreed** and
+    the test failed — which is itself the point: **the wrong-vs-right disagreement is n-dependent**,
+    and the regression test now pins the actual recorded n=3 case directly.
+  - Suite **439 green**, ruff clean.
+
 - **v1.6.10 (2026-08-02, TWO STANDING NORMS + A SUPERVISOR FRAMING ERROR CORRECTED BY THE BUILDER
   + the C-4 retrain contingency budgeted. No pinned value moved; no clause touched.)** Local, $0.
   - **A SUPERVISOR FRAMING ERROR, VERIFIED AND RECORDED AS SUCH.** The C-1 leg (ii) ruling asked
@@ -215,32 +268,42 @@ three stacked judgment calls = an unlimited re-run license):**
     statistic**, the shape `verdict.power_guard` already uses when it refuses to report a ΔIR
     smaller than its own inputs' wobble. A difference inside its own measurement noise is not a
     measured difference. Landed in `CLAUDE.md`.
-  - **★ THE SELF-SCALING RULING IMMEDIATELY REVERSED A CONCLUSION I HAD REPORTED — C-1 LEG (ii) IS
-    REOPENED. ★** Re-measured at 3 seeds (receipt `runs_manifest/m6_c1_pinset_decode.json`):
+  - **★ THE SELF-SCALING RULING REVERSED A CONCLUSION I HAD REPORTED — AND THEN THE STATISTIC IT
+    SPECIFIED TURNED OUT TO BE THE WRONG ONE. C-1 LEG (ii) IS RECORDED AS INDETERMINATE. ★**
+    Re-measured at 3 seeds (receipt `runs_manifest/m6_c1_pinset_decode.json`):
 
-    | arm / config | mean | **across-seed sd** | per-seed |
+    | arm / config | mean | across-seed sd | per-seed |
     |---|---|---|---|
     | micro / m6_pin_set | 0.9512 | 0.0303 | 0.9199, 0.9805, 0.9531 |
-    | micro_shuffled / m6_pin_set | **0.8441** | **0.0973** | 0.9541, 0.7695, 0.8086 |
+    | micro_shuffled / m6_pin_set | 0.8441 | 0.0973 | 0.9541, 0.7695, 0.8086 |
 
-    **PRIMARY (4 vs 5): |diff| 0.1071 vs own sd 0.0973 → ratio 1.10 → ASYMMETRIC.** The
-    between-arm gap EXCEEDS the within-arm spread, so it is a measured difference and **does NOT
-    cancel in ΔIR(4−5)**. The cross-width pair reversed the other way: 0.0107 vs 0.0303, ratio
-    0.35 → **symmetric**. Both single-seed readings were wrong, in opposite directions; the
-    reassuring 0.0342 was `micro_shuffled` seed 0 at the top of a spread reaching down to 0.7695.
-  - **THE DIRECTION IS ADVERSE AND COMPOUNDS C-12.** Cell 4's arm (real micro, 0.9512) decodes
-    more faithfully than Cell 5's (shuffled micro, 0.8441), so the PLACEBO's μ̂ is the noisier one
-    and its IR is degraded for a reason unrelated to microstructure information. That **inflates
-    ΔIR(4−5)** — the same direction as the C-12 capacity handicap, and the two compound.
-  - **TWO CAVEATS THIS MUST NOT BE QUOTED WITHOUT.** (1) n = 3 seeds and the ratio is **1.10**,
-    barely over its own bar: this is a **weak-evidence reversal**. It establishes that "symmetric"
-    was unsupported, NOT that "asymmetric" is now established. (2) The scope limit stands —
-    briefly-trained tokenizers at reduced seq_len; the contrast between rows is the result,
-    absolute levels are not a claim about a trained M6 cell.
-  - **WHAT THE RULING PREVENTED.** A hand-chosen 0.05 band applied to these 3-seed means would
-    have read `0.1071 > 0.05 → asymmetric` **by accident**, with no visibility that `sd = 0.0973`
-    makes it a coin-toss call. The self-scaling form reports the ratio, so the weakness of the
-    evidence is visible in the number itself.
+    | form | value | reads |
+    |---|---|---|
+    | as specified: \|diff\| ÷ one arm's sd | 1.10 | "asymmetric" |
+    | **correct: \|diff\| ÷ SE(diff)** = 0.1071 ÷ 0.0588 | **t = 1.821**, Welch df 2.385, crit **2.6226**, p = 0.0947 | **not distinguishable** |
+
+  - **WHAT SURVIVES, AND IT IS THE REAL RESULT.** The single-seed "SYMMETRIC" at |diff| 0.0342 was
+    an artifact of `micro_shuffled` seed 0 landing at 0.9541, the top of a spread reaching 0.7695.
+    **That withdrawal stands.** What replaces it is **INDETERMINATE AT n=3**, not a reversal:
+    *both* readings were unsupported, and the second was produced by a statistic the supervisor
+    specified incorrectly.
+  - **THE SUPERVISOR'S ERROR, RECORDED AS A PATTERN RATHER THAN AN INSTANCE — their instruction,
+    quoted:** *"Express asymmetry RELATIVE TO THE CLAIMED EFFECT — self-scaling, the same shape as
+    the power guard, which refuses to report a dIR smaller than its own inputs' spread."* The power
+    guard's form is a **REFUSAL rule** (never report a claim smaller than its own inputs' spread);
+    it was applied to an **INFERENCE question** (are these two arms different?). Comparing two
+    means needs the SE of their *difference*, which combines both arms and is √n smaller.
+    **This is the third statistical error of the same shape in this project** — after the MDE floor
+    (mutually exclusive limits of one formula combined) and the scaled-over-unscaled ratio: **a
+    formula used outside the regime it was derived for.** The builder executed the instruction
+    faithfully and it produced a wrong conclusion; the builder's own caveat at the time —
+    *"this establishes that symmetric was unsupported, not that asymmetric is established"* — was
+    more right than the headline placed above it.
+  - **DO NOT BUY MORE SEEDS ON THIS PROXY (supervisor ruling).** Resolving it needs **n ≈ 13 per
+    arm**, not 3 more, and the scope limit is the reason not to spend even that: briefly-trained
+    tokenizers at reduced seq_len, where the contrast between rows is the result and absolute
+    levels are not a claim about a trained M6 cell. **Powering a proxy that may not transfer is
+    poor value.** It is measured on the REAL cells instead — see §7 v1.6.11.
   - **TWO DEFECTS OF MINE IN THAT RUN.** A leftover `args.seed` after the multi-seed change (the
     "flag accepted but never forwarded" family, caught by the crash rather than by me); and worse,
     a **MIXED ROW** — `sign_agree` printed as the 3-seed mean beside `var_ratio` from seed 0 only.
@@ -349,13 +412,16 @@ three stacked judgment calls = an unlimited re-run license):**
     ~~**Under the pinned configuration the gap is symmetric on the primary pair**, so on this
     evidence it costs POWER and cannot bias ΔIR(4−5). The cross-width figure 0.0469 sits just
     under the 0.05 band and **that band is arbitrary**.~~
-  - **★ WITHDRAWN 2026-08-02 — BOTH READINGS ABOVE WERE SINGLE-SEED AND BOTH REVERSED. ★** See
-    §7 v1.6.10. Re-measured across 3 seeds with the self-scaling yardstick: the PRIMARY pair is
-    **ASYMMETRIC** (|diff| 0.1071 vs its own across-seed sd 0.0973, ratio 1.10) and the
-    cross-width pair is **SYMMETRIC** (0.0107 vs 0.0303, ratio 0.35). The reassuring 0.0342 came
-    from `micro_shuffled` seed 0 landing at 0.9541, the high end of a spread running down to
-    0.7695. **C-1 leg (ii) is REOPENED**; the "costs POWER, cannot bias the primary" reading does
-    not stand.
+  - **★ WITHDRAWN 2026-08-02 — THE SINGLE-SEED READING WAS AN ARTIFACT. ★** The reassuring 0.0342
+    came from `micro_shuffled` seed 0 landing at 0.9541, the high end of a spread running down to
+    0.7695. **That withdrawal stands.**
+  - **★ AND THE REPLACEMENT WAS ALSO WRONG — "ASYMMETRIC" IS WITHDRAWN TOO. ★** I briefly recorded
+    the primary pair as ASYMMETRIC on |diff| 0.1071 ÷ one arm's sd 0.0973 = 1.10. **That statistic
+    is not a two-sample test.** The correct comparison uses the SE of the *difference*:
+    `SE = √(sa²/n + sb²/n) = 0.0588`, giving **t = 1.821** on **Welch df 2.385** against a
+    critical **2.6226** (self-written `eval/tdist.py`; one-sided p = **0.0947**). **NOT
+    SIGNIFICANT.** The correct record is **INDETERMINATE AT n=3** — *both* "symmetric" and
+    "asymmetric" are unsupported. See §7 v1.6.11.
   - **A DEGENERACY GUARD ADDED MID-EXPERIMENT, WHICH CHANGED A CONCLUSION.**
     `micro_shuffled/pre_v1_4` scored a **perfect 1.0000 sign agreement with `variance_ratio =
     0.000`** — the single-bar decode collapsed to a CONSTANT, whose sign trivially agrees

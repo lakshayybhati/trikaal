@@ -38,6 +38,14 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
+DECODE_AGREEMENT_OK = {
+    "sign_agreement_dim0": 0.95,
+    "variance_ratio_dim0": 1.0,
+    "single_bar_degenerate": False,
+}
+
+
 T = 600
 BENIGN_MU = {"frac_negative": 0.5, "activity_decisions": 0.5}
 OK = {"ohlcv_recon_mae": 0.10, "ohlcv_recon_mae_by_dim": [0.1] * 7, "n_ohlcv_dims": 7}
@@ -66,6 +74,7 @@ def _fixture(tmp: Path, recon_for) -> Path:
                 },
                 mu_diag=BENIGN_MU,
                 ohlcv_recon=recon_for(c, s),
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={},
             )
             entries[name] = sha
@@ -101,6 +110,7 @@ def test_the_writer_refuses_an_unusable_disclosure(tmp_path, payload):
             val_ir_by_kappa_by_h={h: {k: 0.5 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
             mu_diag=BENIGN_MU,
             ohlcv_recon=payload,
+            decode_agreement=DECODE_AGREEMENT_OK,
         )
     assert not list(tmp_path.glob("*.json"))
 
@@ -176,10 +186,148 @@ def test_the_disclosure_can_never_move_the_verdict(tmp_path):
 
 def test_no_threshold_is_attached_to_it():
     """A disclosure with a bar is a clause. There must be no comparison to any constant."""
-    src = (Path(__file__).resolve().parents[2] / "src/trikaal/eval/verdict.py").read_text()
-    body = src[src.index("def placebo_capacity_disclosure") : src.index("def provenance_failures")]
+    # SLICE TO THE NEXT top-level def, not to a NAMED one. The first version ended the slice at
+    # "def provenance_failures" and silently scanned a NEIGHBOURING function once
+    # decode_agreement_disclosure was inserted between them — a fixture whose boundaries move
+    # when unrelated code moves is not measuring what it claims to.
+    import ast
+
+    path = Path(__file__).resolve().parents[2] / "src/trikaal/eval/verdict.py"
+    src = path.read_text()
+    tree = ast.parse(src)
+    fn = next(
+        n
+        for n in tree.body
+        if isinstance(n, ast.FunctionDef) and n.name == "placebo_capacity_disclosure"
+    )
+    lines = src.split("\n")
+    body = "\n".join(lines[fn.lineno - 1 : fn.end_lineno])
+    assert "placebo_capacity_disclosure" in body and "decode_agreement_disclosure" not in body
     for token in ("pass", ">=", "<=", "ECON_FLOOR", "THRESHOLD"):
         assert token not in body.replace("passes", ""), (
             f"placebo_capacity_disclosure contains {token!r} — it must report a magnitude, "
             "never adjudicate one"
         )
+
+
+# ============================================================ §7 v1.6.11 C-1: the SECOND channel
+def _da(agree: float, degenerate: bool = False) -> dict:
+    return {
+        "sign_agreement_dim0": agree,
+        "variance_ratio_dim0": 0.0 if degenerate else 1.0,
+        "single_bar_degenerate": degenerate,
+    }
+
+
+def _fixture2(tmp: Path, da_for) -> Path:
+    """Same shape as _fixture, varying decode_agreement instead of ohlcv_recon."""
+    tmp.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(11)
+    common = rng.standard_normal(T) * 1e-3
+    entries = {}
+    for c in (1, 2, 3, 4, 5):
+        for s in DSR_SEEDS:
+            name, sha = write_cell_eval_artifact(
+                tmp,
+                cell_id=c,
+                seed=s,
+                grid={"h": PRIMARY_H, "start_ms": 0, "n_periods": T},
+                headline_series=common + rng.standard_normal(T) * 1e-3,
+                kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
+                val_ir_by_kappa_by_h={
+                    h: {k: float(rng.normal(0.4, 0.2)) for k in DSR_KAPPAS} for h in DSR_HORIZONS
+                },
+                mu_diag=BENIGN_MU,
+                ohlcv_recon=OK,
+                decode_agreement=da_for(c, s),
+                meta={},
+            )
+            entries[name] = sha
+    write_eval_index(tmp, entries)
+    return tmp
+
+
+def test_the_withdrawn_statistic_and_the_correct_one_disagree_at_n3():
+    """THE REGRESSION TEST FOR THE ACTUAL DEFECT, on the recorded values.
+
+    The withdrawn form divided |diff| by ONE ARM'S sd and read >1 as "asymmetric". The correct
+    two-sample form divides by the SE of the DIFFERENCE, which combines both arms and is sqrt(n)
+    smaller. On the recorded C-1 numbers (micro sd 0.0303, micro_shuffled sd 0.0973, |diff|
+    0.1071, n=3) these give OPPOSITE answers, which is why "ASYMMETRIC" was withdrawn.
+
+    Note the disagreement is n-DEPENDENT: at n=5 the same spread WOULD be significant. That is
+    the point — a ratio with no n in it cannot answer an inference question."""
+    import math
+
+    from trikaal.eval.tdist import student_t_ppf, welch_satterthwaite_df
+
+    sa, sb, diff, n = 0.0303, 0.0973, 0.1071, 3
+    wrong = diff / max(sa, sb)
+    se = math.sqrt(sa**2 / n + sb**2 / n)
+    t = diff / se
+    df = welch_satterthwaite_df(sa / math.sqrt(n), n - 1, sb / math.sqrt(n), n - 1)
+    crit = student_t_ppf(0.95, df)
+
+    assert wrong > 1.0, f"the withdrawn form must read 'asymmetric' here, got {wrong:.3f}"
+    assert t < crit, f"the correct form must read indeterminate, got t={t:.3f} crit={crit:.3f}"
+    assert abs(t - 1.821) < 0.01 and abs(crit - 2.6226) < 0.01, (t, crit)
+
+
+def test_the_disclosure_reports_the_se_of_the_difference(tmp_path):
+    """Whatever the outcome, the SE of the DIFFERENCE must be what is reported."""
+    from trikaal.eval.verdict import decode_agreement_disclosure
+
+    vals = {4: [0.96, 0.94, 0.95, 0.96, 0.94], 5: [0.95, 0.77, 0.81, 0.95, 0.77]}
+    ev, _ = load_cell_evals(
+        _fixture2(
+            tmp_path / "t",
+            lambda c, s: _da(vals.get(c, [0.95] * 5)[DSR_SEEDS.index(s)]),
+        )
+    )
+    t = decode_agreement_disclosure(ev)["primary_pair_test_cell4_vs_cell5"]
+    assert "se_of_diff" in t and "welch_df" in t and "t_crit_0p95" in t
+    assert t["se_of_diff"] > 0
+    # and the reported t is |diff| / SE(diff), NOT |diff| / one arm's sd
+    assert abs(t["t"] - t["abs_diff_cell4_minus_cell5"] / t["se_of_diff"]) < 1e-9
+
+
+def test_a_degenerate_decode_makes_the_disclosure_refuse(tmp_path):
+    """A collapsed single-bar decode scores a PERFECT agreement for free (§7 v1.6.10)."""
+    from trikaal.eval.verdict import decode_agreement_disclosure
+
+    ev, _ = load_cell_evals(
+        _fixture2(tmp_path / "d", lambda c, s: _da(1.0 if c == 5 else 0.90, degenerate=(c == 5)))
+    )
+    t = decode_agreement_disclosure(ev)["primary_pair_test_cell4_vs_cell5"]
+    assert t["any_degenerate"] is True
+    assert t["significant"] is False
+    assert "artifact" in t["reading"]
+
+
+def test_the_decode_disclosure_can_never_move_the_verdict(tmp_path):
+    """Non-gating, proven the same way as M1: identical series, only decode_agreement differs."""
+    from trikaal.eval.verdict import decode_agreement_disclosure
+
+    a_ev, a_sh = load_cell_evals(_fixture2(tmp_path / "x", lambda c, s: _da(0.98)))
+    b_ev, b_sh = load_cell_evals(
+        _fixture2(tmp_path / "y", lambda c, s: _da(0.40 if c == 5 else 0.98))
+    )
+    ma = assemble_verdict(a_ev, a_sh, tabled_mde_h15=3.518)
+    mb = assemble_verdict(b_ev, b_sh, tabled_mde_h15=3.518)
+    assert ma["verdict"]["emitted"] == mb["verdict"]["emitted"]
+    assert ma["verdict"]["failing_clauses"] == mb["verdict"]["failing_clauses"]
+    for name in ma["clauses"]:
+        assert ma["clauses"][name]["pass"] == mb["clauses"][name]["pass"], name
+    # FIXTURE DISCRIMINATION: the disclosures must actually differ, or this proves nothing
+    assert (
+        decode_agreement_disclosure(a_ev)["per_cell"]["5"]["sign_agreement_mean"]
+        != decode_agreement_disclosure(b_ev)["per_cell"]["5"]["sign_agreement_mean"]
+    )
+
+
+def test_both_handicap_channels_are_present_in_the_manifest(tmp_path):
+    """They compound: both inflate dIR(4-5) in the same direction if real."""
+    ev, sh = load_cell_evals(_fixture2(tmp_path / "m", lambda c, s: _da(0.95)))
+    man = assemble_verdict(ev, sh, tabled_mde_h15=3.518)
+    assert man["placebo_capacity_disclosure"]["non_gating"] is True
+    assert man["decode_agreement_disclosure"]["non_gating"] is True

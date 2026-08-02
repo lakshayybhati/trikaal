@@ -1,4 +1,4 @@
-# DRAFT for ruling — the M1 interpretation rule
+# DRAFT for ruling — the HANDICAP interpretation rule (M1 + decode agreement)
 
 **STATUS: DRAFT. NOT ADOPTED.** Written by the builder, put to the supervisor for ruling. Nothing
 in this document binds anything until it is ruled on and dated into `docs/m6_prereg.md` §7.
@@ -27,15 +27,32 @@ still unknown to everyone.
 Stated plainly because the distinction is load-bearing: **the verdict is unaffected; the claim is
 bounded.**
 
-## 2. The quantity
+## 2. The quantities — TWO CHANNELS, NOT ONE
+
+**Amended 2026-08-02 on the supervisor's ruling: band membership is a function of the TOTAL
+measured handicap, because the two channels compound.**
 
 Let
 
 - **Δ** = the claimed ΔIR(4−5), the pre-registered headline;
-- **H** = the M1 capacity handicap, read from
-  `verdict.placebo_capacity_disclosure` — specifically the placebo's **excess OHLCV
-  reconstruction error**, `ohlcv_recon_mae_cell5 − ohlcv_recon_mae_cell4`, with the ratio reported
-  alongside.
+- **H₁ — the CAPACITY channel** (C-12 M1), from `verdict.placebo_capacity_disclosure`: the
+  placebo's excess OHLCV reconstruction error, `ohlcv_recon_mae_cell5 − ohlcv_recon_mae_cell4`,
+  with the ratio alongside. Mechanism: the permutation leaves the micro dims as six dims of
+  independent noise (contemporaneous micro↔OHLCV coupling measured **0.2037 → 0.0005**),
+  incompressible and weighted 3× by `micro_point_weight`, so bits spent on it are bits taken
+  from OHLCV.
+- **H₂ — the DECODE channel** (C-1), from `verdict.decode_agreement_disclosure`: the cell-4 vs
+  cell-5 difference in single-bar-vs-in-window decode sign agreement, reported with the SE of the
+  **difference**, Welch df, and a degeneracy flag. Mechanism: the decision path decodes ONE bar
+  through a decoder trained on FULL WINDOWS; lower agreement on the placebo arm makes cell 5's
+  μ̂ noisier.
+- **H = the total handicap.** Both channels degrade the PLACEBO arm more than the treatment arm,
+  so **both inflate ΔIR(4−5) in the same direction, and they compound.** Neither can deflate it.
+
+**A channel counts toward H only if it is measurably distinguishable from zero on its own
+statistic** — H₁ against its across-seed spread, H₂ against the SE of its difference (Welch, with
+the degeneracy flag honoured). A channel whose test returns INDETERMINATE contributes nothing;
+a channel whose arm is degenerate contributes nothing and is reported as unmeasurable.
 
 Every band below is expressed **relative to Δ**, never against an absolute. There is no invented
 constant anywhere in this rule, by design: an asymmetry that is small against the effect being
@@ -48,22 +65,21 @@ below that it is measurement noise.
 
 ## 3. The three bands
 
-### Band A — H not measurably distinguishable from zero
-*(the across-seed mean of H is within its own across-seed spread)*
+### Band A — NEITHER channel measurably distinguishable from zero
 
 **ΔIR(4−5) stands as the headline, unqualified.** The disclosure is reported as a null result: the
 placebo's OHLCV reconstruction is indistinguishable from the treatment's, so no capacity was
 measurably diverted and the contrast carries information alone. One sentence in the results; no
 change to the abstract's claim.
 
-### Band B — H measurable but small against Δ
+### Band B — at least one channel measurable, TOTAL small against Δ
 
 **ΔIR(4−5) stands as the headline, with the magnitude stated IN THE ABSTRACT** and the claim
 explicitly bounded: *"this estimate is inflated by at most H, measured."* Not a footnote, not an
 appendix — the abstract carries both the effect and its bound, because a reader who takes the
 headline without the bound has taken a number we know to be an overestimate.
 
-### Band C — H comparable to or larger than Δ
+### Band C — TOTAL comparable to or larger than Δ
 
 **WE DO NOT CLAIM THE MICROSTRUCTURE INFORMATION RESULT.**
 
@@ -82,15 +98,23 @@ between the verdict word and the permitted claim is itself reported prominently.
 
 ## 4. Boundaries between the bands
 
-**Deliberately left to the ruling.** I have not proposed numeric cut-points between A/B/C, because
-proposing them would re-introduce exactly the invented constant the ruling forbade. The natural
-self-scaling forms are: A when `mean(H) ≤ sd(H)`; C when `H` is of the same order as `Δ`; B
-otherwise. Whether "same order" means `H ≥ Δ`, `H ≥ Δ/2`, or something else is a judgement about
-how much inflation makes a claim untellable, and that is the supervisor's or Lakshay's, not the
-builder's.
+**Deliberately left to the ruling**, and the supervisor has said they will be set **once both
+instruments exist and BEFORE either produces a number**. Proposing cut-points here would
+re-introduce exactly the invented constant the ruling forbade.
+
+One methodological note that the C-1 episode makes concrete: **"not distinguishable from zero" is
+NOT the same as "zero".** Every C-1 comparison at n=3 returned INDETERMINATE — including the one
+I had briefly called "symmetric" — because failing to reject is not evidence of equality. Band A
+should therefore be read as *"no channel was measurably distinguishable at the run's n"*, and
+whether that is strong enough to license an unqualified headline is part of what the ruling fixes.
 
 ## 5. Two things I want on the record before this is ruled on
 
+0. **BOTH CHANNELS ARE MEASURED ON THE REAL CELLS, not on a proxy.** The toy attempt at H₂ came
+   back INDETERMINATE at n=3 (t = 1.821, Welch df 2.385, crit 2.6226) and resolving it there would
+   need n ≈ 13 per arm on briefly-trained tokenizers that may not transfer. Both disclosures are
+   now REQUIRED, NON-GATING per-(cell, seed) fields on the run's own artifacts, with 5 seeds
+   already paid for.
 1. **H and Δ are in different units.** H is a reconstruction MAE in feature space; Δ is an
    annualized information ratio. "Comparable to" therefore cannot be a direct numeric comparison
    and I have not written one. The honest available comparison is **ordinal and relative**: does
@@ -108,3 +132,5 @@ builder's.
 - Adopt / amend / reject the three bands.
 - Fix the A/B and B/C boundaries, or rule that the ordinal reading in §5.1 is sufficient.
 - Confirm the §1 framing — non-gating, claim-rule-only, freeze untouched — is stated as intended.
+- Confirm that "total handicap" means the two channels are considered **jointly** (they compound
+  and neither can deflate Δ), rather than each judged against its own band.

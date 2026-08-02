@@ -27,7 +27,11 @@ import numpy as np
 
 from trikaal.data.universe_loader import calendar_boundary_ms, eval_block_bounds_ms
 from trikaal.eval.costs import SPREAD_DECILE_FRAC, CostModel
-from trikaal.eval.diagnostics import cell_codebook_diagnostic, ohlcv_recon_diagnostic
+from trikaal.eval.diagnostics import (
+    cell_codebook_diagnostic,
+    ohlcv_recon_diagnostic,
+    single_bar_decode_diagnostic,
+)
 from trikaal.eval.dsr import pbo_cscv, time_aligned_pbo_matrix
 from trikaal.eval.harness import HEADLINE_COST, KAPPAS, _per_bar_cost, forward_log_returns
 from trikaal.eval.metrics import break_even_cost, information_ratio
@@ -109,6 +113,9 @@ class CellScore:
     # disclosure that bounds the placebo's handicap. NON-GATING — reported beside the headline,
     # never a clause.
     ohlcv_recon: dict = field(default_factory=dict)
+    # §7 v1.6.11 C-1 (supervisor-adopted): single-bar vs in-window decode agreement, the SECOND
+    # handicap channel. NON-GATING; both channels inflate dIR(4-5) in the same direction if real.
+    decode_agreement: dict = field(default_factory=dict)
     # the pooled FULL-calendar headline series itself (flat periods = 0.0) — what the verdict
     # artifacts persist (verdict.write_cell_eval_artifact) and the paired bootstrap resamples.
     # None under val_only (no headline grid was scored).
@@ -239,6 +246,9 @@ def score_cell(
     ohlcv_recon = ohlcv_recon_diagnostic(
         tok, _x0[: cfg.seq_len], _m0[: cfg.seq_len], device=cfg.device
     )
+    decode_agreement = single_bar_decode_diagnostic(
+        tok, _x0[: cfg.seq_len], _m0[: cfg.seq_len], device=cfg.device
+    )
 
     def grid_series(
         grid: np.ndarray,
@@ -341,6 +351,7 @@ def score_cell(
             per_symbol_decisions={},
             codebook=codebook,
             ohlcv_recon=ohlcv_recon,
+            decode_agreement=decode_agreement,
             headline_series=None,
         )
 

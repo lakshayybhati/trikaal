@@ -36,6 +36,14 @@ from trikaal.run.matrix import (
 from trikaal.train.cells import CELLS
 from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
 
+# §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
+DECODE_AGREEMENT_OK = {
+    "sign_agreement_dim0": 0.95,
+    "variance_ratio_dim0": 1.0,
+    "single_bar_degenerate": False,
+}
+
+
 REPO = Path(__file__).resolve().parents[2]
 DRIVER = REPO / "scripts/m6_money_run.py"
 
@@ -174,6 +182,7 @@ def _write_set(tmp, provenance_for):
                 val_ir_by_kappa_by_h={h: {k: 0.4 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
                 mu_diag={"frac_negative": 0.5, "activity_decisions": 0.5},
                 ohlcv_recon=OHLCV_RECON_OK,
+                decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"provenance": provenance_for(c, s)},
             )
             entries[name] = sha

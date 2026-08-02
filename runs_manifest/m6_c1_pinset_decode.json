@@ -3,14 +3,30 @@
     "m6_pin_set": {
       "cross_width_4_vs_2_abs_difference": 0.0107421875,
       "cross_width_any_arm_degenerate": false,
-      "cross_width_diff_over_own_spread": 0.354286144520457,
-      "cross_width_reading": "SYMMETRIC across widths \u2014 inside the within-arm spread",
-      "cross_width_within_arm_sd": 0.03032065370363286,
+      "cross_width_reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+      "cross_width_test": {
+        "abs_diff": 0.0107421875,
+        "p_one_sided": 0.33280006263795847,
+        "reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+        "se_of_diff": 0.02302010053155878,
+        "significant": false,
+        "t": 0.4666438135347537,
+        "t_crit_0p95": 2.1469510458449435,
+        "welch_df": 3.9042911686295456
+      },
       "primary_4_vs_5_abs_difference": 0.10709635416666663,
       "primary_any_arm_degenerate": false,
-      "primary_diff_over_own_spread": 1.1010613311782735,
-      "primary_reading": "ASYMMETRIC across the PRIMARY pair \u2014 the between-arm gap EXCEEDS the within-arm across-seed spread, so it is a measured difference and does NOT cancel in dIR(4-5)",
-      "primary_within_arm_sd": 0.09726647474946752,
+      "primary_reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+      "primary_test": {
+        "abs_diff": 0.10709635416666663,
+        "p_one_sided": 0.09470501604474624,
+        "reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+        "se_of_diff": 0.058822073949622085,
+        "significant": false,
+        "t": 1.8206830697331218,
+        "t_crit_0p95": 2.6225746818207227,
+        "welch_df": 2.3850605602714077
+      },
       "sign_agreement_micro_16dim": 0.951171875,
       "sign_agreement_micro_shuffled_16dim": 0.8440755208333334,
       "sign_agreement_ohlcv_7dim": 0.9404296875
@@ -18,14 +34,30 @@
     "pre_v1_4": {
       "cross_width_4_vs_2_abs_difference": 0.1123046875,
       "cross_width_any_arm_degenerate": false,
-      "cross_width_diff_over_own_spread": 1.339172301330597,
-      "cross_width_reading": "WIDTH-DEPENDENT \u2014 exceeds the within-arm spread; lands on clause 3's dIR(4-2) and the \u00a75 fallback dIR(2-1), NOT on the primary dIR(4-5)",
-      "cross_width_within_arm_sd": 0.08386126817916892,
+      "cross_width_reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+      "cross_width_test": {
+        "abs_diff": 0.1123046875,
+        "p_one_sided": 0.0729599838124323,
+        "reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+        "se_of_diff": 0.04846435677377406,
+        "significant": false,
+        "t": 2.3172635515256115,
+        "t_crit_0p95": 2.9122891780719726,
+        "welch_df": 2.007774684726576
+      },
       "primary_4_vs_5_abs_difference": 0.10188802083333326,
       "primary_any_arm_degenerate": true,
-      "primary_diff_over_own_spread": 1.2149592183086277,
-      "primary_reading": "INCONCLUSIVE \u2014 an arm's single-bar decode collapsed to a constant, so its sign agreement is an artifact and no symmetry claim is made (control-arm rule)",
-      "primary_within_arm_sd": 0.08386126817916892,
+      "primary_reading": "INCONCLUSIVE \u2014 an arm's single-bar decode collapsed to a constant, so its sign agreement is an artifact and no claim is made (control-arm rule)",
+      "primary_test": {
+        "abs_diff": 0.10188802083333326,
+        "p_one_sided": 0.07914331534498054,
+        "reading": "INDETERMINATE \u2014 |diff| is not distinguishable from zero at this n; neither 'symmetric' nor 'asymmetric' is supported",
+        "se_of_diff": 0.05430444653943168,
+        "significant": false,
+        "t": 1.8762371652080108,
+        "t_crit_0p95": 2.3639134013083805,
+        "welch_df": 2.96748422938188
+      },
       "sign_agreement_micro_16dim": 0.8489583333333334,
       "sign_agreement_micro_shuffled_16dim": 0.9508463541666666,
       "sign_agreement_ohlcv_7dim": 0.9612630208333334
