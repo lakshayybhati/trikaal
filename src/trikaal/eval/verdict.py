@@ -428,6 +428,18 @@ def decode_agreement_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
             "statistic read t = 1.82 vs crit 2.62 -> indeterminate."
         ),
         "non_gating": True,
+        # §7 v1.6.17 (audit S-3): C-1 and the expectation-estimator approximation are NOT
+        # INDEPENDENT. `predict_mu`'s expectation decode is a plug-in — decode(E[z]) != E[decode(z)]
+        # for a nonlinear decoder, and p_f is conditioned on the argmax coarse rather than
+        # marginalized (disclosed at predict.py:8-22, adjudicated §7 v1.4.7 item 4). That
+        # delta-method error is evaluated in the SAME out-of-distribution single-bar regime this
+        # disclosure measures, so the two channels compound rather than sit side by side.
+        "not_independent_of_the_expectation_estimator": (
+            "the expectation decode is a plug-in (decode(E[z]) != E[decode(z)]; p_f conditioned on "
+            "the argmax coarse, not marginalized) and its delta-method error is evaluated in the "
+            "SAME out-of-distribution single-bar regime measured here — the two are not "
+            "independent sources of decode noise (§7 v1.4.7 item 4, audit S-3)"
+        ),
         "status": "REQUIRED DISCLOSURE (§7 v1.6.11) — the second handicap channel",
     }
 

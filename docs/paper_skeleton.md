@@ -26,6 +26,13 @@ Kronos as cited prior art (two-stage tokenizer → AR). BSQ vs FSQ. What "micros
 and — **binding** — why it is **TFI** (signed executed-volume imbalance from free aggTrades) and
 never OFI: true order-flow imbalance needs orderbook depth, which is explicit v2 work.
 
+**BINDING (§7 v1.6.17) — say what the v1 microstructure leg ACTUALLY is.** It is TFI plus the
+aggTrades trade-flow statistics: **six live dims (7–12)**. Funding and open interest are
+specified and wired at dims 13–15 with a tripwire, but are **constant-zero and masked on 100%
+of the 304,625,181 bars we publish from** — they were never ingested in v1 (the documented
+OI-retention reason). **The input is 16-wide with 13 live dims**, and the paper must not name
+funding or OI as carried information. Measured: `runs_manifest/m6_c15b_lake_surface_check.json`.
+
 ## §3 The object under study
 
 **A tokenizer study, not a foundation model.** The 21,301,248-parameter decoder-only backbone
@@ -73,6 +80,33 @@ mechanism's strongest evidence.
 
 Determinism posture (below); training-variance / basin-hopping; single asset class; the
 fixture-vs-real gap in §4; the cost basis (§ appendix entry 0).
+
+**BINDING ADDITIONS (§7 v1.6.17) — these must reach the paper, not only a receipt.**
+
+1. **The embargo is justified by the SIGNED-return channel only.** `E = H_max + L_corr = 120` bars
+   rests on serial correlation dying within 60 bars. Measured on the real lake (all 200 symbols;
+   the pinned 40 separately): **signed-return ACF at lag 60 is +0.0072 mean / 0.0137 worst-symbol
+   on the pinned 40, and +0.0067 / 0.0191 across all 200** — already ≈0 by lag 5, a ~24× margin.
+   **But |return| ACF at lag 60 is 0.232 mean / 0.360 worst and is still 0.15 at lag 240**:
+   volatility clustering is long-memory and an embargo sized to it would run to days. We argue
+   signed-return autocorrelation is the label-leakage channel for a signed target, and we accept
+   that argument — but state the residual in these words: **a leakage channel that isn't
+   signed-return autocorrelation wouldn't be caught by it.** The empirical end-to-end alternative
+   (headline IR flat as E grows) was costed at 3× the run and not funded; it is asserted from the
+   premise, not demonstrated. Receipt: `runs_manifest/m6_c20_embargo_premise.json`.
+2. **The headline is ONE CALENDAR YEAR with no cross-year replication.** The primary region is
+   **2024-01-01T18:00 → 2025-01-01T00:00 = 365 days (0.9993 years)**: the 4-year window at
+   `train_frac` 0.7 leaves ~1.2 years, block 0 is VAL, blocks 1–5 are the headline. The cost-aware
+   net IR therefore carries one year's regime, alongside a 40-symbol cross-section. This is a
+   design property, not a defect — and it bounds external validity, so it is stated rather than
+   left for a referee to derive.
+3. **Two of the eight causal-safety surfaces were never exercised on the published lake until
+   after it was built.** The ingest sweep ran an 800-bar head slice under a 1440-bar volatility
+   warm-up, so `target`/`target_valid` compared equal trivially, on 2 of 200 symbols, unpersisted.
+   Closed retrospectively at production parameters on real bars past the warm-up (1,600 anchors,
+   12,798 checks, coverage 1.0, both planted leaks caught). Stated because the *original*
+   demonstration did not cover what it appeared to. Receipts:
+   `m6_c15b_lake_surface_check.json`, `m6_c15b_production_sweep.json`.
 
 ## §11 Reproducibility
 

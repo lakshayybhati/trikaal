@@ -24,39 +24,59 @@ _TINY = 1e-300
 _EPS = 3e-16
 
 
-def _betacf(a: float, b: float, x: float, itmax: int = 300) -> float:
-    """Continued fraction for the incomplete beta (modified Lentz)."""
-    qab, qap, qam = a + b, a + 1.0, a - 1.0
-    c = 1.0
-    d = 1.0 - qab * x / qap
-    if abs(d) < _TINY:
-        d = _TINY
-    d = 1.0 / d
-    h = d
-    for m in range(1, itmax + 1):
-        m2 = 2 * m
-        aa = m * (b - m) * x / ((qam + m2) * (a + m2))
-        d = 1.0 + aa * d
-        if abs(d) < _TINY:
-            d = _TINY
-        c = 1.0 + aa / c
-        if abs(c) < _TINY:
-            c = _TINY
-        d = 1.0 / d
-        h *= d * c
-        aa = -(a + m) * (qab + m) * x / ((a + m2) * (qap + m2))
-        d = 1.0 + aa * d
-        if abs(d) < _TINY:
-            d = _TINY
-        c = 1.0 + aa / c
-        if abs(c) < _TINY:
-            c = _TINY
-        d = 1.0 / d
-        delta = d * c
-        h *= delta
-        if abs(delta - 1.0) < _EPS:
-            break
-    return h
+def beta_cf_coefficient(a: float, b: float, x: float, k: int) -> float:
+    """The k-th partial numerator d_k of the incomplete-beta continued fraction (k ≥ 1).
+
+    Straight from the published definition (Abramowitz & Stegun 26.5.8; DLMF 8.17.22):
+
+        d_{2m}   = + m (b − m) x / ((a + 2m − 1)(a + 2m))
+        d_{2m+1} = − (a + m)(a + b + m) x / ((a + 2m)(a + 2m + 1))
+
+    Exposed as a named callable so the coefficients can be checked term-by-term against the
+    reference formula, independently of how the fraction is then summed.
+    """
+    if k % 2 == 0:
+        m = k // 2
+        return m * (b - m) * x / ((a + 2.0 * m - 1.0) * (a + 2.0 * m))
+    m = (k - 1) // 2
+    return -(a + m) * (a + b + m) * x / ((a + 2.0 * m) * (a + 2.0 * m + 1.0))
+
+
+def beta_continued_fraction(a: float, b: float, x: float, *, max_depth: int = 4096) -> float:
+    """Evaluate 1 / (1 + d₁/(1 + d₂/(1 + d₃/…))) by BACKWARD recurrence, to convergence.
+
+    §7 v1.6.17 (audit S-4). The predecessor was the *Numerical Recipes* ``betacf`` in structure —
+    same variable names (``qab/qap/qam/c/d/h/aa/m2``) and the same forward modified-Lentz loop.
+    Neither of us is a lawyer and no licence violation is asserted; the point is that a released
+    artifact should not carry a transcription of NR code when the underlying mathematics is
+    public and the safe version costs an afternoon.
+
+    This is a genuinely different algorithm for the same quantity: the coefficients come from
+    :func:`beta_cf_coefficient` (the published definition) and the fraction is summed from the
+    TAIL INWARDS at a doubling depth until the value stops moving, rather than forwards with
+    Lentz's rescaling. Backward evaluation needs no ``_TINY`` guards on the running scale factors
+    because there are none — only a division by the running tail, which is guarded.
+    """
+    prev: float | None = None
+    depth = 16
+    val = 1.0
+    while depth <= max_depth:
+        f = 1.0
+        for k in range(depth, 0, -1):
+            f = 1.0 + beta_cf_coefficient(a, b, x, k) / f
+            if abs(f) < _TINY:
+                f = _TINY
+        val = 1.0 / f
+        if prev is not None and abs(val - prev) <= _EPS * max(1.0, abs(val)):
+            return val
+        prev = val
+        depth *= 2
+    return val
+
+
+# Back-compat name for the one internal caller; the implementation above is the definition.
+def _betacf(a: float, b: float, x: float) -> float:
+    return beta_continued_fraction(a, b, x)
 
 
 def betainc(a: float, b: float, x: float) -> float:

@@ -39,6 +39,12 @@ def build_rope_cache(seq_len: int, head_dim: int, base: float = 10000.0) -> tupl
 
 
 def _rotate_half(x: Tensor) -> Tensor:
+    """ATTRIBUTION (§7 v1.6.17, audit S-4): the split-half rotation and the ``x*cos + rot(x)*sin``
+    form below are the STANDARD LLaMA/HuggingFace formulation of RoPE (Su et al., "RoFormer",
+    arXiv:2104.09864). The convention is effectively forced — a different pairing would not
+    interoperate with any published RoPE — so this is unavoidable and is NOT an invariant-8
+    violation; it is recorded here because invariant 8 is stated strongly and a reader is
+    entitled to know which lines are ours and which are the field's."""
     half = x.shape[-1] // 2
     x1, x2 = x[..., :half], x[..., half:]
     return torch.cat([-x2, x1], dim=-1)

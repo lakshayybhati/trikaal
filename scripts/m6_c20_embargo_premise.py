@@ -30,7 +30,7 @@ from trikaal.eval.folds import EMBARGO_DEFAULT, H_MAX_DEFAULT, L_CORR_DEFAULT
 LAKE = Path("processed/universe_bars")
 OUT = Path("runs_manifest/m6_c20_embargo_premise.json")
 LAGS = (1, 5, 15, 30, 60, 120, 240)
-N_SYMBOLS = 40  # the pinned primary cross-section size
+MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 
 
 def _acf(x: np.ndarray, lags) -> dict[int, float]:
@@ -73,24 +73,38 @@ def main() -> int:
     # ---- the real lake: |return| (volatility clustering) and signed return ----
     con = duckdb.connect()
     con.execute("PRAGMA memory_limit='4GB'")
-    syms = [
+    all_syms = [
         r[0]
         for r in con.execute(
             f"SELECT DISTINCT symbol FROM read_parquet('{LAKE}/**/*.parquet', hive_partitioning=1)"
             " ORDER BY symbol"
         ).fetchall()
-    ][:N_SYMBOLS]
+    ]
+    # §7 v1.6.17 — BUILDER DEFECT, DISCLOSED AND FIXED. The first run took `all_syms[:40]`, i.e.
+    # the first forty symbols ALPHABETICALLY, and the report called them "the pinned primary
+    # cross-section size". They were not the pinned set. The embargo defends the HEADLINE
+    # comparison, which is computed on the pinned 40 — so that is the set that matters, and it is
+    # now read from the artifact rather than approximated by a slice. The full 200 is measured
+    # too, because it costs minutes and removes the question entirely.
+    pinned = sorted(json.loads(MDE_INPUTS.read_text())["symbols_sampled"])
+    syms = [s for s in pinned if s in set(all_syms)]
+    assert len(syms) == 40, f"expected the pinned 40, got {len(syms)}"
 
     signed, absr = [], []
-    for s in syms:
+    signed_all, absr_all = [], []
+    for s in all_syms:
         r = con.execute(
             f"SELECT raw_ret_close FROM read_parquet('{LAKE}/symbol={s}/**/*.parquet')"
             " ORDER BY bar_open_ms"
         ).fetchnumpy()["raw_ret_close"]
         r = np.asarray(r, dtype=np.float64)
         r = r[np.isfinite(r)]
-        signed.append(_acf(r, LAGS))
-        absr.append(_acf(np.abs(r), LAGS))
+        sa, aa = _acf(r, LAGS), _acf(np.abs(r), LAGS)
+        signed_all.append(sa)
+        absr_all.append(aa)
+        if s in set(syms):
+            signed.append(sa)
+            absr.append(aa)
 
     def agg(rows):
         return {
@@ -102,6 +116,16 @@ def main() -> int:
         }
 
     sig, ab = agg(signed), agg(absr)
+    sig_all, ab_all = agg(signed_all), agg(absr_all)
+    rep["scope"] = {
+        "primary_set": "the PINNED 40 (m6_mde_inputs.json symbols_sampled) — the symbols the "
+        "headline IR is computed on, which is the comparison the embargo defends",
+        "also_measured": f"ALL {len(all_syms)} lake symbols, so the choice of 40 cannot be "
+        "questioned; it cost minutes, not a decision",
+        "n_pinned": len(syms),
+        "n_all": len(all_syms),
+    }
+    rep["all_200_symbols"] = {"signed_return_acf": sig_all, "abs_return_acf": ab_all}
     rep["lake"] = {
         "n_symbols": len(syms),
         "signed_return_acf": sig,
@@ -117,6 +141,9 @@ def main() -> int:
         "abs_acf_at_L_corr_60_worst_symbol": ab["60"]["max_abs"],
         "premise_supported_for_SIGNED_returns": bool(sig["60"]["max_abs"] < 0.05),
         "premise_supported_for_ABS_returns": bool(ab["60"]["max_abs"] < 0.05),
+        "ALL200_signed_acf_at_60_mean": sig_all["60"]["mean"],
+        "ALL200_signed_acf_at_60_worst": sig_all["60"]["max_abs"],
+        "ALL200_premise_supported_for_SIGNED_returns": bool(sig_all["60"]["max_abs"] < 0.05),
     }
     rep["what_this_does_and_does_not_show"] = (
         "SIGNED-return autocorrelation is what a purge/embargo must outrun for a LABEL to be "

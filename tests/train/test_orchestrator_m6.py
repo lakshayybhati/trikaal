@@ -196,7 +196,13 @@ def test_cell_construction_gates():
     """The 21,301,248 pin at canonical dims (FSQ vocab exact; BSQ vocab within ±2%) + teeth."""
     bb = build_cell_backbone(891, 1225, mtp_depths=0)
     assert bb.num_backbone_params() == 21_301_248
-    bb2 = build_cell_backbone(1024, 1024, mtp_depths=0)  # BSQ vocab → the ±2% band (0.33%)
+    # §7 v1.6.17 (audit C-19): the BSQ count is now an ASSERTION, not a datum in prose. It was
+    # only ever bounded by the ±2% band, so 21,231,616 appeared in the audit and in reports while
+    # NO artifact pinned it — in the very pass whose headline was about things that pass without
+    # measuring. The band check is retained BELOW it (it is what has teeth for other vocabs).
+    bb2 = build_cell_backbone(1024, 1024, mtp_depths=0)  # BSQ vocab
+    assert bb2.num_backbone_params() == 21_231_616, "the BSQ realized count is pinned, not bounded"
+    assert 21_301_248 - bb2.num_backbone_params() == 69_632
     assert abs(bb2.num_backbone_params() - 21_301_248) / 21_301_248 <= 0.02
     with pytest.raises(AssertionError, match="outside ±2%"):
         build_cell_backbone(64, 64, n_layers=1, d_model=16, d_ff=32, n_heads=2, mtp_depths=0)

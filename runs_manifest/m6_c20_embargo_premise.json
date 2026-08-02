@@ -1,4 +1,66 @@
 {
+  "all_200_symbols": {
+    "abs_return_acf": {
+      "1": {
+        "max_abs": 0.5642602980398977,
+        "mean": 0.37294501945361674
+      },
+      "120": {
+        "max_abs": 0.3540818362680145,
+        "mean": 0.18265111764340083
+      },
+      "15": {
+        "max_abs": 0.47638110581220044,
+        "mean": 0.26170788505357856
+      },
+      "240": {
+        "max_abs": 0.33147571415093374,
+        "mean": 0.15972466670945176
+      },
+      "30": {
+        "max_abs": 0.4616688987807639,
+        "mean": 0.2352474591024899
+      },
+      "5": {
+        "max_abs": 0.5011402178967479,
+        "mean": 0.2933294237377175
+      },
+      "60": {
+        "max_abs": 0.41584862905675013,
+        "mean": 0.209734995051423
+      }
+    },
+    "signed_return_acf": {
+      "1": {
+        "max_abs": 0.2864503946710928,
+        "mean": -0.012630341371003917
+      },
+      "120": {
+        "max_abs": 0.013372996418389422,
+        "mean": 0.004477143097751458
+      },
+      "15": {
+        "max_abs": 0.02876146146001228,
+        "mean": 0.0073622657783645054
+      },
+      "240": {
+        "max_abs": 0.017126550585565677,
+        "mean": 0.0029812081978066664
+      },
+      "30": {
+        "max_abs": 0.0233277055373651,
+        "mean": 0.005271213208393661
+      },
+      "5": {
+        "max_abs": 0.023280446232884718,
+        "mean": 0.0007698612327043519
+      },
+      "60": {
+        "max_abs": 0.019078545004437543,
+        "mean": 0.006669430459012186
+      }
+    }
+  },
   "control_arm": {
     "expected_rho_pow_k": {
       "1": 0.97,
@@ -24,76 +86,85 @@
   "lake": {
     "abs_return_acf_volatility_clustering": {
       "1": {
-        "max_abs": 0.4855405122778877,
-        "mean": 0.36884351889258343
+        "max_abs": 0.5064285432677285,
+        "mean": 0.3969678656861048
       },
       "120": {
-        "max_abs": 0.2771292730391191,
-        "mean": 0.17665228680855724
+        "max_abs": 0.3316853965536263,
+        "mean": 0.20531336305056985
       },
       "15": {
-        "max_abs": 0.3924100057177624,
-        "mean": 0.25457157717874423
+        "max_abs": 0.42026043302236077,
+        "mean": 0.2907641843296543
       },
       "240": {
-        "max_abs": 0.23452314903372354,
-        "mean": 0.15335161515671672
+        "max_abs": 0.3107780425305543,
+        "mean": 0.18369373136933523
       },
       "30": {
-        "max_abs": 0.3422772256237944,
-        "mean": 0.2286747665241015
+        "max_abs": 0.39596064489064225,
+        "mean": 0.2622470596262558
       },
       "5": {
-        "max_abs": 0.4171268740836917,
-        "mean": 0.28681295988818956
+        "max_abs": 0.4551377025187441,
+        "mean": 0.32455419023508414
       },
       "60": {
-        "max_abs": 0.30140178203014767,
-        "mean": 0.2034181757304065
+        "max_abs": 0.36042763404143013,
+        "mean": 0.2323112160231721
       }
     },
     "n_symbols": 40,
     "signed_return_acf": {
       "1": {
-        "max_abs": 0.03975664043526127,
-        "mean": -0.011229827090746294
+        "max_abs": 0.1436184574775294,
+        "mean": -0.005933662195216123
       },
       "120": {
-        "max_abs": 0.00891724035360193,
-        "mean": 0.004345701808874025
+        "max_abs": 0.011490104485153136,
+        "mean": 0.004613860191248434
       },
       "15": {
-        "max_abs": 0.01911362785875186,
-        "mean": 0.0076405683630273915
+        "max_abs": 0.01588118063193192,
+        "mean": 0.007533942359652146
       },
       "240": {
-        "max_abs": 0.00859716963629583,
-        "mean": 0.0032526570953344833
+        "max_abs": 0.006343991702206604,
+        "mean": 0.002460042848547892
       },
       "30": {
-        "max_abs": 0.010630783398388547,
-        "mean": 0.005962681190568152
+        "max_abs": 0.012254414372053659,
+        "mean": 0.003732406534393177
       },
       "5": {
-        "max_abs": 0.008169547800316236,
-        "mean": 0.001006590213370455
+        "max_abs": 0.01301582273033336,
+        "mean": -0.0001320198771149617
       },
       "60": {
-        "max_abs": 0.012749280254760773,
-        "mean": 0.0061293895160905
+        "max_abs": 0.013655715086168602,
+        "mean": 0.007174232425912326
       }
     }
   },
   "reading": {
+    "ALL200_premise_supported_for_SIGNED_returns": true,
+    "ALL200_signed_acf_at_60_mean": 0.006669430459012186,
+    "ALL200_signed_acf_at_60_worst": 0.019078545004437543,
     "EMBARGO_DEFAULT": 120,
     "H_MAX_DEFAULT": 60,
     "L_CORR_DEFAULT": 60,
-    "abs_acf_at_L_corr_60_mean": 0.2034181757304065,
-    "abs_acf_at_L_corr_60_worst_symbol": 0.30140178203014767,
+    "abs_acf_at_L_corr_60_mean": 0.2323112160231721,
+    "abs_acf_at_L_corr_60_worst_symbol": 0.36042763404143013,
     "premise_supported_for_ABS_returns": false,
     "premise_supported_for_SIGNED_returns": true,
-    "signed_acf_at_L_corr_60_mean": 0.0061293895160905,
-    "signed_acf_at_L_corr_60_worst_symbol": 0.012749280254760773
+    "signed_acf_at_L_corr_60_mean": 0.007174232425912326,
+    "signed_acf_at_L_corr_60_worst_symbol": 0.013655715086168602
+  },
+  "scope": {
+    "also_measured": "ALL 200 lake symbols, so the choice of 40 cannot be questioned; it cost minutes, not a decision",
+    "n_all": 200,
+    "n_pinned": 40,
+    "primary_set": "the PINNED 40 (m6_mde_inputs.json symbols_sampled) \u2014 the symbols the headline IR is computed on, which is the comparison the embargo defends"
   },
   "what": "C-20 leg 1 \u2014 is the L_corr = 60 premise behind EMBARGO = 120 supported?",
   "what_this_does_and_does_not_show": "SIGNED-return autocorrelation is what a purge/embargo must outrun for a LABEL to be independent of a training window, and it is what L_corr names. |return| clustering is long-memory by construction in any financial series and persists far past 60 bars \u2014 that is a volatility property, not a label-leakage channel, and an embargo sized to it would have to be days long. Both are reported so the distinction is visible rather than assumed."

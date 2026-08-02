@@ -205,6 +205,94 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.17 (2026-08-03, TRANCHE 3 — THE CLAIMS THE PAPER WILL MAKE. Prose corrections at named
+  sites, one numerical routine rewritten for provenance, two values pinned that were only ever
+  described. No clause touched; the MDE is BIT-IDENTICAL across the rewrite.)** Local, $0.
+  - **★ THE MICROSTRUCTURE CLAIM WAS WRONG IN THE TWO MOST-READ SENTENCES IN THE PROJECT.** The
+    design spec's contribution sentence and `CLAUDE.md`'s architecture line both named *"trade-flow
+    imbalance (TFI), funding, open interest"* as what the per-bar vector carries. **Funding and
+    open interest are constant-zero and masked on 100% of the 304,625,181 bars we publish from**
+    (§7 v1.6.16). The masking DECISION is documented and sound (the OI retention trap,
+    `milestone4b_universe_ingest.md:129`); the CLAIM built on top of it was not. Corrected at all
+    three named sites — design spec §contribution, `CLAUDE.md` (both the tokenizer line and the
+    data-pipeline line), and `paper_skeleton.md` §2 as a **binding** note. What is now stated: the
+    v1 microstructure leg is **TFI plus the aggTrades trade-flow statistics, six live dims (7–12)**;
+    funding/OI are **specified and wired at dims 13–15 with a tripwire, structurally absent**; the
+    **input is 16-wide with 13 live dims**.
+    - **THE BUILDER AGREES IT MAKES THE CONTRIBUTION CLEANER, NOT WEAKER**, and the reasoning is
+      recorded rather than asserted: *free microstructure* becomes **literally** true (aggTrades
+      dumps are free; funding/OI need the futures API), the claim now matches the evidence that
+      exists, and a referee who checks the data finds the description accurate instead of finding
+      two of three named channels empty. **The one thing that IS narrower** is the contribution's
+      breadth — "microstructure including derivatives-market state" becomes "trade-flow
+      microstructure". But the narrowing is in the DESCRIPTION only: funding/OI were never
+      measured, so no evidence is lost.
+    - **AND THE MEASUREMENT THAT COULD HAVE MOVED THE PRIMARY CAME BACK CLEAN.**
+      `block_time_permute` permutes **exactly dims 7–12** — verified empirically, not read:
+      `MICRO_DIMS = (7,…,12)`, `PERP_DIMS = (13,14,15)` excluded, and `assert_perp_dims_masked`
+      fires if funding/OI ever activate (confirmed by planting an active bit). **Cell 5 is NOT
+      shuffling constants, and the C-12 capacity disclosure STANDS unchanged** — its "six dims of
+      independent noise" wording is exactly right, where a nine-dim story would have been wrong.
+  - **THE CLAIMS SWEEP IS NOW REPRODUCIBLE FROM A CLEAN CHECKOUT — a supervisor-found defect.**
+    The 2026-08-02 regeneration globbed the directory and swept `m6_prefill_zero_mean.json`, which
+    is UNTRACKED, so a fresh clone produced different counts: **we replaced a STALE receipt with a
+    NON-REPRODUCIBLE one, same class, one turn later.** Now `git ls-files runs_manifest/*.json`.
+    **Restricting to tracked files FIXES reproducibility; persisting the file list only DOCUMENTS
+    it** — so both are done, in that priority: the input set is a function of the commit, and the
+    receipt additionally carries the **sha256 of all 63 swept files** so a reader can verify the
+    input rather than trust it. **Corrected counts: P1 33 (was 34), P2_total 76 (was 80),
+    P2_HIGH 41 (was 43), P2_MEDIUM 0 (was 2).** The real P2_HIGH is **41**.
+  - **S-4 — `tdist._betacf` REWRITTEN FROM THE PUBLISHED DEFINITION.** Receipt
+    `runs_manifest/m6_s4_betacf_rewrite.json`. The predecessor was *Numerical Recipes* `betacf` in
+    structure (`qab/qap/qam/c/d/h/aa/m2`, forward modified-Lentz). No licence violation is
+    asserted; a released artifact should not carry a transcription when the mathematics is public.
+    The replacement takes its coefficients from **A&S 26.5.8 / DLMF 8.17.22** via a named
+    `beta_cf_coefficient(a,b,x,k)` and sums the fraction by **BACKWARD recurrence at doubling
+    depth to convergence** — a different algorithm for the same quantity.
+    - **EQUIVALENCE PROVEN, NOT ASSUMED:** `betainc` worst relative difference vs the predecessor
+      over a 252-point grid **3.275e-15**; **the MDE clause is BIT-IDENTICAL** (`delta_ir`,
+      `mde_paired 5.013646441007843`, `pass`), and **both pinned MDE multipliers are bit-identical**
+      (S=3 → 3.980645752134, S=5 → 3.072811363562).
+    - **A PRE-EXISTING RESIDUAL, ATTRIBUTED AND NOT INTRODUCED:** `student_t_ppf` sits ~1.1e-8 from
+      the published value at (0.99, df=30) and ~6.4e-7 at (0.95, df=1000). **The predecessor
+      produced 2.457261542401 at (0.99, df=30) — digit-for-digit the rewrite's value**, so this is
+      the ROOT FINDER, not the continued fraction. The design operates at Welch df 2–4 where
+      agreement is ~1e-12. Recorded, not fixed.
+    - **85 KATs** at named reference points (closed forms `I_x(1,1)=x`, `I_x(a,1)=x^a`,
+      `I_x(1,b)=1−(1−x)^b`, `I_½(a,a)=½`, the reflection identity; published t-quantiles at
+      df 1–10), with the public callables named so an INDEPENDENT implementation can be compared
+      against the same set.
+    - **RoPE attribution added** on `_rotate_half`/`apply_rope` — the standard LLaMA/HF
+      formulation (Su et al., RoFormer, arXiv:2104.09864), effectively forced for interoperability,
+      recorded because invariant 8 is stated strongly.
+  - **C-19 — THE BSQ COUNT IS NOW AN ASSERTION.** `test_orchestrator_m6.py` bounded it only by the
+    ±2% band, so **21,231,616 appeared in the audit and in reports while no artifact pinned it** —
+    in the very pass whose headline was about things that pass without measuring. Now asserted
+    exactly, with `21_301_248 − 21_231_616 == 69_632`. `CLAUDE.md` quotes both numbers.
+  - **S-3 — the non-independence is now IN THE SHIPPED DISCLOSURE**, not only in an adjudication:
+    `decode_agreement_disclosure` carries `not_independent_of_the_expectation_estimator`, recording
+    that the expectation decode's delta-method error is evaluated in the **same** out-of-distribution
+    single-bar regime C-1 measures, so the two channels compound.
+  - **TWO LIMITATIONS PROMOTED FROM RECEIPT TO PAPER** (`paper_skeleton.md` §10, binding): the
+    embargo's signed-return-only justification **with the residual in the builder's own words**
+    (*"a leakage channel that isn't signed-return autocorrelation wouldn't be caught"*), and the
+    one-calendar-year headline with no cross-year replication. A third was added: that two of the
+    eight causal surfaces were never exercised on the published lake until after it was built.
+  - **THE ACF SCOPE WAS A BUILDER DEFECT, DISCLOSED AND FIXED.** The v1.6.16 probe took
+    `all_symbols[:40]` — the first forty **alphabetically** — and the report called them "the
+    pinned primary cross-section size". They were not the pinned set. Now read from
+    `m6_mde_inputs.json` **and** measured across all 200. **It was never a cost decision: all 200
+    takes 7 seconds.** Signed ACF at lag 60: **pinned 40 → 0.00717 mean / 0.01366 worst; all 200 →
+    0.00667 / 0.01908.** Premise supported on both.
+  - **THE AUDIT IS PERSISTED, WITH A NAMED GAP** — `docs/m6_readiness_audit_findings.md`, marked
+    external and provenance-tagged per entry (VERBATIM / SUMMARY-ONLY / PARTIAL / MISSING). **The
+    C-1..C-9 and C-11..C-20 bodies never reached the builder and are NOT reconstructed**, because
+    a fuller-sounding entry would be the builder writing the audit — the exact failure the file
+    exists to prevent. Slots are open; the disposition table closes all 24 findings by ID.
+  - Suite **458 → 543**, the entire +85 being `tests/eval/test_tdist_reference.py` — coverage, not
+    fixtures. Ruff clean. Gate-A anchor re-proven byte-identical ×2, exit code 0 (`src/` changed:
+    `tdist.py`, `verdict.py`, `attention.py`).
+
 - **v1.6.16 (2026-08-02, TRANCHE 2 — THE TWO LEAK DETECTORS THAT HAD NEVER BEEN POINTED AT THE
   REAL LAKE, plus the VACUITY class. One function DELETED, one guard fixed, three receipted
   measurements. No pinned value moved, no clause touched.)** Local, $0.

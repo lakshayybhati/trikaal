@@ -1,0 +1,77 @@
+{
+  "equivalence_vs_predecessor": {
+    "betainc_worst_relative_difference": 3.2749294816926705e-15,
+    "mde_bit_identical": true,
+    "mde_clause_predecessor": {
+      "delta_ir": 19.109841372771797,
+      "mde_paired": 5.013646441007843,
+      "mde_paired_exceeds_tabled": true,
+      "pass": true,
+      "tabled_mde_h15": 3.518
+    },
+    "mde_clause_rewrite": {
+      "delta_ir": 19.109841372771797,
+      "mde_paired": 5.013646441007843,
+      "mde_paired_exceeds_tabled": true,
+      "pass": true,
+      "tabled_mde_h15": 3.518
+    },
+    "pinned_mde_multipliers": {
+      "S=3": {
+        "bit_identical": true,
+        "nu": 2.0,
+        "predecessor": 3.98064575213364,
+        "rewrite": 3.98064575213364
+      },
+      "S=5": {
+        "bit_identical": true,
+        "nu": 4.0,
+        "predecessor": 3.072811363561769,
+        "rewrite": 3.072811363561769
+      }
+    }
+  },
+  "new_algorithm": "coefficients from A&S 26.5.8 / DLMF 8.17.22 via beta_cf_coefficient(); fraction summed by BACKWARD recurrence at doubling depth to convergence \u2014 a different algorithm for the same quantity",
+  "pre_existing_residual_NOT_introduced_here": {
+    "attribution": "the PREDECESSOR produced 2.457261542401 at (0.99,df=30) \u2014 digit-for-digit identical to the rewrite. The residual is student_t_ppf's ROOT FINDER, not the continued fraction, and the rewrite did not move it.",
+    "materiality": "the M6 design operates at Welch df 2-4 (S=3 -> nu=2, S=5 -> nu=4), where agreement with published values is ~1e-12. Recorded, not fixed: it is outside the design's operating range and fixing it would touch the anchored instrument for no measurable gain.",
+    "observation": "student_t_ppf is ~1.1e-8 off the published value at (0.99, df=30) and ~6.4e-7 at (0.95, df=1000)"
+  },
+  "public_callables_for_independent_comparison": [
+    "trikaal.eval.tdist.beta_cf_coefficient(a,b,x,k)",
+    "trikaal.eval.tdist.beta_continued_fraction(a,b,x)",
+    "trikaal.eval.tdist.betainc(a,b,x)",
+    "trikaal.eval.tdist.student_t_ppf(p,df)",
+    "trikaal.eval.tdist.student_t_cdf(t,df)"
+  ],
+  "reference_points_tested_at": {
+    "closed_form": [
+      "I_x(1,1)=x",
+      "I_x(a,1)=x^a",
+      "I_x(1,b)=1-(1-x)^b",
+      "I_0.5(a,a)=0.5",
+      "I_x(a,b)+I_{1-x}(b,a)=1"
+    ],
+    "published_student_t": {
+      "(0.95,1)": 6.3137515147,
+      "(0.95,10)": 1.812461122811,
+      "(0.95,2)": 2.919985580355,
+      "(0.95,3)": 2.353363435465,
+      "(0.95,4)": 2.131846786033,
+      "(0.975,10)": 2.228138851986,
+      "(0.99,5)": 3.3649299999
+    },
+    "x_grid": [
+      0.01,
+      0.1,
+      0.25,
+      0.5,
+      0.75,
+      0.9,
+      0.99
+    ]
+  },
+  "rope_attribution": "src/trikaal/model/attention.py _rotate_half/apply_rope \u2014 the standard LLaMA/HF RoPE formulation (Su et al., RoFormer, arXiv:2104.09864); the convention is effectively forced for interoperability. Recorded, not a violation.",
+  "what": "S-4 \u2014 tdist._betacf rewritten from the published definition; equivalence proven",
+  "why": "the predecessor was Numerical Recipes `betacf` in STRUCTURE (qab/qap/qam/c/d/h/aa/m2, forward modified-Lentz). No licence violation is asserted; a released artifact should not carry a transcription when the mathematics is public."
+}

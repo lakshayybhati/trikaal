@@ -126,6 +126,45 @@ the data exists is exactly the situation pre-registration is built to prevent.
 
 ---
 
+### 5a. TIMING — the window is open now and closes when we start spending
+
+**If the outcome data does not yet exist, the amended specification inherits FULL pre-registration
+status.** Amended after the run, the identical change is a post-hoc correction *forever*, and no
+amount of correctness recovers that: a referee cannot distinguish a principled unit fix from one
+that happened to help, once the numbers are visible.
+
+**No M6 cell has been trained.** The window is open today and closes the moment we spend.
+
+### 5b. TWO COMPETENT ANALYSES DISAGREE ON THE SIGN — which is the evidence §5 was missing
+
+§5 asserts the direction is **not knowable pre-data**. Until now that was an argument from the
+algebra (the h=5 group rescales by 0.5774 and the h=60 group by 2.0 *about zero*, so the sign
+depends on realized per-horizon means and spreads). It now has evidence:
+
+| analysis | predicted direction of the pinned mixed basis |
+|---|---|
+| this document's toy-fixture measurement | **ANTI-conservative** — var_sr 0.8336× the h=15-consistent basis, SR₀ understated 8.70% |
+| an independent second model's null-model analysis | **CONSERVATIVE by ~4/3** |
+
+**Two competent analyses reaching opposite signs is not a problem with either — it is the
+proposition being demonstrated.** §5 claims the sign is unknowable before the data exists; two
+capable attempts disagreeing is exactly what that claim predicts. The disagreement is therefore
+*supporting evidence for the amendment*, not an argument to wait for a tiebreak.
+
+Neither number is load-bearing for the fix. The fix rests on the span (bit-exact √12), the
+mechanism (from code), and outcome-materiality (proven by construction with a witness). **The two
+sign predictions are load-bearing only for the claim that the direction cannot be signed in
+advance — and on that they agree by disagreeing.**
+
+### 5c. A SUPERVISOR CORRECTION, ON THE RECORD
+
+The supervisor quoted the 8.70% figure to Lakshay as *"the deciding fact"* and stated that the
+error makes the test easier to pass. **This document says twice that the direction is
+data-dependent and unknown on the real cells, and the receipt labels the fixture illustrative.**
+The qualifier was dropped in the summary. The draft is correct as written; the summary of it was
+not. Recorded here on the same terms as the builder's own withdrawn claims — the log is not a
+one-way ledger.
+
 ## 6. The direction-blind test, applied
 
 The v1.5 amendment window fixed a standing test: *would we adopt this amendment if it moved the bar

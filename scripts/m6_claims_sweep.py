@@ -15,9 +15,11 @@ silently repaired. Writes ``runs_manifest/m6_claims_sweep.json``.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
+import subprocess
 from pathlib import Path
 
 OUT = Path("runs_manifest/m6_claims_sweep.json")
@@ -76,13 +78,32 @@ def walk(obj, path=""):
         yield path, obj
 
 
+def tracked_manifests() -> list[Path]:
+    """§7 v1.6.17 — ONLY GIT-TRACKED manifests. The predecessor globbed the directory, so the
+    receipt depended on whatever untracked files happened to sit in the working tree: the
+    2026-08-02 regeneration swept 27 files of which ``m6_prefill_zero_mean.json`` was UNTRACKED,
+    and a fresh clone therefore reproduces DIFFERENT counts. We had replaced a STALE receipt with
+    a NON-REPRODUCIBLE one — the same class, one turn later.
+
+    Restricting to tracked files FIXES reproducibility; persisting the swept list with hashes
+    (below) only DOCUMENTS it. Both are done, in that order of priority: the file set is now a
+    function of the commit, and the receipt carries the sha256 of every file it read so a reader
+    can verify the input set rather than trust it."""
+    out = subprocess.run(
+        ["git", "ls-files", "runs_manifest/*.json"], capture_output=True, text=True, check=True
+    )
+    return sorted(Path(x) for x in out.stdout.split() if x)
+
+
 def main() -> int:
     p1, p2, p3 = [], [], []
     all_numbers_in_artifacts: set[str] = set()
+    swept: dict[str, str] = {}
 
-    for f in sorted(MANIFEST_DIR.glob("*.json")):
+    for f in tracked_manifests():
         if f.name in SELF_REFERENTIAL:
             continue
+        swept[str(f)] = hashlib.sha256(f.read_bytes()).hexdigest()
         try:
             d = json.loads(f.read_text())
         except (json.JSONDecodeError, OSError):
@@ -156,6 +177,9 @@ def main() -> int:
             "P3": len(p3),
         },
         "self_referential_files_skipped": sorted(SELF_REFERENTIAL),
+        "swept_files_sha256": swept,
+        "n_swept_files": len(swept),
+        "file_selection": "git ls-files runs_manifest/*.json — TRACKED ONLY (§7 v1.6.17)",
         # Every HIGH hit adjudicated by hand, including this audit's OWN false positives. A sweep
         # that reports unadjudicated hits pushes the judgment onto the next reader and quietly
         # inflates its own findings — the same defect one level up.
