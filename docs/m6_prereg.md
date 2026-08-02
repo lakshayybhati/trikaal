@@ -205,6 +205,49 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.20 (2026-08-03, THE CONSOLIDATED DECISION BRIEF + one banked cost figure WITHDRAWN.
+  Nothing implemented; no budget set, no gate dropped, no invariant amended, no weights pulled.)**
+  Local, $0.
+  - **`docs/m6_decisions_pending.md`** — the four pending rulings in one document, because they
+    interact. Receipt `runs_manifest/m6_recost_worstcase.json`.
+  - **★ THE SATURATION SUBSTITUTION SURVIVES FOR ONE FAILURE MODE AND FAILS FOR THE OTHER, AND
+    THE OTHER IS THE ONE THAT TOUCHES OUR SECOND CLAIM.** Attacked before agreeing, as ordered.
+    It *does* cover "Cell 1 is weak because it was under-trained" — the most likely cause, and
+    saturation answers it self-certifyingly. It does **NOT** cover *"our BSQ tokenizer is worse
+    than the reference BSQ tokenizer"* — **and Kronos-small IS a BSQ model.** Cell 1 is BSQ+OHLCV;
+    the §5 fallback claims **IR(2) − IR(1)**, i.e. FSQ minus BSQ. **The external gate was in effect
+    the only control anchoring our BSQ implementation to a reference BSQ one, and a
+    saturated-but-weak BSQ tokenizer inflates our own FSQ claim by exactly the amount it is weak.**
+    Saturation cannot see it: a poorer token stream converges to a worse val NLL and saturation
+    certifies "converged" — true, and useless. **Not hypothetical here:** the v6 canary measured
+    the AR extracting ZERO nats from a planted conditional its tokenizer provably encoded. So the
+    word *substitute* is withdrawn — it is a **narrower, different control**, and the disclosure
+    sentence naming the uncontrolled confound must ship with it.
+  - **★ A BANKED COST FIGURE IS WITHDRAWN, AND IT IS OURS.** The C-4 retrain contingency was
+    banked as *"+1× the training leg, i.e. roughly doubling worst-case spend"* → **~$66–100 /
+    ~$86–130 forced**, and has been quoted in every budget discussion since. **That holds only if
+    training is ~half the spend; measured, it is 2.6–6.1%.** Corrected: **+$1.51–2.32** at the
+    current budget, **+$19.62–30.19** at the raised one. **Not a doubling.**
+  - **THE SINGLE RECOSTED WORST CASE**, on measured 4090 throughput at the money surface and the
+    measured 13.175% determinism penalty (applied to TRAINING only, because that is where it was
+    measured): **recommended pair (budget raised, B1 forced, C-4 dropped) = $51–79 → top up
+    against $79**; if C-4 stays binding, **$70–109 → $109**. The **eval leg is INFERRED**, not
+    measured (approved band minus measured training = $30.98–48.69), and cannot be measured
+    without spend — the recipe's `chunk=512` OOM'd locally and the only local datum is a `chunk=64`
+    floor on other hardware.
+  - **★ THE INTERACTION THAT MAKES IT ONE DOCUMENT: approving the cheap budget silently forecloses
+    the recommended C-4 resolution.** The saturation criterion needs eval-interval 5,000 ×
+    patience 4 = **≥25,000 steps** to fire; at 2,000 steps **the spec's first evaluation never
+    happens**, so the early-stop machinery would be **inert even if written**. Order: C-3 (free,
+    time-critical) → budget (unlocks C-4) → C-4 → B1 (price then known).
+  - **THE AUTHORITY CORRECTION IS RECORDED AS THE SUPERVISOR'S**, accepted by them: "no prereg
+    constant states it, therefore a budget decision" was right about the freeze and **wrong about
+    the authority** — the design spec states the budget and CLAUDE.md makes the spec a source of
+    truth, so **raising it IMPLEMENTS the blueprint and leaving 2,000 is a standing undisclosed
+    DEVIATION.** Also theirs, found while verifying: the spec's Stage-2 **eval interval is every
+    5,000 steps against a 2,000-step budget — the designed schedule's first evaluation never
+    fires.**
+
 - **v1.6.19 (2026-08-03, THE TRAINING BUDGET IS A SMOKE-TEST CONSTANT — CONFIRMED, COSTED, HELD +
   G-§8.C.3 IS ILL-POSED. Nothing set, nothing implemented; one provenance warning landed.)**
   Local, $0. No weights pulled.

@@ -37,6 +37,24 @@
       "quoted": "8.70%"
     },
     {
+      "context": "published one. Use the published number -> comparing crypto-1m against equities-15m.",
+      "field": ".which_published_figure.contradiction",
+      "file": "runs_manifest/m6_c4_resolvability.json",
+      "quoted": "1m"
+    },
+    {
+      "context": "he published number -> comparing crypto-1m against equities-15m.",
+      "field": ".which_published_figure.contradiction",
+      "file": "runs_manifest/m6_c4_resolvability.json",
+      "quoted": "15m"
+    },
+    {
+      "context": "would be 0.02159 vs 0.05287 -- a spread far larger than the 15% band the gate is made of.",
+      "field": ".which_published_figure.problem",
+      "file": "runs_manifest/m6_c4_resolvability.json",
+      "quoted": "15%"
+    },
+    {
       "context": " Stage-2; (b) val <= d48 reference AND corr flat over final 5k steps -> GENUINE architectural FULL STOP with converged evidence; (c) still d",
       "field": ".decision_node",
       "file": "runs_manifest/m6_canary_v5_stage1_manifest.json",
@@ -191,6 +209,30 @@
       "field": ".translation_plant_status",
       "file": "runs_manifest/m6_token_control_run_manifest.json",
       "quoted": "99%"
+    },
+    {
+      "context": "TRAINING IS 2.6-6.1% OF THE BUDGET; EVAL IS ~94-97%",
+      "field": ".cost_split_MEASURED.conclusion",
+      "file": "runs_manifest/m6_training_budget.json",
+      "quoted": "6.1%"
+    },
+    {
+      "context": "TRAINING IS 2.6-6.1% OF THE BUDGET; EVAL IS ~94-97%",
+      "field": ".cost_split_MEASURED.conclusion",
+      "file": "runs_manifest/m6_training_budget.json",
+      "quoted": "97%"
+    },
+    {
+      "context": "oint. The design's budget IS compute-optimal; the code's is 7.69% of it.",
+      "field": ".refutation_attempted_and_failed.corroboration",
+      "file": "runs_manifest/m6_training_budget.json",
+      "quoted": "7.69%"
+    },
+    {
+      "context": "1-3 passes over a <=1B-bar corpus, target global batch ~0.5M tokens/step, early stop on val-NLL saturation (spec :1912, :1924)",
+      "field": ".refutation_attempted_and_failed.designed_stage2",
+      "file": "runs_manifest/m6_training_budget.json",
+      "quoted": "0.5M"
     },
     {
       "context": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmpy21s2rot \u2014 artifacts must be indexed",
@@ -742,7 +784,7 @@
   ],
   "amendment": "prereg \u00a77 v1.6 item 4 (supervisor-ordered, local $0)",
   "counts": {
-    "P1": 33,
+    "P1": 40,
     "P2_HIGH": 41,
     "P2_LOW": 35,
     "P2_MEDIUM": 0,
@@ -750,7 +792,7 @@
     "P3": 1
   },
   "file_selection": "git ls-files runs_manifest/*.json \u2014 TRACKED ONLY (\u00a77 v1.6.17)",
-  "n_swept_files": 64,
+  "n_swept_files": 66,
   "patterns": {
     "P1_number_inside_a_string_field": "a datum that cannot be read programmatically",
     "P2_nan_or_zero_numeric_field": "a numeric slot that holds no measurement",
@@ -778,6 +820,7 @@
     "runs_manifest/m6_c1_single_bar_decode.json": "c8975eebee4fbd2847cd7831f6f023e7a03bc0e46c441574880ee4755755b244",
     "runs_manifest/m6_c20_embargo_premise.json": "08a43c5a6d12c4fa66be5cb56c35d962f0365f227b8f6e584451dfd20b3266e1",
     "runs_manifest/m6_c3_dsr_units.json": "0b66727d11968c066e95c71d8da637f6f467debcf1ebe35110704220989d2c5b",
+    "runs_manifest/m6_c4_resolvability.json": "edb1679bef0c0c6b98649e3a034121fc4143583077cb162ff2e5e361ee1e7d2f",
     "runs_manifest/m6_canary_d48_reference.json": "f6cb36cd4fbe329a544da1b100467e1a2e4620ad25dd31649c2d4bc3925beb05",
     "runs_manifest/m6_canary_lr1e3_manifest.json": "4ca60cfca74a16f9cb1410243c6d0e12037c89d08670f000ac507a860c9f1bc9",
     "runs_manifest/m6_canary_lr3e4_manifest.json": "24528f5830a420fa0e376fefd5ae1bb8f2fbe1ff08c9d7060ea7def95ec8f9b4",
@@ -824,6 +867,7 @@
     "runs_manifest/m6_token_control_step0.json": "6c3f8a37f887113978688ed53d3a2d83c490314f9a8384d11538e9a1d59e2ca6",
     "runs_manifest/m6_toy_verdict_manifest.json": "85998939aba1b9e3456138be4dc0d90394d479189453a1d5d5707e8907271d43",
     "runs_manifest/m6_traded_sign_agreement.json": "03b88a5a244a393e532c6ea8f8105b64de7fc3032087010d0a8413c1df0173f9",
+    "runs_manifest/m6_training_budget.json": "7ba49219fe1b1e71c3505045c4b351e1fdfc0e20df6ca60b1072562273a6df78",
     "runs_manifest/m6_vacuity_sweep.json": "2b132b2f1ff4715e22541db3b798bb9d41bdbe6c3df594bdbed5b030f9452e97",
     "runs_manifest/m6_validation_teardown_verification.json": "7565c373f855ed28c68440f3a61819123feb336c7dbc8872772559c217a3d5ad",
     "runs_manifest/m6_verdict_integration_check.json": "c381db01b863257b8bc851daa0ff43fb256632aff322a202ef3a39ecabaae007"

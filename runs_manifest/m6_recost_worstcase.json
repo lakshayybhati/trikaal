@@ -1,0 +1,76 @@
+{
+  "WITHDRAWN_FIGURE": {
+    "corrected": {
+      "retrain_at_2000_steps_usd": [
+        1.51,
+        2.32
+      ],
+      "retrain_at_26003_steps_usd": [
+        19.62,
+        30.19
+      ]
+    },
+    "note": "the banked figure has been quoted in every budget discussion since; it is withdrawn.",
+    "was": "C-4 retrain contingency = +1x the training leg, 'roughly doubling worst-case spend' -> ~$66-100, or ~$86-130 forced",
+    "why_wrong": "that holds only if training is ~half the spend. MEASURED it is 2.6-6.1% of the approved $33-50."
+  },
+  "basis": {
+    "determinism_penalty": "docs/m6_cuda_probe_report.md \u2014 MEASURED 13.175% (forced/unforced 0.8682, i.e. 1.152x slower); applied to TRAINING ONLY",
+    "eval_leg": "INFERRED as the approved band minus measured training ($30.98-48.69). NOT measurable without spend: recipe pins chunk=512 which OOM'd locally (19.69 GiB KV > 20.13 GiB); only local datum is a chunk=64 FLOOR on mps, labelled PENDING the 4090.",
+    "rate_usd_per_hour": [
+      0.26,
+      0.4
+    ],
+    "throughput": "runs_manifest/m6_cuda_probe_cell_manifest.json \u2014 real RTX 4090 at the MONEY surface (seq_len 512, batch 32): stage1 16.7859 steps/s, stage2 3.2967 steps/s"
+  },
+  "determinism_ratio_measured": 1.151808339092375,
+  "eval_overhead_implied": [
+    30.98385433576725,
+    48.68950531824871
+  ],
+  "interaction_that_matters_most": "the saturation criterion needs eval-interval 5000 x patience 4 = >=25,000 steps to fire. At 2,000 steps the first evaluation never happens. APPROVING THE CHEAP BUDGET SILENTLY FORECLOSES THE SATURATION SUBSTITUTION AND THEREFORE OPTION 2C.",
+  "receipt": "m6_recost_worstcase",
+  "scenarios": {
+    "A. leave 2,000 | B1 forced | C-4 binding (retrain fires)": {
+      "total_usd": [
+        34.00273174132193,
+        53.333932096025144
+      ],
+      "train_gpu_h": 5.805533472220538
+    },
+    "B. leave 2,000 | B1 forced | C-4 dropped": {
+      "total_usd": [
+        32.49329303854459,
+        51.01171870713693
+      ],
+      "train_gpu_h": 5.805533472220538
+    },
+    "C. raise to 26,003 | B1 forced | C-4 dropped  <-- recommended pair": {
+      "total_usd": [
+        50.60882162992684,
+        78.88176269387884
+      ],
+      "train_gpu_h": 75.48064343907532
+    },
+    "D. raise to 26,003 | B1 forced | C-4 binding (retrain fires)": {
+      "total_usd": [
+        70.23378892408643,
+        109.07402006950898
+      ],
+      "train_gpu_h": 75.48064343907532
+    },
+    "E. raise to 26,003 | B1 unforced | C-4 dropped": {
+      "total_usd": [
+        48.0222509405566,
+        74.90242317177079
+      ],
+      "train_gpu_h": 65.5322946338052
+    }
+  },
+  "source": "m6_cuda_probe_cell_manifest + m6_cuda_probe_report",
+  "top_up_against": {
+    "if_C4_stays_binding_D": 109,
+    "recommended_pair_C": 79
+  },
+  "what": "the SINGLE recosted worst-case total across the four pending decisions"
+}
