@@ -12,8 +12,11 @@ record ``platform.python_version()`` per unit and compare it across shards.
 
 from __future__ import annotations
 
+import hashlib
+import os
 import platform
 import sys
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -21,7 +24,14 @@ import torch
 # The fields that must AGREE across shards for a verdict to assemble. The 25 units are ONE paired
 # comparison; a cell computed on a different instrument is a different experiment. Deliberately
 # excludes seed and unit label, which are meant to vary.
+# §7 v1.6.23 (FAN-OUT): `image` and `lockfile_sha256` were MISSING from the identity surface.
+# Two boxes can carry identical torch/numpy/driver strings and still differ in container image
+# (different CUDA userspace, different BLAS) or in the resolved dependency set. Across 5 shards
+# that is 5 chances for an unrecorded difference to sit inside one paired comparison. They are
+# identity keys now, so a mismatch REFUSES rather than being invisible.
 PROVENANCE_IDENTITY_KEYS = (
+    "image",
+    "lockfile_sha256",
     "gpu_name",
     "cuda_build",
     "driver_version",
@@ -58,7 +68,19 @@ def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> d
             driver = str(torch._C._cuda_getDriverVersion())
         except (AttributeError, RuntimeError):
             pass
+    # The container image is not introspectable from inside the process; the launcher stamps it
+    # via TRIKAAL_IMAGE. "unavailable" is the honest value when it was not set, and because it is
+    # an IDENTITY key, a run where SOME shards set it and others did not is a REFUSAL, not a
+    # silent pass — which is the case that would otherwise slip through.
+    image = os.environ.get("TRIKAAL_IMAGE", UNAVAILABLE)
+    lock = Path("uv.lock")
+    try:
+        lock_sha = hashlib.sha256(lock.read_bytes()).hexdigest() if lock.exists() else UNAVAILABLE
+    except OSError:
+        lock_sha = UNAVAILABLE
     return {
+        "image": image,
+        "lockfile_sha256": lock_sha,
         "gpu_name": gpu_name,
         "cuda_build": cuda_build,
         "driver_version": driver,

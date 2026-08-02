@@ -205,6 +205,44 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.23 (2026-08-03, RUN PREPARATION — fan-out refusal, runbook, assembly dry run. No new
+  investigation; the re-audit is external and none of it is the builder's.)** Local, $0.
+  - **★ A CORRECTION IN A COMMIT MESSAGE, WHICH MAKES IT PERMANENT — AND IT RUNS HARSHER THAN ITS
+    OWN RECEIPT.** `591ec44` says the measured eval leg was *"up to 2.5x the banked figure"*. That
+    **mixes endpoints**: measured-at-$0.40 against inferred-at-the-bottom. **At matched rates it is
+    1.60–1.64×** ($50.67/$30.98 = 1.64; $77.95/$48.69 = 1.60). Still a serious underestimate and
+    still the right catch — but the number as written overstates it. **This is the same defect as
+    prose running SOFTER than its receipt, which was taken as a standing correction two tranches
+    ago, and it is recorded on identical terms: THE ARTIFACT WINS IN BOTH DIRECTIONS.** The
+    receipt `m6_integrated_price.json` carries the honest ratio; the commit message cannot be
+    edited, so the correction lives here.
+  - **THE FAN-OUT REFUSAL IS WIRED, AND TWO IDENTITY KEYS WERE MISSING.** `provenance_failures`
+    was already a hard refusal via `load_cell_evals` → `VerdictInputError`, but
+    `PROVENANCE_IDENTITY_KEYS` did not include the **container image** or the **lockfile hash** —
+    two boxes can carry identical torch/numpy/driver strings and still differ in CUDA userspace or
+    resolved dependency set. Both added (13 keys). `TRIKAAL_IMAGE` is stamped by the launcher and
+    `"unavailable"` is the honest value when unset — which, being an identity key, means a run
+    where SOME shards stamp it and others do not is a **refusal**, the case that would otherwise
+    slip through.
+  - **EVERY KEY MUTATION-PROVEN.** `tests/run/test_fanout_refusal.py` — 18 tests. Discrimination
+    first (a uniform fan-out MUST assemble, or every refusal below is vacuous), then one drifted
+    unit on **each of the 13 keys**, each required to refuse and to NAME the key. The drifted unit
+    is #7 (shard 2) deliberately: an off-by-one in the partition would make unit 0 a special case
+    and hide the general failure. Plus the absence case — a shard whose launcher never stamped.
+  - **THE ASSEMBLY DRY RUN — `runs_manifest/m6_fanout_dry_run.json`, GREEN, $0.** 25 fabricated
+    units across 5 simulated shards: exact disjoint cover ✓, empty matrix refused ✓, uniform
+    fan-out assembles to a verdict word with **one** distinct provenance stamp ✓, **13/13 keys
+    refuse** ✓. Scope stated in the receipt: it proves the ASSEMBLY contract, not that the launcher
+    stamps correctly on a real box — **that is verified by shard 0's artifact before the other four
+    launch.**
+  - **THE RUNBOOK IS EXECUTABLE AND COSTED — `docs/m6_fanout_runbook.md`.** Five boxes: 54.1 h
+    wall, 273.4 billed GPU-h, **$79–109**, a preemption costs 1/5. Setup measured at **~17 min per
+    box** (10 min image pull + **6m41s pinned-torch install**, because the image ships torch 2.5.1
+    and we pin 2.12.1) — **90% of the probe's cost, and it must be in the plan rather than
+    discovered again.** Standing lesson recorded: **cost a rental as `setup + compute`, never
+    `compute`.** Credential rule R1 is explicit: the repo is private, so scp a tarball; no token
+    ever reaches a rented box. R5 records the `destroy` trap verbatim.
+
 - **v1.6.22 (2026-08-03, ★ THE FOUR DECISIONS IMPLEMENTED + THE EVAL LEG MEASURED. The project
   now has a TERMINATION CONDITION and a pre-committed run-blocking bar.)** Probe cost **$0.14**.
   - **THE TERMINATION CONDITION.** Lakshay's diagnosis, accepted: the audit-fix-reaudit loop had

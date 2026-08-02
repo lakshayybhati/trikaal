@@ -1,0 +1,88 @@
+{
+  "identity_keys": [
+    "image",
+    "lockfile_sha256",
+    "gpu_name",
+    "cuda_build",
+    "driver_version",
+    "torch",
+    "numpy",
+    "python",
+    "platform",
+    "attention_mode",
+    "deterministic_algorithms",
+    "cudnn_deterministic",
+    "cudnn_benchmark"
+  ],
+  "n_keys_refusing": 13,
+  "n_shards": 5,
+  "n_units": 25,
+  "one_drifted_unit_refuses": {
+    "attention_mode": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "cuda_build": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "cudnn_benchmark": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "cudnn_deterministic": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "deterministic_algorithms": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "driver_version": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "gpu_name": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "image": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "lockfile_sha256": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "numpy": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "platform": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "python": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "torch": {
+      "names_the_key": true,
+      "refused": true
+    }
+  },
+  "partition": {
+    "empty_matrix_refused": true,
+    "exact_disjoint_cover": true
+  },
+  "receipt": "m6_fanout_dry_run",
+  "scope_limit": "fabricated artifacts, not a trained run: this proves the ASSEMBLY contract, not that the launcher stamps correctly on a real box. The launcher side is the runbook's job and is verified by the first shard's artifact, not by this script.",
+  "uniform_fanout": {
+    "assembled": true,
+    "distinct_provenance_stamps": 1,
+    "units_loaded": 25,
+    "verdict": "NULL"
+  },
+  "verdict": "GREEN \u2014 a uniform fan-out assembles and a ONE-UNIT drift on EVERY identity key refuses",
+  "what": "fan-out assembly dry run \u2014 25 units across 5 simulated shards, $0, local"
+}
