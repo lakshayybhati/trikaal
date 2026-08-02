@@ -53,6 +53,19 @@ PINNED_BACKBONE_PARAMS = 21_301_248  # the realized count (CLAUDE.md invariant),
 # caller passing "argmax" would silently restore the biased mode-decode that v1.4.2 was written to
 # remove, and nothing anywhere would notice.
 PINNED_MU_ESTIMATOR = "expectation"  # §7 v1.4.2: the conditional-MEAN decode
+# ★ PROVENANCE WARNING (§7 v1.6.19) — THIS VALUE IS A SMOKE-TEST DEFAULT, NOT A DESIGNED BUDGET.
+# 2000 entered the repo in commit a4d242e, in the SAME dataclass literal as `seeds = (0,1,2)` and
+# `seq_len = 128` — the two values C-6 later identified as the train/eval split-brain. Those two
+# had pinned counterparts and were corrected; the step budget had none, so it survived, and the
+# §7 v1.6.15 C-18 fix then PINNED it. There is now a mutation KAT defending a rehearsal value.
+#   * `docs/superpowers/specs/…-v1-design.md:1762-1763` uses "<= 2000 steps" as the G1
+#     OVERFIT-A-SINGLE-BATCH SMOKE GATE threshold — that is where the number is from.
+#   * The DESIGNED Stage-2 budget in the same spec (:1912, :1924) is "1-3 passes over a <=1B-bar
+#     corpus" with early-stop on val-NLL saturation, at a target global batch of ~0.5M tokens/step.
+#   * What these constants actually run: 2000 x 32 x 512 = 32,768,000 tokens = 1.54 tokens/param
+#     = 7.69% of compute-optimal = 0.108 epochs over the 304,625,181-bar lake.
+# NOT FIXED HERE: no prereg constant states the budget, so setting it is a BUDGET decision and
+# therefore Lakshay's, not a specification change. See docs/m6_training_budget_decision.md.
 PINNED_STEPS_STAGE1 = 2000
 PINNED_STEPS_STAGE2 = 2000
 PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}

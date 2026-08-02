@@ -287,3 +287,96 @@ retrain contingency is not a contingency — it is the expected path, and its co
 that is the reasonable planning assumption. **Lakshay should be told this before he funds the run,
 not after it halts** — and (ii) should be run first, because a gate that cannot resolve its own band
 changes the question entirely.
+
+---
+
+# UPDATE 2026-08-03b (§7 v1.6.19) — RESOLVABILITY (ii): THE BAND IS FINE. THE GATE IS ILL-POSED.
+
+Ruling 2 ordered resolvability settled before anything touches an invariant. It is settled, and
+the answer is not the one I expected — **my own "force 3" worry was wrong, and something worse sits
+underneath it.**
+
+## (a) WHICH published figure? THERE ARE TWO, AND THEY DIFFER BY 2.4×
+
+From the paper (arXiv:2508.02739), **Table 2**, `Kronos_small`:
+
+| task | IC | **RankIC** |
+|---|---|---|
+| Price Series Forecasting | 0.0431 | **0.0254** |
+| Return Forecasting | 0.0665 | **0.0622** |
+| Volatility Forecasting | MAE 0.0384 | R² 0.2490 |
+
+**The gate says "0.85 × published Kronos-small RankIC". That is 0.0216 or 0.0529 depending on
+which row you pick — and the prereg does not say.** The threshold is not under-specified at the
+margin; **it is a factor of 2.4 apart**, which is larger than the 15 % band the gate is made of.
+
+## (b) AND BOTH ARE ON A DIFFERENT ASSET CLASS, FREQUENCY AND TASK
+
+Table 2's caption: *"the dataset of **Shanghai Stock Exchange, 15-minute frequency**"*.
+
+- **Asset class:** Chinese A-share equities. Ours is crypto perpetual futures.
+- **Bar frequency:** 15-minute bars. Ours is **1-minute** bars (our `h=15` is fifteen 1-minute
+  bars, which is not the same object).
+- **Task:** "price series" / "return" forecasting as Kronos defines them, not our forward
+  log-return at stride h under a cost-aware execution filter.
+
+**This makes the gate as written internally contradictory.** The prereg requires *both*:
+(1) the comparator be the **published** RankIC, and (2) the comparison be run **"on the pinned
+common slice … fed Kronos's own input pipeline"**. Those cannot both hold: run Kronos on our
+crypto slice and you produce a **new** number, not the published one; use the published number and
+you are comparing a crypto-1m model against an equities-15m figure.
+
+**AND IT KILLS STEPS 1–2/4 AS A METRIC CROSS-CHECK, INDEPENDENTLY OF EVERYTHING ELSE.** The stated
+purpose was to *"validate OUR METRIC IMPLEMENTATIONS against an external reference"* by reproducing
+Kronos's published numbers. You cannot reproduce a Shanghai-Stock-Exchange number on a BTC slice.
+Doing it properly would need **SSE 15-minute equity bars**, which we do not have and which
+CLAUDE.md firewalls out of v1 (*"Equities / cross-asset data"*, out of scope). **The external
+metric check, as specified, is not available to us at any price.**
+
+## (c) THE BAND ITSELF IS RESOLVABLE — I WAS WRONG ABOUT THIS
+
+Measured with the project's own `ic_screen.effective_sample_size` on the **pinned 40 symbols** over
+the **pinned primary region**, non-overlapping stride-15 forward returns:
+
+| quantity | value |
+|---|---|
+| raw stride-15 periods (summed over 40 symbols) | 1,402,560 |
+| autocorrelation-deflated N_eff (summed) | **1,401,637** (ratio 0.999) |
+| SE(RankIC) = 1/√N_eff | **0.00084** |
+
+| published figure | RankIC | 0.85× threshold | 15 % band | band / SE | verdict |
+|---|---|---|---|---|---|
+| Table 2 price-series | 0.0254 | 0.02159 | 0.00381 | **4.51** | RESOLVABLE |
+| Table 2 return-forecast | 0.0622 | 0.05287 | 0.00933 | **11.05** | RESOLVABLE |
+
+**Caveat, stated because it cuts against the conclusion:** summing per-symbol N_eff assumes
+cross-sectional independence, which crypto badly violates. This is an **upper bound** on N_eff.
+If the 40 symbols behave like ~3–5 independent factors, SE rises ~2.8–3.6× and the band becomes
+**1.3–1.6 SE** for the price-series figure (marginal) and **3.1–3.9 SE** for the return figure
+(comfortable). Autocorrelation is *not* the binding deflation here — the ratio is 0.999, consistent
+with the signed-return ACF of ~0.007 at lag 60 measured in §7 v1.6.16.
+
+**So: sampling noise is not the obstacle I speculated it was.** I flagged it as possibly decisive
+and it is not, except marginally at the smaller of the two figures.
+
+## (d) CONCLUSION — SAME DESTINATION AS RULING 2, DIFFERENT ROUTE
+
+Ruling 2 said: *"If it is not resolvable, the gate as specified is not a gate and that conclusion
+goes to Lakshay ahead of any implementation work."*
+
+**It IS resolvable, and the gate as specified is still not a gate** — because its threshold is
+ambiguous by 2.4×, its reference is measured on an asset class we have firewalled out of v1, and
+its two requirements (published number / common slice) cannot both be satisfied.
+
+**No further C-4 implementation work should proceed until the gate is re-specified**, and that is a
+prereg/ROADMAP change — Lakshay's, alongside the invariant-8 question. The candidate
+re-specifications, for whoever rules:
+
+1. **Run Kronos-small on OUR crypto slice and compare Cell 1 against THAT** (not the published
+   figure). Well-posed, needs the invariant-8 ruling, and — usefully — it becomes an
+   apples-to-apples baseline instead of a cross-market one.
+2. **Keep the published figure but state which row and accept the domain gap as a disclosed
+   limitation.** Cheap, and weak: a crypto-vs-equities RankIC ratio is not a baseline check.
+3. **Drop it as a binding gate, keep it as a reported diagnostic.** A ROADMAP change.
+4. **Replace it with an internal sanity floor** (e.g. Cell 1 must beat a documented naive
+   benchmark on our own slice). Loses the external anchor, which was the whole point.

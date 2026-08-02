@@ -205,6 +205,74 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.19 (2026-08-03, THE TRAINING BUDGET IS A SMOKE-TEST CONSTANT — CONFIRMED, COSTED, HELD +
+  G-§8.C.3 IS ILL-POSED. Nothing set, nothing implemented; one provenance warning landed.)**
+  Local, $0. No weights pulled.
+  - **★ THE SUPERVISOR'S FINDING IS CONFIRMED, AND MY REFUTATION ATTEMPT MADE IT STRONGER.** I
+    tried three ways to refute it and all three failed.
+    - `steps_stage1 = steps_stage2 = 2000` is the design spec's **G1 overfit-a-single-batch SMOKE
+      GATE** threshold (`:1762-1763`, *"within ≤ 2000 steps"*). No sizing argument exists anywhere
+      in design, prereg, roadmap or commit history.
+    - **It entered in commit `a4d242e` in the SAME dataclass literal as `seeds = (0,1,2)` and
+      `seq_len = 128`** — the two values C-6 later identified as the train/eval split-brain. Those
+      two had pinned counterparts and were corrected; the step budget had none, so it survived, and
+      **§7 v1.6.15 C-18 then pinned it.** There is now a mutation KAT defending a rehearsal value.
+      **This is the C-6 mechanism, third instance.**
+    - **AND THE HONEST VERSION IS SHARPER THAN "NEVER DESIGNED": IT WAS DESIGNED AND THE CODE DOES
+      NOT IMPLEMENT IT.** The spec specifies Stage-2 *"1–3 passes over a ≤1B-bar corpus"* at
+      *"≈0.5M tokens/step"* with early-stop on val-NLL saturation (`:1912`, `:1924`); the code runs
+      **0.108 epochs at 16,384 tokens/step** — **9–28× short on epochs, 30× on batch**. Stage 1 is
+      30–60× short of its own designed 1–2B bar-reconstructions. That is worse than an unexamined
+      default, because a reader of the spec has every reason to believe the budget exists.
+    - **CORROBORATION:** the designed 1–3 passes over our 304,625,181-bar lake is **14.3–42.9
+      tokens/param**, which BRACKETS the ~20 compute-optimal point. **The design's budget IS
+      compute-optimal; the code's is 7.69% of it.**
+  - **★ THE COST SPLIT, MEASURED — THE SUPERVISOR'S INTUITION WAS RIGHT AND IS NOW A NUMBER.**
+    Throughput is measured on a **real 4090 at the exact money surface** (`seq_len=512`,
+    `batch=32`; `m6_cuda_probe_cell_manifest.json`): Stage 1 **16.7859 steps/s**, Stage 2
+    **3.2967 steps/s**. **Training all 25 units costs 5.04 GPU-hours = $1.31–2.02 — 2.6–6.1% of
+    the approved $33–50. Eval is the other ~94–97%. We are spending ~95% of the budget evaluating
+    a model we trained for 3% of it.** The eval leg **cannot** be costed without spend, precisely:
+    the recipe pins `chunk=512`, which **OOM'd locally** (19.69 GiB KV cache > 20.13 GiB), and the
+    only local datum is a `chunk=64` FLOOR on `mps` labelled *"PENDING the 4090"*.
+  - **THE CURVE, FOR LAKSHAY TO CHOOSE A POINT ON** (`docs/m6_training_budget_decision.md`,
+    receipt `runs_manifest/m6_training_budget.json`): **13× the training budget — 2,000 → 26,003
+    steps, i.e. 7.7% → 100% of compute-optimal and 1.40 passes over the lake — costs +$15.73 to
+    +$24.20**, taking the run from $33–50 to ~$49–74. **Because eval dominates, the training
+    budget is cheap to fix.** Builder's view, on a decision that is not his: take it, because at
+    0.108 epochs **a flat ΔIR(4−5) cannot distinguish "microstructure does not help" from "we
+    stopped before it could"** — the false-NULL mode ruled Tier-1 blocking for C-10, at the scale
+    of the whole experiment. **HELD. No budget set: no prereg constant states it, so this is a
+    BUDGET decision, not a specification change, and it does not reopen the freeze.**
+  - **ONLY VISIBILITY WAS CHANGED, AS AUTHORISED:** `conformance.PINNED_STEPS_STAGE1/2` now carries
+    a provenance warning naming the smoke-gate origin, the commit, the designed budget it
+    displaced and the 7.69% figure. The value, the pin and the KAT are untouched.
+  - **★ G-§8.C.3 — RESOLVABILITY SETTLED, AND THE GATE IS ILL-POSED FOR A MORE BASIC REASON.**
+    Receipt `runs_manifest/m6_c4_resolvability.json`.
+    - **WHICH FIGURE: there are TWO, differing by 2.4×.** Paper Table 2, `Kronos_small`: RankIC
+      **0.0254** (price-series) and **0.0622** (return-forecasting) → thresholds 0.02159 vs
+      0.05287. **The spread is far larger than the 15% band the gate is made of**, and the prereg
+      does not say which.
+    - **AND BOTH ARE ON SHANGHAI STOCK EXCHANGE, 15-MINUTE BARS** — equities, not crypto; 15-minute
+      bars, not our 1-minute bars. **The gate's two requirements cannot both hold:** run Kronos on
+      our slice and you get a NEW number, not the published one; use the published number and you
+      are comparing crypto-1m against equities-15m.
+    - **THIS ALSO KILLS STEPS 1–2/4 AS A METRIC CROSS-CHECK, INDEPENDENTLY.** Validating our
+      metrics by reproducing Kronos's published numbers would need **SSE 15-minute equity bars**,
+      which CLAUDE.md firewalls out of v1. **The external metric check as specified is unavailable
+      at any price** — not merely unscheduled.
+    - **THE BAND ITSELF IS RESOLVABLE, AND MY OWN SPECULATION IS WITHDRAWN.** Measured with the
+      project's `ic_screen.effective_sample_size` on the pinned 40 symbols over the pinned region:
+      raw 1,402,560 stride-15 periods, **N_eff 1,401,637 (deflation ratio 0.999)**, SE(RankIC)
+      **0.00084**, band/SE **4.51** (price-series) and **11.05** (return). Autocorrelation is not
+      the binding term. Caveat stated because it cuts against the conclusion: summing per-symbol
+      N_eff assumes cross-sectional independence, so this is an UPPER BOUND — at ~3–5 independent
+      factors the band is 1.3–1.6 SE (marginal) / 3.1–3.9 SE (comfortable). **I flagged sampling
+      noise as possibly decisive in v1.6.18; measured, it is not.**
+    - **Ruling 2's destination reached by a different route: no further C-4 implementation work
+      should proceed until the gate is re-specified**, which is a prereg/ROADMAP change and
+      Lakshay's, alongside the invariant-8 question. Four candidate re-specifications are tabled.
+
 - **v1.6.18 (2026-08-03, THE AUDIT PERSISTED VERBATIM + C-4: THE BINDING ENTRY GATE THAT HAD NO
   IMPLEMENTATION. One gate written and wired, fail-closed; nothing decided that is Lakshay's.)**
   Local, $0. **No weights were pulled** — metadata and licence text only, per the hard stop.

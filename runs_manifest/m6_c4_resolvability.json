@@ -1,0 +1,29 @@
+{
+  "conclusion": "The band is resolvable and the gate is STILL not a gate: ambiguous threshold (2.4x), reference measured on a firewalled asset class, and two requirements that cannot both hold. Re-specification is a prereg/ROADMAP change -- Lakshay's, alongside the invariant-8 question. NO further C-4 implementation work should proceed.",
+  "receipt": "m6_c4_resolvability",
+  "resolvability_MEASURED": {
+    "band_over_se_price_series": 4.51,
+    "band_over_se_return_forecast": 11.05,
+    "builder_correction": "I speculated sampling noise might make the gate indecisive (force 3, v1.6.18). MEASURED, IT DOES NOT -- autocorrelation deflation is 0.999, not the binding term. That speculation is withdrawn.",
+    "caveat_against_the_conclusion": "summing per-symbol N_eff assumes cross-sectional independence, which crypto violates; this is an UPPER BOUND. At ~3-5 independent factors SE rises 2.8-3.6x -> band 1.3-1.6 SE (price-series, marginal) and 3.1-3.9 SE (return, comfortable).",
+    "deflation_ratio": 0.999,
+    "method": "trikaal.eval.ic_screen.effective_sample_size on the pinned 40 symbols over the pinned primary region, non-overlapping stride-15 forward returns",
+    "n_eff_summed": 1401637,
+    "raw_periods_summed": 1402560,
+    "se_rankic": 0.0008446,
+    "verdict": "RESOLVABLE at the upper-bound N_eff"
+  },
+  "what": "Resolvability (ii) for G-\u00a78.C.3, plus which published figure and slice. $0.",
+  "which_published_figure": {
+    "bigger_problem": "both are EQUITIES at 15-MINUTE BARS. Ours is crypto perps at 1-minute bars (our h=15 is fifteen 1-minute bars, a different object).",
+    "contradiction": "the prereg requires BOTH the PUBLISHED number AND 'on the pinned common slice fed Kronos's own input pipeline'. Run Kronos on our slice -> a NEW number, not the published one. Use the published number -> comparing crypto-1m against equities-15m.",
+    "dataset_in_the_caption": "Shanghai Stock Exchange, 15-minute frequency",
+    "ic_price_series": 0.0431,
+    "ic_return_forecasting": 0.0665,
+    "kills_steps_1_2_4": "the stated purpose was validating OUR METRICS against an external reference by reproducing Kronos's published numbers. You cannot reproduce an SSE number on a BTC slice; it would need SSE 15-min equity bars, which CLAUDE.md firewalls out of v1. The external metric check as specified is unavailable at any price.",
+    "problem": "TWO RankIC rows differing by 2.4x; the prereg does not say which. Thresholds would be 0.02159 vs 0.05287 -- a spread far larger than the 15% band the gate is made of.",
+    "rankic_price_series": 0.0254,
+    "rankic_return_forecasting": 0.0622,
+    "source": "arXiv:2508.02739 Table 2, model row Kronos_small"
+  }
+}
