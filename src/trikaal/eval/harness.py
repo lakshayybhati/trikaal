@@ -8,6 +8,20 @@ exercises the held-out-symbol Q3/Q4 code path on a synthetic 2-symbol fixture.
 
 **The numbers are meaningless** (dev-grade model, one symbol, synthetic Q3/Q4) — M5 proves the
 machine runs and is leak-free, not any result. Crash-safe and content-hashed by the runner.
+
+**SCOPE CORRECTION (§7 v1.6 C-13).** This module was described as M5-only. **It is not.**
+``eval/xsection.py:36`` imports ``HEADLINE_COST``, ``KAPPAS``, ``_per_bar_cost`` and
+``forward_log_returns`` from here, and ``xsection`` is the M6 **money** eval path — so these four
+symbols are inside the M6 decision path and their behaviour is load-bearing for the headline.
+
+What that changes and what it does NOT:
+  * **The FREEZE STANDS.** ``run_harness`` remains the M5 machine-validation instrument, is still
+    the Gate-A anchored replay, and its OUTPUT may never be quoted as the M6 outcome. Nothing here
+    is edited to alter behaviour.
+  * **The DESCRIPTION was wrong**, and a wrong scope description is how a "frozen, M5-only" file
+    gets edited by someone who does not realise the money path depends on it. Corrected here.
+  * ``_per_bar_cost`` is imported across module boundaries despite its leading underscore —
+    recorded, not renamed: renaming it would touch the anchored instrument for cosmetic reasons.
 """
 
 from __future__ import annotations
@@ -210,7 +224,8 @@ def run_harness(
     # n_trials=240 here is the HISTORICAL M5 budget, kept numerically because run_harness is the
     # M5 machine-validation instrument frozen under the Gate-A anchor (3f86882a…) — it is NOT the
     # M6 decision path and its DSR is never quoted as the M6 outcome. The governing recipe is
-    # prereg §3 clause 5: N=180 ENUMERATED trials (5 cells × 3 seeds × horizons {5,15,60} × 4 κ;
+    # prereg §3 clause 5: N=60 ENUMERATED trials (5 cells × horizons {5,15,60} × 4 κ — seeds are
+    # REPLICATES and excluded from the multiplicity count, §7 v1.5 A.5;
     # h=1 is not evaluated in M6), computed ONLY by scripts/m6_verdict.py under the
     # conformance.PINNED_DSR pin.
     n_trials = 5 * 3 * 4 * len(KAPPAS)

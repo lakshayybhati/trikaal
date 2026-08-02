@@ -8,7 +8,7 @@ the M6 outcome (docs/m6_prereg.md §3; the third pre-training audit's finding #1
 
 The pipeline (docs/m6_prereg.md §3, §3a, §5 — every constant pinned there):
 
-1. the 15 per-(cell, seed) eval artifacts (5 cells × seeds {0,1,2}) are loaded **by content
+1. the 25 per-(cell, seed) eval artifacts (5 cells × seeds {0,1,2,3,4}) are loaded **by content
    hash** — each file's sha256 must match the driver-written index; any mismatch is a hard stop;
 2. per cell, the **seed-mean pooled calendar series** on the §3a money grid (full calendar,
    flat periods = 0.0 — xsection's convention keeps every cell time-aligned);
@@ -18,12 +18,14 @@ The pipeline (docs/m6_prereg.md §3, §3a, §5 — every constant pinned there):
    (no-ceiling: the operative threshold is ALWAYS the realized MDE_paired, in either direction
    vs the §2 tabled value — both are recorded); (3) CI lower bound of ΔIR(4−2) > 0, with the
    (5−2) ci_upper < 0 "shuffle harmed" disclosure flag (never gating); (4) ΔIR ≥ 0.5 annualized
-   (the economic floor); (5) DSR ≥ 0.95 with SR₀ from **N = 180 enumerated trials** (5 cells ×
-   3 seeds × horizons {5,15,60} × 4 κ — every VAL entry persisted in the artifacts, the trial
-   set is enumerated and cross-product-asserted, never assumed), var_sr = variance of the 180
-   de-annualized per-trial VAL IRs, statistic + higher moments = Cell 4's seed-mean series;
+   (the economic floor); (5) DSR ≥ 0.95 with SR₀ from **N = 60 enumerated trials**
+   (5 cells × horizons {5,15,60} × 4 κ — SEEDS EXCLUDED, they are replicates not configurations,
+   §7 v1.5 A.5; every VAL entry persisted in the artifacts, the trial set is enumerated over the
+   FULL cross-product INCLUDING seeds as the audit trail and cross-product-asserted, never
+   assumed), var_sr = the ddof=0 variance of the CELL-5 (placebo) trial values — NOT all arms
+   (§7 v1.5 A.4) — statistic + higher moments = Cell 4's seed-mean series;
 5. on NULL, §5's fallback: IR(2)−IR(1) is CLAIMED only if it passes the IDENTICAL paired rule
-   (CI > 0, ≥ its own MDE_paired, ≥ 0.5, DSR ≥ 0.95 on Cell 2's series under the same N=180
+   (CI > 0, ≥ its own MDE_paired, ≥ 0.5, DSR ≥ 0.95 on Cell 2's series under the same N=60
    budget), else DESCRIPTIVE_ONLY — double-NULL is a stated possible outcome.
 
 The manifest is durable and content-hashed; the final word exists nowhere else.
@@ -205,7 +207,7 @@ def write_cell_eval_artifact(
 
 
 def write_eval_index(out_dir: Path, entries: dict[str, str]) -> Path:
-    """Write the content-hash index over the 15 artifacts: ``{name: sha256}``."""
+    """Write the content-hash index over the 25 artifacts: ``{name: sha256}``."""
     path = Path(out_dir) / INDEX_NAME
     path.write_text(
         json.dumps({"schema": INDEX_SCHEMA, "artifacts": dict(entries)}, sort_keys=True)
@@ -442,7 +444,7 @@ def provenance_failures(evals: dict[tuple[int, int], dict]) -> list[str]:
 
 
 def load_cell_evals(art_dir: Path) -> tuple[dict[tuple[int, int], dict], dict[str, str]]:
-    """Load the 15 artifacts **by content hash** → ``({(cell_id, seed): doc}, {name: sha256})``.
+    """Load the 25 artifacts **by content hash** → ``({(cell_id, seed): doc}, {name: sha256})``.
 
     Hard-fails (:class:`VerdictInputError`, every problem listed) on: a missing index, a missing
     or extra artifact, ANY file whose sha256 diverges from the index, a schema violation, or
@@ -742,7 +744,8 @@ def assemble_verdict(
     pb42 = paired_delta_ir_bootstrap(s[4], s[2], h=PRIMARY_H, per_seed_deltas=_per_seed_delta(4, 2))
     pb52 = paired_delta_ir_bootstrap(s[5], s[2], h=PRIMARY_H)  # diagnostic only, no MDE clause
 
-    # clause 5: the pinned DSR recipe over the ENUMERATED N=180 trial set. The recipe is
+    # clause 5: the pinned DSR recipe over the ENUMERATED trial set (N=60 multiplicity;
+    # the ENUMERATION is the full cells x seeds x horizons x kappas cross-product). The recipe is
     # asserted against conformance.PINNED_DSR — an INDEPENDENT statement of the §3-clause-5
     # constants — before any DSR is computed; var_sr uses the key-sorted ddof=0 construction
     # the pin re-derives bit-exactly (a subset-variance or a ddof drift cannot pass).
@@ -853,7 +856,8 @@ def assemble_verdict(
         )
         fallback = {
             "rule": "§5: IR(2)-IR(1) claimable ONLY under the identical paired rule "
-            "(CI > 0, ≥ its own MDE_paired, ≥ the 0.5 floor, DSR ≥ 0.95, same N=180 budget)",
+            f"(CI > 0, >= its own MDE_paired, >= the {ECON_FLOOR_IR} floor, "
+            f"DSR >= {DSR_THRESHOLD}, same N={DSR_N_TRIALS} budget)",
             "bootstrap_2_minus_1": _pb_dict(pb21),
             "clauses": fb_clauses,
             "word": fb_word,

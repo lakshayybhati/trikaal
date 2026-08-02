@@ -90,8 +90,9 @@ evidence.
      after-cost gain below 0.5 is within seed-jitter scale at these horizons and would not
      justify the added aggTrades data dependency — too small to claim even if significant), AND
   5. **DSR (pinned recipe, v1.2):** DSR ≥ **0.95**, where the statistic is Cell 4's pooled
-     headline series (0.30 % netting, seed-mean), SR₀ = expected-max-Sharpe under **N = 180
-     enumerated trials** (5 cells × 3 seeds × 3 horizons {5,15,60} × 4 κ — **h=1 is not evaluated
+     headline series (0.30 % netting, seed-mean), SR₀ = expected-max-Sharpe under **N = 60
+     enumerated trials** (5 cells × 3 horizons {5,15,60} × 4 κ — **seeds are REPLICATES, not
+     configurations, and are excluded from the multiplicity count** (§7 v1.5 A.5) — **h=1 is not evaluated
      anywhere in M6**; the earlier "4 horizons / 240" budget text is corrected here), var_sr =
      the variance of the 180 recorded per-trial de-annualized IRs (every cell × seed × horizon ×
      κ VAL entry is persisted, so the trial set is enumerable, not assumed), higher moments from
@@ -117,7 +118,9 @@ evidence.
   forward region including block 0; it is **recomputed on blocks 1–5 by the same locked formula**
   (`scripts/m6_prereg.py`) and the refreshed table committed before training — a nuisance-basis
   correction, slightly raising MDE (T shrinks ~1/6), disclosed here first.
-- **Seeds:** exactly **3**, literal values **{0, 1, 2}** (the committed orchestrator defaults).
+- **Seeds:** exactly **5**, literal values **{0, 1, 2, 3, 4}** (§7 v1.5 item D — S=5 UP FRONT;
+  `conformance.PINNED_SEEDS`, which the orchestrator now REFERENCES rather than restating, §7
+  v1.6 C-6).
   No seed added, dropped, or substituted after any eval statistic exists for any cell. A crashed
   run is re-run with the identical seed and config (§3a abort protocol below).
 - **κ:** grid = **{1.0, 1.5, 2.0, 3.0}**. κ* is selected **per cell**, as the argmax of pooled
@@ -135,7 +138,7 @@ evidence.
   cell**; its commit hash + timestamp are appended to §7 at launch, and the eval driver verifies
   (by hash) that the prereg it runs under is this file at that commit. Any later change to those
   files requires a dated §7 entry BEFORE its output is used.
-- **Attention mode:** ONE mode produces all 15 runs and the headline. It is fixed at the
+- **Attention mode:** ONE mode produces all 25 runs and the headline. It is fixed at the
   toy-CUDA rehearsal (flash2 if stable there, else the deterministic-SDPA fallback), **before any
   real cell trains**, and logged in §7. Two modes never coexist inside the trial set.
 - **Aborts / exclusions:** tripwire criteria = `config/m6_tripwires.yaml` at the training-start
@@ -167,7 +170,7 @@ marginal under FSQ [IR(4)−IR(2)] and BSQ [IR(3)−IR(1)]; the per-regime ΔIR_
 **NULL-fallback rule (v1.2 — the fallback is not a free positive claim):** if the §3 primary
 returns NULL, the FSQ-vs-BSQ leg [IR(2)−IR(1)] may be **claimed as a demonstrated improvement
 only if it passes the IDENTICAL paired rule** (paired CI lower bound > 0, ≥ its own MDE_paired,
-≥ the 0.5 floor, DSR ≥ 0.95 under the same N=180 budget) on the same pinned surface (§3a).
+≥ the 0.5 floor, DSR ≥ 0.95 under the same N=60 budget) on the same pinned surface (§3a).
 Otherwise it is reported **descriptively with CIs, claimed as nothing** — and **double-NULL
 ("neither leg survives") is a stated possible outcome of this experiment and of the paper.**
 
@@ -185,10 +188,46 @@ three stacked judgment calls = an unlimited re-run license):**
 - **Failure protocol (pre-committed):** a parity failure **halts the ablation before any Cell-2–5
   eval statistic is computed**. Only Cell-1-side fixes are permitted (its tokenizer/training
   config — never the eval, never the other cells). After the fix, **all five cells retrain from
-  scratch with the same seeds {0,1,2}**, and the event + diff is a dated §7 entry. There is no
+  scratch with the same seeds {0,1,2,3,4}**, and the event + diff is a dated §7 entry. There is no
   other legitimate path to a re-run.
 
 ## 7. Amendment log
+
+- **v1.6.12 (2026-08-02, AUDIT TIER-3 — PRE-REGISTRATION INTEGRITY. Documentation corrections; NO
+  pinned value moved, NO clause touched, NO behaviour changed except one manifest string that now
+  derives from the pins instead of restating them.)** Local, $0.
+  - **C-9 — THE §3/§3a BODY STILL CARRIED THE SUPERSEDED NUMERICS, FIXED.** The amendment log said
+    N=60 / S=5 while the body it amends still read **N = 180**, **"Seeds: exactly 3, {0,1,2}"**,
+    **"ONE mode produces all 15 runs"**, and an N=180 §5 fallback budget. A reader reaching §3
+    first would have taken the superseded design as the specification. All corrected to N=60,
+    seeds {0,1,2,3,4}, 25 runs, with the seeds-are-replicates reason stated at the point of use.
+  - **C-17 — STALE NUMERICS IN SOURCE, INCLUDING ONE THAT SHIPS IN THE MANIFEST.**
+    `verdict.py`'s module docstring described N=180, 15 artifacts, seeds {0,1,2}, and an all-arms
+    `var_sr`; `harness.py:213` likewise. **The one that mattered most:** the §5 fallback `rule`
+    string persisted into the verdict manifest hardcoded *"same N=180 budget"* — the shipped
+    artifact would have carried a false description of its own recipe, the **same defect class as
+    the clause-5 string fixed in v1.6.2, in the sibling clause.** It is now built from
+    `ECON_FLOOR_IR`, `DSR_THRESHOLD` and `DSR_N_TRIALS`, so it cannot disagree with the recipe.
+  - **C-13 — `harness.py` IS INSIDE THE M6 PATH, CONFIRMED AND RE-DESCRIBED.** `xsection.py:36`
+    imports `HEADLINE_COST`, `KAPPAS`, `_per_bar_cost` and `forward_log_returns` from it, and
+    `xsection` is the money eval path — so four symbols are load-bearing for the headline while the
+    file described itself as the M5-only instrument. **The freeze STANDS and nothing was edited to
+    change behaviour**; only the scope description, because a wrong scope description is exactly
+    how a "frozen, M5-only" file gets edited by someone who does not know the money path depends
+    on it. Also recorded, not renamed: `_per_bar_cost` is imported across module boundaries despite
+    its underscore — renaming it would touch the anchored instrument for cosmetic reasons.
+  - **C-8 — REFUTED AS STATED, with a different and real finding underneath.** The audit reported
+    the v1.5 entry as *"asserting both N=60/S=5 and N=180/S=3"*. It does not: it states N=60/S=5 as
+    the pins (items A.5 and D), cites 180/3 only as the values being changed FROM and as what the
+    mutation KATs must reject, and separately pre-registers an S=3 **budget** fallback that was
+    RESOLVED on 2026-07-31 in favour of S=5. That is coherent, not contradictory.
+    **What IS wrong:** the S=3 fallback still read as a live option, and it is now **unreachable in
+    code** — the C-6 money assertion hard-fails any seed set other than `PINNED_SEEDS`, and the
+    verdict requires 25 artifacts, so S=3 can be neither executed nor assembled without moving a
+    pin. Marked **CLOSED** at its site; re-opening it would be a specification change needing its
+    own dated entry. Costs nothing today because the contingency was already resolved, but a
+    pre-registered contingency the code forbids is a contradiction of a different kind than the one
+    reported.
 
 - **v1.6.11 (2026-08-02, C-1 RECORDED AS INDETERMINATE + the DECODE-AGREEMENT disclosure wired to
   the real cells + the handicap interpretation draft extended to BOTH channels. No pinned value
@@ -1038,7 +1077,13 @@ three stacked judgment calls = an unlimited re-run license):**
       specification in all other respects**, with the S=3 multiplier **3.9806** already tabled here.
       The choice between them is then a **budget** decision, never a **specification** one.
     - **OPERATOR DECISION — 2026-07-31: LAKSHAY APPROVED S=5. The contingency is RESOLVED in favour
-      of the pre-registered primary; the S=3 fallback is NOT exercised.** Recorded here as what it
+      of the pre-registered primary; the S=3 fallback is NOT exercised.**
+      **★ AND IT IS NOW UNREACHABLE IN CODE (§7 v1.6.12, C-8).** The C-6 money assertion
+      hard-fails any seed set other than `PINNED_SEEDS`, and the verdict requires 25 artifacts,
+      so an S=3 run cannot be executed or assembled without moving a pin. Since the contingency was
+      RESOLVED in favour of S=5 this costs nothing — but the fallback must be read as **CLOSED**,
+      not as a live option, and re-opening it would be a specification change requiring its own
+      dated entry.** Recorded here as what it
       is: a **BUDGET approval of a pre-registered primary**, taken with **no M6 result in hand and
       nothing seen** — it selects which of two paths already written down on 2026-07-30 gets funded,
       and it is **not a specification choice**. Nothing about the v1.5 specification moved with it:
