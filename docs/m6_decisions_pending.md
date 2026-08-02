@@ -169,6 +169,33 @@ OUR SECOND CLAIM.**
   "converged at capacity" from "flattened because something is broken", so it is only meaningful
   beside the G1 gate and a sane loss level.
 
+### The control stack, corrected — it is five rows, not three
+
+| control | answers | status |
+|---|---|---|
+| **bpt parity** (G-parity, gated) | is the BSQ arm handicapped on *information capacity*? | **ALREADY CONTROLLED** — 19.5–20.5 band, verified 20.0578 vs 20.0000, \|Δ\| 0.058 bits, tokenizer params 0.25 % apart |
+| **recon MAE** (`ohlcv_recon`, REQUIRED per-(cell,seed)) | is the BSQ reconstruction competitive at matched bits? | measured — but the project's own eviction finding says recon fidelity ≠ predictive value |
+| **saturation** | was Cell 1 trained enough? | needs ≥25,000 steps to exist at all (decision 1) |
+| **codebook health** | did our BSQ **collapse**? | **SPECIFIED, NOT ENFORCED — see below** |
+| *(nothing)* | is our BSQ **subtly suboptimal at matched capacity**? | **UNCONTROLLED — this is the disclosure** |
+
+**Attack on the codebook-health control, before agreeing with it.** `diagnostics.codebook_usage`
+computes utilization, Shannon entropy of the empirical token distribution, efficiency and
+perplexity. **Every one of those is a property of the MARGINAL DISTRIBUTION OF CODE IDS. None
+involves the future, the target, or predictive information.** A tokenizer that assigned codes by
+hashing noise would score ~100 % utilization and maximal perplexity. **So it discriminates
+COLLAPSED from NON-COLLAPSED. It does not discriminate CRIPPLED from COMPETENT** — it is a
+degeneracy check, not a quality check, and it is the project's own degeneracy rule inverted (a
+maximally-spread input scores perfectly for free, exactly as a collapsed one does on an agreement
+statistic). This is also the project's own eviction finding: capacity is allocated by variance, and
+utilization measures *that* the bits were spent, never *what on*.
+
+**And it cuts both ways, which is worth stating because it is not obvious.** Our FSQ claim is
+explicitly *"no codebook-collapse failure mode"*. So if our BSQ arm is **healthy**, IR(2)−IR(1)
+**cannot be attributed to collapse avoidance** — which narrows the FSQ claim rather than validating
+the baseline. If our BSQ **collapses**, the comparison is confounded by our own implementation.
+**Neither outcome establishes that our BSQ is competitive.**
+
 ### Options
 
 | | what it is | cost | what it leaves uncontrolled |
@@ -220,11 +247,16 @@ real number.
 
 ## 5. HOW THEY INTERACT — the reason this is one document
 
-1. **Decision 1 is a PRECONDITION for the recommended resolution of decision 2.** The saturation
-   criterion needs eval interval (5,000) × patience (4) = **≥25,000 steps** before it can fire at
-   all. At 2,000 steps the first evaluation never happens. **Approving the cheap budget silently
-   forecloses the saturation substitution, and therefore forecloses option 2C.** This is the single
-   most important sentence in this document.
+1. **Decision 1 is a PRECONDITION for the recommended resolution of decision 2 — and BOTH stages'
+   early-stop machinery is inert at the pinned budget, not just one.**
+
+   | stage | eval interval | patience | steps needed before it can fire | at the pinned 2,000 |
+   |---|---:|---:|---:|---|
+   | Stage 1 (`:1856-1857`) | 2,000 | 5 | **≥12,000** | fires **exactly one** interval |
+   | Stage 2 (`:1914`, `:1924`) | 5,000 | 4 | **≥25,000** | fires **none** |
+
+   **Approving the cheap budget silently forecloses the saturation control, and therefore
+   forecloses option 2C.** This is the single most important sentence in this document.
 2. **Decision 2 changes what you top up against.** Dropping C-4 as binding removes the retrain
    contingency: **$109 → $79** worst case at the raised budget.
 3. **Decision 4's price is set by decision 1** — 13× larger once the budget rises, though still
@@ -247,3 +279,81 @@ real number.
 No budget was set, no gate was dropped, no invariant was amended, no weights were pulled. The only
 thing that changed in code is a **provenance warning** on `PINNED_STEPS_STAGE1/2` recording that
 the value is a smoke-test default rather than a designed budget — visibility, not a decision.
+
+
+---
+
+## 7. ADDENDUM (§7 v1.6.21) — three more items, all Lakshay's
+
+### 7.1 ★ IR(2)−IR(1): withdraw it as a CLAIM — and it is worse than stated
+
+**[SUPERVISOR] recommends withdrawing IR(2)−IR(1) as a claim and reporting it descriptively with
+all three confounds named** (BSQ quality uncontrolled at matched capacity, the 69,632-param C-19
+gap, no external anchor). **The builder agrees, and strengthens the argument in one direction and
+corrects its scope in another.**
+
+**STRONGER THAN "THREE CONFOUNDS": the FSQ leg is the ONLY claim in this design with no internal
+control, and its sole external control has just been found unexecutable.** Cell 5 exists because
+the micro claim needed one — you can destroy information while holding capacity fixed. **You cannot
+construct a "placebo BSQ"**: a BSQ tokenizer with our implementation quality but no quantizer
+benefit is not a thing, because the quantizer *is* the implementation. And recon MAE cannot serve
+as the confound detector, because *reconstructing better at matched bits is the FSQ result itself* —
+the treatment and the control would be the same measurement.
+
+**SCOPE CORRECTION — it touches THREE reported marginals, not one.** The supervisor wrote that the
+confound lands "entirely on IR(2)−IR(1)". The prereg §5 reports **four** 2×2 marginals, and **three
+have a BSQ arm on one side**:
+
+| marginal | arms | affected? |
+|---|---|---|
+| IR(2) − IR(1) | FSQ vs **BSQ** | **YES** |
+| IR(4) − IR(3) | FSQ vs **BSQ** (under micro) | **YES** |
+| IR(3) − IR(1) | **BSQ** vs **BSQ** (micro marginal under BSQ) | **YES — both arms carry it** |
+| IR(4) − IR(2) | FSQ vs FSQ | no |
+
+**The headline ΔIR(4−5) is safe** — both arms are FSQ, as the supervisor says. But the withdrawal,
+if taken, must cover the marginals as a class, not one line of the table.
+
+**The cost, stated plainly:** IR(2)−IR(1) is the consolation prize if the primary returns NULL —
+and it is a consolation prize we *know* is biased in our own favour, reached for exactly when the
+primary has failed. Same principle as C-3: we do not keep a favourable defect because it was
+written down first. **A NULL primary is pre-committed and publishable alone.**
+
+**One clarification the wording needs:** "withdraw as a claim" must not be read as "do not report".
+The recommendation is the primary's own Band-B treatment — *report it with CIs, claim nothing* —
+not deletion.
+
+### 7.2 THE EARLY-STOP CONFLICT — two sources of truth disagree
+
+An outside reviewer proposed using the spec's early-stop as the actual stopping rule rather than a
+fixed step count. **That conflicts with the M6 design, and the conflict is real, not a
+misreading.**
+
+- **`m6_design.md:18`:** *"All cells share … the same training draw … the only varied factors are
+  {quantizer} × {input arm}."*
+- **The v1 spec (`:1912`, `:1924`):** early-stop on val-NLL saturation, patience 4.
+
+**Early stopping is DATA-DEPENDENT**, so it yields 25 different training budgets, and ΔIR(4−5)
+would then confound *"micro helps"* with *"cell 4 trained longer"*. **That is the C-12 class —
+a capacity/exposure asymmetry between treatment and placebo — reintroduced deliberately into the
+PRIMARY.**
+
+| option | what it gives | what it costs |
+|---|---|---|
+| **Fixed matched budget** for all 25 units, with per-cell val-NLL saturation **measured and reported as a required diagnostic** | the matched design is preserved; you still learn where each cell saturated | if a cell saturates early, the extra steps are wasted compute (cheap — training is 2.6–6.1 % of spend) |
+| **Early-stop per cell** | each cell trains exactly as long as it needs | **the stopping point varies with the treatment** — ΔIR(4−5) becomes uninterpretable |
+
+**[SUPERVISOR]'s position, which the builder shares: FIXED matched budget, saturation measured and
+reported.** You get the information without letting the stopping point vary with the treatment.
+**This is a dated reconciliation between two sources of truth and needs Lakshay's signature — not a
+silent winner.**
+
+### 7.3 A FIGURE THAT DOES NOT EXIST, RECORDED SO IT CANNOT PROPAGATE
+
+An outside reviewer has quoted a **"$77 measured"** total for this run. **`grep` across `docs/` and
+`runs_manifest/` returns ZERO occurrences.** No such measurement exists in this repository. The
+only measured cost component is **training** (5.04 GPU-h unforced, $1.31–2.02); **the eval leg —
+94–97 % of the spend — has never been measured at the pinned geometry.** Any total quoted today,
+including the $51–79 and $70–109 in §0, is *training measured + eval inferred*. Recorded here
+because an unsourced number that sounds measured is exactly how a false anchor enters a budget
+discussion — the pipefail lesson, in a spreadsheet.
