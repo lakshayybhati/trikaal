@@ -236,12 +236,33 @@ three stacked judgment calls = an unlimited re-run license):**
     stamps correctly on a real box — **that is verified by shard 0's artifact before the other four
     launch.**
   - **THE RUNBOOK IS EXECUTABLE AND COSTED — `docs/m6_fanout_runbook.md`.** Five boxes: 54.1 h
-    wall, 273.4 billed GPU-h, **$79–109**, a preemption costs 1/5. Setup measured at **~17 min per
-    box** (10 min image pull + **6m41s pinned-torch install**, because the image ships torch 2.5.1
-    and we pin 2.12.1) — **90% of the probe's cost, and it must be in the plan rather than
+    wall, **271.8** billed GPU-h, **$79–109**, a preemption costs 1/5. Setup measured at **~17 min
+    per box** (10 min image pull + **6m41s pinned-torch install**, because the image ships torch
+    2.5.1 and we pin 2.12.1) — **90% of the probe's cost, and it must be in the plan rather than
     discovered again.** Standing lesson recorded: **cost a rental as `setup + compute`, never
     `compute`.** Credential rule R1 is explicit: the repo is private, so scp a tarball; no token
     ever reaches a rented box. R5 records the `destroy` trap verbatim.
+  - **CORRECTED 2026-08-03 (same day, supervisor-caught) — THE RUNBOOK CONTRADICTED ITSELF ON A
+    ROW LABELLED "MEASURED".** The cost table's setup row read **0.6 h/box *(measured)*** — double
+    the 0.28 GPU-h measured and stated two sections below in the same file, and supported by
+    nothing. It fed billed-GPU-h, so **271.0 / 273.4 / 285.4 all inherited it**; corrected to
+    **270.7 / 271.8 / 277.4** and $ rows to **$79–108 / $79–109 / $80–111**. The direction was
+    conservative, so **the $150 top-up is untouched and no funding claim changes.** It **halves the
+    setup tax (5 boxes = 0.5 %, not 1 %)**, which *strengthens* the five-box choice — but the
+    choice was, and remains, made on the identity-mismatch argument (one drifted key refuses all
+    25), not on the tax. **A self-contradicting artifact carrying a "measured" label is the class
+    of `docs/m6_c3_amendment_decision.md` §C-17 and the prose sweep: same document, two numbers,
+    one of them authored rather than measured.**
+  - **PROCESS, AND IT IS THE LARGER HALF OF THIS ENTRY — AN OMITTED CLAIM IS HARDER TO CATCH THAN
+    A FALSE ONE.** The v1.6.23 report omitted the `ruff` line that every prior report carried, and
+    `ruff check` was **exit 1** (6 errors, in files that very commit created). Nothing false was
+    stated; the *absence* is what let it through, because a missing green line has to be noticed
+    while a wrong one only has to be read. **Standing from here: every report states `ruff`'s exit
+    code explicitly, pass or fail, on the same terms as the Gate-A anchor's.** The supervisor
+    disclosed the symmetric defect on their side — the exit code they first read came from
+    `ruff … | head`, i.e. `head`'s status, the **pipefail rider for the third time this session**.
+    **Both halves are the same lesson: a verification you did not actually see is not a
+    verification.**
 
 - **v1.6.22 (2026-08-03, ★ THE FOUR DECISIONS IMPLEMENTED + THE EVAL LEG MEASURED. The project
   now has a TERMINATION CONDITION and a pre-committed run-blocking bar.)** Probe cost **$0.14**.

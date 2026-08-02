@@ -25,11 +25,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tests"))
 
-from run.test_fanout_refusal import N_SHARDS, _units, build_fanout  # noqa: E402
-
-from trikaal.eval.verdict import VerdictInputError, assemble_verdict, load_cell_evals  # noqa: E402
-from trikaal.run.matrix import shard_partition_failures  # noqa: E402
-from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS  # noqa: E402
+from run.test_fanout_refusal import N_SHARDS, _units, build_fanout
+from trikaal.eval.verdict import VerdictInputError, assemble_verdict, load_cell_evals
+from trikaal.run.matrix import shard_partition_failures
+from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS
 
 OUT = Path("runs_manifest/m6_fanout_dry_run.json")
 

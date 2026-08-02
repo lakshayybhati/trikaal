@@ -112,7 +112,7 @@ def test_the_shard_partition_is_an_exact_disjoint_cover():
 # ------------------------------------------------------------------ DISCRIMINATION FIRST
 def test_a_uniform_fanout_assembles(tmp_path):
     """If this failed, every refusal below would be vacuous."""
-    evals, shas = load_cell_evals(build_fanout(tmp_path))
+    evals, _shas = load_cell_evals(build_fanout(tmp_path))
     assert len(evals) == 25
     assert (
         len({tuple(sorted(d["meta"]["provenance"].items(), key=str)) for d in evals.values()}) == 1

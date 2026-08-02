@@ -15,13 +15,24 @@ dollars, and a preemption costs 1/25th instead of everything.**
 | | 1 box | **5 boxes** | 25 boxes |
 |---|---:|---:|---:|
 | wall-clock (compute) | 270.4 h ≈ 11.3 days | **54.1 h ≈ 2.3 days** | 10.8 h |
-| setup overhead (measured, ×boxes) | 0.6 h | **3.0 h** | 15.0 h |
-| **billed GPU-h** | 271.0 | **273.4** | 285.4 |
-| **$ @0.29 / @0.40** | $79 / $108 | **$79 / $109** | $83 / $114 |
+| setup overhead (**measured 0.28 h/box**, ×boxes) | 0.28 h | **1.4 h** | 7.0 h |
+| **billed GPU-h** | 270.7 | **271.8** | 277.4 |
+| **$ @0.29 / @0.40** | $79 / $108 | **$79 / $109** | $80 / $111 |
 | a preemption costs | everything | 1/5 | 1/25 |
 
-**Five is the choice.** Setup overhead is ~1 % of the bill at 5 boxes and ~5 % at 25, and 25 boxes
-is 25 chances for an instrument mismatch against a refusal that halts the whole verdict.
+**Five is the choice — and the reason is the refusal, not the tax.** Setup overhead is **0.5 % of
+the bill at 5 boxes and 2.5 % at 25**; that is small enough at both ends that it does not by itself
+decide anything. What decides it is that **25 boxes is 25 chances for an instrument mismatch, and
+one mismatch refuses all 25 units.**
+
+> **CORRECTION (2026-08-03), recorded because the row said "measured".** This table previously
+> carried **0.6 h/box** labelled *(measured)*, which is **double the measurement stated two
+> sections below** (17 min = 0.28 GPU-h) and supported by nothing. It fed the billed-GPU-h row, so
+> **271.0 / 273.4 / 285.4 all inherited it**; the corrected values are above. The direction was
+> conservative, so **the $150 top-up is untouched**. It also **halves the setup tax** — 5 boxes is
+> 0.5 %, not 1 % — which strengthens rather than changes the five-box conclusion, for the
+> identity-mismatch reason stated above. **A self-contradicting artifact carrying a "measured"
+> label is the class this project has closed four times.**
 
 **The blocking constraint:** identical GPU model, driver, image, interpreter and lockfile across
 every shard. Verified by `PROVENANCE_IDENTITY_KEYS` (13 keys) and enforced by
