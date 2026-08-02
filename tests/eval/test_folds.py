@@ -4,7 +4,13 @@ from __future__ import annotations
 
 import numpy as np
 
-from trikaal.eval.folds import embargo_flatness, make_fold_plan, quadrant
+from trikaal.eval.folds import (
+    EMBARGO_DEFAULT,
+    H_MAX_DEFAULT,
+    L_CORR_DEFAULT,
+    make_fold_plan,
+    quadrant,
+)
 
 
 def test_forward_blocks_partition():
@@ -37,8 +43,26 @@ def test_quadrant_labels():
     assert quadrant(False, False) == "Q4"  # held-out symbols × future block = headline
 
 
-def test_embargo_flatness_gate():
-    leaky_at_60 = embargo_flatness({60: 1.0, 120: 0.5, 240: 0.48})
-    assert leaky_at_60["leak_suspected_at_60"] and leaky_at_60["flat_past_120"]
-    still_leaking = embargo_flatness({60: 0.5, 120: 0.4, 240: 0.2})
-    assert not still_leaking["flat_past_120"]  # IR keeps dropping past 120 → still leaks
+def test_the_embargo_is_enforced_STRUCTURALLY_not_by_a_flatness_gate():
+    """§7 v1.6.16 — REPLACES ``test_embargo_flatness_gate``, which was the ONLY caller of a
+    function that never ran on real data. The leakage control that actually binds is
+    ``fold_valid_starts``: a window is fold-legal only if its last bar opens strictly before
+    ``boundary - E`` bars. That is asserted here, on every window, rather than on a hand-written
+    dict of IRs that no run ever produced."""
+    import numpy as np
+
+    from trikaal.data.universe_loader import EMBARGO_BARS_DEFAULT, fold_valid_starts
+
+    assert EMBARGO_BARS_DEFAULT == EMBARGO_DEFAULT == H_MAX_DEFAULT + L_CORR_DEFAULT == 120
+    n, seq = 4000, 128
+    ts = np.arange(n, dtype=np.int64) * 60_000
+    seg = np.zeros(n, dtype=np.int64)
+    boundary = int(ts[3000])
+    starts = fold_valid_starts(ts, seg, seq_len=seq, boundary_ms=boundary)
+    # DISCRIMINATION: the fixture must yield SOME legal windows, or the bound below is vacuous.
+    assert starts.size > 0
+    cutoff = boundary - EMBARGO_BARS_DEFAULT * 60_000
+    assert ts[starts + seq - 1].max() < cutoff, "a window crosses into the embargo"
+    # and a tighter embargo must admit STRICTLY MORE windows — proving E is actually read
+    wider = fold_valid_starts(ts, seg, seq_len=seq, boundary_ms=boundary, embargo_bars=10)
+    assert wider.size > starts.size

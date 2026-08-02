@@ -19,6 +19,24 @@
       "quoted": "100%"
     },
     {
+      "context": "the 150k window spans 1 of 200 symbols in sorted order; the remaining symbols contri",
+      "field": ".head_sample_coverage.reading",
+      "file": "runs_manifest/m6_c10_micro_density.json",
+      "quoted": "150k"
+    },
+    {
+      "context": "sr is the time-unit artifact alone -> var = IR_ann^2 * Var({1/sqrt(ppy(h))})",
+      "field": ".claim_2_hand_calc.construction_tried",
+      "file": "runs_manifest/m6_c3_dsr_units.json",
+      "quoted": "1/s"
+    },
+    {
+      "context": "this fixture the pinned mixed-unit basis understates SR0 by 8.70%, i.e. it lowers the clause-5 bar. SR0 scales as sqrt(var_sr), so the shift",
+      "field": ".headline.statement",
+      "file": "runs_manifest/m6_c3_dsr_units.json",
+      "quoted": "8.70%"
+    },
+    {
       "context": " Stage-2; (b) val <= d48 reference AND corr flat over final 5k steps -> GENUINE architectural FULL STOP with converged evidence; (c) still d",
       "field": ".decision_node",
       "file": "runs_manifest/m6_canary_v5_stage1_manifest.json",
@@ -47,6 +65,36 @@
       "field": ".off_lattice_caveat",
       "file": "runs_manifest/m6_constant_book_lattice.json",
       "quoted": "99.88%"
+    },
+    {
+      "context": "the measured end-to-end rate (90,293 bars/s) holds for the WHOLE run \u2014 it was measured over 120 steps/stage on",
+      "field": ".EXTRAPOLATION_full_run_cost.ASSUMPTIONS_every_one_of_which_could_be_wrong[0]",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "quoted": "90,293 bars/s"
+    },
+    {
+      "context": "d no scoring pass; the eval leg was previously observed at ~40 min/(cell,seed) on a 4090, which would DOMINATE this figure. Treat the number",
+      "field": ".EXTRAPOLATION_full_run_cost.ASSUMPTIONS_every_one_of_which_could_be_wrong[3]",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "quoted": "40 min"
+    },
+    {
+      "context": "    On  |   00000000:C1:00.0 Off |                  Off |\n| 30%   27C    P8             25W /  400W |       4MiB /  24564MiB |      0%      ",
+      "field": ".provenance.nvidia_smi_header",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "quoted": "30%"
+    },
+    {
+      "context": " P8             25W /  400W |       4MiB /  24564MiB |      0%      Default |\n|                                         |                   ",
+      "field": ".provenance.nvidia_smi_header",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "quoted": "0%"
+    },
+    {
+      "context": "512 of 526 steps (98.5% of the wall here) are CONTEXT FILL \u2014 `_fill_context` issues one `model.ste",
+      "field": ".STRUCTURAL_FINDING",
+      "file": "runs_manifest/m6_decode_profile.json",
+      "quoted": "98.5%"
     },
     {
       "context": "The prior purpose said 'against the measured baseline of 47.2k bars/s'. That baseline is NOT end-to-end training throughput: it is the at",
@@ -85,6 +133,12 @@
       "quoted": "1/s"
     },
     {
+      "context": "0% at every sample",
+      "field": ".box_reference.nvidia_smi_utilization",
+      "file": "runs_manifest/m6_eval_boundedness_probe.json",
+      "quoted": "0%"
+    },
+    {
       "context": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days",
       "field": ".labels_required_by_item_5.training_throughput",
       "file": "runs_manifest/m6_eval_throughput_expectation.json",
@@ -115,6 +169,12 @@
       "quoted": "100%"
     },
     {
+      "context": "|2f-1| <= 1/sqrt(N_real)",
+      "field": ".PRE_DECLARED_BEFORE_MEASURING.Z1_direction.criterion",
+      "file": "runs_manifest/m6_prefill_zero_mean.json",
+      "quoted": "1/s"
+    },
+    {
       "context": "    On  |   00000000:05:00.0 Off |                  Off |\n| 30%   24C    P8             22W /  450W |       0MiB /  24564MiB |      0%      ",
       "field": ".nvidia_smi",
       "file": "runs_manifest/m6_rehearsal_manifest.json",
@@ -137,6 +197,12 @@
       "field": ".translation_plant_status",
       "file": "runs_manifest/m6_token_control_run_manifest.json",
       "quoted": "99%"
+    },
+    {
+      "context": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmpy21s2rot \u2014 artifacts must be indexed",
+      "field": ".rows[12].returned",
+      "file": "runs_manifest/m6_vacuity_sweep.json",
+      "quoted": "0m"
     }
   ],
   "P2_hits": [
@@ -237,6 +303,181 @@
       "severity": "LOW",
       "value": "NaN",
       "why": "per-step diagnostic; undefined by construction, not a lost datum"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.m_2.frac_masked",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.m_3.frac_masked",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.m_4.frac_masked",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.sigma.n_nonpositive_or_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.target_valid (RECONSTRUCTED).n_true_within_the_sweeps_own_800_bar_slice",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.target_valid (RECONSTRUCTED).symbols_with_any_valid_target_in_the_slice",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_0.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_1.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_10.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_11.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_12.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_13.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_13.stddev",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_14.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_14.stddev",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_15.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_15.stddev",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_2.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_3.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_4.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_5.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_6.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_7.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_8.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".question_1_are_the_persisted_surfaces_non_degenerate.surfaces.x_9.n_nonfinite",
+      "file": "runs_manifest/m6_c15b_lake_surface_check.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
     },
     {
       "field": ".arms.noise.training.4.trajectory[0].rollout_h2_corr",
@@ -386,6 +627,111 @@
       "why": "per-step diagnostic; undefined by construction, not a lost datum"
     },
     {
+      "field": ".job2_end_to_end_throughput.determinism_record.seed",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".job2_end_to_end_throughput.determinism_record.seeds.run",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".job2_end_to_end_throughput.seed",
+      "file": "runs_manifest/m6_cuda_probe.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.flip_rate_all_kappas",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.kappa_1.0.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.kappa_1.5.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.kappa_2.0.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.kappa_3.0.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.q25.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.q50.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".OBSERVED.per_kappa.q75.flip_rate",
+      "file": "runs_manifest/m6_prefill_decision_stability.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".CONTROLS.planted_systematic_shift.stats.p_two_sided_mean",
+      "file": "runs_manifest/m6_prefill_zero_mean.json",
+      "severity": "MEDIUM",
+      "value": "NaN",
+      "why": "non-trajectory numeric slot holding no value"
+    },
+    {
+      "field": ".CONTROLS.planted_systematic_shift.stats.t_stat_mean_vs_zero",
+      "file": "runs_manifest/m6_prefill_zero_mean.json",
+      "severity": "MEDIUM",
+      "value": "NaN",
+      "why": "non-trajectory numeric slot holding no value"
+    },
+    {
+      "field": ".FLIP_RATE_REMEASURED.flip_enter",
+      "file": "runs_manifest/m6_prefill_zero_mean.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
+      "field": ".FLIP_RATE_REMEASURED.observed_flip_enter_fraction",
+      "file": "runs_manifest/m6_prefill_zero_mean.json",
+      "severity": "HIGH",
+      "value": 0,
+      "why": "summary-level quantity with no measurement behind it"
+    },
+    {
       "field": ".throughput.bars_per_s_into_gpu",
       "file": "runs_manifest/m6_rehearsal_manifest.json",
       "severity": "HIGH",
@@ -430,11 +776,11 @@
   ],
   "amendment": "prereg \u00a77 v1.6 item 4 (supervisor-ordered, local $0)",
   "counts": {
-    "P1": 23,
-    "P2_HIGH": 5,
+    "P1": 34,
+    "P2_HIGH": 43,
     "P2_LOW": 35,
-    "P2_MEDIUM": 0,
-    "P2_total": 40,
+    "P2_MEDIUM": 2,
+    "P2_total": 80,
     "P3": 1
   },
   "patterns": {

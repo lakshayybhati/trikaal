@@ -1,0 +1,198 @@
+{
+  "ast_candidates": [
+    "conformance.py:pinned_threshold_failures",
+    "conformance.py:conformance_failures",
+    "conformance.py:verdict_dsr_failures",
+    "diagnostics.py:mean_pinball",
+    "metrics.py:break_even_cost",
+    "paired_bootstrap.py:paired_delta_ir_bootstrap",
+    "strategy.py:portfolio_period_returns",
+    "verdict.py:_mu_diag_problems",
+    "verdict.py:write_cell_eval_artifact",
+    "verdict.py:_validate_artifact",
+    "verdict.py:decode_agreement_disclosure",
+    "verdict.py:provenance_failures",
+    "verdict.py:load_cell_evals",
+    "verdict.py:degeneracy_guard",
+    "verdict.py:power_guard",
+    "verdict.py:assemble_verdict",
+    "matrix.py:shard_units",
+    "matrix.py:shard_partition_failures",
+    "matrix.py:artifact_reuse_failures",
+    "matrix.py:eval_matrix",
+    "gates.py:overfit_single_batch",
+    "gates.py:determinism_smoke",
+    "gates.py:micro_legibility_gate",
+    "build.py:build_symbol_stream",
+    "causal_check.py:check_causal_safety",
+    "causal_check.py:exhaustive_truncation_sweep",
+    "causal_check.py:summary",
+    "features.py:compute_features",
+    "ingest_orchestrator.py:run",
+    "quality.py:stale_flag",
+    "reduce_shard.py:build_symbol_features_sharded",
+    "synthetic.py:perturb_after_bar",
+    "universe_bootstrap.py:_list_page",
+    "universe_build.py:slice_stream_by_ms",
+    "universe_loader.py:train_region_liquidity_stats"
+  ],
+  "definition": "VACUOUS = the check returns a clean verdict (empty failures / not halted / pass) having iterated nothing. `for x in []` never runs and `all([])` is True.",
+  "excluded_with_reason": {
+    "build.py:build_symbol_stream": "an ingest builder, not a verdict",
+    "causal_check.py:build_anchor_strata": "probed indirectly via exhaustive_truncation_sweep",
+    "causal_check.py:check_causal_safety": "probed via exhaustive_truncation_sweep (same core)",
+    "causal_check.py:summary": "a formatter over an already-computed report",
+    "diagnostics.py:codebook_usage": "a metric, not a verdict",
+    "diagnostics.py:mean_pinball": "a metric, not a verdict \u2014 an empty input is a caller error",
+    "features.py:compute_features": "a transform, not a verdict",
+    "gates.py:determinism_smoke": "a two-run byte-comparison gate; its collection is a fixed step count",
+    "gates.py:overfit_single_batch": "a training smoke gate over STEPS, not a data collection; needs a live model",
+    "ingest_orchestrator.py:run": "the ingest driver; its causal gate is probed",
+    "matrix.py:eval_matrix": "an orchestrator that needs a live model; its checks are probed",
+    "matrix.py:shard_units": "a partition helper; its VERDICT function is probed",
+    "metrics.py:break_even_cost": "a metric over a fixed cost grid, never a verdict",
+    "paired_bootstrap.py:paired_delta_ir_bootstrap": "a statistic; empty series raise upstream",
+    "quality.py:badtick_clip": "a transform, not a verdict",
+    "quality.py:stale_flag": "a transform, not a verdict",
+    "reduce_shard.py:build_symbol_features_sharded": "an ingest builder, not a verdict",
+    "strategy.py:portfolio_period_returns": "a metric over a position series, not a verdict",
+    "synthetic.py:make_synthetic_stream": "a fixture generator, not a verdict",
+    "synthetic.py:perturb_after_bar": "a fixture mutator, not a verdict",
+    "universe_bootstrap.py:_list_page": "an HTTP pager, not a verdict",
+    "universe_build.py:slice_stream_by_ms": "a slicer, not a verdict",
+    "universe_loader.py:train_region_liquidity_stats": "a statistic, not a verdict",
+    "verdict.py:assemble_verdict": "the top-level composer \u2014 its constituents are probed instead",
+    "verdict.py:enumerate_dsr_trials": "a PRODUCER; its verdict is conformance.verdict_dsr_failures, probed below",
+    "verdict.py:load_cell_evals": "probed below",
+    "verdict.py:write_cell_eval_artifact": "a WRITER, not a check"
+  },
+  "mutation_control": {
+    "claim": "a known-CLOSED check wrapped to return pass=True on empty input must appear",
+    "named_by_the_sweep": true,
+    "target": "gates.micro_legibility_gate"
+  },
+  "n_ast_candidates": 35,
+  "n_rows": 14,
+  "n_vacuous": 0,
+  "rows": [
+    {
+      "check": "verdict.provenance_failures  [evals = {}]",
+      "returned": {
+        "first": "provenance gate received ZERO units \u2014 a divergence check over an empty set reports no divergence, which is not",
+        "n_failures": 1
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "verdict.degeneracy_guard  [evals = {}]",
+      "empty_collection": "see registry",
+      "returned": "KeyError: (1, 0)",
+      "vacuous": false,
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "check": "verdict.power_guard  [evals = {}, claimed = {}]",
+      "empty_collection": "see registry",
+      "returned": "KeyError: (1, 0)",
+      "vacuous": false,
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "check": "verdict.decode_agreement_disclosure  [evals = {}]",
+      "returned": {
+        "unmeasurable": true
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "verdict._mu_diag_problems  [mu_diag = {}]",
+      "returned": {
+        "first": "sweep: mu_diag is missing or empty \u2014 degeneracy_guard would examine nothing",
+        "n_failures": 1
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "verdict._validate_artifact  [doc = {}]",
+      "returned": {
+        "first": "d.json: schema None != 'm6_cell_eval_v2'",
+        "n_failures": 1
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "conformance.conformance_failures  [symbols = []]",
+      "returned": {
+        "first": "evaluated symbol set (0) != the pinned 40-symbol primary set",
+        "n_failures": 2
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "conformance.verdict_dsr_failures  [trials = {}]",
+      "returned": {
+        "first": "DSR trial set is not the pinned 300-trial cross product: 0 trials (300 missing, 0 outside the pin; e.g. missin",
+        "n_failures": 2
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "conformance.pinned_threshold_failures  [pins = {}]",
+      "returned": {
+        "first": "ECON_FLOOR_IR has NO entry in PINNED_THRESHOLDS \u2014 a threshold under no pin decides the verdict unguarded (\u00a77 v",
+        "n_failures": 3
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "matrix.shard_partition_failures  [units = []]",
+      "returned": {
+        "first": "the unit matrix is EMPTY \u2014 a partition of no units is not a covered matrix",
+        "n_failures": 1
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "matrix.artifact_reuse_failures  [doc = {}]",
+      "returned": {
+        "first": "schema None != 'm6_cell_eval_v2'",
+        "n_failures": 1
+      },
+      "vacuous": false,
+      "verdict": "CLOSED (reported)"
+    },
+    {
+      "check": "gates.micro_legibility_gate  [per_symbol = []]",
+      "empty_collection": "see registry",
+      "returned": "ValueError: need at least one array to concatenate",
+      "vacuous": false,
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "check": "verdict.load_cell_evals  [empty dir]",
+      "empty_collection": "see registry",
+      "returned": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmpy21s2rot \u2014 artifacts must be indexed",
+      "vacuous": false,
+      "verdict": "CLOSED (raised)"
+    },
+    {
+      "check": "causal_check.exhaustive_truncation_sweep  [0-bar stream]",
+      "empty_collection": "see registry",
+      "returned": "ValueError: active window removes every bar \u2014 symbol has no live bars in window",
+      "vacuous": false,
+      "verdict": "CLOSED (raised)"
+    }
+  ],
+  "unaccounted_candidates": [],
+  "vacuous_rows": [],
+  "verdict": "0 VACUOUS of 14 probed",
+  "what": "THE VACUITY SWEEP \u2014 a verdict derived by iterating a collection, given an EMPTY one"
+}

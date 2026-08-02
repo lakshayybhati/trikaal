@@ -1,0 +1,44 @@
+{
+  "bars_swept": 1600,
+  "clean_baseline": {
+    "coverage": 1.0,
+    "first_failures": [],
+    "n_anchors": 1600,
+    "n_checks": 12798,
+    "n_failures": 0,
+    "passed": true
+  },
+  "config": "production FeatureConfig() \u2014 NOT the reduced CI-gate config",
+  "effective_n_warm_vol": 1440,
+  "missed_leaks": [],
+  "note": "the ingest swept 800 bars at these same production parameters, i.e. BELOW the 1440 warm-up, so target/target_valid could not fail there. This slice is above it.",
+  "planted_leak_battery": {
+    "localized_sigma_next": {
+      "at_bar": 1520,
+      "caught": true,
+      "n_failures": 1,
+      "outputs_flagged": [
+        "sigma"
+      ]
+    },
+    "localized_validity_next": {
+      "at_bar": 1520,
+      "caught": true,
+      "n_failures": 1,
+      "outputs_flagged": [
+        "target_valid"
+      ]
+    }
+  },
+  "precondition": {
+    "live": true,
+    "of_bars": 1600,
+    "target_valid_true": 159
+  },
+  "scope_limit_stated": "ONE symbol, ONE month, 1600 bars. This demonstrates that the sweep DISCRIMINATES at production parameters on real bars \u2014 it does not sweep the whole lake, which is O(T^2) and infeasible. The structural argument carries it: a lookahead defect in compute_features is transform-level, not symbol-level, so a leak that fires anywhere fires here. A DATA-DEPENDENT leak on some other symbol remains out of scope and is stated rather than implied.",
+  "slice_exceeds_warm_up": true,
+  "source": "processed/shards/BTCUSDT/BTCUSDT-2023-01.npz",
+  "symbol": "BTCUSDT",
+  "verdict": "GREEN \u2014 at production parameters on real bars past the warm-up: the real transforms PASS an exhaustive sweep, and every planted leak (including the target_valid survivorship leak that could not fire in the ingest sweep) is CAUGHT. The surfaces the ingest could not exercise are now demonstrated on real data.",
+  "what": "C-15 (b) part 2 \u2014 production-parameter causal sweep on REAL bars past the warm-up"
+}

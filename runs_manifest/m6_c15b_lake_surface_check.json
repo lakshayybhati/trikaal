@@ -1,0 +1,205 @@
+{
+  "boundary_stated_explicitly": "A non-degenerate surface is a PRECONDITION for a leak check to be meaningful, not evidence that the surface is leak-free. Question 1 coming back clean means the lake CAN be checked; it does not mean it HAS been.",
+  "question_1_are_the_persisted_surfaces_non_degenerate": {
+    "degenerate_surfaces": [
+      "m_13",
+      "m_14",
+      "m_15",
+      "m_2",
+      "m_3",
+      "m_4",
+      "x_13",
+      "x_14",
+      "x_15"
+    ],
+    "surfaces": {
+      "m_0": {
+        "degenerate": false,
+        "frac_masked": 0.0001851389954529071
+      },
+      "m_1": {
+        "degenerate": false,
+        "frac_masked": 0.0001851389954529071
+      },
+      "m_10": {
+        "degenerate": false,
+        "frac_masked": 0.012880488038183554
+      },
+      "m_11": {
+        "degenerate": false,
+        "frac_masked": 0.012880488038183554
+      },
+      "m_12": {
+        "degenerate": false,
+        "frac_masked": 0.0141605004085332
+      },
+      "m_13": {
+        "degenerate": true,
+        "frac_masked": 1.0
+      },
+      "m_14": {
+        "degenerate": true,
+        "frac_masked": 1.0
+      },
+      "m_15": {
+        "degenerate": true,
+        "frac_masked": 1.0
+      },
+      "m_2": {
+        "degenerate": true,
+        "frac_masked": 0.0
+      },
+      "m_3": {
+        "degenerate": true,
+        "frac_masked": 0.0
+      },
+      "m_4": {
+        "degenerate": true,
+        "frac_masked": 0.0
+      },
+      "m_5": {
+        "degenerate": false,
+        "frac_masked": 0.00440281724444835
+      },
+      "m_6": {
+        "degenerate": false,
+        "frac_masked": 0.00440281724444835
+      },
+      "m_7": {
+        "degenerate": false,
+        "frac_masked": 0.012696616173697078
+      },
+      "m_8": {
+        "degenerate": false,
+        "frac_masked": 0.012696616173697078
+      },
+      "m_9": {
+        "degenerate": false,
+        "frac_masked": 0.012880488038183554
+      },
+      "raw": {
+        "degenerate": false,
+        "raw_range_sd": 0.002117993515765343,
+        "raw_ret_close_sd": 0.0018707001118033015
+      },
+      "segment_id": {
+        "degenerate": false,
+        "n_segments": 5
+      },
+      "sigma": {
+        "degenerate": false,
+        "min": 9.999999747378752e-05,
+        "n_nonpositive_or_nonfinite": 0,
+        "stddev": 0.0011272098058215825
+      },
+      "target_valid (RECONSTRUCTED)": {
+        "degenerate_in_the_sweep_that_admitted_the_lake": true,
+        "degenerate_on_the_full_lake": false,
+        "formula": "next bar in the same segment AND bar index within segment > effective_n_warm_vol()=1440",
+        "frac_true_over_the_whole_lake": 0.9985207657537675,
+        "n_true_over_the_whole_lake": 304174569,
+        "n_true_within_the_sweeps_own_800_bar_slice": 0,
+        "symbols_with_any_valid_target_in_the_slice": 0
+      },
+      "ts": {
+        "degenerate": false,
+        "n_distinct_bar_open_ms": 2103840
+      },
+      "x_0": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.9455764033190495
+      },
+      "x_1": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.894891286348635
+      },
+      "x_10": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.8983114119159215
+      },
+      "x_11": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.979222180364675
+      },
+      "x_12": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.25793476306425966
+      },
+      "x_13": {
+        "degenerate": true,
+        "n_nonfinite": 0,
+        "stddev": 0.0
+      },
+      "x_14": {
+        "degenerate": true,
+        "n_nonfinite": 0,
+        "stddev": 0.0
+      },
+      "x_15": {
+        "degenerate": true,
+        "n_nonfinite": 0,
+        "stddev": 0.0
+      },
+      "x_2": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.6094324514081694
+      },
+      "x_3": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.25973729224713976
+      },
+      "x_4": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.2588920747436655
+      },
+      "x_5": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.9964655495404957
+      },
+      "x_6": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 1.0011270692358423
+      },
+      "x_7": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.48245434427180844
+      },
+      "x_8": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 0.3458665433380128
+      },
+      "x_9": {
+        "degenerate": false,
+        "n_nonfinite": 0,
+        "stddev": 1.0002072799574775
+      }
+    },
+    "verdict": "DEGENERATE"
+  },
+  "question_2_was_each_surface_MEASURABLE_in_the_sweep_that_admitted_this_lake": {
+    "effective_n_warm_vol": 1440,
+    "sweep_slice_bars": 800,
+    "target_valid_true_in_slice": 0,
+    "verdict": "NO \u2014 target/target_valid could not fail in that sweep"
+  },
+  "sampling": {
+    "bars": 304625181,
+    "fraction_of_lake": 1.0,
+    "shards_sampled": "ALL",
+    "symbols": 200,
+    "why": "the density read did 304,625,181 bars in 2.2 s, so sampling would have been a choice to know less for no saving. 'Enough' is 'all of it'."
+  },
+  "what": "C-15 (b) \u2014 retrospective per-surface non-degeneracy of the lake already on disk"
+}

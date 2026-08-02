@@ -1,0 +1,100 @@
+{
+  "control_arm": {
+    "expected_rho_pow_k": {
+      "1": 0.97,
+      "5": 0.8587340256999999,
+      "15": 0.6332511891367891,
+      "30": 0.4010070685431575,
+      "60": 0.1608066690215766,
+      "120": 0.02585878480181488,
+      "240": 0.0006686767514265723
+    },
+    "recovered_acf": {
+      "1": 0.9702346579458769,
+      "5": 0.8607986020037869,
+      "15": 0.6397783084886303,
+      "30": 0.40883054974698807,
+      "60": 0.17266557074867597,
+      "120": 0.02614699812277007,
+      "240": -0.013705823604335747
+    },
+    "recovers_known_answer": true,
+    "series": "AR(1) rho=0.97, n=200000"
+  },
+  "lake": {
+    "abs_return_acf_volatility_clustering": {
+      "1": {
+        "max_abs": 0.4855405122778877,
+        "mean": 0.36884351889258343
+      },
+      "120": {
+        "max_abs": 0.2771292730391191,
+        "mean": 0.17665228680855724
+      },
+      "15": {
+        "max_abs": 0.3924100057177624,
+        "mean": 0.25457157717874423
+      },
+      "240": {
+        "max_abs": 0.23452314903372354,
+        "mean": 0.15335161515671672
+      },
+      "30": {
+        "max_abs": 0.3422772256237944,
+        "mean": 0.2286747665241015
+      },
+      "5": {
+        "max_abs": 0.4171268740836917,
+        "mean": 0.28681295988818956
+      },
+      "60": {
+        "max_abs": 0.30140178203014767,
+        "mean": 0.2034181757304065
+      }
+    },
+    "n_symbols": 40,
+    "signed_return_acf": {
+      "1": {
+        "max_abs": 0.03975664043526127,
+        "mean": -0.011229827090746294
+      },
+      "120": {
+        "max_abs": 0.00891724035360193,
+        "mean": 0.004345701808874025
+      },
+      "15": {
+        "max_abs": 0.01911362785875186,
+        "mean": 0.0076405683630273915
+      },
+      "240": {
+        "max_abs": 0.00859716963629583,
+        "mean": 0.0032526570953344833
+      },
+      "30": {
+        "max_abs": 0.010630783398388547,
+        "mean": 0.005962681190568152
+      },
+      "5": {
+        "max_abs": 0.008169547800316236,
+        "mean": 0.001006590213370455
+      },
+      "60": {
+        "max_abs": 0.012749280254760773,
+        "mean": 0.0061293895160905
+      }
+    }
+  },
+  "reading": {
+    "EMBARGO_DEFAULT": 120,
+    "H_MAX_DEFAULT": 60,
+    "L_CORR_DEFAULT": 60,
+    "abs_acf_at_L_corr_60_mean": 0.2034181757304065,
+    "abs_acf_at_L_corr_60_worst_symbol": 0.30140178203014767,
+    "premise_supported_for_ABS_returns": false,
+    "premise_supported_for_SIGNED_returns": true,
+    "signed_acf_at_L_corr_60_mean": 0.0061293895160905,
+    "signed_acf_at_L_corr_60_worst_symbol": 0.012749280254760773
+  },
+  "what": "C-20 leg 1 \u2014 is the L_corr = 60 premise behind EMBARGO = 120 supported?",
+  "what_this_does_and_does_not_show": "SIGNED-return autocorrelation is what a purge/embargo must outrun for a LABEL to be independent of a training window, and it is what L_corr names. |return| clustering is long-memory by construction in any financial series and persists far past 60 bars \u2014 that is a volatility property, not a label-leakage channel, and an embargo sized to it would have to be days long. Both are reported so the distinction is visible rather than assumed."
+}

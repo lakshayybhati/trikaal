@@ -205,6 +205,115 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.16 (2026-08-02, TRANCHE 2 — THE TWO LEAK DETECTORS THAT HAD NEVER BEEN POINTED AT THE
+  REAL LAKE, plus the VACUITY class. One function DELETED, one guard fixed, three receipted
+  measurements. No pinned value moved, no clause touched.)** Local, $0.
+  - **★ C-15 (b) — THE HEADLINE FINDING. THE SWEEP THAT ADMITTED THE LAKE COULD NOT FAIL ON TWO OF
+    ITS EIGHT SURFACES.** Receipt `runs_manifest/m6_c15b_lake_surface_check.json`. Measured over
+    **ALL 200 symbols and all 304,625,181 bars — no sampling**, because the density read did the
+    whole lake in 2.2 s and a sample would have been a choice to know less for no saving.
+    - `m4b_universe_ingest.py` sweeps an **800-bar head slice** (`--sweep-sample-bars`, default
+      800) under production `FeatureConfig()`, whose `effective_n_warm_vol()` is **1440**.
+      `target_valid[t]` is True only past that warm-up. **Reconstructed from the persisted
+      `segment_id`/`bar_open_ms`: `target_valid` is True for 304,174,569 of 304,625,181 bars
+      (99.85%) across the lake — and for ZERO bars inside the sweep's own 800-bar slice, on
+      0 of 200 symbols.** So `target` and `target_valid` compared equal under every truncation and
+      perturbation: two of the eight output surfaces were structurally unable to fail, and the
+      `n_checks > 0` guard passed on the other six.
+    - **And the scope is narrower than the guard implies:** the sweep runs on **exactly two
+      symbols** (`if label not in sweeps` — one "live", one delisting-"tail"), 800 bars each. That
+      is **1,600 bars of 304,625,181 = 0.00053% of the lake**, and the results are **printed to
+      stdout and never persisted** — the ingest ledger records only checksums, dataset_hash,
+      event, n_bars, symbol.
+    - **THE LAKE DATA ITSELF IS CLEAN, and that is a different statement.** Every surface the
+      sweep names is non-degenerate over the full lake. At finer per-COLUMN granularity than the
+      sweep uses, `x_13/14/15` have stddev exactly 0.0 and `m_13/14/15` are masked on 100% of
+      bars — **the documented funding/OI "carried-but-masked" design** (`features.py:86-89`,
+      `arms.py:36`), since M4b ingested klines+aggTrades only. Not a defect, but it means the
+      **16-dim micro arm is 13 live dims plus 3 constant-zero masked ones**, and the paper must
+      say 16 with that qualification. `m_2/3/4` are never masked anywhere (frac 0.0).
+    - **BOUNDARY STATED IN THE RECEIPT:** a non-degenerate surface is a PRECONDITION for a leak
+      check to mean anything, not evidence that the surface is leak-free. The lake CAN be checked;
+      it had not been, on those two surfaces.
+  - **★ C-15 (b) PART 2 — THE GAP IS NOW CLOSED, ON REAL BARS, AT PRODUCTION PARAMETERS. GREEN.**
+    Receipt `runs_manifest/m6_c15b_production_sweep.json`, `$0`, exit code 0. Finding the gap and
+    leaving it open would have been half the work, and the raw material was on disk: a real
+    BTCUSDT month from `processed/shards/` (the same reduction the ingest itself used), swept at
+    production `FeatureConfig()` on **1,600 bars — above the 1,440 warm-up**, so every surface is
+    live (**159 valid targets**, vs 0 in the ingest's 800-bar slice).
+    - **Clean baseline PASSES: 1,600 anchors, 12,798 checks, coverage 1.0, zero failures.**
+    - **CONTROL ARM: both localized leaks are CAUGHT** — `localized_validity_next` flags
+      `target_valid`, `localized_sigma_next` flags `sigma`. **`target_valid` is precisely the
+      surface that could not fire in the sweep which admitted the lake**, so the check is now
+      demonstrated to discriminate exactly where it previously could not.
+    - **AND THE PROBE CAUGHT ITS OWN BUG FIRST, WHICH IS THE THIRD TIME THIS TRANCHE.** The first
+      run planted at `warm + 200` = bar **1640 on a 1600-bar slice** — outside the swept range —
+      and duly reported both leaks "MISSED" with a ★ FINDING verdict. That was the probe failing,
+      not the gate. The plant is now asserted to sit inside the slice and past the warm-up before
+      anything is read. Had it been reported as written it would have been a false
+      invariant-2 alarm on a lake that is fine.
+    - **SCOPE, STATED NOT IMPLIED:** one symbol, one month, 1,600 bars. The four GLOBAL planted
+      variants were dropped from this run (each is a separate O(T²) sweep and they are already
+      exercised non-vacuously by the CI gate at reduced parameters) — a bounded scope, recorded
+      rather than silently trimmed. A DATA-DEPENDENT leak on some other symbol remains out of
+      scope; the structural argument (a lookahead defect in `compute_features` is transform-level,
+      not symbol-level) is what carries the rest, and it is an argument, not a measurement.
+  - **C-20 leg 1 — `embargo_flatness` DELETED. My ruling, with the argument and the evidence.**
+    - **Wiring it in costs 3× the M6 run.** It requires the headline at E ∈ {60,120,240}, and the
+      embargo binds `fold_valid_starts`, which gates which TRAINING windows are legal — so each E
+      needs its own training. ~$99–150 against a design with no such leg and an approved $33–50.
+    - **The premise it defends is now MEASURED rather than assumed**
+      (`runs_manifest/m6_c20_embargo_premise.json`, 40 symbols, control arm recovers a known
+      AR(1)): signed-return autocorrelation is **+0.0061 mean / 0.0127 worst-symbol at lag 60**
+      and already ≈0 by lag 5, so `L_corr = 60` carries roughly a **24× margin** over the channel
+      a purge/embargo must outrun. |return| ACF is 0.20 at lag 60 and 0.15 at lag 240 — long
+      memory, but that is volatility clustering, not a label-leakage channel, and an embargo sized
+      to it would run to days. Both reported so the distinction is visible rather than assumed.
+    - **What remains is STRUCTURAL and binds every window:** `fold_valid_starts` admits a window
+      only if its last bar opens strictly before `boundary − 120 bars`, at load time, not sampled.
+      Its test was replaced: the old `test_embargo_flatness_gate` asserted against a hand-written
+      dict of IRs no run ever produced; the new one asserts the bound on real windows, proves the
+      fixture yields some legal windows first, and proves a tighter embargo admits strictly more —
+      so the constant is demonstrably READ.
+    - **WHAT IS LOST, STATED PLAINLY:** end-to-end flatness of the headline IR in E is now
+      ASSERTED from the premise rather than DEMONSTRATED. A leakage channel that is not
+      signed-return autocorrelation would not be caught by this argument. The instrument is
+      recoverable from git history if the 3× run is ever funded.
+  - **C-20 leg 2 — CONFIRMED, and it is a disclosure not a bug.** The headline primary region is
+    **2024-01-01T18:00 → 2025-01-01T00:00 = 365 days, 0.9993 years**, i.e. exactly one calendar
+    year: the 4-year window at `train_frac` 0.7 leaves ~1.2 years, block 0 is VAL, blocks 1–5 are
+    the headline. **The cost-aware net IR therefore has no cross-year replication**, which belongs
+    in the limitations beside the 40-symbol cross-section.
+  - **C-20 leg 3 — CONFIRMED STALE.** Committed receipt: P1 **23**, P2_total **40**, P2_HIGH **5**.
+    Re-run: P1 **34**, P2_total **80**, P2_HIGH **43**. **Zero hits disappeared** — nothing
+    previously flagged was silently resolved; 51 appeared because manifests were added after the
+    receipt was taken. Regenerated. Triage of the delta: 25 of the new HIGH hits are `stddev: 0.0`
+    / `frac_masked: 0.0` in the C-15(b) receipt **written this same pass** (real measured zeros —
+    the funding/OI dims), 8 are flip-rate zeros in the paused prefill manifests, 3 in the CUDA
+    probe. **No new hit is a claim on the verdict path.**
+  - **THE VACUITY SWEEP — `scripts/m6_vacuity_sweep.py`, receipt
+    `runs_manifest/m6_vacuity_sweep.json`.** The supervisor's framing, which is right: *"deleting
+    a pin deleted its own check"* and *"the empty matrix was certified a perfect cover"* are one
+    shape — **an assertion that iterates a collection is vacuously satisfied when the collection
+    is empty.** `for x in []` never runs; `all([])` is True.
+    - **Coverage is AST-DERIVED, not recalled.** 35 candidate functions across
+      `eval/run/train/data` that both iterate a collection and return a verdict-shaped value. Each
+      is either probed (14) or excluded with a stated reason (27 entries incl. the newly
+      accounted); **a candidate in neither is a hard error**, so a sibling cannot be dropped by
+      forgetting to list it. First run had 4 unaccounted; now 0.
+    - **Mutation control FIRED** (`micro_legibility_gate` wrapped to return `pass: True` on empty
+      input is named by the sweep).
+    - **1 genuine vacuity found: `provenance_failures({})` returned `[]`** — a divergence check
+      over an empty set finds no divergence, so the gate certified "one instrument" over zero
+      units. Fixed: zero units is now a named failure. **0 of 14 vacuous now.**
+    - **AND THE SWEEP CAUGHT ITS OWN MIS-MODELLING AGAIN.** The first run also flagged
+      `enumerate_dsr_trials({}) → {}`. That is a PRODUCER, not a check — `{}` for `{}` is correct,
+      and its guard reports "300 missing" on the same input. Counting it would have inflated the
+      finding with the probe's own error, exactly as three harness bugs did in the fail-open
+      sweep. Reclassified with the reason recorded.
+  - Suite **458 → 458**: one test deleted (`test_embargo_flatness_gate`, whose function is gone)
+    and one added (the structural embargo test). Ruff clean.
+
 - **v1.6.15 (2026-08-02, TRANCHE 1 — THE FAIL-OPEN CLASS SWEPT AND CLOSED. Guard/gate fixes, two
   values pinned that were already pre-registered, one test rewritten. No pinned VALUE moved and no
   clause was touched; every change makes a check harder to pass, never easier.)** Local, $0.

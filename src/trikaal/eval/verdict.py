@@ -444,6 +444,14 @@ def provenance_failures(evals: dict[tuple[int, int], dict]) -> list[str]:
     Artifacts written before the stamp existed carry no ``meta.provenance``; those are reported as
     a divergence rather than skipped, because "some units are unattributable" is exactly the state
     this refuses to certify. Empty list = one instrument."""
+    # §7 v1.6.16 (vacuity sweep): ZERO units is not "one instrument", it is NO EVIDENCE — and the
+    # comprehension below would certify it clean, because a divergence check over an empty set
+    # finds no divergence. Same shape as "an empty matrix is a perfect cover".
+    if not evals:
+        return [
+            "provenance gate received ZERO units — a divergence check over an empty set reports "
+            "no divergence, which is not the same as one instrument"
+        ]
     by_key: dict[str, dict[str, list[str]]] = {}
     missing: list[str] = []
     for (cell, seed), doc in sorted(evals.items()):

@@ -13,8 +13,26 @@ retraining). Leakage is controlled at the one train→eval boundary by:
 Q1–Q4 (§A.5) cross symbol-holdout × time-holdout. The M6 PRIMARY is **train-universe symbols ×
 future blocks 1–5** (prereg §3a: the pinned 40-symbol set, VAL block 0 excluded) — Q2 territory;
 "Q4 is the headline" was the M5-era label, and Q3/Q4 (held-out symbols) are secondary robustness
-reads. The embargo **flatness check** (IR stable as E grows past 120) is the leakage gate.
-Known-answer-tested in ``tests/eval/test_folds.py``.
+reads.
+
+**§7 v1.6.16 — THE embargo_flatness GATE WAS DELETED, AND THIS PARAGRAPH ADVERTISED IT.**
+It was an EMPIRICAL leakage gate (run the headline at E in {60,120,240}, require IR flat past 120)
+whose only caller was ever its own test. Wiring it in costs 3x the M6 run, because the embargo
+binds ``fold_valid_starts`` and therefore which TRAINING windows are legal — each E needs its own
+training. What remains, and what the leakage control actually is:
+
+* the **STRUCTURAL** embargo above, enforced by ``universe_loader.fold_valid_starts`` on EVERY
+  training window at load time, not sampled and not optional; and
+* its PREMISE, now MEASURED rather than assumed (``runs_manifest/m6_c20_embargo_premise.json``):
+  signed-return autocorrelation on the real lake is **+0.0061 mean / 0.0127 worst-symbol at lag
+  60**, already ~0 by lag 5, so ``L_corr = 60`` carries roughly a 24x margin over the channel an
+  embargo must outrun. (|return| ACF is 0.20 at lag 60 — long memory, but that is volatility
+  clustering, not a label-leakage channel, and an embargo sized to it would run to days.)
+
+WHAT IS LOST, STATED PLAINLY: the end-to-end flatness of the headline IR in E is now ASSERTED from
+the premise rather than DEMONSTRATED. A leakage channel that is not signed-return autocorrelation
+would not be caught by the argument above. The instrument is recoverable from git history if the
+3x run is ever funded.
 """
 
 from __future__ import annotations
@@ -85,31 +103,11 @@ def quadrant(symbol_in_train: bool, time_in_train: bool) -> str:
     return "Q4"
 
 
-def embargo_flatness(ir_by_embargo: dict[int, float], *, tol: float = 0.1) -> dict[str, object]:
-    """Leakage gate (§A.4): the headline IR must be FLAT as the leading embargo grows past 120.
-
-    Given IR at E ∈ {60, 120, 240}: if IR drops materially 60→120 but is stable 120→240, leakage
-    existed at E=60 and 120 is the honest floor. If it keeps dropping 120→240, the result still
-    leaks. Returns the deltas and a ``flat_past_120`` verdict.
-    """
-    e = ir_by_embargo
-    d_60_120 = (e[60] - e[120]) if 60 in e and 120 in e else float("nan")
-    d_120_240 = (e[120] - e[240]) if 120 in e and 240 in e else float("nan")
-    flat_past_120 = bool(abs(d_120_240) <= tol) if np.isfinite(d_120_240) else False
-    return {
-        "delta_60_120": d_60_120,
-        "delta_120_240": d_120_240,
-        "flat_past_120": flat_past_120,
-        "leak_suspected_at_60": bool(np.isfinite(d_60_120) and d_60_120 > tol),
-    }
-
-
 __all__ = [
     "EMBARGO_DEFAULT",
     "H_MAX_DEFAULT",
     "L_CORR_DEFAULT",
     "FoldPlan",
-    "embargo_flatness",
     "make_fold_plan",
     "quadrant",
 ]
