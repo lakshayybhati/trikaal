@@ -205,6 +205,59 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.18 (2026-08-03, THE AUDIT PERSISTED VERBATIM + C-4: THE BINDING ENTRY GATE THAT HAD NO
+  IMPLEMENTATION. One gate written and wired, fail-closed; nothing decided that is Lakshay's.)**
+  Local, $0. **No weights were pulled** — metadata and licence text only, per the hard stop.
+  - **THE AUDIT IS NOW IN THE REPO, VERBATIM AND WHOLE.** The supervisor recovered all 24 findings
+    from transcript `780b64e7` and it is folded into `docs/m6_readiness_audit_findings.md`:
+    **PART 1 the auditor's text unedited, PART 2 our disposition**, with the boundary
+    machine-enforced rather than merely marked. `tests/test_audit_findings_complete.py` pins the
+    **sha256 of the verbatim region**, so tidying a typo, correcting a drifted line number, or
+    letting our disposition leak inside the markers all fail the suite. **Proven capable of
+    failing four ways**: deleting a body (3 failures), a one-word tidy (1), a line-number
+    "correction" (1), and smuggling a disposition heading inside the markers (2). The recovered
+    scratch file was deleted. **The supervisor's own defect — never committing it at the time — is
+    recorded in PART 1's provenance header, on the same terms as the builder's.**
+  - **★ C-4 — THE GATE IS NOW IMPLEMENTED AND `BLOCKED`, WHERE IT WAS ABSENT.**
+    `src/trikaal/eval/external_validation.py`. It fires inside `assemble_verdict` **before any
+    between-cell Δ exists**, and `money_verdict` defaults to **True** so the dangerous direction is
+    the one that must be declared (the C-6 rule); `scripts/m6_verdict.py` reuses the existing
+    `--allow-toy-grid` fixture declaration rather than inventing a second one that could drift.
+    The three pre-committed responses (`HALT_BEFORE_ANY_DELTA`, `CELL1_ONLY_FIX`,
+    `FULL_5_CELL_SAME_SEED_RETRAIN`) are **encoded, not described**. **Demonstrated: a money
+    verdict HALTS today; a declared fixture assembles; a supplied passing reference clears it** —
+    so the HALT is not vacuous.
+  - **LICENCE (read, not recalled): Kronos is MIT, `Copyright (c) 2025 ShiYu`**, quoted verbatim in
+    the requirements doc. The HF model repos are **public and ungated**; **an unauthenticated pull
+    works** (HTTP 200, `gated: False`), weights are 94.4 MiB + 15.1 MiB. **NO TOKEN IS NEEDED and
+    none should be issued.** Cost: **$0, local, no rental** — Kronos-small is `d512/8L/8H/ff1024`,
+    the same class as our backbone. **The licence is not the constraint; invariant 8 is, and it is
+    stricter than MIT.**
+  - **★ AND THE BLOCKER NOBODY HAD NAMED, WHICH IS WHY THIS IS NOT A SCHEDULING FAILURE.** The
+    published weights are a **bare `state_dict`** — the model card's own loader is
+    `from model import Kronos, KronosTokenizer`. **Running them requires Kronos's model code, and
+    invariant 8 permits Kronos WEIGHTS in the eval harness but Kronos CODE nowhere.** The prereg
+    further requires *"fed Kronos's own input pipeline"*, which is more of the same code. **Steps
+    1–2 and 4 are therefore not merely unscheduled — they are unexecutable as specified**, and the
+    four options (vendor into a quarantined path / reimplement from the paper / compare published
+    numbers only / re-specify the gate) are **Lakshay's**, like B1. The gate surfaces this as its
+    own `blocking_question` rather than reporting a vague "not configured", and a KAT asserts it.
+  - **STEP 3's PROBABILITY QUESTION — ANSWERED WITH A REFUSAL AND THE REASON.** The hard number
+    from our own pins: Stage-2 sees **32,768,000 tokens = 1.54 tokens/param = 7.69% of
+    compute-optimal**, **0.108 epochs** over the lake. Three forces pull in different directions:
+    the budget (**against us, and it dominates**), domain specialization (**for us, and not
+    small** — Kronos-small is multi-market, Cell 1 is crypto-1m and is scored on crypto), and
+    **resolvability**: at RankIC 0.02–0.03 the 15% band is 0.0030–0.0045, needing **n_eff ≈
+    49,000–111,000**, against **35,064 stride-15 periods per symbol** in a correlated 40-symbol
+    cross-section. **A gate whose band may sit inside its own sampling error is not yet a gate.**
+    I decline to give a calibrated probability and name what would make it knowable — (i) identify
+    *which* published figure and slice, $0; (ii) compute the deflated effective N and ask whether
+    the band is resolvable at all, $0; (iii) a scaling probe at 2–3 reduced budgets, a few dollars.
+    **The consequence, stated plainly for Lakshay BEFORE he funds anything: on the budget term
+    alone, a miss is more likely than not, which makes the ~$66–100 (~$86–130 forced-deterministic)
+    retrain the EXPECTED PATH rather than a contingency.**
+  - Suite **543 → 583**: +28 audit-completeness, +12 external-validation. Coverage, not fixtures.
+
 - **v1.6.17 (2026-08-03, TRANCHE 3 — THE CLAIMS THE PAPER WILL MAKE. Prose corrections at named
   sites, one numerical routine rewritten for provenance, two values pinned that were only ever
   described. No clause touched; the MDE is BIT-IDENTICAL across the rewrite.)** Local, $0.

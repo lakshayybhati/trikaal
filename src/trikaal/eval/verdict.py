@@ -795,6 +795,8 @@ def assemble_verdict(
     artifact_sha256: dict[str, str],
     *,
     tabled_mde_h15: float,
+    external_validation: dict | None = None,
+    money_verdict: bool = True,
 ) -> dict:
     """Evaluate §3's five clauses on the 15 loaded artifacts → the verdict manifest body.
 
@@ -828,6 +830,27 @@ def assemble_verdict(
     # clause 5: the pinned DSR recipe over the ENUMERATED trial set (N=60 multiplicity;
     # the ENUMERATION is the full cells x seeds x horizons x kappas cross-product). The recipe is
     # asserted against conformance.PINNED_DSR — an INDEPENDENT statement of the §3-clause-5
+    # ---- G-§8.C.3 FIRES HERE: after Cell 1, BEFORE any between-cell Δ exists (audit C-4).
+    # `money_verdict` defaults TRUE so the DANGEROUS direction is the one that must be declared —
+    # the C-6 rule. A fixture announcing itself is safe; a real verdict silently skipping a binding
+    # entry gate is the defect. The gate is BLOCKED today (no published RankIC obtained, and
+    # running the weights needs Kronos model code that invariant 8 forbids), so a money verdict
+    # HALTS here rather than producing a Δ that the gate exists to precede.
+    if money_verdict:
+        from trikaal.eval.external_validation import (
+            ExternalReference,
+            assert_clear_to_compute_deltas,
+        )
+        from trikaal.eval.external_validation import (
+            evaluate as _eval_g8c3,
+        )
+
+        assert_clear_to_compute_deltas(
+            external_validation
+            if external_validation is not None
+            else _eval_g8c3(None, ExternalReference())
+        )
+
     # constants — before any DSR is computed; var_sr uses the key-sorted ddof=0 construction
     # the pin re-derives bit-exactly (a subset-variance or a ddof drift cannot pass).
     trials = enumerate_dsr_trials(evals)

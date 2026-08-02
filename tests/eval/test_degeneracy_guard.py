@@ -132,7 +132,7 @@ def _fixture_per_seed(out_dir: Path, mu_by_cell, mudiag_by_cell_seed, *, seed):
 
 def _assemble(d):
     evals, shas = load_cell_evals(d)
-    return assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    return assemble_verdict(evals, shas, tabled_mde_h15=3.518, money_verdict=False)
 
 
 def test_halt_on_sign_lock(tmp_path):

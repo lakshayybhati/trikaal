@@ -151,7 +151,7 @@ def test_the_disclosure_is_computed_not_restated(tmp_path):
 def test_it_appears_in_the_shipped_manifest(tmp_path):
     """REQUIRED IN THE RESULTS, not an appendix — asserted on the emitted manifest."""
     evals, shas = load_cell_evals(_fixture(tmp_path / "m", lambda c, s: OK))
-    man = assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    man = assemble_verdict(evals, shas, tabled_mde_h15=3.518, money_verdict=False)
     assert "placebo_capacity_disclosure" in man, "the disclosure is not in the results"
     d = man["placebo_capacity_disclosure"]
     assert d["non_gating"] is True
@@ -169,8 +169,8 @@ def test_the_disclosure_can_never_move_the_verdict(tmp_path):
     b_ev, b_sh = load_cell_evals(
         _fixture(tmp_path / "y", lambda c, s: _recon(1.0 if c == 5 else 0.10))
     )
-    ma = assemble_verdict(a_ev, a_sh, tabled_mde_h15=3.518)
-    mb = assemble_verdict(b_ev, b_sh, tabled_mde_h15=3.518)
+    ma = assemble_verdict(a_ev, a_sh, tabled_mde_h15=3.518, money_verdict=False)
+    mb = assemble_verdict(b_ev, b_sh, tabled_mde_h15=3.518, money_verdict=False)
 
     assert ma["verdict"]["emitted"] == mb["verdict"]["emitted"]
     assert ma["verdict"]["primary"] == mb["verdict"]["primary"]
@@ -312,8 +312,8 @@ def test_the_decode_disclosure_can_never_move_the_verdict(tmp_path):
     b_ev, b_sh = load_cell_evals(
         _fixture2(tmp_path / "y", lambda c, s: _da(0.40 if c == 5 else 0.98))
     )
-    ma = assemble_verdict(a_ev, a_sh, tabled_mde_h15=3.518)
-    mb = assemble_verdict(b_ev, b_sh, tabled_mde_h15=3.518)
+    ma = assemble_verdict(a_ev, a_sh, tabled_mde_h15=3.518, money_verdict=False)
+    mb = assemble_verdict(b_ev, b_sh, tabled_mde_h15=3.518, money_verdict=False)
     assert ma["verdict"]["emitted"] == mb["verdict"]["emitted"]
     assert ma["verdict"]["failing_clauses"] == mb["verdict"]["failing_clauses"]
     for name in ma["clauses"]:
@@ -328,6 +328,6 @@ def test_the_decode_disclosure_can_never_move_the_verdict(tmp_path):
 def test_both_handicap_channels_are_present_in_the_manifest(tmp_path):
     """They compound: both inflate dIR(4-5) in the same direction if real."""
     ev, sh = load_cell_evals(_fixture2(tmp_path / "m", lambda c, s: _da(0.95)))
-    man = assemble_verdict(ev, sh, tabled_mde_h15=3.518)
+    man = assemble_verdict(ev, sh, tabled_mde_h15=3.518, money_verdict=False)
     assert man["placebo_capacity_disclosure"]["non_gating"] is True
     assert man["decode_agreement_disclosure"]["non_gating"] is True

@@ -750,7 +750,7 @@
     "P3": 1
   },
   "file_selection": "git ls-files runs_manifest/*.json \u2014 TRACKED ONLY (\u00a77 v1.6.17)",
-  "n_swept_files": 63,
+  "n_swept_files": 64,
   "patterns": {
     "P1_number_inside_a_string_field": "a datum that cannot be read programmatically",
     "P2_nan_or_zero_numeric_field": "a numeric slot that holds no measurement",
@@ -813,6 +813,7 @@
     "runs_manifest/m6_prefill_impact_bound.json": "d4886d718b67bedff2c7668b19b84966f3076941607e0e3c867efcf0f51cf32b",
     "runs_manifest/m6_reallocation_indicative.json": "299cbd9544d12a73546c33dd98a672818e6546141795842ceb02313e83c1d804",
     "runs_manifest/m6_rehearsal_manifest.json": "6db906c853b7ce126f064fa60b3b125548b769379a62aa0f486a153075e18079",
+    "runs_manifest/m6_s4_betacf_rewrite.json": "348c9fab6ecdc0768ee1e031a66c0ac84343a662206ae3ce2b5fa1917f136068",
     "runs_manifest/m6_smoke_manifest.json": "03d550ff71dd28e5c817620321ee6e110ca57a407ff3fe19af6e419c25c7aac2",
     "runs_manifest/m6_spread_deciles.json": "90cd31898ff4c625d6acfec6f20fb50676c05827eca05d121401ae1e3e519939",
     "runs_manifest/m6_taxonomy_audit.json": "c1675f0c3f163dab4a2518203e7c9d9f185b4f0fb1ab1468ce0860eb74274349",

@@ -88,7 +88,7 @@ def _assemble(tmp_path) -> dict:
             entries[name] = sha
     V.write_eval_index(out, entries)
     evals, shas = V.load_cell_evals(out)
-    return V.assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    return V.assemble_verdict(evals, shas, tabled_mde_h15=3.518, money_verdict=False)
 
 
 def _dsr_fails(**over) -> list[str]:

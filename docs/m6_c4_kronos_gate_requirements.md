@@ -139,3 +139,151 @@ code, and that distinction needs a ruling).
 
 No weights pulled. No code written. No cost quoted. No sequencing changed. Per the ruling: report
 what implementing it requires; do not implement.
+
+---
+
+# UPDATE 2026-08-03 (§7 v1.6.18) — LICENCE, ACCESS, COST, AND THE BLOCKER NOBODY HAD NAMED
+
+**Status change: the gate is now IMPLEMENTED and BLOCKED, where before it was ABSENT.**
+`src/trikaal/eval/external_validation.py` + `tests/eval/test_external_validation.py`. It fires
+inside `assemble_verdict` **before any between-cell Δ exists**, `money_verdict` defaults to `True`
+so the dangerous direction is the one that must be declared (the C-6 rule), and it returns
+`BLOCKED` — a HALT — because the published reference has not been obtained. Proven capable of
+halting a money verdict and of clearing when a reference is supplied.
+
+## A. The licence — read, not summarized
+
+**HuggingFace model repos are PUBLIC and UNGATED** (`gated: False`, `private: False`,
+`license: mit`) for `NeoQuasar/Kronos-small`, `Kronos-base`, and `Kronos-Tokenizer-base`.
+
+The model repos carry **no LICENSE file** (`/raw/main/LICENSE` → HTTP 404); the licence is declared
+in the model-card frontmatter (`license: mit`). The full text lives in the code repo,
+`https://raw.githubusercontent.com/shiyu-coder/Kronos/master/LICENSE`, quoted verbatim:
+
+> MIT License
+>
+> Copyright (c) 2025 ShiYu
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+> and associated documentation files (the "Software"), to deal in the Software without
+> restriction, including without limitation the rights to use, copy, modify, merge, publish,
+> distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the
+> Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or
+> substantial portions of the Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND …
+
+**Reading.** MIT permits use, modification and even redistribution, conditioned only on carrying
+the copyright and permission notice. Running the weights through our harness for a metric
+cross-check is unambiguously permitted. **The licence is therefore NOT the constraint — invariant 8
+is**, and it is stricter than the licence: we forbid redistribution of these weights in anything we
+publish regardless of MIT allowing it. One honest caveat: the weights repo asserts MIT via card
+metadata only, so the *weights'* licence rests on the card, not on a licence file shipped beside
+them.
+
+## B. Access — demonstrated, not assumed
+
+An **unauthenticated** request to `https://huggingface.co/api/models/NeoQuasar/Kronos-small`
+returns **HTTP 200** with `gated: False, private: False`. A `HEAD` on the weights resolves with
+`x-linked-size: 98,980,656` (94.4 MiB) and the tokenizer at `15,842,368` (15.1 MiB).
+**NO TOKEN IS REQUIRED and none should be issued.** *(Metadata and text only were fetched; no
+weights were transferred — the hard stop on pulling was respected.)*
+
+**So there is nothing for Lakshay to do on credentials.** If a future need arises the scope would
+be a fine-grained, read-only, repo-scoped token — but on today's evidence it is unnecessary, and
+issuing one would add risk for no capability.
+
+## C. Cost — and why the rental question does not arise
+
+- Pull: **109.5 MiB total**, unauthenticated, over HTTP. **$0, local.**
+- Inference: Kronos-small is `d_model 512, n_layers 8, n_heads 8, ff_dim 1024` (its `config.json`)
+  — the **same class as our own backbone** — over a BTC slice. Minutes on CPU. **$0, local.**
+- **No rental is needed for steps 1–2 and 4.** The standing rule that local timings carry ~8×
+  variance and must be re-measured on target hardware does not bite here, because nothing is being
+  costed against a rental: there is no rental.
+
+## ★ D. THE BLOCKER: STEPS 1–2 AND 4 CANNOT BE RUN WITHOUT KRONOS CODE
+
+This is not a scheduling failure and it is not fixed by pulling weights.
+
+The published weights are a **bare `state_dict`**. The model card's own loading instructions are:
+
+```python
+from model import Kronos, KronosTokenizer, KronosPredictor
+tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
+model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
+```
+
+**Running the weights requires Kronos's `model.py`.** And CLAUDE.md invariant 8 says:
+
+> No Kronos code or weights are ever part of Trikaal … its public weights appear in exactly one
+> place: the eval harness, as an external validation target.
+
+**Weights are permitted in the eval harness. Code is permitted nowhere.** The prereg additionally
+requires the comparison be *"fed Kronos's own input pipeline"*, which is more Kronos code. So the
+gate as specified is **unexecutable under invariant 8 as written**. The options, none of which is
+the builder's to choose:
+
+1. **Vendor Kronos's `model.py` into a quarantined, eval-only, never-published path.** Licence-wise
+   fine (MIT + attribution). Requires an invariant-8 amendment — Lakshay's file, like B1.
+2. **Reimplement the architecture from the paper + `config.json` to load their `state_dict`.**
+   Arguably still "Kronos code", and a subtly-wrong reimplementation produces a *wrong* comparison
+   to a published number — worse than no comparison, because it would look authoritative.
+3. **Compare against the published NUMBERS without running their model.** Cheapest, but the prereg
+   forbids exactly this: published figures are on different data, which is why "on the same bars"
+   is in the specification.
+4. **Re-specify or drop the gate** — a ROADMAP change, also not ours.
+
+## E. Will Cell 1 miss 0.85 × published Kronos-small RankIC?
+
+**The one hard number, from our own pins:**
+
+| quantity | value |
+|---|---|
+| Stage-2 budget | 2,000 steps × batch 32 × seq 512 = **32,768,000 tokens** |
+| backbone params | 21,301,248 |
+| **tokens per parameter** | **1.54** (Chinchilla-optimal ≈ 20) |
+| **fraction of compute-optimal** | **7.69 %** |
+| epochs over the 304.6M-bar lake | **0.108** |
+
+**Three forces, in opposite directions — which is why a single confident number would be false:**
+
+1. **AGAINST US, and it dominates:** at 7.7 % of compute-optimal we are on the steeply-rising part
+   of the loss/skill curve, not the plateau. Reaching 85 % of a well-trained model's RankIC from
+   7.7 % of its compute is optimistic.
+2. **FOR US, and it is not small:** Kronos-small is a broad multi-market model; Cell 1 is trained
+   on 200 crypto symbols at 1-minute and evaluated on a crypto slice. **Domain specialization can
+   be worth a large multiple** on in-domain rank correlation, and it is exactly the axis the gate
+   does not control for.
+3. **NEITHER — the gate may not be RESOLVABLE.** At a published RankIC of 0.02–0.03 (the range M2
+   found for *features*; the model figure is not yet identified), the 15 % band is **0.0030–0.0045**.
+   `SE(ρ) ≈ 1/√n_eff` needs **n_eff ≈ 49,000–111,000** for the band to equal one standard error.
+   The primary region gives **35,064 stride-15 periods per symbol**; the 40-symbol cross-section is
+   correlated, so the honest denominator is the autocorrelation-deflated effective N the MDE
+   machinery already computes — and it is **not obviously large enough**. A gate whose band sits
+   inside its own sampling error is not a gate.
+
+**My answer: I will not give a calibrated probability, and force 3 is why.** If I had to bracket
+force 1 alone I would say the budget term makes a miss *more likely than not*; force 2 could
+plausibly reverse it; force 3 may make the comparison indecisive regardless of both. **Any single
+number I gave you here would be a guess dressed as an estimate.**
+
+**What would make it knowable, in increasing cost:**
+
+- **(i) $0, today** — identify *which* published figure and on which slice. The comparison target
+  is still unnamed; without it there is no threshold, which is why the gate returns `BLOCKED`.
+- **(ii) $0, today** — compute the deflated effective N on the pinned slice with the existing
+  `ic_screen` machinery and check whether a 15 % band is resolvable **at all**. If it is not, the
+  probability question is moot and the gate needs re-specification before anything is spent.
+- **(iii) a few dollars** — a **scaling probe**: train Cell 1 at 2–3 reduced budgets and read the
+  RankIC trend. That converts force 1 from an argument into a measurement, and it is the only
+  cheap way to see whether 2,000 steps is anywhere near the knee.
+
+**The consequence the supervisor asked me to state plainly: if the gate is likely to fail, the
+retrain contingency is not a contingency — it is the expected path, and its cost (~$66–100, or
+~$86–130 forced-deterministic) is then part of the base budget, not a tail risk.** On force 1 alone
+that is the reasonable planning assumption. **Lakshay should be told this before he funds the run,
+not after it halts** — and (ii) should be run first, because a gate that cannot resolve its own band
+changes the question entirely.

@@ -109,7 +109,7 @@ def _build_fixture(out_dir: Path, mu_by_cell: dict[int, float], *, fixture_seed:
 
 def _assemble(art_dir: Path) -> dict:
     evals, shas = load_cell_evals(art_dir)
-    return assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    return assemble_verdict(evals, shas, tabled_mde_h15=3.518, money_verdict=False)
 
 
 @pytest.fixture(scope="module")
@@ -289,7 +289,7 @@ def test_doctored_verdict_n_trials_is_caught_by_the_conformance_pin(planted_dir,
     monkeypatch.setattr(vd, "DSR_N_TRIALS", 240)
     evals, shas = load_cell_evals(planted_dir)
     with pytest.raises(ConformanceError, match="n_trials 240"):
-        vd.assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+        vd.assemble_verdict(evals, shas, tabled_mde_h15=3.518, money_verdict=False)
 
 
 # ------------------------- §7 v1.4.7: the guards must work END-TO-END through the driver script

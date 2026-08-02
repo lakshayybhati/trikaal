@@ -86,8 +86,15 @@ def main() -> int:
         return 1
 
     # 4) the five clauses + §5 fallback → the durable, content-hashed manifest
+    # §7 v1.6.18 (audit C-4): G-§8.C.3 fires inside assemble_verdict BEFORE any Δ. The existing
+    # --allow-toy-grid flag already declares "fixture / dry run", so it is reused rather than
+    # adding a second declaration that could drift from it. A REAL run passes neither flag and
+    # therefore meets the gate — which is BLOCKED today and will HALT, by design.
     manifest = assemble_verdict(
-        evals, shas, tabled_mde_h15=float(mde["h15_pooled"]["MDE_annualized_IR"])
+        evals,
+        shas,
+        tabled_mde_h15=float(mde["h15_pooled"]["MDE_annualized_IR"]),
+        money_verdict=not args.allow_toy_grid,
     )
     manifest["grid_pinned"] = bool(grid_pinned)
     manifest["conformance"] = "PASS"
