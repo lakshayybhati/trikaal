@@ -42,6 +42,12 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6.22: codebook is a REQUIRED per-(cell, seed) field, gated at 95% utilization.
+CODEBOOK_OK = {
+    "coarse": {"utilization": 0.99, "vocab": 891},
+    "fine": {"utilization": 0.98, "vocab": 1225},
+}
+
 # §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
 DECODE_AGREEMENT_OK = {
     "sign_agreement_dim0": 0.95,
@@ -74,6 +80,7 @@ def _write(out_dir: Path, *, cell_id: int, seed: int, mu_diag: dict, mu: float =
         ohlcv_recon=OHLCV_RECON_OK,
         decode_agreement=DECODE_AGREEMENT_OK,
         meta={},
+        codebook=CODEBOOK_OK,
     )
 
 
@@ -100,6 +107,7 @@ def test_mu_diag_is_a_required_keyword(tmp_path):
             headline_series=np.zeros(T),
             kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
             val_ir_by_kappa_by_h={h: {k: 0.5 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
+            codebook=CODEBOOK_OK,
         )
 
 

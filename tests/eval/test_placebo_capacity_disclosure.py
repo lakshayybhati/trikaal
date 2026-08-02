@@ -38,6 +38,12 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6.22: codebook is a REQUIRED per-(cell, seed) field, gated at 95% utilization.
+CODEBOOK_OK = {
+    "coarse": {"utilization": 0.99, "vocab": 891},
+    "fine": {"utilization": 0.98, "vocab": 1225},
+}
+
 # §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
 DECODE_AGREEMENT_OK = {
     "sign_agreement_dim0": 0.95,
@@ -76,6 +82,7 @@ def _fixture(tmp: Path, recon_for) -> Path:
                 ohlcv_recon=recon_for(c, s),
                 decode_agreement=DECODE_AGREEMENT_OK,
                 meta={},
+                codebook=CODEBOOK_OK,
             )
             entries[name] = sha
     write_eval_index(tmp, entries)
@@ -94,6 +101,7 @@ def test_the_disclosure_is_a_required_keyword(tmp_path):
             kappa_star_by_h={h: 1.5 for h in DSR_HORIZONS},
             val_ir_by_kappa_by_h={h: {k: 0.5 for k in DSR_KAPPAS} for h in DSR_HORIZONS},
             mu_diag=BENIGN_MU,
+            codebook=CODEBOOK_OK,
         )
 
 
@@ -111,6 +119,7 @@ def test_the_writer_refuses_an_unusable_disclosure(tmp_path, payload):
             mu_diag=BENIGN_MU,
             ohlcv_recon=payload,
             decode_agreement=DECODE_AGREEMENT_OK,
+            codebook=CODEBOOK_OK,
         )
     assert not list(tmp_path.glob("*.json"))
 
@@ -241,6 +250,7 @@ def _fixture2(tmp: Path, da_for) -> Path:
                 ohlcv_recon=OK,
                 decode_agreement=da_for(c, s),
                 meta={},
+                codebook=CODEBOOK_OK,
             )
             entries[name] = sha
     write_eval_index(tmp, entries)

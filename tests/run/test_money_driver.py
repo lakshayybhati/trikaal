@@ -36,6 +36,12 @@ from trikaal.run.matrix import (
 from trikaal.train.cells import CELLS
 from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
 
+# §7 v1.6.22: codebook is a REQUIRED per-(cell, seed) field, gated at 95% utilization.
+CODEBOOK_OK = {
+    "coarse": {"utilization": 0.99, "vocab": 891},
+    "fine": {"utilization": 0.98, "vocab": 1225},
+}
+
 # §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
 DECODE_AGREEMENT_OK = {
     "sign_agreement_dim0": 0.95,
@@ -184,6 +190,7 @@ def _write_set(tmp, provenance_for):
                 ohlcv_recon=OHLCV_RECON_OK,
                 decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"provenance": provenance_for(c, s)},
+                codebook=CODEBOOK_OK,
             )
             entries[name] = sha
     write_eval_index(tmp, entries)

@@ -40,7 +40,12 @@ from pathlib import Path
 
 import numpy as np
 
-from trikaal.eval.conformance import PINNED_DSR, ConformanceError, verdict_dsr_failures
+from trikaal.eval.conformance import (
+    PINNED_CODEBOOK_MIN_UTILIZATION,
+    PINNED_DSR,
+    ConformanceError,
+    verdict_dsr_failures,
+)
 from trikaal.eval.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from trikaal.eval.metrics import information_ratio, periods_per_year
 from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
@@ -136,7 +141,7 @@ def write_cell_eval_artifact(
     mu_diag: dict,
     ohlcv_recon: dict,
     decode_agreement: dict,
-    codebook: dict | None = None,
+    codebook: dict,
     meta: dict | None = None,
 ) -> tuple[str, str]:
     """Write ONE per-(cell, seed) eval artifact; returns ``(name, sha256)``.
@@ -186,7 +191,7 @@ def write_cell_eval_artifact(
         "headline_series": [float(v) for v in np.asarray(headline_series, dtype=np.float64)],
         # non-gating codebook-usage diagnostic (CO2 item 5): score_cell's CellScore.codebook —
         # per-cell utilization + effective bits, reported in the paper, never thresholded
-        "codebook": codebook or {},
+        "codebook": codebook,
         # §7 v1.4.2 standing μ̂ receipt: per-cell mean/std/frac_negative of the decision signal
         # (the mean estimator; a constant-sign μ̂ was the acceptance mode-bias pathology).
         # REQUIRED since v1.6 C-2 — validated above, never defaulted to {}.
@@ -263,6 +268,28 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
             "the path, and can never be assembled into a verdict"
         )
     return bad
+    # §7 v1.6.22: the codebook diagnostic is REQUIRED per-(cell, seed) and its utilization is
+    # gated at the spec's own >= 95% (design :1859). It was optional and unvalidated -- and we are
+    # about to lean on it for the BSQ disclosure, so a disclosure with no data behind it is the
+    # defect this project has closed four times.
+    cb = doc.get("codebook")
+    if not isinstance(cb, dict) or not cb:
+        bad.append(f"{name}: codebook diagnostic is missing or empty (§7 v1.6.22; spec :1859)")
+    else:
+        for sub in ("coarse", "fine"):
+            leg = cb.get(sub)
+            if not isinstance(leg, dict):
+                bad.append(f"{name}: codebook.{sub} missing (§7 v1.6.22)")
+                continue
+            u = leg.get("utilization")
+            if not isinstance(u, (int, float)) or not np.isfinite(float(u)):
+                bad.append(f"{name}: codebook.{sub}.utilization missing/non-finite")
+            elif float(u) < PINNED_CODEBOOK_MIN_UTILIZATION:
+                bad.append(
+                    f"{name}: codebook.{sub}.utilization {float(u):.4f} < the pinned "
+                    f"{PINNED_CODEBOOK_MIN_UTILIZATION} (dead-code collapse; spec :1859). This "
+                    "catches COLLAPSE only — it does not certify the quantizer is competitive."
+                )
 
 
 def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
@@ -575,7 +602,13 @@ def enumerate_dsr_trials(
             by_k = doc["val_ir_by_kappa_by_h"][str(h)]
             for k in DSR_KAPPAS:
                 ir_ann = float(by_k[f"{k:g}"])
-                trials[(cid, seed, h, k)] = ir_ann / float(np.sqrt(periods_per_year(h)))
+                # §7 v1.6.22 (C-3 AMENDED, pre-data, Lakshay 2026-08-03): de-annualize at
+                # PRIMARY_H, not at each trial's own horizon. SR0 is compared against
+                # _sharpe(headline_series) whose grid is pinned to PRIMARY_H, so the trial set
+                # must carry that same unit. The predecessor divided by sqrt(ppy(h)), mixing
+                # per-5/15/60-minute Sharpes -- a sqrt(12) = 3.4641x span, outcome-material
+                # (witness SR_hat 0.45705: DSR 0.9868 PASS mixed vs 0.8577 FAIL consistent).
+                trials[(cid, seed, h, k)] = ir_ann / float(np.sqrt(periods_per_year(PRIMARY_H)))
     return trials
 
 
@@ -859,6 +892,19 @@ def assemble_verdict(
     # configurations without seeds. Three deliberately different sets.
     basis_keys = sorted(k for k in trials if k[0] == DSR_VAR_SR_BASIS_CELL)
     var_sr = float(np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64)))
+    # §7 v1.6.22 C-3: the retained mixed-unit leg, from the SAME artifacts.
+    var_sr_mixed = float(
+        np.var(
+            np.array(
+                [
+                    float(evals[(k[0], k[1])]["val_ir_by_kappa_by_h"][str(k[2])][f"{k[3]:g}"])
+                    / float(np.sqrt(periods_per_year(k[2])))
+                    for k in basis_keys
+                ],
+                dtype=np.float64,
+            )
+        )
+    )
     recipe_fails = verdict_dsr_failures(
         n_trials=DSR_N_TRIALS, threshold=DSR_THRESHOLD, trials=trials, var_sr=var_sr
     )
@@ -1049,6 +1095,19 @@ def assemble_verdict(
             "mde_paired": pb45.mde_paired_scoring_only,
             "clauses_pass": clauses_v12,
             "primary": primary_v12,
+        },
+        # §7 v1.6.22 C-3: the superseded MIXED-UNIT basis, retained and REPORTED so nobody has
+        # to take our unit judgement on trust. Same artifacts, same clause, different convention.
+        "v1_5_mixed_unit_basis_superseded": {
+            "n_trials": DSR_N_TRIALS,
+            "var_sr_basis": f"cell{DSR_VAR_SR_BASIS_CELL}_placebo, de-annualized at EACH TRIAL'S "
+            "OWN horizon (the pre-v1.6.22 convention)",
+            "var_sr": var_sr_mixed,
+            "sr0": float(expected_max_sharpe(var_sr_mixed, DSR_N_TRIALS)),
+            "dsr": float(deflated_sharpe_ratio(s[4], n_trials=DSR_N_TRIALS, var_sr=var_sr_mixed)),
+            "why_superseded": "SR0 is compared against a per-PRIMARY_H Sharpe; a per-5/15/60 "
+            "blend is a unit error (sqrt(12) = 3.4641x span). Disagreement between this leg and "
+            "the primary is a FIRST-CLASS FINDING, on the same footing as v1.2-vs-v1.5.",
         },
         "v1_5_amended": {
             "n_trials": DSR_N_TRIALS,

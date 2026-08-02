@@ -47,6 +47,12 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 
+# §7 v1.6.22: codebook is a REQUIRED per-(cell, seed) field, gated at 95% utilization.
+CODEBOOK_OK = {
+    "coarse": {"utilization": 0.99, "vocab": 891},
+    "fine": {"utilization": 0.98, "vocab": 1225},
+}
+
 # §7 v1.6.11 C-1: the decode-agreement disclosure is REQUIRED on every artifact.
 DECODE_AGREEMENT_OK = {
     "sign_agreement_dim0": 0.95,
@@ -101,6 +107,7 @@ def _build_fixture(out_dir: Path, mu_by_cell: dict[int, float], *, fixture_seed:
                 ohlcv_recon=OHLCV_RECON_OK,
                 decode_agreement=DECODE_AGREEMENT_OK,
                 meta={"fixture": True},
+                codebook=CODEBOOK_OK,
             )
             entries[name] = sha
     write_eval_index(out_dir, entries)

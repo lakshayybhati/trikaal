@@ -101,6 +101,27 @@ def main() -> int:
         ts = (np.arange(total, dtype=np.int64) * 60_000) + 1_700_000_000_000
         sigma = np.full(total, 1e-3)
         dec = np.arange(a.seq_len, a.seq_len + n_dec, dtype=np.int64)
+        # ONE UNTIMED WARM-UP CALL, then time. The first CUDA call pays context init, kernel
+        # autotune and allocator growth: the first run measured 15.579 s +/- 9.289 at n=512 (the
+        # std is larger than half the mean) against 20.380 s +/- 0.012 at n=1024. A mean over a
+        # warm-up-contaminated first repeat is not a throughput measurement, and the marginal
+        # derived from it would be biased LOW. Discarding it is the fix, not averaging harder.
+        predict_mu(
+            model,
+            tok,
+            b_c,
+            b_f,
+            ts,
+            sigma,
+            dec[: min(32, dec.size)],
+            h=PRIMARY_H,
+            seq_len=a.seq_len,
+            device=a.device,
+            chunk=CHUNK,
+            estimator=PINNED_MU_ESTIMATOR,
+        )
+        if a.device.startswith("cuda"):
+            torch.cuda.synchronize()
         wall = []
         for _r in range(a.repeats):
             try:

@@ -267,7 +267,12 @@ def run_cell(
     ``per_symbol_by_arm[arm]`` holds each symbol's arm-transformed windows (built once per arm by
     the caller so every cell sharing an arm sees byte-identical inputs). Returns the run manifest
     (also written to ``out_dir/<cell>_seed<seed>/run_manifest.json``)."""
-    set_determinism(seed, deterministic_algorithms=False)
+    # §7 v1.6.22 (B1 APPROVED 2026-08-03): forced determinism is PAID. The measured penalty is
+    # 13.175% (1.152x slower, docs/m6_cuda_probe_report.md) -- not the illustrative 1.3x, which had
+    # been double-counted against a figure that already contained it. `deterministic_algorithms`
+    # was hardcoded False here while 49/49 records asserted bit-exactness beside it; that is the
+    # defect invariant 7's own text encoded, and it is now closed at the site.
+    set_determinism(seed, deterministic_algorithms=True)
     monitor = monitor or TripwireMonitor()
     dev = cfg.device
     run_name = f"{spec.name}_seed{seed}"

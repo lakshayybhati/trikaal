@@ -1,0 +1,55 @@
+{
+  "extrapolation_note": "a full-run estimate needs the REAL decision count per (cell, seed) from the pinned grid; it is deliberately NOT invented here. marginal_seconds_per_decision x that count x 25 units is the arithmetic, and the count comes from the money config.",
+  "fixed_overhead_s": 10.590098460515339,
+  "marginal_seconds_per_decision": 0.009598690395553909,
+  "receipt": "m6_eval_throughput_probe",
+  "runs": [
+    {
+      "decisions": 512,
+      "decisions_per_s_mean": 33.022398336870175,
+      "decisions_per_s_std": 19.53548513234861,
+      "peak_mem_bytes": 9564545024,
+      "repeats": 3,
+      "wall_s_mean": 15.50462794303894,
+      "wall_s_std": 9.172272273320946
+    },
+    {
+      "decisions": 1024,
+      "decisions_per_s_mean": 50.148984047601516,
+      "decisions_per_s_std": 0.07636113712636952,
+      "peak_mem_bytes": 9564545024,
+      "repeats": 3,
+      "wall_s_mean": 20.419157425562542,
+      "wall_s_std": 0.03109195749007165
+    },
+    {
+      "decisions": 2048,
+      "decisions_per_s_mean": 50.06366385645675,
+      "decisions_per_s_std": 0.07888872353197664,
+      "peak_mem_bytes": 9564545024,
+      "repeats": 3,
+      "wall_s_mean": 40.90791289011637,
+      "wall_s_std": 0.0644613833999759
+    }
+  ],
+  "surface": {
+    "backbone": {
+      "d_ff": 1024,
+      "d_model": 512,
+      "n_heads": 8,
+      "n_layers": 8
+    },
+    "chunk": 512,
+    "device": "cuda",
+    "estimator": "expectation",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "h": 15,
+    "seq_len": 512,
+    "torch": "2.12.1+cu130",
+    "v_c": 891,
+    "v_f": 1225
+  },
+  "tiny_smoke_not_a_measurement": false,
+  "weights": "RANDOM \u2014 this is a TIMING probe; weights change no shape and no control flow",
+  "what": "end-to-end eval throughput at the pinned money surface \u2014 the leg that was only ever INFERRED, never measured"
+}

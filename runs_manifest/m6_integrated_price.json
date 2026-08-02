@@ -1,0 +1,46 @@
+{
+  "TOP_UP_AGAINST": 150,
+  "banked_inferred_eval_usd": [
+    30.98,
+    48.69
+  ],
+  "decisions_per_unit": 1402560,
+  "eval_gpu_hours": 194.88327951636163,
+  "eval_was_understated_by": [
+    1.040658300970508,
+    2.516246346240951
+  ],
+  "measured_eval": {
+    "OOM_at_chunk_512": false,
+    "chunk": 512,
+    "clean_pair": "1024 -> 2048 (std 0.031 and 0.064); the n=512 point had a 9.17 s std from one outlier repeat and is NOT used. The receipt's own marginal_seconds_per_decision field uses runs[:2] and is therefore CONTAMINATED \u2014 recorded as a probe defect, not used here.",
+    "decisions_per_s": 49.978633488576264,
+    "estimator": "expectation",
+    "gpu": "RTX 4090",
+    "h": 15,
+    "marginal_s_per_decision": 0.02000855025835335,
+    "peak_mem_GiB": 8.91,
+    "seq_len": 512,
+    "the_local_OOM_was_mps_specific": "local said 19.69 GiB KV > 20.13 GiB limit; the 4090 peaks at 8.91 GiB of 24. The pinned recipe RUNS on the hardware class we costed against.",
+    "torch": "2.12.1+cu130"
+  },
+  "measured_eval_usd": [
+    50.669652674254024,
+    77.95331180654466
+  ],
+  "probe_cost_actual_usd": 0.14,
+  "receipt": "m6_integrated_price",
+  "top_up_reasoning": "worst measured case is ~$121 (determinism on eval, $0.40/hr spot). $150 carries spot-price variance, box setup/staging overhead (~30 min per box observed on the probe) and one re-launch. Lakshay tops up against worst case, never expected.",
+  "totals_gpu_hours": {
+    "eval_plus_train": 270.36417796617445,
+    "if_determinism_also_slows_eval": 299.94908494642834
+  },
+  "train_gpu_hours_forced_26003": 75.48089844981283,
+  "units": 25,
+  "what": "THE single worst-case total, on a MEASURED eval leg. Supersedes every prior figure.",
+  "worst_case_usd": {
+    "at_0.40": 108.14567118646978,
+    "at_0.40_with_determinism_on_eval": 119.97963397857134,
+    "central_at_0.29": 78.40561161019059
+  }
+}

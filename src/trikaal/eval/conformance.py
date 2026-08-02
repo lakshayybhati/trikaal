@@ -53,21 +53,27 @@ PINNED_BACKBONE_PARAMS = 21_301_248  # the realized count (CLAUDE.md invariant),
 # caller passing "argmax" would silently restore the biased mode-decode that v1.4.2 was written to
 # remove, and nothing anywhere would notice.
 PINNED_MU_ESTIMATOR = "expectation"  # §7 v1.4.2: the conditional-MEAN decode
-# ★ PROVENANCE WARNING (§7 v1.6.19) — THIS VALUE IS A SMOKE-TEST DEFAULT, NOT A DESIGNED BUDGET.
-# 2000 entered the repo in commit a4d242e, in the SAME dataclass literal as `seeds = (0,1,2)` and
-# `seq_len = 128` — the two values C-6 later identified as the train/eval split-brain. Those two
-# had pinned counterparts and were corrected; the step budget had none, so it survived, and the
-# §7 v1.6.15 C-18 fix then PINNED it. There is now a mutation KAT defending a rehearsal value.
-#   * `docs/superpowers/specs/…-v1-design.md:1762-1763` uses "<= 2000 steps" as the G1
-#     OVERFIT-A-SINGLE-BATCH SMOKE GATE threshold — that is where the number is from.
-#   * The DESIGNED Stage-2 budget in the same spec (:1912, :1924) is "1-3 passes over a <=1B-bar
-#     corpus" with early-stop on val-NLL saturation, at a target global batch of ~0.5M tokens/step.
-#   * What these constants actually run: 2000 x 32 x 512 = 32,768,000 tokens = 1.54 tokens/param
-#     = 7.69% of compute-optimal = 0.108 epochs over the 304,625,181-bar lake.
-# NOT FIXED HERE: no prereg constant states the budget, so setting it is a BUDGET decision and
-# therefore Lakshay's, not a specification change. See docs/m6_training_budget_decision.md.
-PINNED_STEPS_STAGE1 = 2000
-PINNED_STEPS_STAGE2 = 2000
+# §7 v1.6.22 — THE TRAINING BUDGET, SET BY LAKSHAY 2026-08-03. This IMPLEMENTS THE BLUEPRINT.
+# WHAT IT WAS: 2000, the design spec's G1 overfit-a-single-batch SMOKE GATE threshold
+# (spec :1762-1763). It entered in commit a4d242e in the SAME dataclass literal as `seeds=(0,1,2)`
+# and `seq_len=128` -- the two values C-6 caught as the train/eval split-brain. Those had pinned
+# counterparts and were corrected; this had none, so it survived, and §7 v1.6.15 C-18 pinned it.
+# At 2000 steps a cell saw 32,768,000 tokens = 1.54 tokens/param = 7.69% of compute-optimal =
+# 0.108 epochs, and a flat dIR(4-5) could not distinguish "micro does not help" from "we stopped
+# before it could" -- the false-NULL mode ruled Tier-1 blocking for C-10, at experiment scale.
+# WHY 26,003: the spec (:1912, :1924) specifies Stage-2 "1-3 passes over a <=1B-bar corpus", which
+# over our 304,625,181-bar lake is 14.3-42.9 tokens/param and BRACKETS the ~20 compute-optimal
+# point. 26,003 x 32 x 512 = 426,033,152 tokens = 20.00 tokens/param = 1.399 passes. The design's
+# budget IS compute-optimal; leaving 2000 was a standing undisclosed DEVIATION from the blueprint.
+# MATCHED AND FIXED for all 25 units. Per-cell val-NLL saturation is MEASURED AND REPORTED as a
+# required diagnostic, NEVER as the stopping rule: data-dependent stopping yields 25 different
+# budgets and confounds dIR(4-5) with "cell 4 trained longer" -- the C-12 class, in the PRIMARY.
+# That reconciliation (spec says early-stop; m6_design.md:18 says matched) is dated in §7 v1.6.22.
+PINNED_STEPS_STAGE1 = 26_003
+PINNED_STEPS_STAGE2 = 26_003
+# The measured cost of this budget: 75.48 GPU-h across 25 units under forced determinism, on the
+# 4090 rates in runs_manifest/m6_cuda_probe_cell_manifest.json. Training was 2.6-6.1% of the
+# approved $33-50; raising it 13x costs +$15.73-24.20 because EVAL dominates.
 PINNED_BOOT = {"B": 10_000, "seed": 20260704, "alpha": 0.05}
 MDE_INPUTS = Path("runs_manifest/m6_mde_inputs.json")
 DECILES = Path("runs_manifest/m6_spread_deciles.json")
@@ -89,6 +95,18 @@ PINNED_FINE_POINTWISE = True
 # (lambda=3: 0.9060/0.9142/0.9000, mean 0.9067, min 0.9000; lambda=2 fails at mean 0.8517;
 # init-seeding defect disclosed in the prereg entry; runs_manifest/m6_lambda_search_receipt.json).
 PINNED_MICRO_POINT_WEIGHT = 3.0
+
+# §7 v1.6.22 — THE CODEBOOK-HEALTH THRESHOLD, NOW IN CODE. The design spec (:1859) requires
+# "codebook usage = fraction of codes used over the eval set (target >= 95%)" and no dead-code
+# collapse; the number appeared NOWHERE in the repo and `write_cell_eval_artifact` took
+# `codebook: dict | None = None` -> `{}` with NO validation. An artifact carrying no codebook
+# diagnostic at all assembled into a verdict. C-2 shape, FOURTH instance.
+# WHAT IT DOES AND DOES NOT DO, so nobody leans on it further than it reaches: utilization,
+# entropy, efficiency and perplexity are all properties of the MARGINAL DISTRIBUTION OF CODE IDS.
+# None involves the future or the target -- a tokenizer assigning codes by hashing noise would
+# score ~100%. It discriminates COLLAPSED from NON-COLLAPSED. It does NOT discriminate CRIPPLED
+# from COMPETENT, and the BSQ disclosure says so.
+PINNED_CODEBOOK_MIN_UTILIZATION = 0.95
 
 
 def cell_tokenizer_failures(tok_config: dict, *, run: str) -> list[str]:

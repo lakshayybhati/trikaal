@@ -22,13 +22,18 @@ from trikaal.eval.external_validation import (
 )
 
 
-def test_the_gate_is_BLOCKED_today_and_that_is_the_honest_state():
-    """No published Kronos-small RankIC has been obtained. The gate must say so and HALT."""
-    v = evaluate(cell1_rankic=0.05, ref=ExternalReference())
-    assert v["status"] == BLOCKED
-    assert gate_threshold(ExternalReference()) is None
-    with pytest.raises(ExternalValidationBlocked, match="BLOCKED"):
-        assert_clear_to_compute_deltas(v)
+def test_the_gate_is_DROPPED_and_carries_its_disclosures():
+    """§7 v1.6.22 — Lakshay DROPPED it as binding. It must still be visible, must carry the
+    reasons and the required disclosure, and must no longer halt."""
+    from trikaal.eval.external_validation import BSQ_DISCLOSURE, DROPPED, GATE_IS_BINDING
+
+    assert GATE_IS_BINDING is False
+    v = evaluate(cell1_rankic=None, ref=ExternalReference())
+    assert v["status"] == DROPPED
+    assert len(v["why"]) == 3 and any("0.0254" in w for w in v["why"])
+    assert v["required_disclosure"] == BSQ_DISCLOSURE
+    assert "IR(4)-IR(2) is clean" in v["also_withdrawn"]
+    assert_clear_to_compute_deltas(v)  # must NOT raise — the gate is dropped
 
 
 def test_an_unmeasured_cell1_is_BLOCKED_not_passed():
@@ -65,12 +70,17 @@ def test_a_failing_gate_names_the_precommitted_protocol_rather_than_describing_i
         assert_clear_to_compute_deltas(v)
 
 
-def test_blocked_names_the_invariant_8_question_rather_than_hiding_it():
-    """The gate cannot be run without Kronos model code; invariant 8 forbids Kronos code. The
-    gate must surface that as the blocking question, not report a vague 'not configured'."""
-    v = evaluate(0.05, ExternalReference())
+def test_the_binding_path_still_exists_and_still_halts(monkeypatch):
+    """DISCRIMINATION: if the gate were re-armed it must HALT again. A dropped gate whose
+    binding path had rotted would be undetectable."""
+    import trikaal.eval.external_validation as X
+
+    monkeypatch.setattr(X, "GATE_IS_BINDING", True)
+    v = X.evaluate(0.05, ExternalReference())
+    assert v["status"] == BLOCKED
     assert "invariant 8" in v["blocking_question"]
-    assert "Lakshay" in v["blocking_question"]
+    with pytest.raises(ExternalValidationBlocked):
+        X.assert_clear_to_compute_deltas(v)
 
 
 # ---------------------------------------------------- the WIRING, not just the gate function
@@ -85,14 +95,14 @@ def _fixture_evals(tmp_path):
     return load_cell_evals(_build_fixture(tmp_path, MU_PLANTED, fixture_seed=101))
 
 
-def test_a_MONEY_verdict_HALTS_while_the_gate_is_blocked(tmp_path):
-    """C-4's whole point: the gate must fire BEFORE any Δ exists. `money_verdict` defaults TRUE,
-    so a caller that says nothing gets the safe behaviour (the C-6 rule)."""
+def test_a_MONEY_verdict_now_CLEARS_because_the_gate_was_dropped(tmp_path):
+    """§7 v1.6.22: with the gate dropped a money verdict assembles. The wiring stays in place so
+    re-arming it is a one-constant change, and the test above proves the halt path still works."""
     from trikaal.eval.verdict import assemble_verdict
 
     evals, shas = _fixture_evals(tmp_path)
-    with pytest.raises(ExternalValidationBlocked, match=r"G-§8\.C\.3"):
-        assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    m = assemble_verdict(evals, shas, tabled_mde_h15=3.518)
+    assert m["verdict"]["primary"] in {"SURVIVES", "NULL", "INCONCLUSIVE", "HALT_ADJUDICATE"}
 
 
 def test_a_declared_fixture_still_assembles(tmp_path):

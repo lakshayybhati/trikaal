@@ -205,6 +205,74 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.22 (2026-08-03, ★ THE FOUR DECISIONS IMPLEMENTED + THE EVAL LEG MEASURED. The project
+  now has a TERMINATION CONDITION and a pre-committed run-blocking bar.)** Probe cost **$0.14**.
+  - **THE TERMINATION CONDITION.** Lakshay's diagnosis, accepted: the audit-fix-reaudit loop had
+    become comfortable — real catches, no spend, asymptotically approaching the run. **The
+    run-blocking bar is pre-committed BEFORE the re-audit exists and may not be adjusted in
+    response to its findings:** *a finding delays the run iff it would cause a FALSE VERDICT —
+    SURVIVES when the truth is NULL or vice versa — AND cannot be neutralized by disclosure.*
+    **THE RUN FIRES 2026-08-13 WHATEVER THE STATE.** No new tranches;
+    `docs/v2_and_limitations.md` is the terminal register and is not a queue.
+  - **★ THE EVAL LEG IS MEASURED AT LAST, AND IT WAS UNDERSTATED.** Receipt
+    `runs_manifest/m6_eval_throughput_probe.json` (sha256 verified on the box and locally before
+    teardown), integrated in `runs_manifest/m6_integrated_price.json`.
+    - **NO OOM AT `chunk=512`.** Peak memory **8.91 GiB of 24** on the 4090. **The local OOM
+      (19.69 GiB) was an MPS artifact, not a property of the recipe** — the pinned configuration
+      runs on the hardware class the whole experiment was costed against. That was the outcome
+      that would have cleared the bar, and it did not fire.
+    - **50.0 decisions/s** at the exact money surface (`chunk=512`, `seq_len=512`, h=15,
+      expectation, torch 2.12.1+cu130 pinned on the box). Marginal **0.020009 s/decision** from
+      the two tight points (n=1024 std 0.031 s, n=2048 std 0.064 s, agreeing to 0.13%).
+    - **THE n=512 POINT IS DISCARDED AND THE PROBE'S OWN FIELD WITH IT.** Its std was 9.17 s on a
+      15.5 s mean — one outlier repeat, and NOT warm-up (a warm-up discard was added and the std
+      did not move). The receipt's `marginal_seconds_per_decision` computes from `runs[:2]` and is
+      therefore contaminated (0.0096 vs the true 0.0200). **Recorded as a probe defect; the number
+      used here comes from the clean pair.**
+    - **EVAL = 1,402,560 decisions × 25 units × 0.020009 s = 194.9 GPU-h = $50.67–77.95.** The
+      banked figure — **inferred by subtraction** as $30.98–48.69 — was **up to 2.5× too low.**
+  - **★ THE SINGLE INTEGRATED PRICE: 270.4 GPU-h (eval 194.9 + forced-determinism training 75.5).
+    $78 at the $0.29/hr we actually paid; $108 at $0.40; $120 if forced determinism also slows
+    eval (unmeasured). ★ TOP UP AGAINST $150 ★** — carrying spot variance, the ~30 min of
+    setup/staging observed per box, and one re-launch.
+  - **(a) BUDGET → 26,003 STEPS, MATCHED AND FIXED.** 426,033,152 tokens = **20.00 tokens/param =
+    1.399 passes** over the lake — the spec's own "1–3 passes", i.e. **implementing the blueprint**
+    rather than exercising discretion. Per-cell val-NLL saturation is MEASURED AND REPORTED, never
+    the stopping rule: data-dependent stopping gives 25 different budgets and confounds ΔIR(4−5)
+    with *"cell 4 trained longer"* — the C-12 class, in the PRIMARY. **The spec-vs-`m6_design.md:18`
+    conflict is reconciled here, dated, in favour of MATCHED.**
+  - **(b) C-4 DROPPED AS BINDING.** `GATE_IS_BINDING = False`, with the three reasons, the
+    resolvability numbers, and the required disclosure **encoded in code**, not prose. The binding
+    path is retained and a KAT proves it still HALTs if re-armed — a dropped gate whose halt path
+    had rotted would be undetectable. The withdrawal covers **all three marginals with a BSQ arm**
+    (IR(2)−IR(1), IR(4)−IR(3), IR(3)−IR(1)); only IR(4)−IR(2) is clean; ΔIR(4−5) is unaffected.
+    **The supervisor's direction nuance is recorded:** a weak BSQ *inflates* the first two in our
+    favour, while IR(3)−IR(1) is BSQ-minus-BSQ and probably *attenuating* — so the
+    "we-do-not-keep-a-favourable-defect" argument applies only to the first two, and claiming
+    otherwise would overstate our own scrupulousness.
+  - **(c) C-3 AMENDED, PRE-DATA.** `enumerate_dsr_trials` de-annualizes at `PRIMARY_H`. **The
+    superseded mixed-unit basis is RETAINED and REPORTED** as a third `dual_specification` leg, so
+    nobody takes our unit judgement on trust; disagreement is a first-class finding.
+  - **(d) B1 PAID.** `set_determinism(seed, deterministic_algorithms=True)` on the production
+    path. 13.175% measured, not the double-counted 1.3×.
+  - **(e) THE CODEBOOK DIAGNOSTIC IS NOW REQUIRED AND GATED** — `codebook: dict` (was
+    `dict | None = None` → `{}`), `_validate_artifact` rejects missing/empty and enforces the
+    spec's own **≥95% utilization**, which existed nowhere in code. **C-2 shape, fourth instance,
+    closed before we lean on it for the BSQ disclosure.** What it does and does not do is written
+    at the pin: it discriminates COLLAPSED from NON-COLLAPSED and **not** crippled from competent —
+    utilization is a property of the marginal distribution of code ids, so a tokenizer assigning
+    codes by hashing noise would score ~100%.
+  - **A BUILDER DEFECT, DISCLOSED:** my first fixture sweep matched only `ast.Name` call sites and
+    missed `V.write_cell_eval_artifact` (an `ast.Attribute` call) — the same class as the
+    manifest-sweep extractor hole. Caught by the suite, fixed by widening the matcher to both
+    forms. An earlier line-heuristic version of the same edit corrupted a multi-line import and was
+    reverted; the AST version re-parses every file before writing.
+  - **THE `destroy` TRAP FIRED AND THE STANDING RULE CAUGHT IT:** `vastai destroy instance <id>`
+    prompted, aborted, and **returned while the box was still running**. The re-list is why it was
+    caught. Destroyed with `-y`; re-list `[]`.
+  - Suite **583 → 583** (contracts changed, count unchanged). Ruff clean. Gate-A anchor
+    **3f86882a re-proven byte-identical ×2, exit code 0 both**.
+
 - **v1.6.20 (2026-08-03, THE CONSOLIDATED DECISION BRIEF + one banked cost figure WITHDRAWN.
   Nothing implemented; no budget set, no gate dropped, no invariant amended, no weights pulled.)**
   Local, $0.
