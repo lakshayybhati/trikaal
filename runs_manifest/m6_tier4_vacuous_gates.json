@@ -1,0 +1,68 @@
+{
+  "C-10_micro_legibility_gate": {
+    "all_dims_thin": {
+      "raised": false,
+      "receipt": {
+        "min_acc": 0.9,
+        "pass": true,
+        "per_dim": {
+          "10": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          },
+          "11": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          },
+          "12": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          },
+          "7": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          },
+          "8": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          },
+          "9": {
+            "n": 500,
+            "skipped": "masked (n < 10k unmasked bars)"
+          }
+        }
+      }
+    },
+    "claim": "the hard stop passes when every micro dim is too thin to measure",
+    "n_dims_skipped": 6,
+    "n_micro_dims": 6,
+    "verdict": "CONFIRMED \u2014 returned pass=True with EVERY dim skipped, i.e. measured nothing"
+  },
+  "C-15_causal_gate_parameters": {
+    "claim": "the causal CI gate runs only at reduced params, and is VACUOUS at production ones",
+    "control_arm": {
+      "note": "if this were False the probe would be measuring a broken plant, not a gate",
+      "reduced-config leak fires": true
+    },
+    "legs": {
+      "CI-gate cfg (tests/conftest causal_cfg)": {
+        "bars_tried": 20,
+        "effective_n_warm_vol": 48,
+        "fixture_bars": 569,
+        "leak_changed_target_valid_at": 14,
+        "target_valid_true": 375
+      },
+      "PRODUCTION FeatureConfig()": {
+        "bars_tried": 20,
+        "effective_n_warm_vol": 1440,
+        "fixture_bars": 569,
+        "leak_changed_target_valid_at": 0,
+        "target_valid_true": 0
+      }
+    },
+    "mitigation_on_the_record": "scripts/m4b_universe_ingest.py:292 DOES run exhaustive_truncation_sweep at production FeatureConfig() on real lake shards, with a hard gate on coverage==1.0 and n_checks>0. But that guard proves the sweep RAN, not that each output surface was non-degenerate \u2014 n_checks counts all outputs, so a vacuous target_valid surface still clears it. Same shape as C-10.",
+    "so_the_fix_is_not_swap_the_config": "re-running the CI gate at FeatureConfig() would make it vacuous, not stronger. A production-parameter causal gate needs a fixture longer than the 1440-bar warm-up, which is a test-cost decision, not a one-line config change. NOT proposed here.",
+    "verdict": "CONFIRMED \u2014 at production parameters the warm-up (1440) exceeds the fixture, no bar has a valid target, and the leak cannot flip anything: the check would PASS while testing nothing"
+  },
+  "what": "AUDIT TIER-4 \u2014 C-10 and C-15 measured. VERIFY ONLY, nothing fixed."
+}

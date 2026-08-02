@@ -205,6 +205,82 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.14 (2026-08-02, THE C-3 AMENDMENT DRAFTED AND HELD + AUDIT TIER-4 TRIAGE + one standing
+  norm. No pinned value moved, no clause touched, no code changed except two new verify-only
+  probes.)** Local, $0. *(Numbering note: if the C-3 amendment is approved it lands as **v1.6.15**;
+  this entry deliberately does not consume the number, so the amendment's own entry is the record
+  of the change rather than a back-reference.)*
+  - **C-3 RULED CORRECT BY THE SUPERVISOR AND THE FIX IS PRIMARY — DRAFTED, NOT IMPLEMENTED.**
+    `docs/m6_c3_amendment_decision.md`. The unit-consistent basis (every trial de-annualized at
+    `PRIMARY_H`) becomes primary; the pinned mixed-unit basis is **retained and reported alongside
+    in `dual_specification`**, on the same footing as the v1.2/v1.5 legs, disagreement a
+    first-class finding in the abstract. **It stops here** because this is the third reopening of a
+    design twice declared frozen and it changes a clause threshold — that combination is Lakshay's.
+    The decisive argument is recorded in the draft: **keeping the pinned basis is not neutral
+    fidelity to the freeze, because the pinned basis is the EASIER bar** (SR₀ understated 8.70%).
+    A freeze that protects an error in our own favour protects nothing worth protecting. The
+    direction-blind test is not hypothetical here — **the fix TIGHTENS, it is proposed PRE-DATA,
+    and it corrects a unit error rather than exercising a judgement.** Implementation is one token
+    (`h` → `PRIMARY_H`), a new pinned convention key, a `dual_specification` leg, and a mutation
+    KAT; $0.
+  - **THE 5.8056e-4 IS RECORDED AS IRREPRODUCIBLE AND NOT CHASED**, on the supervisor's ruling.
+    The finding rests on the span (bit-exact), the mechanism (from code) and outcome-materiality
+    (proven by construction with a witness); the auditor's figure illustrated those rather than
+    founding them. Closest construction agrees to **0.026% at |IR| = 7.56**; no repo value sits in
+    the interval that would display as 5.8056e-4.
+  - **NEW STANDING NORM — FIX THE CLASS, NOT THE INSTANCE** (CLAUDE.md, ninth in the family).
+    When a defect is found at a named site, sweep every site of that class before closing it. Both
+    citing instances came from the C-17 pass itself: §3 clause 5's body, half a sentence from an
+    edit I made, and `enumerate_dsr_trials`'s docstring, in the very file whose module docstring
+    that pass corrected. Neither was visible from re-reading the fix; both were found by building
+    the sweep and running it. **Corollary: when the class needs a tool, the tool is the
+    deliverable — and the tool is suspect until shown capable of failing.**
+  - **TIER-4 TRIAGE — `docs/m6_tier4_triage.md`, receipt
+    `runs_manifest/m6_tier4_vacuous_gates.json`.** Verdicts per finding, nothing fixed:
+    - **C-10 CONFIRMED — the micro-legibility HARD STOP returns `pass: True` having measured
+      nothing.** Every micro dim below the 10k-unmasked-bar floor is `continue`d BEFORE
+      `ok = ok and acc >= min_acc`, so with all six thin the initial `True` survives and no
+      `RuntimeError` fires. Reproduced: 6/6 dims `"skipped"`, `pass: True`, `raised: False`. The
+      docstring's *"never trivially passed"* is the opposite of the behaviour. Second leg: the
+      150k sample is the **head** of a symbol-ordered concatenation with a contiguous 80/20 split.
+    - **C-15 CONFIRMED, and the obvious remedy is wrong.** The invariant-2 CI gate runs only at
+      reduced parameters; at production `FeatureConfig()` the 1440-bar volatility warm-up exceeds
+      the 600-bar fixture, so `target_valid` is **True for 0/569 bars** and the planted validity
+      leak flips nothing at **0/20** bars — versus **375/569** and **14/20** at the reduced config
+      (the control arm that makes the comparison mean anything). **Swapping the config would make
+      the gate vacuous, not stronger**; a production-parameter gate needs a fixture longer than the
+      warm-up, which is a test-cost decision and is NOT proposed here. Mitigation recorded:
+      `m4b_universe_ingest.py:292` does sweep at production parameters on real shards, but its
+      `n_checks > 0` guard proves the sweep RAN, not that each surface was non-degenerate.
+    - **C-10 AND C-15 ARE THE C-2 PATTERN, WHICH WAS RULED TIER-1 BLOCKING.** A gate reporting a
+      verdict while examining nothing. I am not re-tiering them — that is the supervisor's — but
+      the tier looks wrong and it is said plainly rather than left in a table.
+    - **C-19 CONFIRMED EXACTLY.** BSQ cells realize **21,231,616** backbone params vs FSQ's
+      **21,301,248** — **−69,632 (−0.327%)**, the auditor's figure to the digit. The code knows
+      (`build_cell_backbone` asserts a ±2% band for non-FSQ vocabs); **the prose does not** — we
+      quote one number while invariant 4 requires a backbone "matched across every ablation arm".
+      **Where it bites: the §5 fallback claim is IR(2) − IR(1), i.e. FSQ vs BSQ, so that claim is
+      confounded with the parameter difference. The primary ΔIR(4−5) is unaffected** — both cells
+      are FSQ at identical vocab.
+    - **C-18: one leg CLOSED (interpreter, `provenance.py:68`), two CONFIRMED.** The Stage-1/2 step
+      budget is a bare dataclass default — recorded in the manifest but **pinned nowhere**, and
+      recording is not pinning. **The μ estimator is the sharp one:** `predict_mu(...,
+      estimator="expectation")` is the v1.4.2 pin existing ONLY as a Python default, with no
+      `PINNED_MU_ESTIMATOR` and no assertion anywhere — a caller passing `"argmax"` restores the
+      biased decode v1.4.2 was written to remove and no gate notices. **The C-7 shape.**
+    - **C-16 CONFIRMED, bounded:** `harness.py:83` hardcodes `q_over_adv=1e-3`, unpinned and
+      unreceipted — but it feeds the **modelled-cost secondary**, never the 0.30%-netting headline,
+      and `harness.py` is frozen, so it is report-only either way.
+    - **C-14 CLOSED** by C-5/A6 (`matrix.py:201-211` binds `meta.checkpoints` plus seven more
+      fields). **C-11 CONFIRMED but is B1**, already drafted and awaiting Lakshay.
+    - **C-20: 1 of 3 CONFIRMED** — `embargo_flatness` (`folds.py:88`) has no caller outside its own
+      test, i.e. a purge/embargo leak diagnostic that never runs. The calendar-year and
+      claims-sweep legs were **not verified this pass and carry no verdict**.
+    - **S-1 was PROMOTED into C-1** and is now a required real-cell disclosure. **S-2..S-4: I do
+      not have their text and will not report verdicts on my reconstruction of them.** Answering
+      "were any silently dropped?" from a paraphrase is precisely the failure that question exists
+      to catch. Requested as written.
+
 - **v1.6.13 (2026-08-02, AUDIT TIER-4 C-3 MEASURED AND REPORTED (nothing fixed, ruling pending) +
   the ruling-(a) MANIFEST PROSE SWEEP + the ruling-(b) OPERATIONAL CONSTRAINT. Two prose strings
   now derive from constants and render byte-identically; no pinned value moved, no clause touched,
