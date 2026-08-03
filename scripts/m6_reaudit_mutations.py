@@ -133,6 +133,16 @@ MUTATIONS: list[dict] = [
         "    _x0, _m0 = select_arm(_se0.x, _se0.mask, arm)\n",
         "tests": ["tests/eval/test_placebo_diagnostic_inputs.py"],
     },
+    {
+        "finding": "R5",
+        "what": "score_cell's FULL return drops both required disclosures -> no artifact can be "
+        "written (found by the P1 dry run, invisible to 655 tests)",
+        "file": "src/trikaal/eval/xsection.py",
+        "post": "        ohlcv_recon=ohlcv_recon,\n        decode_agreement=decode_agreement,\n"
+        "        headline_series=head,\n",
+        "pre": "        headline_series=head,\n",
+        "tests": ["tests/eval/test_placebo_diagnostic_inputs.py"],
+    },
     # ------------------------------------------------------------------ THE NEGATIVE CONTROL
     # "9/9 CLOSED" is itself a check that has never been seen to fail. This row mutates a COMMENT
     # — semantics untouched — and the harness MUST report NOT CLOSED for it. If it reports CLOSED,

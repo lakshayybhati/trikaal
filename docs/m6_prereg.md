@@ -325,6 +325,48 @@ three stacked judgment calls = an unlimited re-run license):**
     against, and the runbook fix was the instance while this was its sibling.** Corrected in place
     with the derivation. Direction conservative both times, so **$150 is untouched**; that is luck,
     not method.
+  - **★ AND THEN P1 FIRED, WHICH IS THE POINT OF P1 — R5 WAS NOT A HYGIENE ITEM, IT WAS HIDING A
+    BLOCKING DEFECT.** The first `--dry-run` at the fixed HEAD reached the eval stage — further
+    than any previous run of this driver has ever reached — and **REFUSED EVERY ARTIFACT**:
+    > `refusing to write an eval artifact the degeneracy guard could not read:`
+    > `cell1_seed0: decode_agreement missing 'sign_agreement_dim0' …`
+    > `cell1_seed0: ohlcv_recon missing 'ohlcv_recon_mae' …`
+    **`score_cell` has TWO return sites.** The `val_only` one passed both diagnostics; **the FULL
+    one — the return the verdict artifact is built from — passed neither**, so they defaulted to
+    `{}` and `write_cell_eval_artifact` refused. Verified pre-existing at `HEAD~1`
+    (`git show HEAD~1:src/trikaal/eval/xsection.py` — the full return never mentions them), so it
+    is **not** collateral from the R12e fix. **THE MONEY DRIVER COULD NEVER HAVE WRITTEN A SINGLE
+    EVAL ARTIFACT**, and it would have discovered that AFTER paying for a shard's training.
+    It is the R4 shape in a different file: two REQUIRED disclosures computed thirty lines earlier
+    and dropped on the exact path that feeds the decision. It survived 655 tests because
+    `test_score_cell_and_ablation_verdict_end_to_end` asserts on `s.codebook` and **never on these
+    two**, and because the driver had never been run to completion at this configuration — which
+    is exactly what R5 said and why I ran it. Fixed; the new test is parametrized over **both**
+    returns so repairing one and leaving the other cannot pass. Mutation row R5 added: **10/10**.
+  - **DISCLOSED, MINE, AND THE THIRD COSTUME OF THE PIPEFAIL RIDER IN TWO PASSES.** I launched P1
+    as `<cmd> > log 2>&1; echo "EXIT=$?"`. The shell's status for that compound is **`echo`'s**, so
+    the harness reported the job as **exit 0** while the run had exited **1**. I caught it only by
+    reading the log. **An exit code taken from a compound whose last statement is `echo` is not the
+    command's exit code**, the same way one taken through `| head` is `head`'s. The v1.6.24 norm
+    said to state exit codes explicitly; it now also has to say WHERE the exit code came from.
+  - **★ P1 THEN COMPLETED, EXIT 0 — AND IT IS THE FIRST TIME THIS DRIVER HAS EVER RUN TO THE END.**
+    25 units trained, 25 checkpoints reloaded, **25 eval artifacts + index written**, and
+    `money_run_manifest.json` produced — the file the re-audit observed did not exist anywhere.
+    Verified on the REAL artifacts, not a fixture: **16/16 identity keys stamped, ONE distinct
+    stamp across all 25**, `git_commit = 27dfb724…` (the exact commit — R6's stamping proven
+    end-to-end), `steps_stage1/2 = 26,003`, and `load_cell_evals` **REFUSED** the set with
+    *"DRY-RUN artifact (money_run=False, grid_pinned=False)"*, which is the C-5 A9 contract
+    working. Four keys read `unavailable` — `image`, `gpu_name`, `cuda_build`, `driver_version` —
+    exactly as they must on a laptop with no CUDA and no `TRIKAAL_IMAGE`, **which is what P3 exists
+    to catch on the box**.
+  - **A MEASUREMENT I GOT BADLY WRONG, RECORDED BECAUSE THE ERROR WAS AVOIDABLE.** Asked how long
+    P1 would take I said the eval leg would be "single-digit minutes total"; artifact timestamps
+    give **11.2 min PER UNIT** (00:00:24 → 00:12:38 → 00:23:22 → 00:34:06), ~25x out, ~4 h for the
+    matrix. I estimated from DECISION COUNT (32) and ignored that **~97 % of rollout wall-clock is
+    context prefill at seq_len 512** — which is item C6 in our own limitations register. **I had
+    the number and did not apply it.** The datum stands as the local-MPS calibration: 32 decisions
+    x 3 horizons is ~11 min/unit here, and it says nothing about the 4090 (the standing "local
+    timings carry ~8x variance and MPS is not CUDA" rule applies).
   - **R5 DOES NOT DELAY THE DATE; IT IS AN ORDERED PRECONDITION**, now `docs/m6_fanout_runbook.md`
     §1a: **P1** local `--dry-run` at the shipped HEAD ($0), **P2** shard 0 ALONE including at least
     one eval decision under FORCED DETERMINISM (a first-time code path — the flag is process-global

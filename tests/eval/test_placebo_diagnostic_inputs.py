@@ -125,6 +125,26 @@ def test_placebo_diagnostics_are_fed_the_SHUFFLED_window(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("val_only", [False, True])
+def test_BOTH_score_cell_returns_carry_the_two_required_disclosures(tmp_path, val_only):
+    """§7 v1.6.25 R5 — the defect the P1 dry run found, and the reason it was invisible.
+
+    ``score_cell`` has TWO return sites. The ``val_only`` one passed ``ohlcv_recon`` and
+    ``decode_agreement``; the FULL one — **the return the verdict artifact is built from** — did
+    not, so both defaulted to ``{}`` and ``write_cell_eval_artifact`` refused every artifact. The
+    money driver could never have emitted one. Nothing caught it because the existing end-to-end
+    test asserts on ``s.codebook`` and never on these two, and the driver had never been run to
+    completion at this configuration. Parametrized over BOTH returns so fixing one and leaving the
+    other cannot pass."""
+    set_determinism(0)
+    cfg = _cfg()
+    tok = TokenizerAE(d_model=16, n_layers=1, n_heads=2, d_ff=32, max_len=64).eval()
+    sc = score_cell("c4", _ar(), tok, ARM_MICRO, [_sym()], cfg, val_only=val_only)
+    assert sc.ohlcv_recon.get("ohlcv_recon_mae") is not None
+    assert sc.decode_agreement.get("sign_agreement_dim0") is not None
+
+
+@pytest.mark.slow
 def test_the_unshuffled_arm_is_unchanged_by_the_fix(tmp_path):
     """The other arms fed `select_arm(se.x, ...)` before and after, so their numbers must not
     move — the fix is scoped to the placebo, and saying so requires checking it."""

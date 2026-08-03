@@ -431,6 +431,17 @@ def score_cell(
         n_decisions=int(sum(n_dec.values())),
         per_symbol_decisions=n_dec,
         codebook=codebook,
+        # §7 v1.6.25 (RE-AUDIT R5, FOUND BY THE P1 DRY RUN) — THESE TWO LINES DID NOT EXIST, AND
+        # THIS IS THE RETURN THE VERDICT ARTIFACT IS BUILT FROM. The `val_only` return above
+        # carried both diagnostics; the FULL return did not, so they defaulted to `{}` and
+        # `write_cell_eval_artifact` REFUSED every artifact. Two REQUIRED disclosures (C-12 M1 and
+        # C-1) were computed thirty lines earlier and dropped on the exact path that feeds the
+        # decision — the R4 shape again, in a different file. Consequence: THE MONEY DRIVER COULD
+        # NEVER HAVE WRITTEN A SINGLE EVAL ARTIFACT, and it would have failed AFTER paying for a
+        # shard's training. Invisible because the driver had never been run to completion at this
+        # configuration, which is precisely what R5 said.
+        ohlcv_recon=ohlcv_recon,
+        decode_agreement=decode_agreement,
         headline_series=head,
         mu_diag=mu_diag,
     )
