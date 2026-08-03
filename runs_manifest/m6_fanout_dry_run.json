@@ -1,6 +1,9 @@
 {
   "identity_keys": [
     "image",
+    "git_commit",
+    "steps_stage1",
+    "steps_stage2",
     "lockfile_sha256",
     "gpu_name",
     "cuda_build",
@@ -14,7 +17,7 @@
     "cudnn_deterministic",
     "cudnn_benchmark"
   ],
-  "n_keys_refusing": 13,
+  "n_keys_refusing": 16,
   "n_shards": 5,
   "n_units": 25,
   "one_drifted_unit_refuses": {
@@ -42,6 +45,10 @@
       "names_the_key": true,
       "refused": true
     },
+    "git_commit": {
+      "names_the_key": true,
+      "refused": true
+    },
     "gpu_name": {
       "names_the_key": true,
       "refused": true
@@ -63,6 +70,14 @@
       "refused": true
     },
     "python": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "steps_stage1": {
+      "names_the_key": true,
+      "refused": true
+    },
+    "steps_stage2": {
       "names_the_key": true,
       "refused": true
     },

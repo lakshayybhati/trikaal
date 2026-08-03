@@ -175,6 +175,24 @@
       "quoted": "3 GPU-day"
     },
     {
+      "context": "variance, box setup/staging overhead (MEASURED 2026-08-03: ~17 min per box = 10 min image pull + 6m41s pinned-torch install + <5s payload sc",
+      "field": ".top_up_reasoning",
+      "file": "runs_manifest/m6_integrated_price.json",
+      "quoted": "17 min"
+    },
+    {
+      "context": "up/staging overhead (MEASURED 2026-08-03: ~17 min per box = 10 min image pull + 6m41s pinned-torch install + <5s payload scp = 0.28 GPU-h; t",
+      "field": ".top_up_reasoning",
+      "file": "runs_manifest/m6_integrated_price.json",
+      "quoted": "10 min"
+    },
+    {
+      "context": "torch install + <5s payload scp = 0.28 GPU-h; the earlier '~30 min per box observed' in this field was written from impression, not from the",
+      "field": ".top_up_reasoning",
+      "file": "runs_manifest/m6_integrated_price.json",
+      "quoted": "30 min"
+    },
+    {
       "context": "100% match (agg_index.json, ingest_ledger jsonl, universe_manifest.json \u2014 git-bl",
       "field": ".manifest_ledger_verdict",
       "file": "runs_manifest/m6_lake_push_verification.json",
@@ -185,6 +203,24 @@
       "field": ".verdict_parquets",
       "file": "runs_manifest/m6_lake_push_verification.json",
       "quoted": "100%"
+    },
+    {
+      "context": "'a tokenizer assigning codes by hashing noise would score ~100%' is the point of the sentence: utilization measures the MARGINAL distributi",
+      "field": ".adjudicated_historical[4].verified",
+      "file": "runs_manifest/m6_manifest_prose_sweep.json",
+      "quoted": "100%"
+    },
+    {
+      "context": "lds only if training is ~half the spend. MEASURED it is 2.6-6.1% of the approved $33-50.",
+      "field": ".WITHDRAWN_FIGURE.why_wrong",
+      "file": "runs_manifest/m6_recost_worstcase.json",
+      "quoted": "6.1%"
+    },
+    {
+      "context": "docs/m6_cuda_probe_report.md \u2014 MEASURED 13.175% (forced/unforced 0.8682, i.e. 1.152x slower); applied to TRAINING ONLY",
+      "field": ".basis.determinism_penalty",
+      "file": "runs_manifest/m6_recost_worstcase.json",
+      "quoted": "13.175%"
     },
     {
       "context": "    On  |   00000000:05:00.0 Off |                  Off |\n| 30%   24C    P8             22W /  450W |       0MiB /  24564MiB |      0%      ",
@@ -235,7 +271,7 @@
       "quoted": "0.5M"
     },
     {
-      "context": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmpy21s2rot \u2014 artifacts must be indexed",
+      "context": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmp_wv_gyvk \u2014 artifacts must be indexed",
       "field": ".rows[12].returned",
       "file": "runs_manifest/m6_vacuity_sweep.json",
       "quoted": "0m"
@@ -780,19 +816,34 @@
       "field": ".labels_required_by_item_5.training_throughput",
       "file": "runs_manifest/m6_eval_throughput_expectation.json",
       "text": "MEASURED on the real 4090 (prior toy-CUDA rehearsal): 47.2k bars/s -> full M6 ~ 2-3 GPU-days"
+    },
+    {
+      "field": ".top_up_reasoning",
+      "file": "runs_manifest/m6_integrated_price.json",
+      "text": "worst measured case is ~$121 (determinism on eval, $0.40/hr spot). $150 carries spot-price variance, box setup/staging overhead (MEASURED 2026-08-03: ~17 min per box = 10 min image pull + 6m41s pinned-torch install + <5s payload scp = 0.28 GPU-h; the earlier '~30 min per box observed' in this field "
+    },
+    {
+      "field": ".WITHDRAWN_FIGURE.why_wrong",
+      "file": "runs_manifest/m6_recost_worstcase.json",
+      "text": "that holds only if training is ~half the spend. MEASURED it is 2.6-6.1% of the approved $33-50."
+    },
+    {
+      "field": ".basis.determinism_penalty",
+      "file": "runs_manifest/m6_recost_worstcase.json",
+      "text": "docs/m6_cuda_probe_report.md \u2014 MEASURED 13.175% (forced/unforced 0.8682, i.e. 1.152x slower); applied to TRAINING ONLY"
     }
   ],
   "amendment": "prereg \u00a77 v1.6 item 4 (supervisor-ordered, local $0)",
   "counts": {
-    "P1": 40,
+    "P1": 46,
     "P2_HIGH": 41,
     "P2_LOW": 35,
     "P2_MEDIUM": 0,
     "P2_total": 76,
-    "P3": 1
+    "P3": 4
   },
   "file_selection": "git ls-files runs_manifest/*.json \u2014 TRACKED ONLY (\u00a77 v1.6.17)",
-  "n_swept_files": 66,
+  "n_swept_files": 70,
   "patterns": {
     "P1_number_inside_a_string_field": "a datum that cannot be read programmatically",
     "P2_nan_or_zero_numeric_field": "a numeric slot that holds no measurement",
@@ -837,14 +888,17 @@
     "runs_manifest/m6_estimator_forensics.json": "ff5d5d3f31fbffa998d3f513752d541ba320795858790efa2f54773ea5efe910",
     "runs_manifest/m6_eval_boundedness_probe.json": "ebba3b32f9ea704c9e430096b6b028dac514eb41dd8e20ed96e36fe62e00f1c6",
     "runs_manifest/m6_eval_throughput_expectation.json": "1ff503d5fee71bb4af5b345591ee05885758a2903b4d246f428ccae601f88a93",
+    "runs_manifest/m6_eval_throughput_probe.json": "88df704fe20dc03ae7e481fe75b88522c9fef9d521e47c07c46e304621b248ca",
     "runs_manifest/m6_failopen_kat_mutations.json": "e8ef493fd912d30c8be12ce7014536a34cab06e90f3116145bb6fae1c6b0e8f4",
-    "runs_manifest/m6_failopen_sweep.json": "ee1456631342fb24a38ac2b4582e95a71e47b80d914303546b828e35f162845d",
+    "runs_manifest/m6_failopen_sweep.json": "c7747b3def13021fd4d3d40bec74a222dbbddc7a1de93518c21359b3b583080e",
+    "runs_manifest/m6_fanout_dry_run.json": "fd0bd2f0be6df34dd4c63e610b66ac5d7dbc0744781b3354cdfa241611791baf",
     "runs_manifest/m6_guard_band_stability.json": "faa307071999205ddc4d60cba05901312010261644969a243a0b4aef4d2de1d1",
     "runs_manifest/m6_h_sweep.json": "c704314a2fc46fe77c432c91ea7d49a89ccd3b253ee9467129e0120c20d61f2d",
+    "runs_manifest/m6_integrated_price.json": "9a636958d30469616d124bfc14d60f3f9de37166b6d36224efc85c12a987e5f2",
     "runs_manifest/m6_interface_respec_design_pass.json": "a2a12cf39ecab22a6d371fe9fc338a83841bf6ac07912f4a28854abd5bdd084d",
     "runs_manifest/m6_lake_push_verification.json": "0f02cb9bd0f70b611540602b8dfa62516707842afe8f29147b2ceaf461508453",
     "runs_manifest/m6_lambda_search_receipt.json": "f1b20331207aca0c6a73b4fb6bb7225f38293ea248971fb1f88fbf9013607dd4",
-    "runs_manifest/m6_manifest_prose_sweep.json": "91a8e3ff78255103cbfe14b8a626d3fa427902fedee728d542d705323ba6bdd5",
+    "runs_manifest/m6_manifest_prose_sweep.json": "630824e0183ff19490b07c73c675bdbfdf5c79a18cf20aa4b8eccac74e2aa151",
     "runs_manifest/m6_mde_floor_verification.json": "de002170b742dd9bbf5764659e1d8b2ef27ad3a810bb3a2e1d262b91bb2eaac9",
     "runs_manifest/m6_mde_inputs.json": "8165ab785d6a0eee35d52bdecd1a77e38e7f0c5f0e83bdca082312da409d990b",
     "runs_manifest/m6_micro_alignment.json": "c43b79acbe323c06f3c0aece8e034a017aceecdc538ed8f92813ce2860fad9e7",
@@ -855,6 +909,7 @@
     "runs_manifest/m6_prefill_decision_stability.json": "1312d99719327d25c6f5e998b3a84a5341bc8c4a4dd28aa2b6ed254664e7639b",
     "runs_manifest/m6_prefill_impact_bound.json": "d4886d718b67bedff2c7668b19b84966f3076941607e0e3c867efcf0f51cf32b",
     "runs_manifest/m6_reallocation_indicative.json": "299cbd9544d12a73546c33dd98a672818e6546141795842ceb02313e83c1d804",
+    "runs_manifest/m6_recost_worstcase.json": "76569e5b79e0899794d55d5b4518c9d9c7878bcb85817d065a63c525b09bc56a",
     "runs_manifest/m6_rehearsal_manifest.json": "6db906c853b7ce126f064fa60b3b125548b769379a62aa0f486a153075e18079",
     "runs_manifest/m6_s4_betacf_rewrite.json": "348c9fab6ecdc0768ee1e031a66c0ac84343a662206ae3ce2b5fa1917f136068",
     "runs_manifest/m6_smoke_manifest.json": "03d550ff71dd28e5c817620321ee6e110ca57a407ff3fe19af6e419c25c7aac2",
@@ -868,7 +923,7 @@
     "runs_manifest/m6_toy_verdict_manifest.json": "85998939aba1b9e3456138be4dc0d90394d479189453a1d5d5707e8907271d43",
     "runs_manifest/m6_traded_sign_agreement.json": "03b88a5a244a393e532c6ea8f8105b64de7fc3032087010d0a8413c1df0173f9",
     "runs_manifest/m6_training_budget.json": "7ba49219fe1b1e71c3505045c4b351e1fdfc0e20df6ca60b1072562273a6df78",
-    "runs_manifest/m6_vacuity_sweep.json": "2b132b2f1ff4715e22541db3b798bb9d41bdbe6c3df594bdbed5b030f9452e97",
+    "runs_manifest/m6_vacuity_sweep.json": "ab9d5bcc4874e8d304e992b198ffae2850bd9bb0a925c9af27a5c9acc9fafd08",
     "runs_manifest/m6_validation_teardown_verification.json": "7565c373f855ed28c68440f3a61819123feb336c7dbc8872772559c217a3d5ad",
     "runs_manifest/m6_verdict_integration_check.json": "c381db01b863257b8bc851daa0ff43fb256632aff322a202ef3a39ecabaae007"
   },

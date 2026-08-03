@@ -27,7 +27,32 @@ from trikaal.eval.verdict import (
     write_eval_index,
 )
 from trikaal.run.matrix import shard_partition_failures
-from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS
+from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
+
+# §7 v1.6.25 (RE-AUDIT R6) — THE LITERAL LIST, WRITTEN OUT, NOT DERIVED.
+# The refusal tests used to parametrize over `PROVENANCE_IDENTITY_KEYS` itself, which made the
+# suite SELF-REFERENTIAL: deleting a key from the live tuple deleted its own test case, so the
+# whole file stayed green while the identity surface shrank. That is the class we named "a check
+# that cannot fail", in the test written to prove a check fires. Everything below parametrizes
+# over THIS tuple, so removing a key from production fails N tests instead of removing N tests.
+EXPECTED_IDENTITY_KEYS = (
+    "image",
+    "git_commit",
+    "steps_stage1",
+    "steps_stage2",
+    "lockfile_sha256",
+    "gpu_name",
+    "cuda_build",
+    "driver_version",
+    "torch",
+    "numpy",
+    "python",
+    "platform",
+    "attention_mode",
+    "deterministic_algorithms",
+    "cudnn_deterministic",
+    "cudnn_benchmark",
+)
 
 CODEBOOK_OK = {
     "coarse": {"utilization": 0.99, "vocab": 891},
@@ -39,6 +64,9 @@ DECODE_OK = {"sign_agreement_dim0": 0.9, "single_bar_degenerate": False}
 
 PROV = {
     "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+    "git_commit": "5da9ae4c0ffee1decafbad0000000000deadbeef",
+    "steps_stage1": 26_003,
+    "steps_stage2": 26_003,
     "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
     "gpu_name": "NVIDIA GeForce RTX 4090",
     "cuda_build": "13.0",
@@ -119,7 +147,7 @@ def test_a_uniform_fanout_assembles(tmp_path):
     )
 
 
-@pytest.mark.parametrize("key", PROVENANCE_IDENTITY_KEYS)
+@pytest.mark.parametrize("key", EXPECTED_IDENTITY_KEYS)
 def test_ONE_drifted_unit_on_ANY_identity_key_refuses_the_whole_verdict(tmp_path, key):
     """The mutation proof, per key: 24 units agree, ONE differs, the assembly must REFUSE.
 
@@ -166,3 +194,33 @@ def test_image_and_lockfile_are_IN_the_identity_surface():
     still differ in container image or resolved dependency set."""
     assert "image" in PROVENANCE_IDENTITY_KEYS
     assert "lockfile_sha256" in PROVENANCE_IDENTITY_KEYS
+
+
+def test_the_identity_surface_IS_the_literal_list_and_nothing_drifted():
+    """§7 v1.6.25 R6 — the pin. Deleting a key from production now FAILS A TEST rather than
+    deleting its own test case; adding one without deciding it is an identity key also fails."""
+    assert tuple(PROVENANCE_IDENTITY_KEYS) == EXPECTED_IDENTITY_KEYS
+
+
+def test_the_stamper_POPULATES_every_identity_key():
+    """§7 v1.6.25 R6 — the other half, and the one that would have gone unnoticed.
+
+    A key listed in the surface but never WRITTEN by ``run_provenance`` is absent from all 25
+    units equally, so the cross-shard comparison sees no disagreement and the key protects
+    nothing while appearing to. The list and the stamper must agree."""
+    stamped = run_provenance()
+    missing = [k for k in EXPECTED_IDENTITY_KEYS if k not in stamped]
+    assert not missing, f"identity keys never stamped by run_provenance: {missing}"
+
+
+def test_git_commit_and_step_budgets_are_identity_keys():
+    """§7 v1.6.25 R6: the surface said WHICH MACHINE and nothing about WHICH CODE. A stale-payload
+    shard training at the old 2,000-step budget would have assembled silently beside four
+    26,003-step siblings."""
+    for k in ("git_commit", "steps_stage1", "steps_stage2"):
+        assert k in PROVENANCE_IDENTITY_KEYS
+    from trikaal.eval.conformance import PINNED_STEPS_STAGE1, PINNED_STEPS_STAGE2
+
+    stamped = run_provenance()
+    assert stamped["steps_stage1"] == PINNED_STEPS_STAGE1
+    assert stamped["steps_stage2"] == PINNED_STEPS_STAGE2

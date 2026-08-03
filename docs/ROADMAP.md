@@ -55,9 +55,9 @@ The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal
 
 **M6 — The 2×2 + placebo ablation (THE experiment)** ☐
 - **Goal:** run the controlled experiment — our FSQ vs our BSQ at matched bits-per-token, × {OHLCV-only, +micro}, plus the shuffled-microstructure placebo (Cell 5).
-- **Entry gates (both binding — see below):** **Gate A** (M5 validated on the M3 checkpoint) **and Gate B** (microstructure kill-switch from the M2 IC screen). **Setup gate (§8.C.3 step 3):** once Cell-1 (our BSQ baseline) is trained on the universe, it must reach within ~10–15% RankIC of published Kronos-small on a common slice (fed Kronos's own input pipeline) — else the ablation is blocked; we do not claim FSQ beats a crippled baseline.
-- **Exit gate:** G3 throughput check first; then 5 cells × ≥3 seeds = **15 train-once cycles** complete; headline net-IR @ 0.30% + break-even cost + all four quadrants + the placebo verdict, **DSR-deflated**.
-- **Compute:** cloud CUDA, ~15 GPU-days.
+- **Entry gates (both binding — see below):** **Gate A** (M5 validated on the M3 checkpoint) **and Gate B** (microstructure kill-switch from the M2 IC screen). **Setup gate (§8.C.3): ★ DROPPED AS BINDING (Lakshay, 2026-08-03; prereg §7 v1.6.22 / §6 banner).** It is unexecutable as specified — two published Kronos-small RankICs 2.4× apart, both on SSE 15-minute equities, and running the weights needs Kronos model code invariant 8 forbids. It is replaced by a **required disclosure** in every verdict manifest, not by a substitute gate: *"we cannot exclude that our BSQ baseline is weaker than a reference BSQ implementation, which would inflate the FSQ-vs-BSQ comparison reported in §5."* The earlier "~10–15% / else the ablation is blocked" wording was already superseded by prereg §6 before that.
+- **Exit gate:** G3 throughput check first; then 5 cells × **5 seeds = 25 train-once cycles** complete (§7 v1.5 pinned S=5 up front); headline net-IR @ 0.30% + break-even cost + all four quadrants + the placebo verdict, **DSR-deflated**.
+- **Compute:** cloud CUDA, **270.4 GPU-h ≈ 11.3 GPU-days measured** (75.5 training + 194.9 eval, §7 v1.6.22) — the earlier "~15 GPU-days" was an estimate made before the eval leg was measured.
 - **De-risk:** gated so it runs *only* when the harness is proven trustworthy (A) and the cheap signal says the spend is justified (B).
 
 **M7 — Honesty pass + write-up** ☐

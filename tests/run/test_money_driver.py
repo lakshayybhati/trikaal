@@ -383,11 +383,35 @@ def test_the_matrix_work_happens_in_exactly_one_place():
 
 
 def test_unpinned_parameters_are_recorded_with_their_reasoning():
-    """A8: nothing invented; the reasoning travels WITH the numbers."""
+    """A8: nothing invented; the reasoning travels WITH the numbers.
+
+    §7 v1.6.25 R7: this test used to assert ``"16,479-18,311" in
+    rec["stage2_budget_is_derivable_not_arbitrary"]`` — a string whose surrounding sentence said
+    the budget was "the default 2000 … not a spec constant" while the values dict beside it read
+    26,003. The suite was PINNING THE FALSE HALF. The step budgets are asserted against the live
+    conformance pins now, so the record cannot drift from what the run actually does."""
+    from trikaal.eval.conformance import PINNED_STEPS_STAGE1, PINNED_STEPS_STAGE2
     from trikaal.train.orchestrator import OrchestratorConfig
 
     rec = _load_driver().unpinned_parameters(OrchestratorConfig())
-    assert set(rec["values"]) >= {"steps_stage1", "steps_stage2", "peak_lr_stage1", "batch_size"}
+    assert set(rec["values"]) >= {"peak_lr_stage1", "batch_size"}
+    # the step budgets are PINNED and must not be described as unpinned
+    assert "steps_stage1" not in rec["values"] and "steps_stage2" not in rec["values"]
+    pinned = rec["pinned_since_v1_6_22"]
+    assert pinned["steps_stage1"] == PINNED_STEPS_STAGE1
+    assert pinned["steps_stage2"] == PINNED_STEPS_STAGE2
     assert "ALL FIVE CELLS SHARE THEM" in rec["why_ablation_validity_does_not_depend_on_them"]
-    assert "16,479-18,311" in rec["stage2_budget_is_derivable_not_arbitrary"]
+    assert "16,479-18,311" in pinned["why"]
+    # the two claims the stale prose got backwards, asserted directly
+    assert "SMOKE-TEST budget" in pinned["why"] and "MATCHED AND FIXED" in pinned["why"]
     assert json.dumps(rec)  # must be manifest-serialisable
+
+
+def test_no_manifest_record_still_calls_the_step_budget_unpinned_or_2000():
+    """§7 v1.6.25 R7 — the CLASS, not the instance. Any surviving 'default 2000' / 'not a spec
+    constant' phrasing in this record would contradict the pin it ships beside."""
+    from trikaal.train.orchestrator import OrchestratorConfig
+
+    blob = json.dumps(_load_driver().unpinned_parameters(OrchestratorConfig()))
+    assert "not a spec constant" not in blob
+    assert "default 2000 is BELOW" not in blob

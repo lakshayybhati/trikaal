@@ -190,6 +190,17 @@ Otherwise it is reported **descriptively with CIs, claimed as nothing** — and 
 
 G-instrument-live (anchor `3f86882a…`, re-anchored §7 v1.4.2 for the μ̂-mean estimator; `5eead7b6…` retired to history), G-parity, G-causal, G-determinism — per m6_design §3.
 
+> **★ SUPERSEDED — G-§8.C.3 IS NO LONGER BINDING (Lakshay's ruling, 2026-08-03, §7 v1.6.22).**
+> The clause below is retained VERBATIM as the pre-registered text and is **not in force**: it is
+> unexecutable on three counts (two published Kronos-small RankICs 2.4× apart, both on SSE 15-min
+> equities, and running the weights needs Kronos model code invariant 8 forbids). What replaces it
+> is a **required disclosure** — *"We therefore cannot exclude that our BSQ baseline is weaker than
+> a reference BSQ implementation, which would inflate the FSQ-vs-BSQ comparison reported in §5"* —
+> carried in every verdict manifest as `external_validation.required_disclosure` and refused by
+> `verdict.load_verdict_manifest` if absent. **§7 v1.6.25 R8: this banner was missing here, at
+> `m6_design.md:50` and at `ROADMAP.md:58` — three documents describing a live entry gate that
+> had been withdrawn, which is the "fix the class, not the instance" lesson recurring.**
+
 **G-§8.C.3 (Kronos external validation), quantified (v1.2 — was "~10–15% / materially off / fix",
 three stacked judgment calls = an unlimited re-run license):**
 - **Fails iff** Cell 1's RankIC < **0.85 × published Kronos-small RankIC** on the pinned common
@@ -204,6 +215,133 @@ three stacked judgment calls = an unlimited re-run license):**
   other legitimate path to a re-run.
 
 ## 7. Amendment log
+
+- **v1.6.25 (2026-08-03, ★ THE RE-AUDIT'S BLOCKING FIXES. Local, $0. The re-audit landed FIVE DAYS
+  EARLY and returned NOT READY; the run date does not move.)**
+  - **★ THE HEADLINE, AND IT IS THE WORST DEFECT THIS PROJECT HAS PRODUCED (R1). The v1.6.22
+    codebook gate — the fourth instance of "specified but not enforced", the one whose closure was
+    the compensating control for dropping the C-4 external gate — SHIPPED BELOW ITS FUNCTION'S
+    `return bad` AND WAS UNREACHABLE FROM THE MOMENT IT WAS WRITTEN.** `verdict.py:270`. It was
+    born dead in `591ec44`, the commit that implemented all four approved decisions in one pass,
+    and 601 tests stayed green because not one of them fed the gate an artifact it was supposed to
+    reject. **The class was declared closed by a fix that never executed once.** The `return` now
+    sits below the block, and `tests/eval/test_codebook_gate.py` rejects a collapsed codebook
+    (0.01), an empty payload, a missing key (tampered on disk and RE-INDEXED so the content hash
+    cannot be what refuses it), a half payload, and a NaN utilization — through the real
+    write → load → assemble path, with the healthy set asserted to assemble first.
+    **THE LESSON IS NOT "READ MORE CAREFULLY": a gate is closed only when something has watched it
+    fail.** Hence `scripts/m6_reaudit_mutations.py` (below), which is the deliverable, not the fix.
+  - **R2 — THE C-3 AMENDMENT SHIPPED WITHOUT THE PIN AND THE MUTATION KAT ITS OWN SIGNED PACKAGE
+    SPECIFIED.** Reverting one identifier (`PRIMARY_H` → `h` at `enumerate_dsr_trials`) passed all
+    601 tests and silently restored the EASIER mixed-unit basis — outcome-material by the
+    amendment's own witness (DSR 0.9868 PASS → 0.8577 FAIL). Now `PINNED_DSR
+    ["de_annualization_horizon"]`, cross-checked against `verdict.PRIMARY_H`, **and**
+    `verdict.dsr_unit_convention_failures` which RE-DERIVES all 300 trial values from the
+    artifacts **on the money path** — so the revert fails the RUN, not merely a test. 300 divisions
+    on a 270-GPU-hour experiment.
+  - **R3 — THE `v1_2_original` DUAL-SPECIFICATION LEG WAS A HYBRID CALLING ITSELF FAITHFUL, AND
+    THE BIAS HAD A DIRECTION.** It read `trials`, which C-3 had re-based onto PRIMARY_H units, so
+    the shipped leg was {all-arms basis (v1.2)} × {PRIMARY_H units (v1.5)} — a combination no
+    specification ever had. Mixing horizons INFLATES dispersion, so the faithful leg has the
+    larger `var_sr`, larger SR₀ and LOWER DSR: **the hybrid agreed with the v1.5 primary more
+    readily than v1.2 would have, i.e. it under-reported disagreement exactly when the primary
+    says SURVIVES** — the one direction a dual-specification report exists to guard.
+    `own_h_trial_values` is now a function and both superseded legs call it; the direction is
+    asserted, not argued (`test_the_hybrid_leg_was_biased_TOWARD_agreement`).
+  - **R4 — THE G-§8.C.3 VERDICT AND ITS REQUIRED BSQ DISCLOSURE WERE EVALUATED AND DISCARDED.**
+    The gate result was passed straight to `assert_clear_to_compute_deltas` and never bound, so
+    the one compensating record for dropping a binding entry gate existed for the duration of one
+    expression. It is evaluated UNCONDITIONALLY now and persisted as `external_validation`;
+    `REQUIRED_MANIFEST_FIELDS` + `verdict_manifest_failures` refuse a manifest without it,
+    `assemble_verdict` validates its own output, and `load_verdict_manifest` re-validates **from
+    the file** — the case emission-side validation structurally cannot see. **A MISSING DISCLOSURE
+    IS THE ONE DEFECT DISCLOSURE CANNOT NEUTRALIZE**, which is why this cleared the bar.
+    Both "the gate is BLOCKED today and will HALT" comments (`verdict.py`, `m6_verdict.py`) were
+    TRUE when written and FALSE from v1.6.22; corrected. **A comment describing a control that
+    cannot fire is worse than no comment — it tells the next reader the control is live.**
+  - **R6 — THE IDENTITY SURFACE RECORDED WHICH MACHINE AND SAID NOTHING ABOUT WHICH CODE**, and
+    the tests that proved it worked PARAMETRIZED OVER THE LIVE TUPLE, so deleting a key deleted
+    its own test case. Two halves of one defect. `git_commit`, `steps_stage1`, `steps_stage2` are
+    identity keys now (**16**); the commit is stamped from `TRIKAAL_GIT_COMMIT` because the money
+    boxes have no `.git` (we ship a tarball precisely so no credential reaches them), with a local
+    `git rev-parse` fallback. The refusal tests parametrize over a **written-out literal list**,
+    plus `test_the_stamper_POPULATES_every_identity_key` — because a key in the surface that
+    `run_provenance` never writes is absent from all 25 units EQUALLY, so it protects nothing
+    while appearing to. The auditor's named path: a stale-payload shard training at the old
+    2,000-step budget assembling silently beside four 26,003-step siblings.
+  - **R12e — CELL 5'S TWO REQUIRED DISCLOSURES DESCRIBED A TENSOR THE CELL WAS NEVER FED.**
+    `score_cell` shuffled into LOCAL variables and then rebuilt the diagnostic window from
+    `se.x`, the RAW matrix. So on the placebo arm — and only there — `ohlcv_recon` and
+    `decode_agreement` measured a tokenizer trained on shuffled micro against UNSHUFFLED micro:
+    out-of-distribution input, not "the capacity handicap". **The C-12 disclosure's entire
+    argument is about what Cell 5 spends its bits on, so it was wrong in exactly the arm it exists
+    to characterise.** Every other arm was unaffected, which is why nothing looked odd. The
+    arm-transformed tensors now travel from the loop that built them; the regression test spies on
+    `tok.latent` (which only the diagnostics call) and asserts the unshuffled window **never
+    reaches the tokenizer at all** on the placebo arm.
+  - **FREE, SAME PASS: R7** — the money manifest shipped *"the default 2000 … not a spec
+    constant"* beside a values dict reading 26,003, **and `test_unpinned_parameters_are_recorded_
+    with_their_reasoning` ASSERTED THE STALE SENTENCE — the suite was defending the false half.**
+    The budgets moved out of `unpinned_parameters` entirely (they are pinned and gated) and the
+    test now asserts against the live conformance pins. **R10a** — `forward_log_returns`, the
+    money label every net IR in the study is built from, had ZERO tests; a same-bar-entry
+    lookahead (`clp[p+h] - clp[p]`) passed everything **including the Gate-A causal file**, which
+    tests that FEATURES do not see the future and says nothing about which bar the LABEL enters
+    on. Two different lookaheads, one unguarded. 12 tests, keyed on the sharp invariant: y_t is
+    invariant to r_t AND r_{t+1} and responds to every bar in (t+1, t+h].
+  - **★ THE DELIVERABLE IS THE MUTATION HARNESS, NOT THE EIGHT FIXES —
+    `scripts/m6_reaudit_mutations.py` → `runs_manifest/m6_reaudit_mutations.json`, 9/9 CLOSED.**
+    Each fix's PRE-FIX source is restored in an isolated copy of the tree and its tests must FAIL
+    there. Three ordered stages, because three of my probes have manufactured false findings from
+    their own bugs: BASELINE (the unmutated copy must PASS, else `HARNESS_BROKEN` — never
+    evidence), APPLY (the string must occur EXACTLY ONCE, else `NOT_APPLIED`), MUTANT (must FAIL,
+    else `★ NOT CLOSED`). **Plus a NEGATIVE CONTROL: a comment-only edit that MUST still pass** —
+    without it, "9/9 CLOSED" is itself a check that has never been seen to fail. The real
+    repository is never mutated.
+  - **R8 AND R9 ARE RECURRENCES OF CLASSES WE DECLARED CLOSED, AND ARE RECORDED AS SUCH.** R8: §6
+    here, `m6_design.md:50` and `ROADMAP.md:58` each described G-§8.C.3 as a **live binding entry
+    gate** after it was dropped; `enumerate_dsr_trials`'s docstring said C-3 was *"REPORTED, NOT
+    FIXED"* and *"this function is unchanged"* **one line above the line that changed**; and
+    `attention_mode.py` still carried invariant 7's false SUFFICIENCY premise. These were on the
+    supervisor's move-to-limitations list and I **PROMOTED** them: they are protocol claims that
+    are false, in the four documents the paper's methods will be written from, and one of them is
+    a standing invitation to revert R2. R9: five sweep receipts stale at HEAD, regenerated —
+    "stale" is indistinguishable from "never re-run after the change that mattered".
+  - **AND R9 IMMEDIATELY EARNED ITS PROMOTION, WHICH IS THE ARGUMENT FOR TREATING A STALE RECEIPT
+    AS A FINDING.** `m6_manifest_prose_sweep.json` was committed reading **CLEAN over 162
+    strings** — but that run PREDATED v1.6.22's mixed-unit leg, so
+    `/dual_specification/v1_5_mixed_unit_basis_superseded/why_superseded` **had never been swept
+    while the receipt asserted the manifest was clean.** Regenerating at HEAD surfaced 4 strings
+    for adjudication over 178; all four are legitimate (a derived √12 forced by `DSR_HORIZONS`, a
+    DATE the extractor cannot distinguish from a number, a rhetorical "~100%" ceiling in a caveat,
+    and two EXTERNAL Kronos figures plus their ratio) and are now in the sweep's `ADJUDICATED`
+    registry, which binds to the exact number set so a changed number re-opens them. **"Clean" was
+    a statement about a repository that no longer existed.**
+  - **A SECOND INSTANCE OF THE v1.6.24 SETUP-COST DEFECT, FOUND BY THE REGENERATED CLAIMS SWEEP AND
+    IT IS MINE.** `runs_manifest/m6_integrated_price.json`'s `top_up_reasoning` claimed *"~30 min
+    per box observed on the probe"*. The measurement from that same probe day is **~17 min** (10
+    min pull + 6m41s install + <5s scp = 0.28 GPU-h). Written from impression rather than from the
+    receipt — **the same defect as the runbook's 0.6 h/box row, in a cost manifest Lakshay funds
+    against, and the runbook fix was the instance while this was its sibling.** Corrected in place
+    with the derivation. Direction conservative both times, so **$150 is untouched**; that is luck,
+    not method.
+  - **R5 DOES NOT DELAY THE DATE; IT IS AN ORDERED PRECONDITION**, now `docs/m6_fanout_runbook.md`
+    §1a: **P1** local `--dry-run` at the shipped HEAD ($0), **P2** shard 0 ALONE including at least
+    one eval decision under FORCED DETERMINISM (a first-time code path — the flag is process-global
+    and was armed for training), **P3** all 16 identity keys present and populated. Only then do
+    the other four boxes launch. Discovering a first-time path at P2 costs one shard, not five.
+  - **WHAT I DO NOT KNOW, STATED:** I hold the supervisor's summary of R10b–d, R11 and R12a–d and
+    my own reproductions — **not the auditor's verbatim text**. Those rows are deferred to
+    `docs/v2_and_limitations.md` **on the supervisor's triage, not on mine**, and the register says
+    so. If one of them is false-verdict-capable, that is a promotion I did not make, and the
+    reason will be that I never read it.
+  - **MY SUPERVISOR'S OWN FINDING, WHICH IS THE REASON R1 SHIPPED, RECORDED BECAUSE IT GENERALISES:
+    they verified the codebook fix by GREPPING FOR `PINNED_CODEBOOK_MIN_UTILIZATION` AND FINDING
+    IT.** Confirming that a symbol exists is not confirming that a gate fires. Everyone audited the
+    findings; nobody audited the fixes — and `591ec44`, which implemented four approved decisions
+    in one pass, got the least scrutiny in the repository because both of us were busy verifying
+    its report. **The new code in a remediation pass is written fast, by the person whose blind
+    spots caused the defects, and is the least-reviewed code in the project.**
 
 - **v1.6.23 (2026-08-03, RUN PREPARATION — fan-out refusal, runbook, assembly dry run. No new
   investigation; the re-audit is external and none of it is the builder's.)** Local, $0.

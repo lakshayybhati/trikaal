@@ -35,10 +35,14 @@ one mismatch refuses all 25 units.**
 > label is the class this project has closed four times.**
 
 **The blocking constraint:** identical GPU model, driver, image, interpreter and lockfile across
-every shard. Verified by `PROVENANCE_IDENTITY_KEYS` (13 keys) and enforced by
+every shard, **and the same code and step budget** (§7 v1.6.25 R6). Verified by
+`PROVENANCE_IDENTITY_KEYS` (**16 keys** — `git_commit`, `steps_stage1`, `steps_stage2` added) and
+enforced by
 `load_cell_evals` → `VerdictInputError`. **A mismatch on any one key refuses all 25.** Proven:
-`tests/run/test_fanout_refusal.py` (18 tests, every key mutation-proven) and
-`runs_manifest/m6_fanout_dry_run.json` (13/13 refuse, uniform assembles).
+`tests/run/test_fanout_refusal.py` (24 tests, every key mutation-proven against a **literal** key
+list — parametrizing over the live tuple meant deleting a key deleted its own test, §7 v1.6.25 R6)
+and
+`runs_manifest/m6_fanout_dry_run.json` (16/16 refuse, uniform assembles).
 
 ---
 
@@ -58,6 +62,43 @@ discovered again.
 was 90 % of a 2-minute probe's cost because the probe was short; the run is not.
 
 > **The lesson, recorded: cost a rental as `setup + compute`, never `compute`.**
+
+---
+
+## 1a. ★ HARD PRECONDITIONS — three gates before five boxes exist (RE-AUDIT R5, §7 v1.6.25)
+
+The re-audit's R5: **the money driver has never executed at the current configuration** — there is
+no `money_run_manifest.json` anywhere, and the only CUDA validation receipt ran the *rehearsal*,
+timed out, and is untracked. Separately, **the eval has never run under forced determinism on
+CUDA**: `set_determinism(..., deterministic_algorithms=True)` is process-global and was armed for
+training, so the first eval decision under it is a first-time code path — on rented hardware, at
+the end of a paid shard. Neither delays the date. Both are ordered gates, and each is cheap.
+
+| # | gate | cost | fails how |
+|---|---|---:|---|
+| **P1** | `PYTHONPATH=src .venv/bin/python scripts/m6_money_run.py --dry-run` **at the exact HEAD being shipped**, exit 0 | **$0**, minutes | any stage that does not hand off to the next |
+| **P2** | **Shard 0 ALONE** on the first box, to completion, **including at least one eval decision under forced determinism** | ~1/5 of the bill | a first-time path under `deterministic_algorithms=True` — a missing deterministic kernel raises rather than degrading |
+| **P3** | Pull shard 0's artifact and confirm **all 16 identity keys present and populated**, `git_commit` and `steps_stage1/2` among them | $0 | `"unavailable"` in any identity key ⇒ the fan-out would refuse *after* paying for it |
+
+**Only after P3 do the remaining four boxes launch.** P2 is the one that cannot be moved earlier:
+it is the only place the forced-determinism eval path is exercised on CUDA, and discovering it
+there costs one shard instead of five.
+
+```bash
+# P1 — local, $0, at the commit you are about to ship
+PYTHONPATH=src .venv/bin/python scripts/m6_money_run.py --dry-run; echo "P1_EXIT=$?"
+
+# P3 — after shard 0 lands, before the other four
+python3 - <<'PY'
+import json, glob
+from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS
+doc = json.load(open(sorted(glob.glob("runs_cloud/shard0/**/cell*_eval.json", recursive=True))[0]))
+prov = doc["meta"]["provenance"]
+bad = [k for k in PROVENANCE_IDENTITY_KEYS if prov.get(k) in (None, "", "unavailable")]
+print("MISSING/UNAVAILABLE:", bad or "none — clear to fan out")
+raise SystemExit(1 if bad else 0)
+PY
+```
 
 ---
 
@@ -87,10 +128,14 @@ ssh -p $PORT root@$HOST 'set -Eeuo pipefail
   pip install -q "torch==2.12.1" "numpy==2.4.6"
   python3 -c "import torch,numpy,sys;print(torch.__version__,numpy.__version__,sys.version)"'
 
-# --- 4. run the shard. TRIKAAL_IMAGE is an IDENTITY KEY — set it or the verdict refuses. -------
+# --- 4. run the shard. TRIKAAL_IMAGE and TRIKAAL_GIT_COMMIT are IDENTITY KEYS — export BOTH.
+# There is no .git on the box (we ship a tarball, never a credential), so the commit is stamped
+# from the machine that BUILT the payload. Unset on some shards and set on others = a refusal.
+GIT_SHA=$(git rev-parse HEAD)              # on THIS machine, at tarball-build time
 ssh -p $PORT root@$HOST "set -Eeuo pipefail
   cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
   export TRIKAAL_IMAGE='$IMAGE'
+  export TRIKAAL_GIT_COMMIT='$GIT_SHA'
   python3 scripts/m6_money_run.py --shard ${SHARD}/${N_SHARDS} --lake ..."
 
 # --- 5. PULL AND VERIFY BEFORE TEARDOWN. No exceptions. ---------------------------------------
@@ -114,7 +159,7 @@ caught.**
 | # | rule | why |
 |---|---|---|
 | R1 | **No credential ever reaches a rented box.** The repo is private; scp a tarball. | a write-capable token on a preemptible box is unrecoverable |
-| R2 | **`TRIKAAL_IMAGE` must be exported on every shard.** | it is an identity key; if *some* shards set it and others do not, that is a refusal — which is the correct outcome and better than silence |
+| R2 | **`TRIKAAL_IMAGE` AND `TRIKAAL_GIT_COMMIT` must be exported on every shard.** | both are identity keys; if *some* shards set them and others do not, that is a refusal — the correct outcome, and better than silence. The commit key exists because the surface recorded *which machine* and said nothing about *which code* (R6): a stale-payload shard training at the old 2,000-step budget would otherwise have assembled silently |
 | R3 | **Pin torch/numpy on every box.** | the image ships 2.5.1; ours is 2.12.1. A version split across shards refuses — correctly, and after paying for the compute |
 | R4 | **Pull and sha256-verify every scientific artifact before `destroy`.** | bulk checkpoints from a run declared INVALID are exempt, exemption recorded |
 | R5 | **`destroy -y`, then RE-LIST.** | see above |
@@ -138,5 +183,9 @@ caught.**
 
 It proves the **assembly** contract and the **procedure**. It does not prove the launcher stamps
 provenance correctly on a real box — **that is verified by the first shard's artifact, before the
-other four launch.** Launch shard 0 alone, pull its artifact, confirm all 13 identity keys are
-present and populated, *then* launch the remaining four.
+other four launch (§1a P3).** Launch shard 0 alone, pull its artifact, confirm all **16** identity
+keys are present and populated, *then* launch the remaining four.
+
+Nor does it prove the money driver runs at this configuration, or that the eval survives forced
+determinism on CUDA. Those are **P1** and **P2** in §1a, and they are ordered ahead of the fan-out
+for that reason.

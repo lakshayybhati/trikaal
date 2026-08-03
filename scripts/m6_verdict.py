@@ -7,13 +7,13 @@ Sequence (docs/m6_prereg.md §3/§3a/§5; the logic lives in ``trikaal.eval.verd
 1. **Conformance gate FIRST** — the money surface is rebuilt via the shared
    ``conformance.money_config`` and asserted against every §3a pin; ANY divergence prints the
    full failure list and exits non-zero before a single artifact is opened.
-2. The 15 per-(cell, seed) eval artifacts are loaded **by content hash** against their index.
+2. The 25 per-(cell, seed) eval artifacts are loaded **by content hash** against their index.
 3. The artifact grid must BE the pinned §3a money grid (start + length of
    ``primary_region_grid_ms``). ``--allow-toy-grid`` relaxes ONLY this check for fixture/dry
    runs and is recorded loudly in the manifest (``grid_pinned: false``) — a manifest without
    ``grid_pinned: true`` can never be quoted as the M6 outcome.
 4. ``assemble_verdict`` evaluates §3's five conjunctive clauses (paired bootstraps on (4−5),
-   (4−2), (5−2); MDE_paired with the no-ceiling rule; the 0.5 floor; the pinned N=180 DSR) and
+   (4−2), (5−2); MDE_paired with the no-ceiling rule; the 0.5 floor; the pinned N=60 DSR) and
    §5's NULL-fallback, and the manifest — every clause's number + pass/fail + the final word —
    is written durably (content-hashed), never stdout-only.
 
@@ -35,6 +35,7 @@ from trikaal.eval.verdict import (
     VerdictInputError,
     assemble_verdict,
     load_cell_evals,
+    load_verdict_manifest,
 )
 from trikaal.eval.xsection import primary_region_grid_ms
 
@@ -70,7 +71,7 @@ def main() -> int:
     except VerdictInputError as e:
         print(f"VERDICT REFUSED — {e}", file=sys.stderr)
         return 1
-    print(f"[load] 15 artifacts content-verified from {args.artifacts}")
+    print(f"[load] {len(evals)} artifacts content-verified from {args.artifacts}")
 
     # 3) the grid must be the pinned §3a money grid (unless explicitly toy)
     pinned = primary_region_grid_ms(cfg)
@@ -88,8 +89,12 @@ def main() -> int:
     # 4) the five clauses + §5 fallback → the durable, content-hashed manifest
     # §7 v1.6.18 (audit C-4): G-§8.C.3 fires inside assemble_verdict BEFORE any Δ. The existing
     # --allow-toy-grid flag already declares "fixture / dry run", so it is reused rather than
-    # adding a second declaration that could drift from it. A REAL run passes neither flag and
-    # therefore meets the gate — which is BLOCKED today and will HALT, by design.
+    # adding a second declaration that could drift from it.
+    # §7 v1.6.25 (RE-AUDIT R4): this comment used to end "which is BLOCKED today and will HALT, by
+    # design". That became FALSE at v1.6.22, when Lakshay dropped the gate as binding — the gate
+    # now returns DROPPED and the run proceeds. What the run owes instead is the manifest's
+    # `external_validation` record, including the BSQ disclosure, which `load_verdict_manifest`
+    # below refuses to read back without.
     manifest = assemble_verdict(
         evals,
         shas,
@@ -102,6 +107,13 @@ def main() -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(manifest, indent=2, sort_keys=True))
+    # §7 v1.6.25 R4: read the file BACK through the refusing loader. Writing and reading are
+    # different failure surfaces, and the outcome is quoted from the file, never from memory.
+    try:
+        load_verdict_manifest(args.out, require_grid_pinned=bool(grid_pinned))
+    except VerdictInputError as e:
+        print(f"VERDICT REFUSED — the manifest just written is not quotable:\n{e}", file=sys.stderr)
+        return 1
 
     v = manifest["verdict"]
     print(f"[clauses] h={manifest['primary_h']} grid_pinned={grid_pinned}")

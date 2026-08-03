@@ -29,8 +29,18 @@ import torch
 # (different CUDA userspace, different BLAS) or in the resolved dependency set. Across 5 shards
 # that is 5 chances for an unrecorded difference to sit inside one paired comparison. They are
 # identity keys now, so a mismatch REFUSES rather than being invisible.
+# §7 v1.6.25 (RE-AUDIT R6, BLOCKING): the surface recorded WHICH MACHINE ran a unit and said
+# nothing about WHICH CODE. Two shards could carry byte-identical hardware, driver, image,
+# interpreter and lockfile stamps while running different revisions of Trikaal — and the auditor
+# named the concrete path: a shard built from a stale payload trains at the OLD 2,000-step budget,
+# assembles beside four 26,003-step shards without a murmur, and its cell enters ΔIR(4−5) as
+# "trained less" rather than "different arm". That is the cheapest remaining route to a
+# silent WRONG number, so `git_commit` and the two step budgets are identity keys.
 PROVENANCE_IDENTITY_KEYS = (
     "image",
+    "git_commit",
+    "steps_stage1",
+    "steps_stage2",
     "lockfile_sha256",
     "gpu_name",
     "cuda_build",
@@ -46,6 +56,37 @@ PROVENANCE_IDENTITY_KEYS = (
 )
 
 UNAVAILABLE = "unavailable"
+
+
+def _git_commit() -> str:
+    """The revision this unit ran, or ``"unavailable"``.
+
+    TWO SOURCES, IN ORDER, because the money run has NO ``.git``: the runbook scp's a payload
+    tarball to each box precisely so no credential ever reaches it, which also means no repository.
+    So the launcher exports ``TRIKAAL_GIT_COMMIT`` from the machine that BUILT the tarball — the
+    same mechanism as ``TRIKAAL_IMAGE`` — and the local `git rev-parse` is the fallback for runs
+    that do have a checkout (CI, laptop, the dry runs).
+
+    Being an IDENTITY key, a fan-out where some shards stamp it and others do not is a REFUSAL.
+    """
+    env = os.environ.get("TRIKAAL_GIT_COMMIT")
+    if env:
+        return env.strip()
+    try:
+        import subprocess
+
+        out = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip()
+    except (OSError, ValueError, subprocess.SubprocessError):  # pragma: no cover — no git present
+        pass
+    return UNAVAILABLE
 
 
 def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> dict:
@@ -78,8 +119,16 @@ def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> d
         lock_sha = hashlib.sha256(lock.read_bytes()).hexdigest() if lock.exists() else UNAVAILABLE
     except OSError:
         lock_sha = UNAVAILABLE
+    # §7 v1.6.25 R6: the step budgets come from the LIVE conformance pins, so a shard built from a
+    # revision whose constant still read 2,000 stamps 2,000 and refuses against its four siblings.
+    # Imported inside the call to keep `utils` free of any `eval` import edge.
+    from trikaal.eval.conformance import PINNED_STEPS_STAGE1, PINNED_STEPS_STAGE2
+
     return {
         "image": image,
+        "git_commit": _git_commit(),
+        "steps_stage1": int(PINNED_STEPS_STAGE1),
+        "steps_stage2": int(PINNED_STEPS_STAGE2),
         "lockfile_sha256": lock_sha,
         "gpu_name": gpu_name,
         "cuda_build": cuda_build,

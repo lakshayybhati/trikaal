@@ -144,6 +144,55 @@ ADJUDICATED = {
             "verified": "(0.999 + 0.55 + 0.55) / 3 = 0.69967, i.e. 0.700 to 3dp",
         },
     },
+    # §7 v1.6.25 (RE-AUDIT R9). THE STALE RECEIPT WAS NOT COSMETIC: the committed run said CLEAN
+    # over 162 strings, but it predated v1.6.22's mixed-unit leg, so the first string below had
+    # NEVER BEEN SWEPT while the receipt asserted the manifest was clean. Regenerating at HEAD
+    # surfaced it. That is the whole argument for treating a stale receipt as a finding — "clean"
+    # was a statement about a repository that no longer existed.
+    "/dual_specification/v1_5_mixed_unit_basis_superseded/why_superseded": {
+        "numbers": ["12", "3.4641"],
+        "record": {
+            "kind": "DERIVED from the pinned horizons, not an independent recipe value",
+            "source": "verdict.DSR_HORIZONS = (5, 15, 60) + eval.metrics.periods_per_year",
+            "verified": (
+                "12 = periods_per_year(5) / periods_per_year(60) = 105120 / 8760, EXACTLY; "
+                "3.4641 = sqrt(12) = 3.4641016… to 5sf. Both are forced by the pinned horizon "
+                "set — they cannot drift without DSR_HORIZONS drifting"
+            ),
+        },
+    },
+    "/external_validation/gate/ruling": {
+        "numbers": ["2026", "08"],
+        "record": {
+            "kind": "A DATE, not a number — the extractor cannot tell them apart",
+            "source": "Lakshay's ruling, 2026-08-03 (prereg §7 v1.6.22)",
+            "verified": "'2026' and '08' are the year and month of the ruling date",
+        },
+    },
+    "/external_validation/gate/what_replaces_it/codebook_health": {
+        "numbers": ["100"],
+        "record": {
+            "kind": "a rhetorical ceiling in a CAVEAT, not a threshold",
+            "source": "§7 v1.6.22 — what codebook health does NOT establish",
+            "verified": (
+                "'a tokenizer assigning codes by hashing noise would score ~100%' is the point of "
+                "the sentence: utilization measures the MARGINAL distribution of code ids and "
+                "cannot certify the quantizer is competent. Nothing is compared against 100"
+            ),
+        },
+    },
+    "/external_validation/gate/why[0]": {
+        "numbers": ["0.0254", "0.0622", "2.4"],
+        "record": {
+            "kind": "EXTERNAL published figures + their ratio — by construction not ours to pin",
+            "source": "Kronos (Shi et al. 2025, arXiv:2508.02739), both Kronos_small RankICs",
+            "verified": (
+                "0.0622 / 0.0254 = 2.4488, i.e. '2.4x' to 2sf. These two numbers being 2.4x apart "
+                "IS the reason G-§8.C.3 is ill-posed; a pin for them would be a pin on someone "
+                "else's paper"
+            ),
+        },
+    },
 }
 
 

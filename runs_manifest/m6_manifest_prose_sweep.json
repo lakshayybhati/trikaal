@@ -22,13 +22,53 @@
       "path": "/degeneracy_guard/rule",
       "source": "prereg \u00a77 v1.4.6",
       "verified": "(0.999 + 0.55 + 0.55) / 3 = 0.69967, i.e. 0.700 to 3dp"
+    },
+    {
+      "kind": "DERIVED from the pinned horizons, not an independent recipe value",
+      "numbers": [
+        "12",
+        "3.4641"
+      ],
+      "path": "/dual_specification/v1_5_mixed_unit_basis_superseded/why_superseded",
+      "source": "verdict.DSR_HORIZONS = (5, 15, 60) + eval.metrics.periods_per_year",
+      "verified": "12 = periods_per_year(5) / periods_per_year(60) = 105120 / 8760, EXACTLY; 3.4641 = sqrt(12) = 3.4641016\u2026 to 5sf. Both are forced by the pinned horizon set \u2014 they cannot drift without DSR_HORIZONS drifting"
+    },
+    {
+      "kind": "A DATE, not a number \u2014 the extractor cannot tell them apart",
+      "numbers": [
+        "08",
+        "2026"
+      ],
+      "path": "/external_validation/gate/ruling",
+      "source": "Lakshay's ruling, 2026-08-03 (prereg \u00a77 v1.6.22)",
+      "verified": "'2026' and '08' are the year and month of the ruling date"
+    },
+    {
+      "kind": "a rhetorical ceiling in a CAVEAT, not a threshold",
+      "numbers": [
+        "100"
+      ],
+      "path": "/external_validation/gate/what_replaces_it/codebook_health",
+      "source": "\u00a77 v1.6.22 \u2014 what codebook health does NOT establish",
+      "verified": "'a tokenizer assigning codes by hashing noise would score ~100%' is the point of the sentence: utilization measures the MARGINAL distribution of code ids and cannot certify the quantizer is competent. Nothing is compared against 100"
+    },
+    {
+      "kind": "EXTERNAL published figures + their ratio \u2014 by construction not ours to pin",
+      "numbers": [
+        "0.0254",
+        "0.0622",
+        "2.4"
+      ],
+      "path": "/external_validation/gate/why[0]",
+      "source": "Kronos (Shi et al. 2025, arXiv:2508.02739), both Kronos_small RankICs",
+      "verified": "0.0622 / 0.0254 = 2.4488, i.e. '2.4x' to 2sf. These two numbers being 2.4x apart IS the reason G-\u00a78.C.3 is ill-posed; a pin for them would be a pin on someone else's paper"
     }
   ],
   "branches_swept": {
-    "fallback_claimed": 67,
-    "null": 69,
-    "placebo_harmed": 64,
-    "planted_survives": 59
+    "fallback_claimed": 83,
+    "null": 85,
+    "placebo_harmed": 80,
+    "planted_survives": 75
   },
   "citations_only": [
     "/placebo_capacity_disclosure/reading",
@@ -53,8 +93,8 @@
     ],
     "stale_string": "SR0 from N=180 enumerated trials; var_sr over the 180 de-annualized VAL IRs"
   },
-  "n_pinned_numbers": 21,
-  "n_strings_in_manifest": 162,
+  "n_pinned_numbers": 22,
+  "n_strings_in_manifest": 178,
   "n_unverified_strings": 0,
   "unverified_prose_numbers": [],
   "verdict": "CLEAN",

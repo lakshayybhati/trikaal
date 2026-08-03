@@ -83,6 +83,24 @@ complete.
 | F2 | **Setup overhead must be costed, not discovered.** Measured 2026-08-03: ~17 min per box (10 min image pull + 6m41s pinned-torch install). It was **90 % of the probe's cost**. Across 5 boxes it is ~1.4 GPU-h ≈ $0.41–0.56 — trivial when planned. **Standing lesson: cost a rental as `setup + compute`.** |
 | F3 | **The image ships torch 2.5.1; we pin 2.12.1.** Not a defect — but a shard that skips the install produces an identity-key refusal *after* paying for the compute. R3 in the runbook. |
 
+## G. Re-audit 2026-08-03 — what did NOT block, and why (§7 v1.6.25)
+
+The re-audit landed five days early and returned **NOT READY at `5da9ae4`**. Five findings cleared
+the pre-committed bar and were fixed in one pass (R1 dead codebook gate, R3 hybrid dual-spec leg,
+R4 the discarded G-§8.C.3 record, R6 the self-referential identity surface, R12e the placebo
+diagnostics on unshuffled micro); three more were free and done in the same pass (R2, R7, R10a).
+**Everything below is the residue.** Two rows were PROMOTED out of the supervisor's
+move-to-limitations list and fixed instead — recorded here because a promotion should be as
+visible as a deferral.
+
+| # | finding | disposition |
+|---|---|---|
+| **G1** | **R8 — the stale-prose cluster.** `m6_prereg.md` §6, `m6_design.md:50` and `ROADMAP.md:58` each described **G-§8.C.3 as a live binding entry gate** after it was dropped; `verdict.enumerate_dsr_trials`'s docstring said the C-3 amendment was *"REPORTED, NOT FIXED"* and *"this function is unchanged"* one line above the line that changed; `attention_mode.py` still encoded invariant 7's **false sufficiency premise**. | **PROMOTED AND FIXED, not deferred.** These are not descriptions that drifted — they are *protocol claims that are false*, in the four documents the paper's methods section will be written from, and one of them is a standing invitation to revert R2. A superseded banner now sits at each site. **Recorded as a RECURRENCE of the class v1.6.13 declared closed**, not as a new finding: the C-17 pass fixed the strings an audit named instead of the file, and this is that same failure at document scale. |
+| **G2** | **R9 — stale sweep receipts at HEAD.** `m6_claims_sweep`, `m6_failopen_sweep`, `m6_failopen_kat_mutations`, `m6_vacuity_sweep` and `m6_manifest_prose_sweep` all carry sha256 sets of files this pass edited. | **PROMOTED AND REGENERATED — and it paid immediately.** The committed prose sweep read **CLEAN over 162 strings**, but that run predated v1.6.22's mixed-unit leg, so one manifest string **had never been swept while the receipt asserted the manifest was clean**. Regeneration surfaced 4 strings over 178 (all adjudicated legitimate, all now bound to their exact number sets). The regenerated claims sweep separately caught **my own second instance of the v1.6.24 setup-cost defect**: `m6_integrated_price.json` claimed *"~30 min per box observed on the probe"* against the same probe's measured **~17 min** — written from impression, not from the receipt. Corrected; direction conservative, so `$150` is untouched. **A receipt whose inputs have moved is a claim about a repository that no longer exists.** |
+| **G3** | **R10b–d, R11, R12a–d** — the remainder of the auditor's minor rows. | **DEFERRED, and I must state a limit on my own confidence:** I hold the supervisor's summary of these rows and my own reproductions, **not the auditor's verbatim text**. I have therefore not independently re-derived each one, and I record them as deferred *on the supervisor's triage*, not on mine. If any turns out to be false-verdict-capable, that is a promotion I did not make and the reason will be that I never read it. |
+| **G4** | **R5 — the money driver has never executed at the current configuration**, and the eval has never run under **forced determinism on CUDA** (the flag is process-global and was armed for training, so the first eval decision under it is a first-time code path). | **Not a delay — an ORDERED PRECONDITION**, now a hard gate in `docs/m6_fanout_runbook.md` §1a: P1 local `--dry-run` at the shipped HEAD ($0), P2 shard 0 alone *including at least one eval decision under forced determinism*, P3 all 16 identity keys populated. Only then do the other four boxes launch. Discovering a first-time path at P2 costs one shard instead of five. |
+| **G5** | **No training resume on the money path** — a preemption costs a full shard retrain. | Deferred. Bounded by the fan-out itself: 1/5 of the run, not everything. `R6` in the runbook pre-authorises exactly one re-launch per shard. |
+
 ## F. Housekeeping
 
 | # | item |

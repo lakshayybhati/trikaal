@@ -234,11 +234,17 @@ def score_cell(
 
     # per-symbol arm transform (Cell-5: the SAME shuffle as training) + tokenize + labels
     prepared: dict[str, dict] = {}
+    # §7 v1.6.25 (RE-AUDIT R12e): the FIRST symbol's ARM-TRANSFORMED tensors, captured here rather
+    # than rebuilt from `se.x` below. See the diagnostics block for why that distinction decided
+    # two required disclosures.
+    first_arm: tuple[np.ndarray, np.ndarray] | None = None
     for se in symbols:
         x, mask = se.x, se.mask
         if arm == ARM_MICRO_SHUFFLED:
             x, mask = shuffle_micro(x, se.mask, se.segment_id, symbol=se.symbol, seed=cfg.seed)
         x_arm, m_arm = select_arm(np.asarray(x, np.float32), mask, arm)
+        if first_arm is None:
+            first_arm = (x_arm, m_arm)
         b_c, b_f = tokenize_features(
             tok, x_arm, m_arm, se.segment_id, window=cfg.seq_len, device=cfg.device
         )
@@ -254,11 +260,22 @@ def score_cell(
         v_f=tok.v_f,
     )
 
-    # §7 v1.6 C-12 M1: computed on the FIRST symbol's arm-selected window, the same tensors the
-    # tokenizer was fed. The OHLCV dims are byte-identical across arms (the placebo permutation
-    # never touches them), so this is like-for-like between cell 4 and cell 5.
-    _first = next(iter(prepared.values()))["se"]
-    _x0, _m0 = select_arm(_first.x, _first.mask, arm)
+    # §7 v1.6 C-12 M1 + v1.6.11 C-1: computed on the FIRST symbol's arm-selected window — the same
+    # tensors the tokenizer was fed.
+    #
+    # §7 v1.6.25 (RE-AUDIT R12e) — IT WAS NOT THE SAME TENSORS, AND ONLY FOR CELL 5. The previous
+    # form re-derived the window with `select_arm(_first.se.x, ...)`, i.e. from the RAW feature
+    # matrix, while the Cell-5 shuffle above wrote to LOCAL `x, mask` that were never stored back.
+    # So on the placebo arm — and ONLY there — both required disclosures described a tensor the
+    # cell was never fed: the tokenizer was trained on shuffled micro and then measured on
+    # UNSHUFFLED micro, which is out-of-distribution input, not "the capacity handicap". The C-12
+    # disclosure's entire argument is about what Cell 5 spends bits on, so measuring it on Cell 4's
+    # input made the number uninterpretable in exactly the arm it exists to characterise.
+    # Every other arm was unaffected (`select_arm` is a pure column selection there), which is why
+    # nothing looked wrong. Now the arm-transformed tensors travel from the loop that built them.
+    if first_arm is None:  # an empty symbol set cannot be scored (and would break codebook above)
+        raise ValueError("score_cell received no symbols — there is nothing to score")
+    _x0, _m0 = first_arm
     ohlcv_recon = ohlcv_recon_diagnostic(
         tok, _x0[: cfg.seq_len], _m0[: cfg.seq_len], device=cfg.device
     )

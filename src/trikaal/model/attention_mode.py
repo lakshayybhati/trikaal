@@ -2,6 +2,19 @@
 
 Invariant 7 (scoped honestly): GPU training is bit-exact ONLY under the deterministic-attention
 fallback — FlashAttention-2 is faster but non-deterministic — and **every run records its mode**.
+
+**★ §7 v1.4.7 / v1.6.25 R8 — DETERMINISTIC ATTENTION IS NECESSARY, NOT SUFFICIENT, AND THIS FILE
+ENCODED THE FALSE SUFFICIENCY PREMISE.** ``determinism_record``'s bit-exactness claim was
+``attention_mode == MODE_SDPA`` alone, so 49/49 run records asserted bit-exactness while
+``torch.use_deterministic_algorithms`` was OFF and CUDA reduction order was unconstrained;
+same-seed runs measurably diverged. Attention mode is ONE of the conditions. The others —
+``deterministic_algorithms``, ``cudnn_deterministic``, ``cudnn_benchmark`` — are stamped beside it
+in :mod:`trikaal.utils.provenance` and are identity keys, and ``orchestrator.set_determinism``
+FORCES them on the production path (§7 v1.6.22 B1, 13.175 % measured throughput cost). The scope
+of the correction is narrow and stated: **only the GPU-training clause was false** — the pipeline,
+frozen-stats and prediction-replay clause and the Gate-A anchor are intact, and no prior result
+was invalidated.
+
 This module is that hook: :func:`resolve_attention_mode` picks the backend,
 :func:`set_attention_backend` applies it to every attention module, and
 :func:`determinism_record` produces the provenance dict that goes into BOTH the per-run manifest

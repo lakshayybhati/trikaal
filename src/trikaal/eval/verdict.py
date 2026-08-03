@@ -267,11 +267,15 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
             f"grid_pinned={meta.get('grid_pinned')!r}) — produced on a shortened grid to prove "
             "the path, and can never be assembled into a verdict"
         )
-    return bad
     # §7 v1.6.22: the codebook diagnostic is REQUIRED per-(cell, seed) and its utilization is
     # gated at the spec's own >= 95% (design :1859). It was optional and unvalidated -- and we are
     # about to lean on it for the BSQ disclosure, so a disclosure with no data behind it is the
     # defect this project has closed four times.
+    # §7 v1.6.25 (RE-AUDIT R1) — THIS BLOCK WAS BORN DEAD. It shipped in 591ec44 BELOW the
+    # function's `return bad`, so from the moment the "fourth instance of specified-not-enforced"
+    # was declared closed, its fix had never executed once. The compensating control for dropping
+    # the C-4 external gate was unreachable code. Nothing above this line changed; the `return`
+    # moved below it, and the negative tests that could not have existed before now exist.
     cb = doc.get("codebook")
     if not isinstance(cb, dict) or not cb:
         bad.append(f"{name}: codebook diagnostic is missing or empty (§7 v1.6.22; spec :1859)")
@@ -290,6 +294,7 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
                     f"{PINNED_CODEBOOK_MIN_UTILIZATION} (dead-code collapse; spec :1859). This "
                     "catches COLLAPSE only — it does not certify the quantizer is competitive."
                 )
+    return bad
 
 
 def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
@@ -590,12 +595,16 @@ def enumerate_dsr_trials(
     that corrected this very file's module docstring — the fix was scoped to the strings the audit
     named instead of to the file.
 
-    **§7 v1.6.13, AUDIT C-3 — REPORTED, NOT FIXED:** each value is divided by
-    ``sqrt(periods_per_year(h))``, so a trial's unit is a per-**h**-minute Sharpe and the set mixes
-    three of them (h = 5/15/60, a 3.4641× span). ``expected_max_sharpe`` turns their variance into
-    SR₀, which ``probabilistic_sharpe_ratio`` compares against the Sharpe of the headline series at
-    ``PRIMARY_H``. The recipe is FROZEN and this function is unchanged; see
-    ``scripts/m6_c3_dsr_units.py`` and its receipt."""
+    **AUDIT C-3 — AMENDED PRE-DATA (§7 v1.6.22), AND THIS DOCSTRING WAS STILL DESCRIBING THE
+    PREDECESSOR (§7 v1.6.25 R8).** Every value is divided by ``sqrt(periods_per_year(PRIMARY_H))``,
+    so every trial carries the unit of the statistic SR₀ is compared against — the Sharpe of the
+    headline series at ``PRIMARY_H``. The superseded convention divided by
+    ``sqrt(periods_per_year(h))``, mixing per-5/15/60-minute Sharpes across a √12 = 3.4641× span;
+    it is REPORTED, not deleted, as the ``v1_5_mixed_unit_basis_superseded`` leg of
+    ``dual_specification`` (see ``own_h_trial_values``). The paragraph above says a stale count
+    survived the pass that was supposed to fix the file; **this paragraph said "REPORTED, NOT
+    FIXED" and "this function is unchanged" for three versions after the function changed**, one
+    line above the line that changed. See ``scripts/m6_c3_dsr_units.py`` and its receipt."""
     trials: dict[tuple[int, int, int, float], float] = {}
     for (cid, seed), doc in evals.items():
         for h in DSR_HORIZONS:
@@ -610,6 +619,78 @@ def enumerate_dsr_trials(
                 # (witness SR_hat 0.45705: DSR 0.9868 PASS mixed vs 0.8577 FAIL consistent).
                 trials[(cid, seed, h, k)] = ir_ann / float(np.sqrt(periods_per_year(PRIMARY_H)))
     return trials
+
+
+def own_h_trial_values(
+    evals: dict[tuple[int, int], dict],
+    keys: list[tuple[int, int, int, float]],
+) -> np.ndarray:
+    """The SAME trials under the **pre-v1.6.22 unit convention** — de-annualized at each
+    trial's OWN horizon.
+
+    This is the convention the C-3 amendment replaced, kept as an executable object rather than a
+    description so both superseded specifications can be reported from the same artifacts.
+    ``enumerate_dsr_trials`` divides by ``sqrt(ppy(PRIMARY_H))``; this divides by
+    ``sqrt(ppy(h))``, which for h ∈ {5, 15, 60} is a √12 = 3.4641× span across the set.
+
+    **§7 v1.6.25 (RE-AUDIT R3).** It existed inline for the v1.5-superseded leg only, so the
+    ``v1_2_original`` leg — which is supposed to reconstruct the ORIGINAL spec — silently read the
+    AMENDED units. It is a function now, and both superseded legs call it.
+    """
+    return np.array(
+        [
+            float(evals[(cid, seed)]["val_ir_by_kappa_by_h"][str(h)][f"{k:g}"])
+            / float(np.sqrt(periods_per_year(h)))
+            for cid, seed, h, k in keys
+        ],
+        dtype=np.float64,
+    )
+
+
+def dsr_unit_convention_failures(
+    evals: dict[tuple[int, int], dict],
+    trials: dict[tuple[int, int, int, float], float],
+) -> list[str]:
+    """RE-DERIVE every clause-5 trial value from the artifacts under the PINNED unit convention.
+
+    **§7 v1.6.25 (RE-AUDIT R2) — the check the C-3 amendment's own signed package specified and
+    which did not ship.** The amendment is one identifier wide: ``enumerate_dsr_trials`` divides by
+    ``sqrt(periods_per_year(PRIMARY_H))``, and its predecessor divided by
+    ``sqrt(periods_per_year(h))``. Reverting it passed all 601 tests, restored the EASIER
+    mixed-unit basis, and would have moved clause 5 by a √12 = 3.4641× factor on the dispersion —
+    outcome-material by the amendment's own witness (DSR 0.9868 PASS → 0.8577 FAIL).
+
+    A pin that only a unit test reads is a pin the money run does not have, so this runs on the
+    MONEY PATH: it recomputes ``ir_annualized / sqrt(ppy(pinned_h))`` for all 300 enumerated trials
+    straight from ``val_ir_by_kappa_by_h`` and demands bit-equality. A revert therefore fails the
+    run. Cost is 300 divisions — free, on a 270-GPU-hour experiment.
+    """
+    fails: list[str] = []
+    pinned_h = int(PINNED_DSR["de_annualization_horizon"])
+    if pinned_h != PRIMARY_H:
+        fails.append(f"PINNED_DSR['de_annualization_horizon'] {pinned_h} != PRIMARY_H {PRIMARY_H}")
+        return fails
+    denom = float(np.sqrt(periods_per_year(pinned_h)))
+    wrong_at_own_h = 0
+    for (cid, seed, h, k), got in trials.items():
+        ir_ann = float(evals[(cid, seed)]["val_ir_by_kappa_by_h"][str(h)][f"{k:g}"])
+        want = ir_ann / denom
+        if got != want:
+            if got == ir_ann / float(np.sqrt(periods_per_year(h))):
+                wrong_at_own_h += 1
+            elif len(fails) < 3:
+                fails.append(
+                    f"trial (cell{cid}, seed{seed}, h={h}, κ={k:g}) = {got!r}, but the pinned "
+                    f"convention re-derives {want!r} from the artifact"
+                )
+    if wrong_at_own_h:
+        fails.append(
+            f"{wrong_at_own_h} of {len(trials)} trials are de-annualized at their OWN horizon — "
+            f"the PRE-v1.6.22 convention the C-3 amendment replaced. The trial set must carry the "
+            f"unit of the statistic SR0 is compared against (h={pinned_h}); mixing h ∈ "
+            f"{DSR_HORIZONS} spans sqrt(12) = 3.4641x and inflates var_sr"
+        )
+    return fails
 
 
 def _pb_dict(pb: PairedBootstrap) -> dict:
@@ -866,45 +947,62 @@ def assemble_verdict(
     # ---- G-§8.C.3 FIRES HERE: after Cell 1, BEFORE any between-cell Δ exists (audit C-4).
     # `money_verdict` defaults TRUE so the DANGEROUS direction is the one that must be declared —
     # the C-6 rule. A fixture announcing itself is safe; a real verdict silently skipping a binding
-    # entry gate is the defect. The gate is BLOCKED today (no published RankIC obtained, and
-    # running the weights needs Kronos model code that invariant 8 forbids), so a money verdict
-    # HALTS here rather than producing a Δ that the gate exists to precede.
-    if money_verdict:
-        from trikaal.eval.external_validation import (
-            ExternalReference,
-            assert_clear_to_compute_deltas,
-        )
-        from trikaal.eval.external_validation import (
-            evaluate as _eval_g8c3,
-        )
+    # entry gate is the defect.
+    #
+    # §7 v1.6.25 (RE-AUDIT R4) — TWO DEFECTS, ONE SITE.
+    # (a) The comment here (and at `scripts/m6_verdict.py`) said the gate "is BLOCKED today, so a
+    #     money verdict HALTS here". That was TRUE when written and FALSE from v1.6.22 onward:
+    #     Lakshay dropped the gate as binding, so `evaluate` returns DROPPED and
+    #     `assert_clear_to_compute_deltas` returns cleanly. A comment describing a HALT that
+    #     cannot happen is worse than none — it tells the next reader a control is live.
+    # (b) The gate's verdict — including `required_disclosure`, the BSQ sentence that must reach
+    #     the paper verbatim — was computed and thrown away. It reached no manifest, so the one
+    #     compensating record for dropping a binding entry gate existed only as a transient. It is
+    #     now evaluated UNCONDITIONALLY (pure, no I/O) and PERSISTED as a REQUIRED field; only the
+    #     ENFORCEMENT is conditional on `money_verdict`.
+    from trikaal.eval.external_validation import (
+        BSQ_DISCLOSURE,
+        GATE_IS_BINDING,
+        ExternalReference,
+        assert_clear_to_compute_deltas,
+    )
+    from trikaal.eval.external_validation import (
+        evaluate as _eval_g8c3,
+    )
 
-        assert_clear_to_compute_deltas(
-            external_validation
-            if external_validation is not None
-            else _eval_g8c3(None, ExternalReference())
-        )
+    g8c3 = (
+        external_validation
+        if external_validation is not None
+        else _eval_g8c3(None, ExternalReference())
+    )
+    if money_verdict:
+        assert_clear_to_compute_deltas(g8c3)
+    external_validation_record = {
+        "gate": dict(g8c3),
+        "gate_is_binding": bool(GATE_IS_BINDING),
+        "enforced_this_run": bool(money_verdict),
+        # The residual we owe the reader for dropping the gate. Persisted here so the manifest
+        # cannot be quoted without it — `verdict_manifest_failures` rejects its absence.
+        "required_disclosure": BSQ_DISCLOSURE,
+    }
 
     # constants — before any DSR is computed; var_sr uses the key-sorted ddof=0 construction
     # the pin re-derives bit-exactly (a subset-variance or a ddof drift cannot pass).
     trials = enumerate_dsr_trials(evals)
+    # §7 v1.6.25 R2: the C-3 unit convention, re-derived from the artifacts on the MONEY PATH.
+    unit_fails = dsr_unit_convention_failures(evals, trials)
+    if unit_fails:
+        raise ConformanceError(
+            "the clause-5 trial set is not on the pinned de-annualization basis:\n  - "
+            + "\n  - ".join(unit_fails)
+        )
     # §7 v1.5 A.4: dispersion basis = the CELL-5 placebo trials only (seeds retained inside it);
     # the ENUMERATION stays the full cross-product as the audit trail, and n_trials counts
     # configurations without seeds. Three deliberately different sets.
     basis_keys = sorted(k for k in trials if k[0] == DSR_VAR_SR_BASIS_CELL)
     var_sr = float(np.var(np.array([trials[k] for k in basis_keys], dtype=np.float64)))
     # §7 v1.6.22 C-3: the retained mixed-unit leg, from the SAME artifacts.
-    var_sr_mixed = float(
-        np.var(
-            np.array(
-                [
-                    float(evals[(k[0], k[1])]["val_ir_by_kappa_by_h"][str(k[2])][f"{k[3]:g}"])
-                    / float(np.sqrt(periods_per_year(k[2])))
-                    for k in basis_keys
-                ],
-                dtype=np.float64,
-            )
-        )
-    )
+    var_sr_mixed = float(np.var(own_h_trial_values(evals, basis_keys)))
     recipe_fails = verdict_dsr_failures(
         n_trials=DSR_N_TRIALS, threshold=DSR_THRESHOLD, trials=trials, var_sr=var_sr
     )
@@ -1063,10 +1161,20 @@ def assemble_verdict(
     }
 
     # §7 v1.5 §0.3 DUAL-SPECIFICATION REPORT — the SAME artifacts under BOTH specifications.
-    # The v1.2 leg reconstructs the pre-amendment rules faithfully: seeds COUNTED as trials,
-    # var_sr over ALL arms, z-quantile MDE with scoring noise only.
+    # The v1.2 leg reconstructs the pre-amendment rules: seeds COUNTED as trials, var_sr over ALL
+    # arms, z-quantile MDE with scoring noise only, AND the pre-C-3 own-h de-annualization.
+    #
+    # §7 v1.6.25 (RE-AUDIT R3) — IT WAS A HYBRID CALLING ITSELF FAITHFUL. This leg read `trials`,
+    # which the v1.6.22 C-3 amendment had re-based onto PRIMARY_H units, so what shipped was
+    # {all-arms basis (v1.2)} x {PRIMARY_H units (v1.5-amended)} — a combination NO specification
+    # ever had, presented as "the pre-amendment rules faithfully". The bias has a direction:
+    # mixing per-5/15/60-minute Sharpes INFLATES the dispersion, so the faithful leg has a larger
+    # var_sr, a larger SR0 and a LOWER DSR than the hybrid. The hybrid therefore agreed with the
+    # v1.5 primary more readily than the real v1.2 spec would have — i.e. it under-reported
+    # disagreement exactly when the primary says SURVIVES, which is the one direction a
+    # dual-specification report exists to guard.
     n_trials_v12 = len(DSR_SEEDS) * len(_CELL_BY_ID) * len(DSR_HORIZONS) * len(DSR_KAPPAS)
-    var_sr_v12 = float(np.var(np.array([trials[k] for k in sorted(trials)], dtype=np.float64)))
+    var_sr_v12 = float(np.var(own_h_trial_values(evals, sorted(trials))))
     dsr_v12 = float(deflated_sharpe_ratio(s[4], n_trials=n_trials_v12, var_sr=var_sr_v12))
     clauses_v12 = {
         "1_paired_ci": bool(pb45.passes_ci),
@@ -1087,7 +1195,9 @@ def assemble_verdict(
         "v1_2_original": {
             "n_trials": n_trials_v12,
             "n_trials_basis": "cells x SEEDS x horizons x kappas (seeds COUNTED as trials)",
-            "var_sr_basis": "all_arms",
+            "var_sr_basis": "all_arms, de-annualized at EACH TRIAL'S OWN horizon — the units v1.2 "
+            "actually used (§7 v1.6.25 R3: this leg previously read the PRIMARY_H-based trial set, "
+            "making it a hybrid of two specifications and biased toward agreeing with the primary)",
             "var_sr": var_sr_v12,
             "sr0": float(expected_max_sharpe(var_sr_v12, n_trials_v12)),
             "dsr": dsr_v12,
@@ -1177,6 +1287,9 @@ def assemble_verdict(
         },
         "clauses": clauses,
         "dual_specification": dual_specification,
+        # §7 v1.6.25 R4: REQUIRED. The gate's own verdict + the BSQ disclosure it obliges, carried
+        # in the manifest rather than evaluated and discarded.
+        "external_validation": external_validation_record,
         # §7 v1.6 C-12 M1: REQUIRED beside the headline. Non-gating, no threshold, cannot flip
         # SURVIVES<->NULL — it bounds the placebo's capacity handicap with a measured magnitude.
         "placebo_capacity_disclosure": placebo_capacity_disclosure(evals),
@@ -1203,7 +1316,83 @@ def assemble_verdict(
         "point_diagnostics": {k: v for k, v in ablation_verdict(ir).items() if k != "cell_ir"},
     }
     manifest["content_hash"] = content_hash(manifest)
+    # §7 v1.6.25 R4: the emitter validates its OWN output. `grid_pinned` is stamped by the driver
+    # one level up, so it is checked by the loader rather than here.
+    self_check = verdict_manifest_failures(manifest, require_grid_pinned=False)
+    if self_check:
+        raise VerdictInputError(
+            "assemble_verdict produced a manifest missing REQUIRED fields:\n  - "
+            + "\n  - ".join(self_check)
+        )
     return manifest
+
+
+# ------------------------------------------------------------------ manifest required fields
+# §7 v1.6.25 (RE-AUDIT R4). A manifest lacking any of these cannot be quoted as the M6 outcome —
+# the rule `dual_specification` already carried in prose, now enforced for the whole set.
+REQUIRED_MANIFEST_FIELDS = (
+    "schema",
+    "clauses",
+    "verdict",
+    "dual_specification",
+    "external_validation",
+    "placebo_capacity_disclosure",
+    "decode_agreement_disclosure",
+    "degeneracy_guard",
+    "power_guard",
+    "content_hash",
+)
+
+
+def verdict_manifest_failures(manifest: dict, *, require_grid_pinned: bool = True) -> list[str]:
+    """Everything missing from a verdict manifest (empty = quotable).
+
+    WHY A LOADER AT ALL. The M6 outcome is read back out of a JSON file — by us, by the paper, and
+    by anyone reproducing it. Until v1.6.25 nothing on the READ side asserted anything, so a field
+    that stopped being written (R4: the G-§8.C.3 verdict and its required BSQ disclosure) simply
+    stopped existing, silently. Emission-side validation alone cannot catch a manifest produced by
+    an older revision; this can, because it runs against the file.
+    """
+    fails: list[str] = []
+    if not isinstance(manifest, dict):
+        return [f"manifest is {type(manifest).__name__}, not a dict"]
+    for key in REQUIRED_MANIFEST_FIELDS:
+        if key not in manifest or manifest[key] in (None, {}, ""):
+            fails.append(f"REQUIRED field {key!r} is missing or empty")
+    if manifest.get("schema") not in (None, VERDICT_SCHEMA):
+        fails.append(f"schema {manifest.get('schema')!r} != {VERDICT_SCHEMA!r}")
+    ev = manifest.get("external_validation")
+    if isinstance(ev, dict):
+        gate = ev.get("gate")
+        if not isinstance(gate, dict) or not gate.get("status"):
+            fails.append("external_validation.gate is missing or carries no status (§7 v1.6.25 R4)")
+        disc = ev.get("required_disclosure")
+        if not isinstance(disc, str) or not disc.strip():
+            fails.append(
+                "external_validation.required_disclosure is absent — dropping G-§8.C.3 as binding "
+                "was conditioned on shipping this sentence, and a MISSING disclosure is the one "
+                "defect disclosure cannot neutralize"
+            )
+    elif "external_validation" not in fails and ev is not None:
+        fails.append("external_validation is not a dict")
+    if require_grid_pinned and manifest.get("grid_pinned") is not True:
+        fails.append(
+            f"grid_pinned is {manifest.get('grid_pinned')!r}, not True — a toy/fixture manifest "
+            "can never be quoted as the M6 outcome"
+        )
+    return fails
+
+
+def load_verdict_manifest(path: Path, *, require_grid_pinned: bool = True) -> dict:
+    """Read a verdict manifest and REFUSE it if any required field is absent."""
+    doc = json.loads(Path(path).read_text())
+    fails = verdict_manifest_failures(doc, require_grid_pinned=require_grid_pinned)
+    if fails:
+        raise VerdictInputError(
+            f"verdict manifest {path} cannot be quoted as the M6 outcome:\n  - "
+            + "\n  - ".join(fails)
+        )
+    return doc
 
 
 __all__ = [
@@ -1222,14 +1411,19 @@ __all__ = [
     "INDEX_SCHEMA",
     "NULL",
     "PRIMARY_H",
+    "REQUIRED_MANIFEST_FIELDS",
     "SURVIVES",
     "VERDICT_SCHEMA",
     "VerdictInputError",
     "assemble_verdict",
     "degeneracy_guard",
+    "dsr_unit_convention_failures",
     "enumerate_dsr_trials",
     "load_cell_evals",
+    "load_verdict_manifest",
+    "own_h_trial_values",
     "power_guard",
+    "verdict_manifest_failures",
     "write_cell_eval_artifact",
     "write_eval_index",
 ]

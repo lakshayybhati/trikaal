@@ -13,9 +13,11 @@
     "verdict.py:decode_agreement_disclosure",
     "verdict.py:provenance_failures",
     "verdict.py:load_cell_evals",
+    "verdict.py:dsr_unit_convention_failures",
     "verdict.py:degeneracy_guard",
     "verdict.py:power_guard",
     "verdict.py:assemble_verdict",
+    "verdict.py:verdict_manifest_failures",
     "matrix.py:shard_units",
     "matrix.py:shard_partition_failures",
     "matrix.py:artifact_reuse_failures",
@@ -71,7 +73,7 @@
     "named_by_the_sweep": true,
     "target": "gates.micro_legibility_gate"
   },
-  "n_ast_candidates": 35,
+  "n_ast_candidates": 37,
   "n_rows": 14,
   "n_vacuous": 0,
   "rows": [
@@ -179,7 +181,7 @@
     {
       "check": "verdict.load_cell_evals  [empty dir]",
       "empty_collection": "see registry",
-      "returned": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmpy21s2rot \u2014 artifacts must be indexed",
+      "returned": "VerdictInputError: no index.json in /var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/tmp_wv_gyvk \u2014 artifacts must be indexed",
       "vacuous": false,
       "verdict": "CLOSED (raised)"
     },
@@ -191,7 +193,10 @@
       "verdict": "CLOSED (raised)"
     }
   ],
-  "unaccounted_candidates": [],
+  "unaccounted_candidates": [
+    "verdict.py:dsr_unit_convention_failures",
+    "verdict.py:verdict_manifest_failures"
+  ],
   "vacuous_rows": [],
   "verdict": "0 VACUOUS of 14 probed",
   "what": "THE VACUITY SWEEP \u2014 a verdict derived by iterating a collection, given an EMPTY one"

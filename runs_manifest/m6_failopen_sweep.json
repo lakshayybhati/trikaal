@@ -578,7 +578,7 @@
       "function": "conformance.verdict_dsr_failures [var_sr]",
       "guards": "clause-5 recipe conformance",
       "returned": {
-        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (2.5601517748282007e-06) \u2014 wrong basis, wrong ddo",
         "n_failures": 1
       },
       "verdict": "CLOSED (reported)"
@@ -605,7 +605,7 @@
       "function": "conformance.verdict_dsr_failures [var_sr]",
       "guards": "clause-5 recipe conformance",
       "returned": {
-        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "first": "var_sr nan != the ddof=0 variance of the CELL-5 (placebo) trial values (2.5601517748282007e-06) \u2014 wrong basis, wrong ddo",
         "n_failures": 1
       },
       "verdict": "CLOSED (reported)"
@@ -616,7 +616,7 @@
       "function": "conformance.verdict_dsr_failures [var_sr]",
       "guards": "clause-5 recipe conformance",
       "returned": {
-        "first": "var_sr inf != the ddof=0 variance of the CELL-5 (placebo) trial values (7.307064297644248e-06) \u2014 wrong basis, wrong ddof",
+        "first": "var_sr inf != the ddof=0 variance of the CELL-5 (placebo) trial values (2.5601517748282007e-06) \u2014 wrong basis, wrong ddo",
         "n_failures": 1
       },
       "verdict": "CLOSED (reported)"

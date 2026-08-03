@@ -30,7 +30,7 @@
   ],
   "probe_cost_actual_usd": 0.14,
   "receipt": "m6_integrated_price",
-  "top_up_reasoning": "worst measured case is ~$121 (determinism on eval, $0.40/hr spot). $150 carries spot-price variance, box setup/staging overhead (~30 min per box observed on the probe) and one re-launch. Lakshay tops up against worst case, never expected.",
+  "top_up_reasoning": "worst measured case is ~$121 (determinism on eval, $0.40/hr spot). $150 carries spot-price variance, box setup/staging overhead (MEASURED 2026-08-03: ~17 min per box = 10 min image pull + 6m41s pinned-torch install + <5s payload scp = 0.28 GPU-h; the earlier '~30 min per box observed' in this field was written from impression, not from the receipt, and is corrected here -- same defect as the fan-out runbook's 0.6 h/box row, sec 7 v1.6.24/v1.6.25) and one re-launch. Lakshay tops up against worst case, never expected.",
   "totals_gpu_hours": {
     "eval_plus_train": 270.36417796617445,
     "if_determinism_also_slows_eval": 299.94908494642834

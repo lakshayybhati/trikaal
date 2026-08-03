@@ -123,16 +123,41 @@ def unpinned_parameters(orch: OrchestratorConfig) -> dict:
     """Values READ from code, with the reason each is legitimately unpinned (C-5 A8).
 
     Recorded rather than chosen. The reasoning travels WITH the numbers so a later reader cannot
-    mistake an unpinned parameter for an unconsidered one."""
+    mistake an unpinned parameter for an unconsidered one.
+
+    **§7 v1.6.25 (RE-AUDIT R7) — THIS RECORD SHIPPED FALSE PROSE, UNDER TEST PROTECTION.** It said
+    *"The default 2000 is BELOW that band; the operative budget is an operator decision recorded
+    per run, not a spec constant"* while the `values` dict beside it read **26,003** and
+    `conformance.PINNED_STEPS_STAGE1/2` gated exactly that number. Both halves were written into
+    the same manifest and the assertion in `tests/run/test_money_driver.py` PINNED THE STALE
+    SENTENCE, so the suite defended the wrong statement. The step budgets are no longer unpinned
+    at all — v1.6.22 made them a matched, conformance-gated spec constant — so they have been
+    moved out of the unpinned set rather than re-described inside it.
+    """
     return {
+        # STILL genuinely unpinned: read from code, shared by all 25 units, never chosen per-cell.
         "values": {
-            "steps_stage1": orch.steps_stage1,
-            "steps_stage2": orch.steps_stage2,
             "peak_lr_stage1": orch.peak_lr_stage1,
             "peak_lr_stage2": orch.peak_lr_stage2,
             "warmup_frac": orch.warmup_frac,
             "batch_size": orch.batch_size,
             "alpha": orch.alpha,
+        },
+        # NOT unpinned any more, recorded here so the manifest still carries them in one place.
+        "pinned_since_v1_6_22": {
+            "steps_stage1": orch.steps_stage1,
+            "steps_stage2": orch.steps_stage2,
+            "gate": "conformance.PINNED_STEPS_STAGE1/2 — a divergence fails before any compute",
+            "why": (
+                "m6_design.md:59 derives ~1 effective pass over 270-300M effective bars at "
+                "canonical geometry as 16,479-18,311 steps/stage, and the blueprint spec states "
+                "1-3 passes. The predecessor default of 2000 was BELOW that band — it was the "
+                "SMOKE-TEST budget, and the money run would have inherited it. 26,003 steps is "
+                "20.00 tokens/param (Chinchilla ~20) = 1.399 passes. MATCHED AND FIXED across all "
+                "25 units: saturation is MEASURED AND REPORTED, never a stopping rule, because "
+                "data-dependent stopping would give 25 different budgets and confound DIR(4-5) "
+                "with training length (the C-12 class in the primary)."
+            ),
         },
         "source": "trikaal.train.orchestrator.OrchestratorConfig defaults — read, never chosen",
         "why_ablation_validity_does_not_depend_on_them": (
@@ -142,14 +167,11 @@ def unpinned_parameters(orch: OrchestratorConfig) -> dict:
             "Only REPRODUCIBILITY depends on these, which is why they are recorded here rather "
             "than pinned."
         ),
-        "stage2_budget_is_derivable_not_arbitrary": (
-            "m6_design.md:59 — ~1 effective pass over 270-300M effective bars at canonical "
-            "geometry is 16,479-18,311 steps/stage. The default 2000 is BELOW that band; the "
-            "operative budget is an operator decision recorded per run, not a spec constant."
-        ),
-        "stage1_budget_is_genuinely_free": (
-            "no design document derives it; the tokenizer is trained to a reconstruction "
-            "criterion and the §7 v1.4 legibility gate is the binding quality check on it."
+        "stage1_budget_is_not_independently_derivable": (
+            "no design document derives a stage-1 step count; the tokenizer is trained to a "
+            "reconstruction criterion and the §7 v1.4 legibility gate is the binding quality "
+            "check on it. It is pinned to the SAME 26,003 as stage 2 so the two stages cannot "
+            "drift apart across shards, not because 26,003 is derived for stage 1."
         ),
     }
 

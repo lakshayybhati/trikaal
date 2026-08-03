@@ -189,6 +189,15 @@ PINNED_DSR = {
     # §7 v1.6 C-7: READ, and cross-checked against verdict.PLACEBO_DISPERSION_TRIPWIRE — the two
     # 1.5s were independent copies of the same truth, the exact shape that produced C-6.
     "placebo_dispersion_tripwire": 1.5,  # × the median across-seed IR dispersion of cells 1,2,3
+    # §7 v1.6.25 (RE-AUDIT R2) — THE C-3 AMENDMENT'S OWN PIN, WHICH ITS SIGNED PACKAGE SPECIFIED
+    # AND WHICH DID NOT SHIP. The amendment moved the trial set's de-annualization from EACH
+    # TRIAL'S OWN horizon to the PRIMARY horizon (a √12 = 3.4641× span, outcome-material: the
+    # witness went DSR 0.9868 PASS → 0.8577 FAIL). Nothing pinned it, so reverting one identifier
+    # at `verdict.enumerate_dsr_trials` — `PRIMARY_H` back to `h` — passed all 601 tests and
+    # silently restored the EASIER basis. The value is the horizon itself, cross-checked against
+    # `verdict.PRIMARY_H`, and `verdict.dsr_unit_convention_failures` RE-DERIVES every trial value
+    # from the artifacts on the money path, so the revert now fails the run and not merely a test.
+    "de_annualization_horizon": 15,
 }
 
 # §7 v1.6 C-7 — THRESHOLDS THAT DECIDE THE VERDICT AND WERE UNDER NO GATE AT ALL. Each lives as a
@@ -264,6 +273,15 @@ def pinned_threshold_failures() -> list[str]:
         fails.append(
             f"verdict.DSR_VAR_SR_BASIS_CELL {DSR_VAR_SR_BASIS_CELL} != pinned "
             f"{PINNED_DSR['var_sr_basis_cell']} — the §7 v1.5 A.4 placebo basis"
+        )
+    # §7 v1.6.25 R2: the C-3 unit convention. Third instance of "two copies, one truth".
+    from trikaal.eval.verdict import PRIMARY_H as _PRIMARY_H
+
+    if int(PINNED_DSR["de_annualization_horizon"]) != int(_PRIMARY_H):
+        fails.append(
+            f"PINNED_DSR['de_annualization_horizon'] "
+            f"{PINNED_DSR['de_annualization_horizon']} != verdict.PRIMARY_H {_PRIMARY_H} — the "
+            "clause-5 trial set must carry the unit of the statistic SR0 is compared against"
         )
     return fails
 
