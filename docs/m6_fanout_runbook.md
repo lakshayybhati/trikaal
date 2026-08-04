@@ -86,13 +86,16 @@ non-deterministic CUDA kernels are overwhelmingly BACKWARD; eval is forward-only
 remaining risk is genuinely small — but step 3 still catches it, before a shard's training is paid
 for, at a cost of minutes.
 
-### The box-1 sequence, in order
+### The box-1 sequence, in order — executable form in §2b
 
 1. rent box 1 (**which we are renting anyway**)
-2. **pull the lake** — 4.08 GiB, route B, §2a
+2. **pull the lake** — 4.08 GiB, route B, §2a — verify by sha256, scrub the token, prove the scrub
 3. **`--dry-run --shard 0/25 --device cuda`** ← **THIS IS P2**
-4. green → **run the real shard 0 on the SAME box, no new setup**
-5. verify the artifact, all 16 keys real → **THEN** launch the other four
+4. **the cell-6 Stage-1 probe** (~1.5 GPU-h ≈ $0.45–0.60) → the **pre-committed** WIRE / DECLINE
+   decision, taken **before the shard structure is fixed** so the matrix is never re-cut 25 ↔ 30
+   mid-flight
+5. green → **run the real shard 0 on the SAME box, no new setup**
+6. verify the artifact, all 16 keys real → **THEN** launch the other four
 
 ## 2. Per-box procedure — copy-paste, in order
 
@@ -225,7 +228,7 @@ ssh -p $PORT root@$HOST 'cd /root/trikaal && python3 scripts/m6_fetch_lake.py --
 
 ---
 
-## 2b. ★ THE BOX-1 LAUNCH BLOCK — hold this until the top-up lands
+## 2b. ★ THE BOX-1 LAUNCH BLOCK — one executable sequence, hold for the top-up
 
 **This is the next rental. There is no other.** Everything before it is $0 and done.
 
@@ -233,31 +236,75 @@ ssh -p $PORT root@$HOST 'cd /root/trikaal && python3 scripts/m6_fetch_lake.py --
 set -Eeuo pipefail
 IMAGE=pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 GIT_SHA=$(git rev-parse HEAD)
+# HOST/PORT/ID come from §2 step 1: filters reliability>=0.995 + cuda_max_good>=13.0 +
+# inet_down>1000 + disk_space>60, RE-LIST after create, KILL if not `running` inside 15 min.
 
-# 1 ── rent box 1 (mandatory filters, §2 step 1), RE-LIST after create, KILL if it stalls >15 min
-# 2 ── payload + pinned toolchain (§2 steps 2-3), then: pip install -q huggingface_hub
-# 3 ── the lake: pull + sha256-verify + scrub + PROVE the scrub (§2a)
+# 1 ── payload + pinned toolchain (§2 steps 2-3), then the transfer client
+ssh -p $PORT root@$HOST 'pip install -q huggingface_hub'   # AFTER pinned torch; touches neither
 
-# 4 ── ★ P2. Zero training steps, minutes of eval, BEFORE any training is paid for.
+# 2 ── THE LAKE: pull → sha256-verify every file → scrub the token → PROVE the scrub (§2a)
+ssh -p $PORT root@$HOST "cd /root/trikaal && HF_TOKEN='$(cat ~/.trikaal_hf_token)' \
+  python3 scripts/m6_fetch_lake.py --dest processed/universe_bars"
+ssh -p $PORT root@$HOST 'rm -f ~/.cache/huggingface/token ~/.huggingface/token; history -c 2>/dev/null; \
+  cd /root/trikaal && python3 scripts/m6_fetch_lake.py --assert-no-token'
+echo "SCRUB_VERIFIED_EXIT=$?"          # MUST be 0 before anything else runs
+
+# 3 ── ★ P2. Zero training steps, minutes of eval, BEFORE any training is paid for.
 ssh -p $PORT root@$HOST "set -Eeuo pipefail
   cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
   export TRIKAAL_IMAGE='$IMAGE' TRIKAAL_GIT_COMMIT='$GIT_SHA'
   python3 scripts/m6_money_run.py --dry-run --shard 0/25 --device cuda --out /root/p2
   echo P2_EXIT=\$?"                     # read the exit from THE PROCESS, never from a compound
 
-# 5 ── green → the REAL shard 0 on the SAME box, no new setup
+# 4 ── ★ THE ~$0.50 MEASUREMENT THAT DECIDES THE $16-22 (C-12 bracket). Stage 1 ONLY, one seed,
+#      ~1.5 GPU-h. It runs HERE — before the shard structure is fixed — so the matrix is never
+#      re-cut 25 <-> 30 mid-flight.
+ssh -p $PORT root@$HOST "set -Eeuo pipefail
+  cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
+  python3 scripts/m6_cell6_stage1_probe.py --device cuda --lake processed/universe_bars
+  echo CELL6_PROBE_EXIT=\$?"
+scp -P $PORT root@$HOST:/root/trikaal/runs_manifest/m6_cell6_stage1_probe.json ./runs_cloud/
+
+# 5 ── the REAL shard 0 on the SAME box, no new setup. --shard N depends on step 4's decision:
+#        WIRE_CELL_6      -> 30 units, --shard 0/6   (5 boxes x 6 units)
+#        DO_NOT_BUY_CELL_6 -> 25 units, --shard 0/5
 ssh -p $PORT root@$HOST "set -Eeuo pipefail
   cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
   export TRIKAAL_IMAGE='$IMAGE' TRIKAAL_GIT_COMMIT='$GIT_SHA'
   python3 scripts/m6_money_run.py --shard 0/5 --device cuda --out /root/m6
   echo SHARD0_EXIT=\$?"
 
-# 6 ── P3: pull shard 0's artifact, sha256-verify, and confirm all 16 identity keys are REAL
+# 6 ── P3: pull shard 0's artifact, sha256-verify, confirm all 16 identity keys are REAL
 #      ("unavailable" or "unknown" in ANY key ⇒ do NOT fan out). Then launch boxes 2-5.
 ```
 
-**If P2 raises for want of a deterministic CUDA kernel, that is a RESULT, not a failure** — it is
-the finding the gate exists to produce, and it arrives before four more boxes have trained.
+### The cell-6 decision rule — PRE-COMMITTED, in code, not a judgement made on the box
+
+`scripts/m6_cell6_stage1_probe.py::decide()` reads two **Stage-1** numbers and returns a word.
+Boundary-tested in `tests/train/test_cell6_decision_rule.py`, including that it **can say no**.
+
+| | gate | source |
+|---|---|---|
+| codebook utilization | **≥ 0.95** (`PINNED_CODEBOOK_MIN_UTILIZATION`) | below it, `_validate_artifact` **refuses every cell-6 artifact** — the arm cannot enter a verdict at all |
+| realized bits-per-token | **inside [19.5, 20.5]** (`FSQ_BPT_BAND`) | outside it the bracket's lower end sits on a **different-capacity instrument** — the matched-bits control invariant 6 protects |
+
+**BOTH pass → `WIRE_CELL_6`.** Buy 5 seeds (54.1 GPU-h, $15.68–21.63; run becomes 324.5 GPU-h,
+$94–130). Report **BOTH ENDS of the bracket whichever way they fall** — **ΔIR(4−6) ≤ ΔIR(4−5) is an
+empirical claim about two trained models, NOT an identity**; if it inverts the interval is empty
+and the larger number flatters us. Disclose that the two ends are **confounded in opposite
+directions**, and that the lower end is capacity-matched only because bpt held.
+
+**EITHER fails → `DO_NOT_BUY_CELL_6`.** Report the capacity handicap as **unquantified in IR
+units** — which is exactly what the clause rule strings now say — and record the **measured** reason
+the bracket was not constructed. **That is an honest, publishable outcome and it costs nothing.**
+
+> **If P2 raises for want of a deterministic CUDA kernel, that is a RESULT, not a failure** — the
+> finding the gate exists to produce, arriving before four more boxes have trained.
+>
+> **Step 4's script has never executed.** `decide()` is unit-tested at its boundaries; the I/O path
+> around it runs for the first time on box 1. By the execution rule that makes it an untested
+> component — which is why it sits *after* P2 and *before* any production shard, where its failure
+> costs minutes and no science.
 
 ---
 
