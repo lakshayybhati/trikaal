@@ -102,7 +102,7 @@ from trikaal.utils.preflight import (
     resource_failures,
     resource_record,
 )
-from trikaal.utils.provenance import run_provenance
+from trikaal.utils.provenance import identity_placeholder_failures, run_provenance
 
 LAKE = Path("processed/universe_bars")
 # A9 bounds. Small enough that the WIRING proof takes minutes; large enough that scoring, kappa
@@ -245,6 +245,19 @@ def main(argv: list[str] | None = None) -> int:
     # ---- RESOURCE PRECONDITIONS, before any compute (§7 v1.6 C-5, ruling 2) -----------------
     # Same principle as conformance-first. A COUNT(*) is cheap; discovering the requirement
     # thirty minutes into a swap-thrash on a rented box is not, and does not stop the meter.
+    # §7 v1.6.26 (P2 finding F3) — THE IDENTITY SURFACE IS CHECKED BEFORE ANY SPEND.
+    # P2 found `driver_version` reading "unavailable" on a real 4090. A placeholder is IDENTICAL on
+    # every shard, so it can never produce a refusal — the fan-out would assemble 25 units whose
+    # provenance agreed only because none of them knew anything. Discovering that at artifact-write
+    # time means discovering it after the training spend; this costs microseconds and fires first.
+    _prov = run_provenance(args.device)
+    _ph = identity_placeholder_failures(_prov)
+    if _ph:
+        print("IDENTITY SURFACE REFUSED — placeholders on a CUDA device:", file=sys.stderr)
+        for m in _ph:
+            print(f"  - {m}", file=sys.stderr)
+        return 1
+
     con = connect_lake(args.lake) if Path(args.lake).exists() else None
     if con is None:
         print(f"LAKE MISSING at {args.lake} — refusing to invent data", file=sys.stderr)

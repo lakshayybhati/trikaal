@@ -54,7 +54,11 @@ from trikaal.eval.xsection import ablation_verdict
 from trikaal.train.arms import ARM_MICRO, ARM_OHLCV, arm_n_features
 from trikaal.train.cells import CELLS
 from trikaal.utils.hashing import content_hash
-from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, run_provenance
+from trikaal.utils.provenance import (
+    PROVENANCE_IDENTITY_KEYS,
+    identity_placeholder_failures,
+    run_provenance,
+)
 
 # ---- prereg pins (literals mirror docs/m6_prereg.md §3/§3a/§5) -------------------------------
 PRIMARY_H = 15  # §3: h=15 is the primary; no horizon-shopping
@@ -156,6 +160,10 @@ def write_cell_eval_artifact(
     ``activity_decisions``: they are the only inputs ``degeneracy_guard`` reads, so an artifact
     without them turns a binding HALT gate into a no-op that still reports itself armed."""
     bad = _mu_diag_problems(mu_diag, f"cell{cell_id}_seed{seed}")
+    # §7 v1.6.26 (P2 F3): a CUDA unit whose identity keys are placeholders is un-refusable across
+    # the fan-out — every shard writes the same string, so no comparison can ever disagree.
+    prov = (meta or {}).get("provenance") or run_provenance()
+    bad += [f"cell{cell_id}_seed{seed}: {m}" for m in identity_placeholder_failures(prov)]
     if not isinstance(decode_agreement, dict) or "sign_agreement_dim0" not in decode_agreement:
         bad.append(
             f"cell{cell_id}_seed{seed}: decode_agreement missing 'sign_agreement_dim0' — the C-1 "

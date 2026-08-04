@@ -116,12 +116,33 @@ set -Eeuo pipefail
 SHARD=$1; N_SHARDS=5          # 0..4
 IMAGE=pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
-# --- 1. select + launch (reliability first, price second) -----------------------------------
-vastai search offers 'gpu_name=RTX_4090 num_gpus=1 rentable=true reliability>0.98 disk_space>40' \
-  -o 'dph+' --raw | head
+# --- 1. select + launch. THE TWO FILTERS BELOW ARE NOT OPTIONAL (P2, §7 v1.6.26) --------------
+#   cuda_max_good>=13.0 : we pin torch 2.12.1+cu130. On driver 565.77 it installs FINE and then
+#                         reports cuda.is_available() == False. P2 paid a full setup to learn it.
+#   reliability>=0.995  : setup is a HOST PROPERTY WITH A LONG TAIL, not a constant. Measured on
+#                         the same day: 45 min at rel 0.992 (produced nothing, $0.254) vs 29 s at
+#                         rel 0.997. A 90x spread. 44 of the 4090 offers pass both filters, so
+#                         this costs nothing.
+vastai search offers 'gpu_name=RTX_4090 num_gpus=1 rentable=true reliability>0.995 \
+  cuda_max_good>=13.0 disk_space>40 inet_down>500' -o 'dph+' --raw | head
+
 vastai create instance <ID> --image "$IMAGE" --disk 40 --ssh --direct --label "trikaal-m6-s${SHARD}"
+vastai show instances --raw    # ★ RE-LIST AFTER create, NOT ONLY AFTER destroy — see R5b
+
+# --- 1b. KILL A SLOW BOX RATHER THAN WAITING FOR IT ------------------------------------------
+# Pre-commit a provisioning cutoff and hold to it. A box stuck in `loading` bills the whole time.
+START=$(date +%s)
+until vastai show instances --raw | grep -q '"actual_status": "running"'; do
+  [ $(( $(date +%s) - START )) -gt 900 ] && { echo "STALLED >15min — destroying"; break; }
+  sleep 15
+done
 
 # --- 2. payload: NO CREDENTIALS EVER LEAVE THIS MACHINE ---------------------------------------
+# ★ THE CODE TARBALL IS NOT THE LAKE (P2 finding F2, §7 v1.6.26). This ships 550 KB of source. The
+# run ALSO needs `processed/universe_bars`, and until P2 nothing in this runbook said so — the
+# money driver stops at m6_money_run.py:250 with "LAKE MISSING ... refusing to invent data",
+# BEFORE train_matrix (:363), so the cost is five boxes' setup (~$0.50), not a training run.
+# See §2a. Do not launch a shard until the lake path is settled.
 # The repo is PRIVATE. Do NOT clone on the box and do NOT ship a token — scp a tarball.
 tar czf /tmp/m6_payload.tgz --exclude='__pycache__' src/trikaal scripts pyproject.toml uv.lock \
     runs_manifest/m6_mde_inputs.json runs_manifest/m6_spread_deciles.json
@@ -161,6 +182,33 @@ caught.**
 
 ---
 
+## 2a. ★ THE LAKE — the step this runbook did not have (P2 finding F2)
+
+**The money run cannot execute on any rented box without `processed/universe_bars`, and until
+2026-08-04 no step here provisioned it.** P2 reached `LAKE MISSING at processed/universe_bars —
+refusing to invent data` on a real 4090 with everything else working.
+
+**Only the 40 pinned symbols are needed** (supervisor-measured 2026-08-04): **4.08 GiB of the
+14.59 GiB lake — 27.9 %. 72 % of the lake never has to move.** Five boxes = 20.4 GiB total.
+
+| | route | speed | credential |
+|---|---|---|---|
+| **A** | public HuggingFace pull | ~3–5 min/box | **none** |
+| **B** | fine-grained **read-only** token | same | one scoped token, runtime env only |
+| **C** | `scp`/`rsync` from the operator's machine | 20.4 GiB off a home uplink, boxes billing throughout | none |
+
+**STATUS 2026-08-04 — A IS OFF.** `lakshayybhati/trikaal-m6-snapshot` returns **HTTP 401
+unauthenticated** on both `api/datasets/…` and `api/models/…`, and the account lists **zero public
+repos**. So the lake is **not publicly readable**; 401 deliberately does not distinguish *private*
+from *absent*, so that is the strongest statement the evidence supports. **The route is B**, and it
+needs one operator action before any shard launches.
+
+> **NEVER the existing token.** It is write-scoped and not fine-grained (`role: write`,
+> `fineGrained: false`). **The risk is INTEGRITY, not confidentiality:** the lake is derived from
+> public Binance data, but a write-capable token on a box rented by the hour from an anonymous host
+> can **overwrite or delete the Merkle-`5dfd667d` anchor the entire reproducibility claim rests
+> on.**
+
 ## 3. The rules that are not negotiable
 
 | # | rule | why |
@@ -170,6 +218,8 @@ caught.**
 | R3 | **Pin torch/numpy on every box.** | the image ships 2.5.1; ours is 2.12.1. A version split across shards refuses — correctly, and after paying for the compute |
 | R4 | **Pull and sha256-verify every scientific artifact before `destroy`.** | bulk checkpoints from a run declared INVALID are exempt, exemption recorded |
 | R5 | **`destroy -y`, then RE-LIST.** | see above |
+| R5b | **RE-LIST AFTER `create` TOO — the exact mirror, opposite sign.** | P2, 2026-08-04: `vastai create` **printed nothing and created the box anyway**. Retrying on the silence would have meant paying for two. `destroy` lies by returning 0 having done nothing; `create` lies by saying nothing having done everything. **The re-list is the only statement about instance state either way.** |
+| R7 | **Host selection is a COST decision, not a preference.** Filter `reliability>=0.995` and `cuda_max_good>=13.0`, and **destroy any box not `running` inside 15 min** rather than waiting on it. | P2 measured a **90× provisioning spread on one day** — 45 min at rel 0.992 (produced nothing, $0.254) vs 29 s at rel 0.997 — and a driver-565.77 box on which the pinned torch cannot see the GPU. Both were full-price setups that bought nothing. **Cost setup with a TAIL, not a mean:** the P2 estimate missed by 1.4× and this was the entire cause. |
 | R6 | **One re-launch on the same shard is pre-authorised for an instrument defect.** Anything else is a STOP and report. | |
 
 ---

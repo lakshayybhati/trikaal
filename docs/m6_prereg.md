@@ -216,6 +216,65 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.26 (2026-08-04, ★ P2 EXECUTED ON REAL CUDA — $0.426, three defects, primary question
+  still OPEN. Boxes destroyed, re-list confirms 0.)**
+  - **P2 DID NOT ANSWER ITS QUESTION AND IS REPORTED AS A RESULT.** Eval under forced determinism
+    on CUDA remains **UNMEASURED**; the run stopped at the lake gate. Nothing below is dressed up
+    as the answer.
+  - **F1 — `torch 2.12.1+cu130` REQUIRES DRIVER ≥ 580, AND THE OFFER FILTER DID NOT SAY SO.** On
+    driver 565.77 (CUDA 12.7) the pinned wheel installs cleanly and reports
+    `cuda.is_available() == False`. The runbook filtered `reliability` and `disk_space` and nothing
+    about the driver, so the fan-out would rent an unusable box and pay a full setup to find out.
+    Filter is now `cuda_max_good>=13.0`; 44 of the 4090 offers qualify, so it costs nothing.
+  - **F2 — ★ THE RUNBOOK HAD NO LAKE-PROVISIONING STEP. The money run cannot execute on any rented
+    box.** `LAKE MISSING at processed/universe_bars — refusing to invent data`. The §2 tarball
+    ships 550 KB of source; `--lake …` was a placeholder. **CORRECTED, AND THE CORRECTION IS
+    AGAINST MY OWN PROSE:** I wrote that this "would have hit shard 0 after TRAINING SPEND". It
+    would not — the lake gate is `m6_money_run.py:250` and `train_matrix` is called at `:363`, 113
+    lines later (verified by me at HEAD). **The cost of the miss is five boxes' setup, ~$0.50, not
+    a training run.** That is prose running HARSHER than its artifact, the third time in that
+    direction, and the rule is symmetric: I took the softer version as a standing correction two
+    passes ago.
+  - **F3 — `driver_version` STAMPED `unavailable` ON A REAL 4090 REPORTING 580.159.03, WHICH IS
+    THE R6 CLASS RECURRING INSIDE THE FIX FOR R6.** `torch._C._cuda_getDriverVersion` no longer
+    behaves as assumed at 2.12.1 and the lookup failed into its own placeholder. R6's whole
+    argument is that an identity key exists to make shards DISAGREE; a key reading the same
+    `"unavailable"` on all 25 units can never disagree, so it contributed nothing while being
+    counted among the 16 that made the surface look complete. Two halves: the lookup now asks
+    `nvidia-smi` FIRST (the driver's own reporter, not a binding to it), and
+    `identity_placeholder_failures` REFUSES any CUDA unit carrying a placeholder — at the money
+    driver **before any spend** and again at `write_cell_eval_artifact`, the durable gate. CPU is
+    exempt by construction: there those keys are genuinely unresolvable and `"unavailable"` is the
+    honest value.
+  - **★ THE MUTATION HARNESS REJECTED MY OWN FIRST F3 TEST, AND IT WAS RIGHT.** `F3a` came back
+    **NOT CLOSED**: the test stubbed `subprocess.run` and asserted only on the stub's return value,
+    so corrupting the query field to `--query-gpu=NOTHING` left it green. **A test that mocks the
+    call it is verifying, and checks only the mock's own answer, verifies the mock.** The argv is
+    the contract — a real `nvidia-smi` asked the wrong field prints an error and the lookup falls
+    back to the placeholder, which IS the F3 defect. Rewritten to assert the argv; **12/12 CLOSED**
+    with the negative control still passing.
+  - **TWO OPERATIONAL FINDINGS, BOTH INTO THE RUNBOOK.** (1) **Setup is a HOST PROPERTY WITH A LONG
+    TAIL, not a constant** — measured the same day: **45 min at reliability 0.992** (produced
+    nothing, **$0.254**) versus **29 s at 0.997**, a 90× spread. Filter `reliability>=0.995` and
+    **destroy any box not `running` inside 15 min** rather than waiting. My estimate missed by 1.4×
+    and this is its entire cause; setup must be costed with a tail, not a mean. (2) **`vastai
+    create` PRINTED NOTHING AND CREATED THE BOX ANYWAY** — the exact mirror of the `destroy` trap,
+    opposite sign: destroy lies by returning 0 having done nothing, create lies by saying nothing
+    having done everything. **RE-LIST AFTER EVERY `create` AND EVERY `destroy`** (rule R5b).
+  - **WHAT P2 DID ESTABLISH, on real hardware, for $0.426:** torch 2.12.1+cu130 installs and sees a
+    4090 on driver 580.159.03; the **conformance gate passes ON THE BOX**;
+    `use_deterministic_algorithms(True)` is settable on CUDA; `attention_mode` reads
+    `sdpa_deterministic`; **15 of 16 identity keys stamp real values**, the 16th being F3.
+  - **THE LAKE ROUTE IS OPTION B AND IT NEEDS ONE OPERATOR ACTION.** `lakshayybhati/trikaal-m6-
+    snapshot` returns **HTTP 401 unauthenticated** on both `api/datasets/…` and `api/models/…`, and
+    the account lists **zero public repos** — so the lake is **not publicly readable**. 401
+    deliberately does not distinguish *private* from *absent*, and that is the strongest statement
+    the evidence supports; I am not claiming more. **Only the 40 pinned symbols are needed: 4.08 of
+    14.59 GiB, 27.9 % — 72 % of the lake never moves.** The existing token is write-scoped and NOT
+    fine-grained and must never reach a rented box: the risk is INTEGRITY, not confidentiality —
+    it can overwrite or delete the Merkle-`5dfd667d` anchor the whole reproducibility claim rests
+    on.
+
 - **v1.6.25 (2026-08-03, ★ THE RE-AUDIT'S BLOCKING FIXES. Local, $0. The re-audit landed FIVE DAYS
   EARLY and returned NOT READY; the run date does not move.)**
   - **★ THE HEADLINE, AND IT IS THE WORST DEFECT THIS PROJECT HAS PRODUCED (R1). The v1.6.22

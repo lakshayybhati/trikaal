@@ -89,6 +89,65 @@ def _git_commit() -> str:
     return UNAVAILABLE
 
 
+def _driver_version() -> str:
+    """The NVIDIA driver version, or ``"unavailable"``.
+
+    **§7 v1.6.26 (P2 finding F3) — THIS READ `unavailable` ON A REAL 4090.** The previous form was
+    ``str(torch._C._cuda_getDriverVersion())`` inside ``except (AttributeError, RuntimeError)``.
+    At torch 2.12.1 that private symbol no longer behaves as assumed, so on a box whose
+    ``nvidia-smi`` reported **580.159.03** the identity key silently fell back to the placeholder.
+    **That is the R6 class recurring inside the fix for R6:** a key carrying the same placeholder
+    on every shard sees no disagreement across the fan-out and protects nothing while appearing to.
+
+    ``nvidia-smi`` is authoritative here — it is the driver's own reporter, not a binding to it —
+    so it is tried FIRST and the torch private symbol is the fallback, not the reverse.
+    """
+    try:
+        import subprocess
+
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+            check=False,
+        )
+        if out.returncode == 0 and out.stdout.strip():
+            return out.stdout.strip().splitlines()[0].strip()
+    except (OSError, ValueError, subprocess.SubprocessError):  # pragma: no cover — no nvidia-smi
+        pass
+    try:  # pragma: no cover — CUDA box only
+        return str(torch._C._cuda_getDriverVersion())
+    except (AttributeError, RuntimeError):
+        return UNAVAILABLE
+
+
+def identity_placeholder_failures(prov: dict) -> list[str]:
+    """Identity keys still carrying a PLACEHOLDER on a device that should have resolved them.
+
+    **§7 v1.6.26 (P2 finding F3) — the assertion that would have caught it.** A placeholder is not
+    a refusal *across* shards: every shard writes the same ``"unavailable"``, the comparison sees
+    no disagreement, and the key protects nothing while appearing to. On a CUDA device every
+    identity key must carry a real value, so this is checked BEFORE spend (the driver's early gate)
+    and again at artifact-write time (the durable one).
+
+    On CPU the CUDA-only keys are legitimately unresolvable and are exempt — recording
+    ``"unavailable"`` there is the honest value the C-18 rule asks for, not a defect.
+    """
+    if not str(prov.get("device", "")).startswith("cuda"):
+        return []
+    bad = [
+        k
+        for k in PROVENANCE_IDENTITY_KEYS
+        if str(prov.get(k)) in (UNAVAILABLE, "unknown", "None", "")
+    ]
+    return [
+        f"identity key {k!r} = {prov.get(k)!r} on a CUDA device — a placeholder is IDENTICAL on "
+        "every shard, so it can never produce a refusal and protects nothing (§7 v1.6.26 F3)"
+        for k in bad
+    ]
+
+
 def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> dict:
     """Stamp the live environment. Recorded, never chosen.
 
@@ -102,13 +161,7 @@ def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> d
         except (RuntimeError, AssertionError):
             pass
         cuda_build = getattr(torch.version, "cuda", None) or UNAVAILABLE
-        try:
-            # The lookup is deferred INSIDE the call on purpose: evaluating
-            # ``torch._C._cuda_getDriverVersion`` at tuple-build time put the attribute access
-            # outside its own try/except and crashed the CUDA probe at cell 1, seed 0.
-            driver = str(torch._C._cuda_getDriverVersion())
-        except (AttributeError, RuntimeError):
-            pass
+        driver = _driver_version()
     # The container image is not introspectable from inside the process; the launcher stamps it
     # via TRIKAAL_IMAGE. "unavailable" is the honest value when it was not set, and because it is
     # an IDENTITY key, a run where SOME shards set it and others did not is a REFUSAL, not a

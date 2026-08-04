@@ -143,6 +143,24 @@ MUTATIONS: list[dict] = [
         "pre": "        headline_series=head,\n",
         "tests": ["tests/eval/test_placebo_diagnostic_inputs.py"],
     },
+    {
+        "finding": "F3a",
+        "what": "the driver-version lookup reverts to the torch private symbol (P2 saw it fail "
+        "into 'unavailable' on a real 4090 reporting 580.159.03)",
+        "file": "src/trikaal/utils/provenance.py",
+        "post": '["nvidia-smi", "--query-gpu=driver_version", "--format=csv,noheader"]',
+        "pre": '["nvidia-smi", "--query-gpu=NOTHING", "--format=csv,noheader"]',
+        "tests": ["tests/run/test_identity_placeholders.py"],
+    },
+    {
+        "finding": "F3b",
+        "what": "the placeholder assertion is removed — a CUDA unit whose identity keys are all "
+        "'unavailable' can never disagree with its siblings, so it can never refuse",
+        "file": "src/trikaal/utils/provenance.py",
+        "post": '    if not str(prov.get("device", "")).startswith("cuda"):\n        return []\n',
+        "pre": '    return []\n    if not str(prov.get("device", "")).startswith("cuda"):\n',
+        "tests": ["tests/run/test_identity_placeholders.py"],
+    },
     # ------------------------------------------------------------------ THE NEGATIVE CONTROL
     # "9/9 CLOSED" is itself a check that has never been seen to fail. This row mutates a COMMENT
     # — semantics untouched — and the harness MUST report NOT CLOSED for it. If it reports CLOSED,
