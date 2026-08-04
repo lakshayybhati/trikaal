@@ -65,49 +65,34 @@ was 90 % of a 2-minute probe's cost because the probe was short; the run is not.
 
 ---
 
-## 1a. ★ HARD PRECONDITIONS — three gates before five boxes exist (RE-AUDIT R5, §7 v1.6.25)
+## 1a. ★ THE BOX-1 SEQUENCE — P2 is not a phase, it is the first command (§7 v1.6.26)
 
-The re-audit's R5: **the money driver has never executed at the current configuration** — there is
-no `money_run_manifest.json` anywhere, and the only CUDA validation receipt ran the *rehearsal*,
-timed out, and is untracked. Separately, **the eval has never run under forced determinism on
-CUDA**: `set_determinism(..., deterministic_algorithms=True)` is process-global and was armed for
-training, so the first eval decision under it is a first-time code path — on rented hardware, at
-the end of a paid shard. Neither delays the date. Both are ordered gates, and each is cheap.
+**P2 no longer gets its own rental, and that was the supervisor's correction: the probe was the
+wrong shape.** Its entire content is one command that runs *before* training. A dedicated box pays
+a full setup for minutes of work — and the market tax only bites when the rental exists ONLY for
+the probe (three boxes stalled in `loading` on 2026-08-04 for $0.188 and produced nothing). On a
+box we are renting anyway, the marginal cost of the probe is **minutes**.
 
-| # | gate | cost | fails how |
-|---|---|---:|---|
-| **P1** | `PYTHONPATH=src .venv/bin/python scripts/m6_money_run.py --dry-run` **at the exact HEAD being shipped**, exit 0 | **$0**, minutes | any stage that does not hand off to the next |
-| **P2** | **Shard 0 ALONE** on the first box, to completion, **including at least one eval decision under forced determinism** | ~1/5 of the bill | a first-time path under `deterministic_algorithms=True` — a missing deterministic kernel raises rather than degrading |
-| **P3** | Pull shard 0's artifact and confirm **all 16 identity keys present and populated with REAL values** — `git_commit`, `steps_stage1/2`, and **`attention_mode`** among them | $0 | `"unavailable"` **or `"unknown"`** in any identity key ⇒ the fan-out would refuse *after* paying for it |
+| | gate | when | cost |
+|---|---|---|---|
+| **P1** | `m6_money_run.py --dry-run` locally at the shipped HEAD | ✅ **DONE** — exit 0, `runs_manifest/m6_p1_dry_run_completion.json` | $0 |
+| **P2** | `--dry-run --shard 0/25 --device cuda` — **step 3 of box 1**, zero training steps, minutes of eval | first production box, before any training is paid for | minutes |
+| **P3** | all 16 identity keys REAL in shard 0's artifact | after the real shard 0, before the other four launch | $0 |
 
-**The must-be-real list on a rented box:** `image`, `gpu_name`, `cuda_build`, `driver_version`,
-`attention_mode`. A placeholder is not a refusal *across* shards — every shard carries the same
-placeholder, so the comparison sees no disagreement and **the key protects nothing while appearing
-to** (§7 v1.6.25 R6, applied to itself). `attention_mode` joined this list in v1.6.26 after P1
-showed the run-level stamp reading `unknown` while the artifacts carried `sdpa_deterministic`.
+**The residual P2 buys down is smaller than it was priced at, and the reason is worth stating:**
+`m6_cuda_probe_cell_manifest.json` shows training COMPLETED under `deterministic_algorithms=True`
+on CUDA (2.969 steps/s, both arms stable). **Training runs forward AND backward, and
+non-deterministic CUDA kernels are overwhelmingly BACKWARD; eval is forward-only.** So the
+remaining risk is genuinely small — but step 3 still catches it, before a shard's training is paid
+for, at a cost of minutes.
 
-**Only after P3 do the remaining four boxes launch.** P2 is the one that cannot be moved earlier:
-it is the only place the forced-determinism eval path is exercised on CUDA, and discovering it
-there costs one shard instead of five.
+### The box-1 sequence, in order
 
-```bash
-# P1 — local, $0, at the commit you are about to ship
-PYTHONPATH=src .venv/bin/python scripts/m6_money_run.py --dry-run; echo "P1_EXIT=$?"
-
-# P3 — after shard 0 lands, before the other four
-python3 - <<'PY'
-import json, glob
-from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS
-doc = json.load(open(sorted(glob.glob("runs_cloud/shard0/**/cell*_eval.json", recursive=True))[0]))
-prov = doc["meta"]["provenance"]
-bad = [k for k in PROVENANCE_IDENTITY_KEYS
-       if prov.get(k) in (None, "", "unavailable", "unknown")]
-print("MISSING/PLACEHOLDER:", bad or "none — clear to fan out")
-raise SystemExit(1 if bad else 0)
-PY
-```
-
----
+1. rent box 1 (**which we are renting anyway**)
+2. **pull the lake** — 4.08 GiB, route B, §2a
+3. **`--dry-run --shard 0/25 --device cuda`** ← **THIS IS P2**
+4. green → **run the real shard 0 on the SAME box, no new setup**
+5. verify the artifact, all 16 keys real → **THEN** launch the other four
 
 ## 2. Per-box procedure — copy-paste, in order
 
@@ -121,12 +106,21 @@ IMAGE=pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 #                         reports cuda.is_available() == False. P2 paid a full setup to learn it.
 #   reliability>=0.995  : setup is a HOST PROPERTY WITH A LONG TAIL, not a constant. Measured on
 #                         the same day: 45 min at rel 0.992 (produced nothing, $0.254) vs 29 s at
-#                         rel 0.997. A 90x spread. 44 of the 4090 offers pass both filters, so
-#                         this costs nothing.
+#                         rel 0.997. A 90x spread.
+#   inet_down>1000      : setup is dominated by a ~7 GB image pull, so host DOWNLINK is the one
+#                         searchable field plausibly predictive of a stall — RELIABILITY
+#                         DEMONSTRABLY IS NOT (0.9987 and 0.9976 both stalled past 15 min on
+#                         2026-08-04). VERIFIED to be a real, discriminating filter rather than an
+#                         ignored keyword, by watching the count move: >100 -> 52, >1000 -> 29,
+#                         >5000 -> 20, >99999 -> 0. A field that is silently dropped would return
+#                         52 every time. THIS IS A HYPOTHESIS WITH A MECHANISM, NOT A MEASURED
+#                         PREDICTOR: n=5 boxes cannot establish it, and the KILL below is what
+#                         actually bounds the loss (~$0.09 each vs $0.254 when I waited).
 vastai search offers 'gpu_name=RTX_4090 num_gpus=1 rentable=true reliability>0.995 \
-  cuda_max_good>=13.0 disk_space>40 inet_down>500' -o 'dph+' --raw | head
+  cuda_max_good>=13.0 disk_space>60 inet_down>1000' -o 'dph+' --raw | head
+#              disk 60G, not 40: the lake subset is 4.08 GiB on top of the image + torch wheels.
 
-vastai create instance <ID> --image "$IMAGE" --disk 40 --ssh --direct --label "trikaal-m6-s${SHARD}"
+vastai create instance <ID> --image "$IMAGE" --disk 60 --ssh --direct --label "trikaal-m6-s${SHARD}"
 vastai show instances --raw    # ★ RE-LIST AFTER create, NOT ONLY AFTER destroy — see R5b
 
 # --- 1b. KILL A SLOW BOX RATHER THAN WAITING FOR IT ------------------------------------------
@@ -182,32 +176,90 @@ caught.**
 
 ---
 
-## 2a. ★ THE LAKE — the step this runbook did not have (P2 finding F2)
+## 2a. ★ THE LAKE — executable, content-verified, credential-scrubbed (P2 finding F2)
 
 **The money run cannot execute on any rented box without `processed/universe_bars`, and until
 2026-08-04 no step here provisioned it.** P2 reached `LAKE MISSING at processed/universe_bars —
 refusing to invent data` on a real 4090 with everything else working.
 
-**Only the 40 pinned symbols are needed** (supervisor-measured 2026-08-04): **4.08 GiB of the
-14.59 GiB lake — 27.9 %. 72 % of the lake never has to move.** Five boxes = 20.4 GiB total.
+**Only the 40 pinned symbols are needed — MEASURED, not estimated:** **4.08 GiB / 1,920 files of
+the 14.72 GiB repo = 27.7 %. 72 % of the lake never moves.** Five boxes = 20.4 GiB.
+Ground truth: `runs_manifest/m6_lake_subset_manifest.json`, generated by
+`scripts/m6_lake_subset_manifest.py` and committed **before any transfer**, carrying a **sha256 per
+file** (the HF `lfs.oid`; 1,920 of 1,920 have one).
 
-| | route | speed | credential |
-|---|---|---|---|
-| **A** | public HuggingFace pull | ~3–5 min/box | **none** |
-| **B** | fine-grained **read-only** token | same | one scoped token, runtime env only |
-| **C** | `scp`/`rsync` from the operator's machine | 20.4 GiB off a home uplink, boxes billing throughout | none |
+**ROUTE B — the repo is PRIVATE, not absent.** Unauthenticated: HTTP 401 on both
+`api/datasets/…` and `api/models/…`, account lists zero public repos. Authenticated: **HTTP 200,
+`private=True`, `gated=False`, 7,029 files**. Route A (public pull) is off; route C (rsync) is the
+fallback and is not needed.
 
-**STATUS 2026-08-04 — A IS OFF.** `lakshayybhati/trikaal-m6-snapshot` returns **HTTP 401
-unauthenticated** on both `api/datasets/…` and `api/models/…`, and the account lists **zero public
-repos**. So the lake is **not publicly readable**; 401 deliberately does not distinguish *private*
-from *absent*, so that is the strongest statement the evidence supports. **The route is B**, and it
-needs one operator action before any shard launches.
+> **THE TOKEN NEVER TOUCHES THE BOX'S DISK.** It lives at `~/.trikaal_hf_token` (mode 0600, outside
+> the repo), is read at the moment of the pull, passed through `ssh` into the **environment of one
+> command**, and scrubbed immediately after — **and the scrub is VERIFIED, because a scrub nobody
+> checks is a scrub that did not happen.** Never the existing write-scoped token: the risk is
+> INTEGRITY, not confidentiality — a write token on a box rented by the hour from an anonymous host
+> can **overwrite or delete the Merkle-`5dfd667d` anchor the whole reproducibility claim rests on.**
 
-> **NEVER the existing token.** It is write-scoped and not fine-grained (`role: write`,
-> `fineGrained: false`). **The risk is INTEGRITY, not confidentiality:** the lake is derived from
-> public Binance data, but a write-capable token on a box rented by the hour from an anonymous host
-> can **overwrite or delete the Merkle-`5dfd667d` anchor the entire reproducibility claim rests
-> on.**
+**`LAKE MISSING` CATCHES ABSENCE AND IS BLIND TO TRUNCATION**, which is what a 4.08 GiB / 1,920-file
+transfer actually produces. A short lake opens, queries and answers with **fewer bars**, and the box
+scores a silently different cross-section. So the pull is verified file-by-file against the
+committed manifest by sha256 — proven to catch missing, short, right-length-wrong-bytes, and
+unpinned-extra files (`tests/run/test_lake_provisioning.py`, healthy case asserted first).
+
+```bash
+# ON THE OPERATOR MACHINE — the token is read here and never stored on the box.
+ssh -p $PORT root@$HOST 'pip install -q huggingface_hub'   # AFTER pinned torch; it touches neither
+
+ssh -p $PORT root@$HOST "cd /root/trikaal && HF_TOKEN='$(cat ~/.trikaal_hf_token)' \
+  python3 scripts/m6_fetch_lake.py --dest processed/universe_bars"   # pull + sha256 verify
+# ^ the token exists only in this one command's environment on the box, never on its disk
+
+# SCRUB, THEN PROVE THE SCRUB — exit 1 if any hf_ credential survives anywhere
+ssh -p $PORT root@$HOST 'rm -f ~/.cache/huggingface/token ~/.huggingface/token; \
+  history -c 2>/dev/null; cd /root/trikaal && python3 scripts/m6_fetch_lake.py --assert-no-token'
+echo "SCRUB_VERIFIED_EXIT=$?"    # MUST be 0 before anything else runs
+
+# and an independent re-verify with no token present at all
+ssh -p $PORT root@$HOST 'cd /root/trikaal && python3 scripts/m6_fetch_lake.py --verify-only'
+```
+
+---
+
+## 2b. ★ THE BOX-1 LAUNCH BLOCK — hold this until the top-up lands
+
+**This is the next rental. There is no other.** Everything before it is $0 and done.
+
+```bash
+set -Eeuo pipefail
+IMAGE=pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
+GIT_SHA=$(git rev-parse HEAD)
+
+# 1 ── rent box 1 (mandatory filters, §2 step 1), RE-LIST after create, KILL if it stalls >15 min
+# 2 ── payload + pinned toolchain (§2 steps 2-3), then: pip install -q huggingface_hub
+# 3 ── the lake: pull + sha256-verify + scrub + PROVE the scrub (§2a)
+
+# 4 ── ★ P2. Zero training steps, minutes of eval, BEFORE any training is paid for.
+ssh -p $PORT root@$HOST "set -Eeuo pipefail
+  cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
+  export TRIKAAL_IMAGE='$IMAGE' TRIKAAL_GIT_COMMIT='$GIT_SHA'
+  python3 scripts/m6_money_run.py --dry-run --shard 0/25 --device cuda --out /root/p2
+  echo P2_EXIT=\$?"                     # read the exit from THE PROCESS, never from a compound
+
+# 5 ── green → the REAL shard 0 on the SAME box, no new setup
+ssh -p $PORT root@$HOST "set -Eeuo pipefail
+  cd /root/trikaal && export PYTHONPATH=/root/trikaal/src
+  export TRIKAAL_IMAGE='$IMAGE' TRIKAAL_GIT_COMMIT='$GIT_SHA'
+  python3 scripts/m6_money_run.py --shard 0/5 --device cuda --out /root/m6
+  echo SHARD0_EXIT=\$?"
+
+# 6 ── P3: pull shard 0's artifact, sha256-verify, and confirm all 16 identity keys are REAL
+#      ("unavailable" or "unknown" in ANY key ⇒ do NOT fan out). Then launch boxes 2-5.
+```
+
+**If P2 raises for want of a deterministic CUDA kernel, that is a RESULT, not a failure** — it is
+the finding the gate exists to produce, and it arrives before four more boxes have trained.
+
+---
 
 ## 3. The rules that are not negotiable
 

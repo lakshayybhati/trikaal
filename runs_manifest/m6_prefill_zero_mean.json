@@ -1,0 +1,128 @@
+{
+  "CONTROLS": {
+    "controls_ok": false,
+    "planted_systematic_shift": {
+      "criteria_met": {
+        "Z1_direction_balanced": false,
+        "Z2_mean_indistinguishable_from_zero": false
+      },
+      "stats": {
+        "abs_2f_minus_1": 1.0,
+        "enter_fraction_f": 1.0,
+        "frac_delta_positive": 1.0,
+        "max_abs_delta_mu_hat": 7.372000254690647e-07,
+        "mean_abs_delta_mu_hat": 7.372000254690647e-07,
+        "n_decisions": 256,
+        "n_enter": 256,
+        "n_exit": 0,
+        "n_tie": 0,
+        "p_two_sided_balance": 1.2777508801076468e-57,
+        "p_two_sided_mean": NaN,
+        "se_f": 0.03125,
+        "se_mean_delta": 0.0,
+        "signed_mean_delta_mu_hat": 7.372000254690647e-07,
+        "std_delta_mu_hat": 0.0,
+        "t_stat_mean_vs_zero": NaN,
+        "width_weighted_enter_fraction": 1.0,
+        "z_balance_vs_half": 16.0
+      }
+    },
+    "requirement": "planted must FAIL both; sign-randomised must PASS both",
+    "sign_randomised_same_magnitude": {
+      "criteria_met": {
+        "Z1_direction_balanced": false,
+        "Z2_mean_indistinguishable_from_zero": true
+      },
+      "stats": {
+        "abs_2f_minus_1": 0.07874015748031504,
+        "enter_fraction_f": 0.5393700787401575,
+        "frac_delta_positive": 0.53515625,
+        "max_abs_delta_mu_hat": 3.516674041748047e-06,
+        "mean_abs_delta_mu_hat": 7.372000254690647e-07,
+        "n_decisions": 256,
+        "n_enter": 137,
+        "n_exit": 117,
+        "n_tie": 2,
+        "p_two_sided_balance": 0.20951084877439546,
+        "p_two_sided_mean": 0.9752484844533892,
+        "se_f": 0.03137279025690793,
+        "se_mean_delta": 5.815812988693853e-08,
+        "signed_mean_delta_mu_hat": 1.8044374883174896e-09,
+        "std_delta_mu_hat": 9.305300781910165e-07,
+        "t_stat_mean_vs_zero": 0.031026401499246625,
+        "width_weighted_enter_fraction": 0.5012238452427951,
+        "z_balance_vs_half": 1.2549116102763171
+      }
+    }
+  },
+  "FLIP_RATE_REMEASURED": {
+    "comparisons": 13824,
+    "decisions_within_max_delta_of_some_threshold": 19,
+    "expected_flip_rate_conservative": 0.0007723081923514047,
+    "fixture_can_discriminate": true,
+    "flip_enter": 0,
+    "flip_exit": 1,
+    "flips": 1,
+    "n_thresholds": 54,
+    "observed_flip_enter_fraction": 0.0,
+    "observed_flip_rate": 7.233796296296296e-05,
+    "observed_over_expected": 0.09366463243477904,
+    "per_threshold_nonzero": {
+      "q0.7323": {
+        "flipped": 1,
+        "theta": 0.28029242652107256
+      }
+    },
+    "why": "the n=256 receipt recorded fixture_can_discriminate=false and still reported CONDITION (a) SATISFIED from 0 flips. At that size no decision could straddle a threshold, so 0 was the only attainable outcome \u2014 a check that could not fail. Re-run here at a size where flips are possible."
+  },
+  "OBSERVED": {
+    "abs_2f_minus_1": 0.03937007874015752,
+    "enter_fraction_f": 0.48031496062992124,
+    "frac_delta_positive": 0.4765625,
+    "max_abs_delta_mu_hat": 3.516674041748047e-06,
+    "mean_abs_delta_mu_hat": 7.372000254690647e-07,
+    "n_decisions": 256,
+    "n_enter": 122,
+    "n_exit": 132,
+    "n_tie": 2,
+    "p_two_sided_balance": 0.5303604972550399,
+    "p_two_sided_mean": 0.7178009820781582,
+    "se_f": 0.03137279025690793,
+    "se_mean_delta": 5.814335123313439e-08,
+    "signed_mean_delta_mu_hat": -2.1012965589761734e-08,
+    "std_delta_mu_hat": 9.302936197301503e-07,
+    "t_stat_mean_vs_zero": -0.36139928545754324,
+    "width_weighted_enter_fraction": 0.485748124753257,
+    "z_balance_vs_half": -0.6274558051381586
+  },
+  "PRE_DECLARED_BEFORE_MEASURING": {
+    "Z1_direction": {
+      "N_real_flips": 2231,
+      "criterion": "|2f-1| <= 1/sqrt(N_real)",
+      "half_width": 0.021171431068793448,
+      "why": "the RMS/sqrt(N) yardstick holds only if flip signs are independent; a systematic split contributes |2f-1|*N, which beats sqrt(N) above this width"
+    },
+    "Z2_mean": {
+      "criterion": "|t| <= 3 on mean(delta) vs zero"
+    },
+    "on_failure": "STOP AND REPORT \u2014 condition (a) reopens. No workaround.",
+    "test_resolution_se_f": 0.03125
+  },
+  "amendment": "prereg \u00a77 v1.6 \u2014 the zero-mean condition attached to condition (a)'s closure",
+  "config": {
+    "cell": "cell4 fsq_micro",
+    "chunk": 256,
+    "decisions": 256,
+    "fixture_nests_n256_receipt": true,
+    "fixture_seed": 20260704,
+    "h": 15,
+    "prefill_impl": "trikaal.eval.predict._fill_context_prefill \u2014 the SHIPPED function, not a local copy, so this measures what the run would actually execute",
+    "seq_len": 512
+  },
+  "criteria_met": {
+    "Z1_direction_balanced": false,
+    "Z2_mean_indistinguishable_from_zero": true
+  },
+  "receipt": "m6_prefill_zero_mean",
+  "verdict": "PROBE INVALID \u2014 the controls did not behave. A planted systematic shift must FAIL both criteria and a sign-randomised perturbation of identical magnitude must PASS both. Until that holds, this statistic has not been shown able to separate the cases it claims to separate, and NOTHING is concluded about the real perturbation."
+}
