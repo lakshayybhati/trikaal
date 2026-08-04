@@ -367,6 +367,31 @@ three stacked judgment calls = an unlimited re-run license):**
     the number and did not apply it.** The datum stands as the local-MPS calibration: 32 decisions
     x 3 horizons is ~11 min/unit here, and it says nothing about the 4090 (the standing "local
     timings carry ~8x variance and MPS is not CUDA" rule applies).
+  - **★ NEW STANDING NORM, SUPERVISOR-DIRECTED — "HAS NEVER BEEN EXECUTED" IS NOT AN OPERATIONAL
+    STATE; IT IS AN UNMEASURED RISK, AND EXECUTION IS THE ONLY INSTRUMENT THAT MEASURES IT.**
+    Landed in `CLAUDE.md` beside the remediation rule. The supervisor recorded it as their own
+    ninth error and the pair with R1 is exact: **R1 — the SYMBOL was confirmed to exist, not that
+    the GATE FIRED. R5 — the driver was confirmed to be BUILT, not that it RAN.** Both are
+    verifying EXISTENCE instead of BEHAVIOUR, the class this project has spent three weeks
+    enforcing against. Operational corollary: **any component whose first execution is on rented
+    hardware is an untested component, whatever its coverage says.**
+  - **P1's COMPLETION EVIDENCE IS RETAINED — `runs_manifest/m6_p1_dry_run_completion.json`
+    (`scripts/m6_p1_retain.py`).** The supervisor asked for the artifact and was right to; their
+    accompanying claim that `money_run_manifest.json` "is not on disk anywhere — it went to
+    args.out and was cleaned" is **the one thing in that message that is wrong**: it survived at
+    the scratch `--out` path and was lifted from there intact (sha256 `20202b71e0df91e4…`). The
+    receipt carries the manifest verbatim, the 16-key identity surface, the measured timings, and
+    — re-executed rather than asserted — **the loader's refusal of its own artifact set**
+    (*"DRY-RUN artifact (money_run=False, grid_pinned=False)"*), so it ships the proof of its own
+    un-quotability instead of a promise of it. Measured: **5.65 h wall, 4.43 h of it eval, 638 s
+    mean per unit** — the datum behind the estimate error disclosed above, and it bounds nothing
+    about the 4090.
+  - **NARROWED, AND IT IS WHAT MAKES P2 A ONE-QUESTION PROBE:** every P1 artifact carries
+    `deterministic_algorithms: true`, so **the eval path completed end-to-end under FORCED
+    DETERMINISM on CPU**. Training under forced determinism on CUDA was already measured (v1.6.22
+    B1, 13.175 % penalty). The single uncovered leg is therefore **EVAL under forced determinism
+    on CUDA** — an op with no deterministic CUDA kernel raising *inside eval, after training
+    spend*. That is exactly one binary question and it does not need 26,003 steps to answer.
   - **R5 DOES NOT DELAY THE DATE; IT IS AN ORDERED PRECONDITION**, now `docs/m6_fanout_runbook.md`
     §1a: **P1** local `--dry-run` at the shipped HEAD ($0), **P2** shard 0 ALONE including at least
     one eval decision under FORCED DETERMINISM (a first-time code path — the flag is process-global

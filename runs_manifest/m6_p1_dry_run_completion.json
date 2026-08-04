@@ -1,0 +1,449 @@
+{
+  "exit_code_read_from": "the run's own status line appended to its log \u2014 NOT from a compound ending in `echo`, which reports echo's status (the pipefail rider, \u00a77 v1.6.25)",
+  "identity_surface": {
+    "all_stamped": true,
+    "deterministic_algorithms": true,
+    "distinct_stamps_across_units": 1,
+    "git_commit": "27dfb724252f2355285e425b8ab939487d0c7093",
+    "keys": [
+      "image",
+      "git_commit",
+      "steps_stage1",
+      "steps_stage2",
+      "lockfile_sha256",
+      "gpu_name",
+      "cuda_build",
+      "driver_version",
+      "torch",
+      "numpy",
+      "python",
+      "platform",
+      "attention_mode",
+      "deterministic_algorithms",
+      "cudnn_deterministic",
+      "cudnn_benchmark"
+    ],
+    "n_keys": 16,
+    "note": "`image`, `gpu_name`, `cuda_build`, `driver_version` read `unavailable` on a laptop with no CUDA and no TRIKAAL_IMAGE. That is CORRECT here and is exactly what runbook \u00a71a P3 exists to catch on the box, where they must be real",
+    "steps": [
+      26003,
+      26003
+    ],
+    "unavailable_on_this_host": [
+      "image",
+      "gpu_name",
+      "cuda_build",
+      "driver_version"
+    ]
+  },
+  "measured_timings_local_mps": {
+    "builder_estimate_error": "I estimated the eval leg at 'single-digit minutes total'; it is 638 s = 10.6 min PER UNIT, ~25x out. I reasoned from decision count (32) and ignored that ~97% of rollout wall-clock is context prefill at seq_len 512 \u2014 item C6 in our own limitations register. I had the number and did not apply it",
+    "decisions_scored_per_unit": 32,
+    "does_not_transfer": "MPS is not CUDA and local timings carry ~8x variance. This bounds NOTHING about the 4090; the money run is costed from the measured 4090 probes only",
+    "eval_h": 4.43,
+    "eval_seconds_per_unit": {
+      "max": 811.959,
+      "mean": 638.5,
+      "min": 539.74
+    },
+    "train_and_overhead_h": 1.22,
+    "wall_h": 5.65
+  },
+  "money_run_manifest": {
+    "conformance": "PASS (assert_conformance, first action, full money surface)",
+    "driver": "m6_money_run",
+    "dry_run": true,
+    "dry_run_bounds": {
+      "cap_per_symbol": 8
+    },
+    "eval_artifacts": {
+      "cell1_seed0_eval.json": "b5a220d1619db47bd4a065aad127129ff0ccf5fef1eb64b008e2364e5d32e3c1",
+      "cell1_seed1_eval.json": "af3df38fcbee33c1d3bff404a40c579e9ba9f869a2ed8ff3a15d935842830b7a",
+      "cell1_seed2_eval.json": "eb101ee947fe17ac45e094b8cc03c39ada3e7d6fb539f35d457aa9122736fc29",
+      "cell1_seed3_eval.json": "d3a3bd9f46b2af2dfced0b7668f53a579648f3dbf6648fa2d72b37049f8d5a42",
+      "cell1_seed4_eval.json": "e1318b66d36bc3314006d0d36701dd7bdeef0d84c5374f679624361c841ec701",
+      "cell2_seed0_eval.json": "7ad54e9acfb924f7599a263bfb3ebc6fa568a9f4945a78f0c7f9fbf73b3da190",
+      "cell2_seed1_eval.json": "5ac3a3f28b168a8ff3cfc078151cea96fae2b9f79491a4e4f2cbf648cf756567",
+      "cell2_seed2_eval.json": "0d89c54bf6dfb185a937f4df1f501d63c1c59534b0eb9132fe4c40b2608d9434",
+      "cell2_seed3_eval.json": "c94fbc085633b72344ade8f0723879be9b7f224e11c60182f356efae1ec08de8",
+      "cell2_seed4_eval.json": "a53a98c1ab98565e81d5ec306f0f78f41f8ae805dcc2c87e682a2127dc459101",
+      "cell3_seed0_eval.json": "7e0c04d509e9b59f1d354887c6c9db7a2d4a1ce5a8caa9d3e678bed41ae3ec9d",
+      "cell3_seed1_eval.json": "fee995886eaee9cf08989a529fc394b2af72ca2d607e21fda3a88a8c93142f57",
+      "cell3_seed2_eval.json": "8c7efbffeb6ea314c8dbf20457cc64f32d1e6d65c2f49ab5189e34100c0de7dd",
+      "cell3_seed3_eval.json": "1c967378a638c18413962e2e9e187283fa9e86fe1e51a673faca8498064dcdd2",
+      "cell3_seed4_eval.json": "862d0338bca20ec3cca50cf3378c66467ae8a27c2bd0dbb8a229ef316d368655",
+      "cell4_seed0_eval.json": "4a59ff9b509572301db23cfd5d9e81e74008f689cfc815f5e4be432cf6b8ac45",
+      "cell4_seed1_eval.json": "4e9b3cf1a5f87f5b601145573c5462ae1039fe2d5b5d26e004670df82d4dbd88",
+      "cell4_seed2_eval.json": "fa292b638711578f565bb05ce93022081f9fcdc7b376d69c21caa4a37096246a",
+      "cell4_seed3_eval.json": "8245a36c8dc9beaae29dbdcdb7abad6a69e1de9ddbe572ef1856622295c1cba4",
+      "cell4_seed4_eval.json": "3202823ad56ccb7310830ba4079ae3b3c1b13b16bdb9751c2ce7a6034ab0a8f7",
+      "cell5_seed0_eval.json": "8dc03f06098acbdcef86616848a28990b4cfb71179a04efecfb017df52d9bceb",
+      "cell5_seed1_eval.json": "6d590dbe2e9befe718ea05237a171af24688a9f1f8ac0fa887e2ba6b55f2d9e3",
+      "cell5_seed2_eval.json": "5699495f9b015fdefba0a82499b04868e619a8dc9efd8eb8240588e90ed4bf4a",
+      "cell5_seed3_eval.json": "192d7d766fbda496841461e3f722449cfae4074f2b35f9a830416bdfaf5602dc",
+      "cell5_seed4_eval.json": "fdac0e65613eaf56cb624c2069462b9e0d6687330ae8025be54fc5b2c15bf796"
+    },
+    "eval_decisions": {
+      "cell1_bsq_ohlcv_seed0": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell1_bsq_ohlcv_seed1": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell1_bsq_ohlcv_seed2": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell1_bsq_ohlcv_seed3": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell1_bsq_ohlcv_seed4": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell2_fsq_ohlcv_seed0": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell2_fsq_ohlcv_seed1": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell2_fsq_ohlcv_seed2": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell2_fsq_ohlcv_seed3": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell2_fsq_ohlcv_seed4": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell3_bsq_micro_seed0": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell3_bsq_micro_seed1": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell3_bsq_micro_seed2": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell3_bsq_micro_seed3": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell3_bsq_micro_seed4": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell4_fsq_micro_seed0": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell4_fsq_micro_seed1": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell4_fsq_micro_seed2": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell4_fsq_micro_seed3": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell4_fsq_micro_seed4": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell5_fsq_micro_shuffled_seed0": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell5_fsq_micro_shuffled_seed1": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell5_fsq_micro_shuffled_seed2": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell5_fsq_micro_shuffled_seed3": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      },
+      "cell5_fsq_micro_shuffled_seed4": {
+        "by_h": {
+          "15": 32,
+          "5": 0,
+          "60": 0
+        },
+        "primary_h": 32,
+        "total_scored": 32
+      }
+    },
+    "eval_seconds": {
+      "cell1_bsq_ohlcv_seed0": 750.118,
+      "cell1_bsq_ohlcv_seed1": 733.79,
+      "cell1_bsq_ohlcv_seed2": 644.3,
+      "cell1_bsq_ohlcv_seed3": 643.353,
+      "cell1_bsq_ohlcv_seed4": 811.959,
+      "cell2_fsq_ohlcv_seed0": 710.419,
+      "cell2_fsq_ohlcv_seed1": 546.797,
+      "cell2_fsq_ohlcv_seed2": 539.74,
+      "cell2_fsq_ohlcv_seed3": 607.597,
+      "cell2_fsq_ohlcv_seed4": 653.477,
+      "cell3_bsq_micro_seed0": 613.981,
+      "cell3_bsq_micro_seed1": 582.613,
+      "cell3_bsq_micro_seed2": 600.378,
+      "cell3_bsq_micro_seed3": 551.267,
+      "cell3_bsq_micro_seed4": 562.925,
+      "cell4_fsq_micro_seed0": 559.329,
+      "cell4_fsq_micro_seed1": 626.738,
+      "cell4_fsq_micro_seed2": 631.05,
+      "cell4_fsq_micro_seed3": 622.248,
+      "cell4_fsq_micro_seed4": 619.48,
+      "cell5_fsq_micro_shuffled_seed0": 631.617,
+      "cell5_fsq_micro_shuffled_seed1": 620.28,
+      "cell5_fsq_micro_shuffled_seed2": 629.634,
+      "cell5_fsq_micro_shuffled_seed3": 734.936,
+      "cell5_fsq_micro_shuffled_seed4": 734.64
+    },
+    "eval_window": [
+      "2021-01-01",
+      "2025-01-01"
+    ],
+    "grid": {
+      "h": 15,
+      "n_periods": 35064,
+      "start_ms": 1704132000000
+    },
+    "grid_pinned": false,
+    "index_written": true,
+    "memory_strategy": "fast",
+    "money_run": false,
+    "n_symbols": 4,
+    "n_symbols_conformance_asserted": 40,
+    "provenance": {
+      "attention_mode": "unknown",
+      "cuda_build": "unavailable",
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "deterministic_algorithms": true,
+      "device": "cpu",
+      "driver_version": "unavailable",
+      "git_commit": "27dfb724252f2355285e425b8ab939487d0c7093",
+      "gpu_name": "unavailable",
+      "image": "unavailable",
+      "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+      "numpy": "2.4.6",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "python": "3.11.7",
+      "python_executable": "/Users/lakshaybhati/Downloads/trikaal/.venv/bin/python",
+      "steps_stage1": 26003,
+      "steps_stage2": 26003,
+      "torch": "2.12.1"
+    },
+    "resources": {
+      "host_free_disk_gib": 529.4906349182129,
+      "host_physical_ram_gib": 16.0,
+      "host_vram_gib": null,
+      "requirement": {
+        "n_bars": 8415360,
+        "peak_bytes": 2987452800,
+        "peak_gib": 2.78228223323822,
+        "raw_bytes": 942520320,
+        "strategy": "fast",
+        "windows_bytes": 2044932480
+      },
+      "strategy_is_a_host_property": "both strategies compute BYTE-IDENTICAL results (shuffle_micro is seeded on (symbol, seed), so a rebuilt window is the same window); they differ only in residency and rebuild count. 'low' costs 3x-5x window rebuilds depending on unit order and is for small hosts; 'fast' is correct on a large-RAM box, where paying that recompute to solve a problem the box does not have would be a net loss."
+    },
+    "resume_refusals": [],
+    "resumed_units": [],
+    "schema": "m6_money_run_v1",
+    "seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seq_len": 512,
+    "shard": {
+      "index": 0,
+      "n_shards": 1,
+      "units": 25
+    },
+    "symbols_sha256": "60e24f598de9601260099e3f11e537814385df23c837073035b9f7ce4dc32631",
+    "unpinned_parameters": {
+      "pinned_since_v1_6_22": {
+        "gate": "conformance.PINNED_STEPS_STAGE1/2 \u2014 a divergence fails before any compute",
+        "steps_stage1": 0,
+        "steps_stage2": 0,
+        "why": "m6_design.md:59 derives ~1 effective pass over 270-300M effective bars at canonical geometry as 16,479-18,311 steps/stage, and the blueprint spec states 1-3 passes. The predecessor default of 2000 was BELOW that band \u2014 it was the SMOKE-TEST budget, and the money run would have inherited it. 26,003 steps is 20.00 tokens/param (Chinchilla ~20) = 1.399 passes. MATCHED AND FIXED across all 25 units: saturation is MEASURED AND REPORTED, never a stopping rule, because data-dependent stopping would give 25 different budgets and confound DIR(4-5) with training length (the C-12 class in the primary)."
+      },
+      "source": "trikaal.train.orchestrator.OrchestratorConfig defaults \u2014 read, never chosen",
+      "stage1_budget_is_not_independently_derivable": "no design document derives a stage-1 step count; the tokenizer is trained to a reconstruction criterion and the \u00a77 v1.4 legibility gate is the binding quality check on it. It is pinned to the SAME 26,003 as stage 2 so the two stages cannot drift apart across shards, not because 26,003 is derived for stage 1.",
+      "values": {
+        "alpha": 0.5,
+        "batch_size": 32,
+        "peak_lr_stage1": 0.001,
+        "peak_lr_stage2": 0.0003,
+        "warmup_frac": 0.1
+      },
+      "why_ablation_validity_does_not_depend_on_them": "ALL FIVE CELLS SHARE THEM. The 2x2+placebo contrast is matched on everything except quantizer x arm, so a step budget or learning rate that is too small weakens every arm identically and cannot manufacture or destroy the paired difference DIR(4-5). Only REPRODUCIBILITY depends on these, which is why they are recorded here rather than pinned."
+    },
+    "wall_s": 20337.0
+  },
+  "money_run_manifest_sha256": "20202b71e0df91e4bfce6b3fdcf22d38a09d013c72399e63a8b92de7039f6c25",
+  "p1_exit_code": 0,
+  "receipt": "m6_p1_dry_run_completion",
+  "source_run_dir": "/private/tmp/claude-502/-Users-lakshaybhati-Downloads-trikaal/cbc4ebdb-b283-4a40-a7f6-eb46373b7cda/scratchpad/m6_dry2",
+  "stages_completed": [
+    "conformance PASS (full money surface, 40 symbols, seeds 0-4) \u2014 first action",
+    "symbol load + memory-strategy check",
+    "25 units trained (0 steps: --dry-run)",
+    "25 checkpoints reloaded OK",
+    "25 eval artifacts written",
+    "eval index written",
+    "money_run_manifest.json written"
+  ],
+  "un_quotable_by_construction": {
+    "dry_run_bounds": {
+      "cap_per_symbol": 8
+    },
+    "grid_pinned": false,
+    "loader_refusal_reexecuted": "- cell1_seed0_eval.json: DRY-RUN artifact (money_run=False, grid_pinned=False) \u2014 produced on a shortened grid to prove the path, and can never be assembled into a verdict",
+    "money_run": false
+  },
+  "what": "P1 (fan-out runbook \u00a71a) \u2014 `m6_money_run.py --dry-run` ran to completion for the FIRST TIME in this project's history, at commit 27dfb724 with the R5 fix applied",
+  "why_retained": "the run directory is a scratch path and does not survive. The standing pre-teardown retention rule covers less than this, and this is the completion evidence for the driver that produces every M6 artifact"
+}
