@@ -1,0 +1,29 @@
+{
+  "NOT_MEASURED": "the PULL TIME. No box reached `running`, so transfer throughput on a rented box is still unmeasured and the P2 estimate cannot be completed.",
+  "independently_confirms": "the supervisor's 4.08 GiB / 27.9% figure (this run: 4.08 GiB / 27.7%; the 0.2pp gap is repo-total 14.72 GiB vs local-lake 14.59 GiB)",
+  "method": "sizes read from the HF tree API (recursive, expand=1), attributed to a symbol by matching a PATH COMPONENT `symbol=<NAME>`, never a substring of the filename \u2014 the layout is `symbol=X/frequency=1m/month=YYYY-MM/data_0.parquet`, so a filename glob attributes NOTHING. 5 of 7029 files carry no symbol= component (.gitattributes, rehearsal checkpoints) and are excluded from every symbol total.",
+  "pinned_subset": {
+    "all_40_present": true,
+    "bytes": 4377119563,
+    "files": 1920,
+    "five_boxes_gib": 20.4,
+    "gib": 4.08,
+    "pct_of_repo": 27.7,
+    "symbols": 40
+  },
+  "receipt": "m6_lake_transfer_sizing",
+  "repo": "lakshayybhati/trikaal-m6-snapshot",
+  "repo_kind": "DATASET (api/models/... returns 404 \u2014 it is not a model repo)",
+  "repo_totals": {
+    "bytes": 15800729988,
+    "files": 7029,
+    "gib": 14.72
+  },
+  "token_handling": "read from ~/.trikaal_hf_token at point of use; never echoed, logged, or written into any receipt, manifest, commit or shell-history line. The value does not appear in this file.",
+  "visibility": {
+    "authenticated": "HTTP 200, private=True, gated=False",
+    "conclusion": "PRIVATE, NOT ABSENT. The unauthenticated 401 could not distinguish those two; the token did, for $0.",
+    "unauthenticated": "HTTP 401 on api/datasets and api/models; account lists ZERO public repos"
+  },
+  "what": "the 40-symbol lake subset a rented box actually needs (P2 finding F2, route B)"
+}
