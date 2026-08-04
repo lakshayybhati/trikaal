@@ -370,9 +370,45 @@ def main(argv: list[str] | None = None) -> int:
         f"index {'WRITTEN — matrix complete' if complete else 'withheld — shard is partial'}"
     )
 
+    # §7 v1.6.26 (P2 deliverable 1, supervisor-directed): the run-level stamp read `unknown`
+    # because `run_provenance` was called without the kwarg, while every eval ARTIFACT under the
+    # same run carried the real mode. `attention_mode` is one of the 16 IDENTITY keys, and by the
+    # R6 argument a key reading the same placeholder on every shard sees no disagreement and
+    # protects nothing while appearing to. It is OBSERVED from the units that actually trained —
+    # never re-resolved, which would report what this process would choose rather than what the
+    # run did — and a disagreement is RECORDED rather than collapsed to a single value.
+    _modes = {m["determinism"]["attention_mode"] for m in manifests.values()}
+    _mode = (
+        next(iter(_modes))
+        if len(_modes) == 1
+        else ("unknown" if not _modes else "DISAGREEMENT:" + ",".join(sorted(_modes)))
+    )
+    # §7 v1.6.26 (P2 deliverable 2): decisions/second THROUGH THE DRIVER. NOT a price cross-check
+    # and explicitly NOT comparable to the standalone throughput probe — see the label below.
+    _sec = sum(outcome.seconds.values())
+    _dec = sum(int(d["total_scored"]) for d in outcome.decisions.values())
     doc = {
         "driver": "m6_money_run",
         "schema": "m6_money_run_v1",
+        "eval_throughput": {
+            "decisions_scored": _dec,
+            "eval_seconds": round(_sec, 1),
+            "decisions_per_second": (round(_dec / _sec, 4) if _sec > 0 else None),
+            "per_unit": {
+                u: round(int(outcome.decisions[u]["total_scored"]) / s, 4)
+                for u, s in outcome.seconds.items()
+                if s > 0
+            },
+            "NOT_COMPARABLE_TO": (
+                "the 50.0 decisions/s standalone figure in m6_eval_throughput_probe.json, which "
+                "the $150 rests on. That probe measures MARGINAL decision cost at the money "
+                "geometry; this number divides a whole unit's wall-clock — model load, "
+                "tokenization of every symbol, and the VAL kappa-search across three horizons — "
+                "by the headline decisions alone. On a SHORTENED grid the fixed terms dominate "
+                "completely, so this is an ORDER-OF-MAGNITUDE SANITY READ and nothing else. It "
+                "must never be substituted for the probe in any cost figure."
+            ),
+        },
         "shard": {"index": shard_i, "n_shards": n_shards, "units": len(mine)},
         "conformance": "PASS (assert_conformance, first action, full money surface)",
         "symbols_sha256": symbols_sha256(symbols),
@@ -390,7 +426,7 @@ def main(argv: list[str] | None = None) -> int:
         "memory_strategy": strategy,
         "resources": resource_record(n_bars=n_bars, strategy=strategy, out_dir=args.out),
         "unpinned_parameters": unpinned_parameters(orch),
-        "provenance": run_provenance(args.device),
+        "provenance": run_provenance(args.device, attention_mode=_mode),
         "eval_artifacts": outcome.entries,
         "resumed_units": outcome.resumed,
         "resume_refusals": outcome.refusals,

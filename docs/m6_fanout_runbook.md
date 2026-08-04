@@ -78,7 +78,13 @@ the end of a paid shard. Neither delays the date. Both are ordered gates, and ea
 |---|---|---:|---|
 | **P1** | `PYTHONPATH=src .venv/bin/python scripts/m6_money_run.py --dry-run` **at the exact HEAD being shipped**, exit 0 | **$0**, minutes | any stage that does not hand off to the next |
 | **P2** | **Shard 0 ALONE** on the first box, to completion, **including at least one eval decision under forced determinism** | ~1/5 of the bill | a first-time path under `deterministic_algorithms=True` — a missing deterministic kernel raises rather than degrading |
-| **P3** | Pull shard 0's artifact and confirm **all 16 identity keys present and populated**, `git_commit` and `steps_stage1/2` among them | $0 | `"unavailable"` in any identity key ⇒ the fan-out would refuse *after* paying for it |
+| **P3** | Pull shard 0's artifact and confirm **all 16 identity keys present and populated with REAL values** — `git_commit`, `steps_stage1/2`, and **`attention_mode`** among them | $0 | `"unavailable"` **or `"unknown"`** in any identity key ⇒ the fan-out would refuse *after* paying for it |
+
+**The must-be-real list on a rented box:** `image`, `gpu_name`, `cuda_build`, `driver_version`,
+`attention_mode`. A placeholder is not a refusal *across* shards — every shard carries the same
+placeholder, so the comparison sees no disagreement and **the key protects nothing while appearing
+to** (§7 v1.6.25 R6, applied to itself). `attention_mode` joined this list in v1.6.26 after P1
+showed the run-level stamp reading `unknown` while the artifacts carried `sdpa_deterministic`.
 
 **Only after P3 do the remaining four boxes launch.** P2 is the one that cannot be moved earlier:
 it is the only place the forced-determinism eval path is exercised on CUDA, and discovering it
@@ -94,8 +100,9 @@ import json, glob
 from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS
 doc = json.load(open(sorted(glob.glob("runs_cloud/shard0/**/cell*_eval.json", recursive=True))[0]))
 prov = doc["meta"]["provenance"]
-bad = [k for k in PROVENANCE_IDENTITY_KEYS if prov.get(k) in (None, "", "unavailable")]
-print("MISSING/UNAVAILABLE:", bad or "none — clear to fan out")
+bad = [k for k in PROVENANCE_IDENTITY_KEYS
+       if prov.get(k) in (None, "", "unavailable", "unknown")]
+print("MISSING/PLACEHOLDER:", bad or "none — clear to fan out")
 raise SystemExit(1 if bad else 0)
 PY
 ```
