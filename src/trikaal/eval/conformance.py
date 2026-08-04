@@ -274,6 +274,29 @@ def pinned_threshold_failures() -> list[str]:
             f"verdict.DSR_VAR_SR_BASIS_CELL {DSR_VAR_SR_BASIS_CELL} != pinned "
             f"{PINNED_DSR['var_sr_basis_cell']} — the §7 v1.5 A.4 placebo basis"
         )
+    # ★ §7 v1.6.27 — CELL 6 IS A CONTROL, NOT A CONFIGURATION UNDER TEST, AND THE MULTIPLICITY
+    # CORRECTION MUST NOT MOVE WHEN IT IS ADDED. Two independent statements, because the pin and
+    # the count are computed from different places and only one of them is a literal:
+    #   (a) the pinned cell tuple stays exactly (1,2,3,4,5);
+    #   (b) `verdict.n_trials_v12` is `len(DSR_SEEDS) * len(_CELL_BY_ID) * horizons * kappas` —
+    #       it reads the LIVE CELL REGISTRY, so adding cell 6 to `CELLS` would silently move the
+    #       v1.2 dual-specification leg's trial count 300 -> 360 and with it its SR0 and DSR.
+    #       That is a REPORTED statistic changing because a CONTROL arm was added. This asserts
+    #       the registry the verdict path sees still holds exactly the five cells under test.
+    from trikaal.eval.verdict import _CELL_BY_ID as _LIVE_CELLS
+
+    if tuple(PINNED_DSR["cells"]) != (1, 2, 3, 4, 5):
+        fails.append(
+            f"PINNED_DSR['cells'] {tuple(PINNED_DSR['cells'])} != (1, 2, 3, 4, 5) — the clause-5 "
+            "multiplicity is over the CELLS UNDER TEST; a control arm must never enter it"
+        )
+    if tuple(sorted(_LIVE_CELLS)) != tuple(PINNED_DSR["cells"]):
+        fails.append(
+            f"verdict._CELL_BY_ID holds {tuple(sorted(_LIVE_CELLS))} but the pinned cells under "
+            f"test are {tuple(PINNED_DSR['cells'])} — n_trials_v12 is computed from the LIVE "
+            "registry, so this divergence silently moves the v1.2 leg's multiplicity correction "
+            "(§7 v1.6.27)"
+        )
     # §7 v1.6.25 R2: the C-3 unit convention. Third instance of "two copies, one truth".
     from trikaal.eval.verdict import PRIMARY_H as _PRIMARY_H
 

@@ -45,6 +45,7 @@ from trikaal.model.attention_mode import (
     resolve_attention_mode,
     set_attention_backend,
 )
+from trikaal.train.arms import MICRO_LEGIBILITY_EXEMPTION_REASON, micro_legibility_applies
 from trikaal.train.cells import (
     CELLS,
     CellSpec,
@@ -324,12 +325,26 @@ def run_cell(
             tokens[sw.symbol] = (b_c, b_f)
 
         # ---- §7 v1.4 STANDING micro-legibility gate: post-Stage-1, PRE-Stage-2 hard stop --
+        # §7 v1.6.27: membership comes from the ARM REGISTRY, not an inline inclusion test. The
+        # predecessor read `spec.arm in ("micro", "micro_shuffled")`, so a NEW ARM fell through it
+        # and the gate silently did not run — the C-10 shape at cell scope. An exemption is now
+        # NAMED IN THE RECEIPT, so "the gate did not run here" is a visible statement rather than
+        # an absent field.
         legibility_receipt = None
-        if cfg.micro_legibility_min is not None and spec.arm in ("micro", "micro_shuffled"):
-            legibility_receipt = micro_legibility_gate(
-                tok, per_symbol, tokens, min_acc=cfg.micro_legibility_min, run_name=run_name
-            )
-            print(f"[{run_name}] micro legibility gate: {legibility_receipt}", flush=True)
+        if cfg.micro_legibility_min is not None:
+            if micro_legibility_applies(spec.arm):
+                legibility_receipt = micro_legibility_gate(
+                    tok, per_symbol, tokens, min_acc=cfg.micro_legibility_min, run_name=run_name
+                )
+                print(f"[{run_name}] micro legibility gate: {legibility_receipt}", flush=True)
+            else:
+                legibility_receipt = {
+                    "exempt": True,
+                    "arm": spec.arm,
+                    "why": MICRO_LEGIBILITY_EXEMPTION_REASON[spec.arm],
+                    "note": "EXEMPT, not passed. The gate did not run and no accuracy is claimed.",
+                }
+                print(f"[{run_name}] micro legibility gate EXEMPT: {spec.arm}", flush=True)
 
         # ---- Stage 2: AR backbone on the token windows (same draw geometry) --------------
         backbone = build_cell_backbone(

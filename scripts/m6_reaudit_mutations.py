@@ -161,6 +161,35 @@ MUTATIONS: list[dict] = [
         "pre": '    return []\n    if not str(prov.get("device", "")).startswith("cuda"):\n',
         "tests": ["tests/run/test_identity_placeholders.py"],
     },
+    {
+        "finding": "C12a",
+        "what": "the micro-legibility gate reverts to an inline inclusion test, so a NEW ARM "
+        "falls through it and the gate silently does not run (C-10 shape at cell scope)",
+        "file": "src/trikaal/train/arms.py",
+        "post": "    if arm not in MICRO_LEGIBILITY_APPLIES:",
+        "pre": "    if False:",
+        "tests": ["tests/train/test_micro_legibility_exemption.py"],
+    },
+    {
+        "finding": "C12b",
+        "what": "the conformance gate stops asserting that the LIVE cell registry still holds "
+        "exactly the five cells under test -> a 6th cell silently moves n_trials_v12 300 -> 360",
+        "file": "src/trikaal/eval/conformance.py",
+        "post": '    if tuple(sorted(_LIVE_CELLS)) != tuple(PINNED_DSR["cells"]):',
+        "pre": "    if False:",
+        "tests": ["tests/train/test_micro_legibility_exemption.py"],
+    },
+    {
+        "finding": "C12c",
+        "what": "clause 4's manifest rule string reverts to naming the tested quantity "
+        "'\u0394IR_info', asserting the capacity confound away in a string that SHIPS",
+        "file": "src/trikaal/eval/verdict.py",
+        "post": '"rule": f"\u0394IR(4-5) \u2265 {ECON_FLOOR_IR} annualized IR (fixed pre-data). '
+        '\u0394IR(4-5) is "',
+        "pre": '"rule": f"\u0394IR_info \u2265 {ECON_FLOOR_IR} annualized IR (fixed pre-data). '
+        'XX "',
+        "tests": ["tests/eval/test_c12_naming.py"],
+    },
     # ------------------------------------------------------------------ THE NEGATIVE CONTROL
     # "9/9 CLOSED" is itself a check that has never been seen to fail. This row mutates a COMMENT
     # — semantics untouched — and the harness MUST report NOT CLOSED for it. If it reports CLOSED,

@@ -1,6 +1,6 @@
 {
-  "n": 12,
-  "n_closed": 12,
+  "n": 15,
+  "n_closed": 15,
   "negative_control": "CONTROL OK \u2014 a semantic no-op does NOT fail the tests",
   "protocol": "baseline must PASS -> mutation applied exactly once -> mutant must FAIL",
   "receipt": "m6_reaudit_mutations",
@@ -10,7 +10,7 @@
       "finding": "R1",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "_an_EMPTY_codebook_payload_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_MISSING_codebook_key_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_codebook_missing_the_fine_leg_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_non_finite_utilization_refuses\nFAILED tests/eval/test_codebook_gate.py::test_the_gate_reads_the_PINNED_constant_not_a_literal\n8 failed, 1 passed in 3.59s\n",
+      "mutant_tail": "_an_EMPTY_codebook_payload_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_MISSING_codebook_key_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_codebook_missing_the_fine_leg_refuses\nFAILED tests/eval/test_codebook_gate.py::test_a_non_finite_utilization_refuses\nFAILED tests/eval/test_codebook_gate.py::test_the_gate_reads_the_PINNED_constant_not_a_literal\n8 failed, 1 passed in 3.98s\n",
       "tests": [
         "tests/eval/test_codebook_gate.py"
       ],
@@ -22,7 +22,7 @@
       "finding": "R2",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "on.py::test_a_reverted_trial_set_cannot_reach_a_verdict\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_v1_2_leg_uses_the_OWN_H_units_v1_2_actually_had\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_hybrid_leg_was_biased_TOWARD_agreement\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_three_dual_specification_legs_are_the_three_real_conventions\n6 failed, 1 passed in 2.70s\n",
+      "mutant_tail": "on.py::test_a_reverted_trial_set_cannot_reach_a_verdict\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_v1_2_leg_uses_the_OWN_H_units_v1_2_actually_had\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_hybrid_leg_was_biased_TOWARD_agreement\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_three_dual_specification_legs_are_the_three_real_conventions\n6 failed, 1 passed in 2.88s\n",
       "tests": [
         "tests/eval/test_dsr_unit_convention.py"
       ],
@@ -34,7 +34,7 @@
       "finding": "R3",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "v1_2_original\"][\"var_sr\"]\n>       assert got == faithful\nE       assert 7.858748144043571e-06 == 4.239466946026794e-05\n\n../base/tests/eval/test_dsr_unit_convention.py:142: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_v1_2_leg_uses_the_OWN_H_units_v1_2_actually_had\n1 failed, 6 passed in 2.84s\n",
+      "mutant_tail": "v1_2_original\"][\"var_sr\"]\n>       assert got == faithful\nE       assert 7.858748144043571e-06 == 4.239466946026794e-05\n\n../base/tests/eval/test_dsr_unit_convention.py:142: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_dsr_unit_convention.py::test_the_v1_2_leg_uses_the_OWN_H_units_v1_2_actually_had\n1 failed, 6 passed in 2.91s\n",
       "tests": [
         "tests/eval/test_dsr_unit_convention.py"
       ],
@@ -46,7 +46,7 @@
       "finding": "R4",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "equired_fields.py::test_an_EMPTY_required_field_is_as_bad_as_a_missing_one\nFAILED tests/eval/test_manifest_required_fields.py::test_the_disclosure_specifically_cannot_be_blanked\nFAILED tests/eval/test_manifest_required_fields.py::test_load_verdict_manifest_refuses_from_the_FILE\nFAILED tests/eval/test_manifest_required_fields.py::test_a_toy_grid_manifest_is_refused_by_the_loader\n16 failed in 7.17s\n",
+      "mutant_tail": "equired_fields.py::test_an_EMPTY_required_field_is_as_bad_as_a_missing_one\nFAILED tests/eval/test_manifest_required_fields.py::test_the_disclosure_specifically_cannot_be_blanked\nFAILED tests/eval/test_manifest_required_fields.py::test_load_verdict_manifest_refuses_from_the_FILE\nFAILED tests/eval/test_manifest_required_fields.py::test_a_toy_grid_manifest_is_refused_by_the_loader\n16 failed in 7.73s\n",
       "tests": [
         "tests/eval/test_manifest_required_fields.py"
       ],
@@ -58,7 +58,7 @@
       "finding": "R6a",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "ort test summary info ============================\nFAILED tests/run/test_fanout_refusal.py::test_ONE_drifted_unit_on_ANY_identity_key_refuses_the_whole_verdict[git_commit]\nFAILED tests/run/test_fanout_refusal.py::test_the_identity_surface_IS_the_literal_list_and_nothing_drifted\nFAILED tests/run/test_fanout_refusal.py::test_git_commit_and_step_budgets_are_identity_keys\n3 failed, 21 passed in 3.79s\n",
+      "mutant_tail": "ort test summary info ============================\nFAILED tests/run/test_fanout_refusal.py::test_ONE_drifted_unit_on_ANY_identity_key_refuses_the_whole_verdict[git_commit]\nFAILED tests/run/test_fanout_refusal.py::test_the_identity_surface_IS_the_literal_list_and_nothing_drifted\nFAILED tests/run/test_fanout_refusal.py::test_git_commit_and_step_budgets_are_identity_keys\n3 failed, 21 passed in 4.15s\n",
       "tests": [
         "tests/run/test_fanout_refusal.py"
       ],
@@ -70,7 +70,7 @@
       "finding": "R6b",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "tity_key_refuses_the_whole_verdict[steps_stage1]\nFAILED tests/run/test_fanout_refusal.py::test_ONE_drifted_unit_on_ANY_identity_key_refuses_the_whole_verdict[steps_stage2]\nFAILED tests/run/test_fanout_refusal.py::test_the_identity_surface_IS_the_literal_list_and_nothing_drifted\nFAILED tests/run/test_fanout_refusal.py::test_git_commit_and_step_budgets_are_identity_keys\n4 failed, 20 passed in 3.84s\n",
+      "mutant_tail": "tity_key_refuses_the_whole_verdict[steps_stage1]\nFAILED tests/run/test_fanout_refusal.py::test_ONE_drifted_unit_on_ANY_identity_key_refuses_the_whole_verdict[steps_stage2]\nFAILED tests/run/test_fanout_refusal.py::test_the_identity_surface_IS_the_literal_list_and_nothing_drifted\nFAILED tests/run/test_fanout_refusal.py::test_git_commit_and_step_budgets_are_identity_keys\n4 failed, 20 passed in 4.90s\n",
       "tests": [
         "tests/run/test_fanout_refusal.py"
       ],
@@ -82,7 +82,7 @@
       "finding": "R7",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "den), use '-vv' to show\n\n../base/tests/run/test_money_driver.py:416: AssertionError\n=========================== short test summary info ============================\nFAILED tests/run/test_money_driver.py::test_unpinned_parameters_are_recorded_with_their_reasoning\nFAILED tests/run/test_money_driver.py::test_no_manifest_record_still_calls_the_step_budget_unpinned_or_2000\n2 failed, 31 passed in 1.36s\n",
+      "mutant_tail": "den), use '-vv' to show\n\n../base/tests/run/test_money_driver.py:416: AssertionError\n=========================== short test summary info ============================\nFAILED tests/run/test_money_driver.py::test_unpinned_parameters_are_recorded_with_their_reasoning\nFAILED tests/run/test_money_driver.py::test_no_manifest_record_still_calls_the_step_budget_unpinned_or_2000\n2 failed, 31 passed in 1.77s\n",
       "tests": [
         "tests/run/test_money_driver.py"
       ],
@@ -94,7 +94,7 @@
       "finding": "R10a",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "rt test summary info ============================\nFAILED tests/eval/test_forward_log_returns.py::test_matches_the_closed_form_on_a_known_path\nFAILED tests/eval/test_forward_log_returns.py::test_a_constant_drift_path_gives_exactly_h_minus_1_steps_of_drift\nFAILED tests/eval/test_forward_log_returns.py::test_the_label_at_t_IGNORES_the_bars_up_to_and_including_the_entry[1]\n3 failed, 9 passed in 0.38s\n",
+      "mutant_tail": "rt test summary info ============================\nFAILED tests/eval/test_forward_log_returns.py::test_matches_the_closed_form_on_a_known_path\nFAILED tests/eval/test_forward_log_returns.py::test_a_constant_drift_path_gives_exactly_h_minus_1_steps_of_drift\nFAILED tests/eval/test_forward_log_returns.py::test_the_label_at_t_IGNORES_the_bars_up_to_and_including_the_entry[1]\n3 failed, 9 passed in 0.43s\n",
       "tests": [
         "tests/eval/test_forward_log_returns.py"
       ],
@@ -106,7 +106,7 @@
       "finding": "R12e",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "any(<generator object test_placebo_diagnostics_are_fed_the_SHUFFLED_window.<locals>.<genexpr> at 0x10fa75b70>)\n\n../base/tests/eval/test_placebo_diagnostic_inputs.py:121: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_placebo_diagnostic_inputs.py::test_placebo_diagnostics_are_fed_the_SHUFFLED_window\n1 failed, 4 passed in 0.78s\n",
+      "mutant_tail": "any(<generator object test_placebo_diagnostics_are_fed_the_SHUFFLED_window.<locals>.<genexpr> at 0x119475b70>)\n\n../base/tests/eval/test_placebo_diagnostic_inputs.py:121: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_placebo_diagnostic_inputs.py::test_placebo_diagnostics_are_fed_the_SHUFFLED_window\n1 failed, 4 passed in 0.82s\n",
       "tests": [
         "tests/eval/test_placebo_diagnostic_inputs.py"
       ],
@@ -118,7 +118,7 @@
       "finding": "R5",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "_kappa': {'1': 1.0, '1.5': 1.0, '2': 1.0, '3': 1.0}, 'activity_decisions': 1.0}).ohlcv_recon\n\n../base/tests/eval/test_placebo_diagnostic_inputs.py:143: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_placebo_diagnostic_inputs.py::test_BOTH_score_cell_returns_carry_the_two_required_disclosures[False]\n1 failed, 4 passed in 0.77s\n",
+      "mutant_tail": "_kappa': {'1': 1.0, '1.5': 1.0, '2': 1.0, '3': 1.0}, 'activity_decisions': 1.0}).ohlcv_recon\n\n../base/tests/eval/test_placebo_diagnostic_inputs.py:143: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_placebo_diagnostic_inputs.py::test_BOTH_score_cell_returns_carry_the_two_required_disclosures[False]\n1 failed, 4 passed in 0.82s\n",
       "tests": [
         "tests/eval/test_placebo_diagnostic_inputs.py"
       ],
@@ -130,7 +130,7 @@
       "finding": "F3a",
       "is_control": false,
       "mutant_exit": 1,
-      "mutant_tail": "sert '--query-gpu=driver_version' in ['nvidia-smi', '--query-gpu=NOTHING', '--format=csv,noheader']\n\n../base/tests/run/test_identity_placeholders.py:159: AssertionError\n=========================== short test summary info ============================\nFAILED tests/run/test_identity_placeholders.py::test_the_driver_lookup_prefers_nvidia_smi_AND_ASKS_IT_THE_RIGHT_QUESTION\n1 failed, 38 passed in 0.41s\n",
+      "mutant_tail": "sert '--query-gpu=driver_version' in ['nvidia-smi', '--query-gpu=NOTHING', '--format=csv,noheader']\n\n../base/tests/run/test_identity_placeholders.py:159: AssertionError\n=========================== short test summary info ============================\nFAILED tests/run/test_identity_placeholders.py::test_the_driver_lookup_prefers_nvidia_smi_AND_ASKS_IT_THE_RIGHT_QUESTION\n1 failed, 38 passed in 0.44s\n",
       "tests": [
         "tests/run/test_identity_placeholders.py"
       ],
@@ -142,7 +142,7 @@
       "finding": "F3b",
       "is_control": false,
       "mutant_exit": 2,
-      "mutant_tail": "_mut_w2wgqy15/mut_F3b/src/trikaal/utils/provenance.py\", line 139\nE       bad = [\nE       ^^^\nE   IndentationError: expected an indented block after 'if' statement on line 138\n=========================== short test summary info ============================\nERROR tests/run/test_identity_placeholders.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.44s\n",
+      "mutant_tail": "_mut_64ydnc06/mut_F3b/src/trikaal/utils/provenance.py\", line 139\nE       bad = [\nE       ^^^\nE   IndentationError: expected an indented block after 'if' statement on line 138\n=========================== short test summary info ============================\nERROR tests/run/test_identity_placeholders.py\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.47s\n",
       "tests": [
         "tests/run/test_identity_placeholders.py"
       ],
@@ -151,10 +151,46 @@
     },
     {
       "baseline_exit": 0,
+      "finding": "C12a",
+      "is_control": false,
+      "mutant_exit": 1,
+      "mutant_tail": "^^^^^^^^^^^\nE       KeyError: 'micro_something_new'\n\n/var/folders/0m/lpf1jzbx1p719ktg2k9vd3300000gp/T/trikaal_mut_64ydnc06/mut_C12a/src/trikaal/train/arms.py:114: KeyError\n=========================== short test summary info ============================\nFAILED tests/train/test_micro_legibility_exemption.py::test_EVERY_arm_is_classified_and_an_unknown_arm_is_a_HARD_ERROR\n1 failed, 9 passed in 0.41s\n",
+      "tests": [
+        "tests/train/test_micro_legibility_exemption.py"
+      ],
+      "verdict": "CLOSED \u2014 the pre-fix code fails the new tests",
+      "what": "the micro-legibility gate reverts to an inline inclusion test, so a NEW ARM falls through it and the gate silently does not run (C-10 shape at cell scope)"
+    },
+    {
+      "baseline_exit": 0,
+      "finding": "C12b",
+      "is_control": false,
+      "mutant_exit": 1,
+      "mutant_tail": "fails and any(\"n_trials_v12\" in f or \"_CELL_BY_ID\" in f for f in fails)\nE       assert ([])\n\n../base/tests/train/test_micro_legibility_exemption.py:139: AssertionError\n=========================== short test summary info ============================\nFAILED tests/train/test_micro_legibility_exemption.py::test_the_conformance_gate_CATCHES_a_sixth_cell_in_the_live_registry\n1 failed, 9 passed in 0.41s\n",
+      "tests": [
+        "tests/train/test_micro_legibility_exemption.py"
+      ],
+      "verdict": "CLOSED \u2014 the pre-fix code fails the new tests",
+      "what": "the conformance gate stops asserting that the LIVE cell registry still holds exactly the five cells under test -> a 6th cell silently moves n_trials_v12 300 -> 360"
+    },
+    {
+      "baseline_exit": 0,
+      "finding": "C12c",
+      "is_control": false,
+      "mutant_exit": 1,
+      "mutant_tail": "d \u00a77 v1.6.27'\n\n../base/tests/eval/test_c12_naming.py:84: AssertionError\n=========================== short test summary info ============================\nFAILED tests/eval/test_c12_naming.py::test_NO_clause_rule_string_calls_the_tested_quantity_the_information_effect\nFAILED tests/eval/test_c12_naming.py::test_the_three_delta_clauses_SAY_the_quantity_carries_the_handicap\n2 failed, 1 passed in 1.31s\n",
+      "tests": [
+        "tests/eval/test_c12_naming.py"
+      ],
+      "verdict": "CLOSED \u2014 the pre-fix code fails the new tests",
+      "what": "clause 4's manifest rule string reverts to naming the tested quantity '\u0394IR_info', asserting the capacity confound away in a string that SHIPS"
+    },
+    {
+      "baseline_exit": 0,
       "finding": "CONTROL",
       "is_control": true,
       "mutant_exit": 0,
-      "mutant_tail": ".........                                                                [100%]\n9 passed in 3.96s\n",
+      "mutant_tail": ".........                                                                [100%]\n9 passed in 4.97s\n",
       "tests": [
         "tests/eval/test_codebook_gate.py"
       ],

@@ -1410,8 +1410,12 @@ three stacked judgment calls = an unlimited re-run license):**
     with a preserved marginal is incompressible and shares no structure with OHLCV, so bits spent
     on it are bits taken from OHLCV — and `micro_point_weight = 3.0` aims triple gradient pressure
     at fitting it. ΔIR(4−5) therefore carries (information) + (capacity handicap), inseparable
-    from the contrast alone. It **inflates rather than manufactures**: Cell 4 must still clear the
-    MDE and the 0.5 economic floor on its own.
+    from the contrast alone. **★ §7 v1.6.27 — THE CLAUSE THAT ENDED THIS SENTENCE WAS FALSE.** It
+    read *"It **inflates rather than manufactures**: Cell 4 must still clear the MDE and the 0.5
+    economic floor on its own."* **NO CLAUSE TESTS CELL 4 ON ITS OWN.** Clause 4 is
+    `pb45.delta_ir >= ECON_FLOOR_IR`, clause 2 is `pb45.delta_ir >= mde_paired` — **both test the
+    DIFFERENCE**, so the handicap sits inside the quantity compared against the floor and a large
+    enough handicap can carry ΔIR over 0.5 with no information at all.
   - **WHY THE COMPARISON IS LIKE-FOR-LIKE.** `block_time_permute` never touches the OHLCV columns
     — they come back **byte-identical** — so both arms reconstruct the SAME OHLCV targets. Cell 5
     doing it worse is capacity diverted, and the ratio is a measured magnitude where there was

@@ -41,11 +41,30 @@ def _arm_bytes_per_bar(arm: str) -> int:
     return f * 4 + f * 1 + 8 + 8
 
 
+def matrix_arms() -> tuple[str, ...]:
+    """The arms the CELL MATRIX actually materializes — derived from ``CELLS``, never restated.
+
+    **§7 v1.6.27.** This read ``ARMS``, the registry of every arm that EXISTS. Adding the
+    constant-micro arm for the C-12 bracket therefore inflated the fast-strategy memory
+    requirement of every run by an arm no 5-cell run ever builds (84.15M bars: 27.82 -> 35.35
+    GiB), and that figure chooses the memory strategy on the box. Deriving it from the cell
+    registry means the number tracks the experiment instead of the vocabulary: add cell 6 to
+    ``CELLS`` and the requirement rises because a run really does materialize a fourth arm.
+
+    Imported inside the call so ``utils`` keeps no module-level edge into ``train`` (which pulls
+    torch); this is preflight arithmetic, called a handful of times per run."""
+    from trikaal.train.cells import CELLS
+
+    seen = {c.arm for c in CELLS}
+    return tuple(a for a in ARMS if a in seen)
+
+
 def window_bytes_per_bar(strategy: str) -> int:
+    arms = matrix_arms()
     if strategy == STRATEGY_FAST:
-        return sum(_arm_bytes_per_bar(a) for a in ARMS)
+        return sum(_arm_bytes_per_bar(a) for a in arms)
     if strategy == STRATEGY_LOW:
-        return max(_arm_bytes_per_bar(a) for a in ARMS)  # the worst single arm must fit
+        return max(_arm_bytes_per_bar(a) for a in arms)  # the worst single arm must fit
     raise ValueError(f"unknown memory strategy {strategy!r}; expected one of {STRATEGIES}")
 
 

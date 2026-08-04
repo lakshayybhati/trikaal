@@ -314,8 +314,16 @@ def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
     information". Noise with a preserved marginal is incompressible and shares no structure with
     OHLCV, so bits spent on it are bits taken from OHLCV — and ``micro_point_weight = 3.0`` aims
     triple gradient pressure at fitting it. ΔIR(4−5) therefore contains (information) + (capacity
-    handicap), inseparable from the contrast alone. It INFLATES rather than manufactures: Cell 4
-    must still clear the MDE and the 0.5 economic floor on its own.
+    handicap), inseparable from the contrast alone.
+
+    **§7 v1.6.27 — THE SENTENCE THAT USED TO END THIS PARAGRAPH WAS FALSE AND IT WAS LOAD-BEARING.**
+    It read: *"It INFLATES rather than manufactures: Cell 4 must still clear the MDE and the 0.5
+    economic floor on its own."* **No clause tests Cell 4 on its own.** Clauses 1, 2 and 4 all
+    read ``pb45.delta_ir``, the paired DIFFERENCE — so the capacity handicap sits inside the very
+    quantity each of them weighs, and a large enough handicap carries that quantity over the
+    economic floor with no information at all. The "inflates rather than manufactures"
+    reassurance rested entirely on that false sentence. The clause rule strings now say so where
+    the numbers are read; see ``tests/eval/test_c12_naming.py`` and §7 v1.6.27.
 
     WHY THE COMPARISON IS LIKE-FOR-LIKE. ``block_time_permute`` never touches the OHLCV columns —
     they come back byte-identical — so both arms reconstruct the SAME OHLCV targets. Cell 5 doing
@@ -1025,13 +1033,19 @@ def assemble_verdict(
     shuffle_harmed = bool(pb52.ci_upper < 0.0)  # §3 clause 3: disclosure, never gating
     clauses = {
         "1_paired_ci": {
-            "rule": "one-sided paired CI lower bound of ΔIR_info(4-5) > 0",
+            # §7 v1.6.27: THIRD instance of the same name. Clause 1, 2 and 4 all called ΔIR(4−5)
+            # "ΔIR_info"; the ruling named clause 4. Sweeping the file is the class rule.
+            "rule": "one-sided paired CI lower bound of ΔIR(4-5) > 0 — ΔIR(4-5) is (information) "
+            "+ (capacity handicap), not the information effect alone",
             "ci_lower": pb45.ci_lower,
             "pass": pb45.passes_ci,
         },
         "2_mde_paired": {
-            "rule": "ΔIR_info ≥ MDE_paired = (z0.95+z0.80)·SE_boot; no ceiling appeal — the "
-            "operative threshold is the realized MDE_paired in either direction vs §2's table",
+            # §7 v1.6.27: the SAME "ΔIR_info" defect as clause 4. The ruling named clause 4 only;
+            # fixing the named instance and leaving its sibling is the class-rule failure.
+            "rule": "ΔIR(4-5) ≥ MDE_paired = (z0.95+z0.80)·SE_boot; no ceiling appeal — the "
+            "operative threshold is the realized MDE_paired in either direction vs §2's table. "
+            "ΔIR(4-5) carries (information) + (capacity handicap)",
             "delta_ir": pb45.delta_ir,
             "mde_paired": pb45.mde_paired,
             "tabled_mde_h15": float(tabled_mde_h15),
@@ -1052,7 +1066,14 @@ def assemble_verdict(
             },
         },
         "4_economic_floor": {
-            "rule": f"ΔIR_info ≥ {ECON_FLOOR_IR} annualized IR (fixed pre-data)",
+            # §7 v1.6.27 (C-12) — THE NAME WAS THE DEFECT. This read "ΔIR_info ≥ 0.5", which
+            # ASSERTS THE CONFOUND AWAY: the tested quantity is ΔIR(4−5) = (information) +
+            # (capacity handicap), and calling it the information effect in a string that SHIPS
+            # IN THE MANIFEST tells a reader a SURVIVES verdict means the INFORMATION effect
+            # cleared 0.5. It does not. C-17 class, on the headline clause.
+            "rule": f"ΔIR(4-5) ≥ {ECON_FLOOR_IR} annualized IR (fixed pre-data). ΔIR(4-5) is "
+            "(information) + (capacity handicap) — NOT the information effect alone; see "
+            "placebo_capacity_disclosure and §7 v1.6.27",
             "delta_ir": pb45.delta_ir,
             "floor": ECON_FLOOR_IR,
             "pass": bool(pb45.delta_ir >= ECON_FLOOR_IR),
