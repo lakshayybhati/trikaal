@@ -1,0 +1,874 @@
+SECTION 6 AND APPENDICES D–E — EXPORT FOR EXTERNAL REVIEW
+
+Capacity Eviction in Reconstruction-Trained Tokenizers
+Draft of August 10, 2026 — text frozen pending review
+
+Note to the reviewer. §6 reports the outcome of a pre-registered experiment that has not been
+executed. Every quantity in it is an empty slot, marked in red, bound to a named field of the verdict
+manifest; the three figures are drawn on placeholder data that is implausible by construction. Nothing
+in §6 is a measurement, and the section is written so that a paragraph or panel cropped out of context
+cannot be mistaken for one. Appendices D and E are complete and contain no pending values except
+where explicitly marked. Appendices A–C are not reproduced here — they shipped with the §3
+export.
+Why this is worth reviewing before the run. The purpose of pre-writing §6 is that the distance from
+“verdict lands” to “submittable” should be a mechanical substitution rather than a writing task, and
+that neither interpretation can be composed with an outcome in front of us. §6.5 therefore contains
+both interpretation paragraphs, written and dated 2026-08-10. Exactly one will be retained; the other
+will be deleted rather than softened.
+What we would most like challenged. (i) Whether the SURVIVES paragraph in §6.5 concedes enough
+— it claims an existence proof on one slice and binds itself with three limits, and we would like to
+know whether a referee reads it as appropriately narrow or as hedged into meaninglessness. (ii)
+Whether the NULL paragraph is honest or self-serving: it argues a pre-registered null is a contribution
+to the record, and that is exactly the argument an author with a null would want to make. (iii) Whether
+any slot in §6 could be filled in more than one defensible way — the intent is that each binds to exactly
+one manifest field, so if a reviewer can see a judgement call, the binding is under-specified. (iv)
+Whether the placeholder figures are genuinely impossible to mistake for results with the watermark
+removed. (v) In Appendix E, whether the four-status scheme (measured / derived / pin / pending) is
+the right cut, and whether anything currently labelled a pin is being used as evidence anywhere in
+the paper. (vi) Anything in Appendix D that a reader would need in order to check a run against the
+pre-registration and cannot find there.
+
+6 Results
+The pre-registered run has not been executed. Every quantity in this section is an empty slot bound to
+a named field of the verdict manifest, and every figure is drawn on placeholder data that is implausible
+by construction. Nothing here is a measurement.
+6.1
+
+The pre-second-stage gate
+
+The legibility gate of Section 3.7 runs on real data before any second-stage training is authorized,
+and it is a hard stop rather than a diagnostic: it requires at least 0.90 sign accuracy on every one of
+the six live microstructure dimensions, with no mean clause and no floor. Its outcome determines
+whether the rest of this section exists.
+
+6.2
+
+quantity
+
+value
+
+per-dimension sign accuracy, dims 7–12
+minimum across the six
+gate outcome
+
+[six values]
+[min]
+[pass or hard stop]
+
+Primary outcome
+
+The five clauses of Section 4.6 are evaluated conjunctively: the primary outcome is SURVIVES only
+if none fails, and NULL otherwise. Two guards sit outside the clauses and are HALT-only. Figure 8
+draws the surface.
+1
+
+clause
+
+tests
+
+outcome
+
+1 paired CI
+2 MDE
+3 placebo validity
+4 economic floor
+5 deflated Sharpe
+
+ΔIR(4 − 5) lower bound > 0
+ΔIR(4 − 5) ≥ paired MDE
+IR(4) − IR(2) lower bound > 0
+materiality against the 0.5 floor
+against 𝑆𝑅0 at 𝑁 = 60 trials
+
+[]
+[]
+[]
+[]
+[]
+
+degeneracy guard
+power guard
+
+constant-direction book, any cell
+across-seed range vs claimed effect
+
+[halt or clear]
+[halt or clear]
+
+primary
+
+[SURVIVES / NULL / INCONCLUSIVE]
+
+Both specifications required by the amendment window are reported from the same artifacts, and
+their agreement or disagreement is stated here rather than in a footnote.
+v1.5 specification (primary)
+
+[]
+[]
+[yes or no — a first-class finding either way]
+
+primary outcome
+specifications agree
+6.3
+
+retained alternative
+
+Effect sizes and secondary diagnostics
+
+Information coefficient, rank information coefficient, mean absolute error and 𝑅 2 are reported as
+secondary diagnostics and do not enter the decision rule.
+cell
+net IR, seed mean
+across-seed range
+RankIC
+decision activity at 𝜅 ∗
+
+1 BSQ/OHLCV
+
+2 FSQ/OHLCV
+
+3 BSQ/+micro
+
+4 FSQ/+micro
+
+5 placebo
+
+[]
+[]
+[]
+[]
+
+[]
+[]
+[]
+[]
+
+[]
+[]
+[]
+[]
+
+[]
+[]
+[]
+[]
+
+[]
+[]
+[]
+[]
+
+The three marginals involving a BSQ arm are reported and not claimed, for the reason Section 7.2
+gives, and the required disclosure ships with them verbatim.
+6.4
+
+Cost stress and seed dispersion
+
+Figure 9 sweeps the round-trip cost around the pinned 0.30%; Figure 10 plots each cell’s five seeds
+against the size of the effect being claimed. Both figures are built against the manifest schema and
+are watermarked until the run lands.
+6.5
+
+Interpretation
+
+Both paragraphs below were written on 2026-08-10, before the run was executed and before any
+result existed. Exactly one will be retained; the other is deleted rather than softened. They are
+placed here, in advance, so that neither can be written to fit an outcome.
+If the outcome is SURVIVES. A positive ΔIR(4 − 5) that clears the paired confidence interval, the
+minimum detectable effect, the economic floor and the deflation benchmark establishes that real
+trade-flow imbalance carries information beyond input capacity, and that a tokenizer built to preserve
+it delivers that information to a cost-aware trading decision. The claim ends there, and three limits
+bind it immediately. It is not a calibrated estimate of how much: Section 7.3 states that ΔIR(4 − 5)
+mixes information with an unquantified capacity handicap, so the measured difference is an upper
+bound on the information effect rather than an estimate of it. It is not evidence that our BSQ baseline
+is competitive, so the quantizer-axis marginals remain reported rather than claimed. And it is one
+exchange, one venue, one instrument class and one year of scored data, with no regime-transfer test —
+a positive result here is an existence proof on this slice, not a property of markets. The mechanism of
+Section 3 would remain a fixture result; a positive outcome is consistent with it and does not confirm
+it, because many differences between cells 2 and 4 could produce the same sign.
+2
+
+the pre-registered decision surface
+
+conjunctive — SURVIVES only if none fails
+outcome
+
+one-sided 95% CI lower bound of ΔIR(4−5) > 0
+
+1 paired ci
+
+—
+
+n
+
+e ru
+h
+t
+g
+n
+iti
+CI lower bound of IR(4)−IR(2) > 0
+(placebo-independent)
+3 placebo validity
+awa
+—
+DEIRR
+ΔIR(4−5) ≥ 0.5 L
+annualized
+4 economic floor
+O
+CEH
+A
+L
+P
+deflated
+Sharpe ratio ≥ 0.95 over 60 enumerated trials
+5 dsr
+2 mde paired
+
+ΔIR(4−5) ≥ paired MDE (tabled 3.518 at h=15)
+
+HALT-only guards — never flip SURVIVES ↔ NULL
+
+degeneracy —
+
+—
+—
+—
+—
+
+SURVIVES / NULL / INCONCLUSIVE / HALT_ADJUDICATE
+
+emitted —
+
+power —
+
+Figure 8: The decision surface, fixed before any result existed. Five clauses, evaluated conjunctively: the
+primary outcome is SURVIVES only if none fails, and NULL otherwise. Two guards sit outside the clauses
+and are HALT-only — they can refuse to report an outcome their own inputs cannot support, and can never flip
+SURVIVES to NULL or back. The rule strings shown are the ones persisted into the verdict manifest, not a
+restatement of them. [PH: no values] — every outcome cell is empty because the run has not been executed;
+each is filled from a single named field of that manifest.
+
+If the outcome is NULL or INCONCLUSIVE. This is the outcome the design’s own arithmetic makes
+most likely, and we pre-committed it as publishable before any result existed, so it is reported without
+reframing. A null here means that under this pre-registered decision rule, at this budget, on this slice,
+the microstructure arm did not beat its placebo by a margin the design could resolve. It does not
+mean microstructure carries no information: the minimum detectable effect is 3.518 annualized IR
+against a prior of |RankIC| = 0.027, so the design would fail to detect a real effect of the size
+we actually expect, and Section 7.4 states that the effect we can detect is larger than the effect we
+predict. Nor does it mean the mechanism of Section 3 is wrong — the mechanism is established on a
+fixture and is not contingent on this outcome. What a null does establish is narrower and still worth
+publishing: that the pipeline, with the interface defect removed and the legibility gate passed, does
+not convert this microstructure signal into net information ratio at this scale. Given how much of this
+literature reports only positive results, a pre-registered null with its power analysis stated in advance
+is a contribution to the record rather than a failed experiment. Section 7.4 names what would change
+the answer: more scored data, a lower-cost venue, or an effect larger than our own prior.
+
+3
+
+how far the result survives a worse cost assumption
+pinned headline
+0.30% round trip
+
+cost-aware net IR, annualized
+
+40
+
+20
+
+0
+
+−20
+
+PLAC
+
+−40
+
+ER —
+
+LD
+EHO
+
+un
+e reconomic
+h
+t
+g
+floor 0.5
+in
+await
+
+pre-registered
+cost band
+
+0.0
+
+0.1
+
+0.2
+
+0.3
+
+0.4
+
+round-trip transaction cost (%)
+
+0.5
+
+0.6
+
+cell 4
+cell 2
+cell 5
+all three coincident
+(placeholder)
+
+Figure 9: How far the result survives a worse cost assumption. Cost-aware net information ratio against the
+round-trip transaction cost, for the microstructure arm, the OHLCV-only arm and the placebo. The headline
+is pinned at 0.30% — the pessimistic end of the pre-registered 0.1–0.3% band — so the region to the right
+of that rule is stress beyond what was committed to, and the crossing of the economic floor is the quantity a
+reader should look for first. [PH: one coincident curve, magnitudes ∼ ±45] — all three cells are drawn on a
+single line at a scale roughly two orders of magnitude above anything this design could produce, so no ordering
+between cells and no crossing point can be read off. The axes, the pinned rate and the floor are real; nothing
+else on the panel is.
+
+4
+
+per-seed dispersion against the effect claimed (5 seeds, seeds are replicates)
+
+cost-aware net IR, annualized
+
+40
+
+placeholder: every cell centred on zero, magnitudes deliberately absurd
+
+30
+20
+10
+
+claimed ΔIR(4−5)
+
+n
+
+e ru
+h
+t
+g
+n
+aiti
+
+0
+−10
+
+—
+R
+E
+D
+L
+EHO
+
+−20
+−30
+
+aw
+
+the guard halts if any
+cell's across-seed
+range reaches this
+
+PLAC
+
+−40
+
+cell 1
+
+cell 2
+
+cell 3
+
+cell 4
+
+cell 5
+(placebo)
+
+Figure 10: Seed dispersion against the effect being claimed. Each cell’s five seeds are replicates of one
+configuration, not five configurations; open circles are seeds, the diamond is the seed mean, and the bars mark
+the across-seed range. The comparison that matters is the one drawn on the right: if any cell’s across-seed range
+reaches the size of the effect being claimed, the power guard halts and the verdict is reported as adjudicationrequired rather than as an outcome. [PH: every cell centred on zero, magnitudes ∼ ±40] — no cell is favoured
+and the claimed effect is drawn symmetric about zero, so the panel shows the comparison’s geometry and no
+result.
+
+5
+
+D
+
+The pinned decision surface
+
+Every quantity below was fixed before any of its inputs existed and is hard-asserted before any cell
+is scored. A run whose configuration differs from any of these raises rather than producing a downgraded result. The values are reproduced from the constants themselves, not from prose.
+D.1
+
+Experiment pins
+
+constant
+
+value
+
+governs
+
+PINNED_SYMBOLS_SHA256
+PINNED_SEEDS
+PINNED_KAPPAS
+PINNED_HEADLINE_COST
+PINNED_MONEY_SEQ_LEN
+PINNED_BACKBONE_PARAMS
+PINNED_STEPS_STAGE1
+PINNED_STEPS_STAGE2
+PINNED_MU_ESTIMATOR
+PINNED_ENCODER_CAUSAL
+PINNED_FINE_POINTWISE
+PINNED_MICRO_POINT_WEIGHT
+PINNED_MICRO_LEGIBILITY_MIN
+PINNED_CODEBOOK_MIN_UTILIZATION
+
+60e24f59…dc32631
+(0, 1, 2, 3, 4)
+(1.0, 1.5, 2.0, 3.0)
+0.0030
+512
+21,301,248
+26,003
+26,003
+expectation
+True
+True
+3.0
+0.90
+0.95
+
+the evaluation universe
+five replicates, fixed up front
+the execution-filter grid
+flat round trip, the pessimistic band end
+eval surface and training context
+the realized parameter count
+tokenizer budget, matched across arms
+backbone budget, matched across arms
+conditional mean, not mode
+forced for every cell
+the re-specified interface
+the class weight 𝜆
+the gate, on every live micro dimension
+BSQ collapse check
+
+D.2
+
+Decision thresholds and the deflation recipe
+
+constant
+
+value
+
+governs
+
+ECON_FLOOR_IR
+DSR_N_TRIALS
+DSR_THRESHOLD
+trial factorization
+DSR_HORIZONS
+DSR_VAR_SR_BASIS_CELL
+de-annualization horizon
+PLACEBO_DISPERSION_TRIPWIRE
+PINNED_BOOT
+BOOT_POWER
+FRAC_NEG_BAND
+
+0.5
+60
+0.95
+cells × horizons × 𝜅
+(5, 15, 60)
+5
+15
+1.5×
+𝐵 = 10,000, seed 20260704, 𝛼 = 0.05
+0.80
+[0.05, 0.95]
+
+clause 4 materiality floor
+clause 5 trial count
+clause 5 deflated-Sharpe threshold
+5 × 3 × 4 = 60
+the horizon axis
+dispersion basis is the placebo arm
+the unit 𝑆𝑅0 is compared against
+disclose if the placebo arm is over-dispersed
+the paired bootstrap
+the MDE’s power term
+degeneracy guard, sign-balance leg
+
+Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
+The trial count was reduced from 180 to 60 when seeds were recognized as replicates rather than
+configurations, and the dispersion basis was moved to the placebo arm because the earlier all-arms
+basis made clause 5 anti-correlated with its own hypothesis. The first tightens the criterion and the
+second loosens it; the net is indeterminate before the run, and Section 8.4 explains why we report it
+that way rather than as a single direction.
+
+6
+
+D.3
+
+D.4
+
+Evaluation geometry
+quantity
+
+value
+
+window
+train/forward split
+forward blocks
+headline region
+periods per instrument at ℎ = 15
+scored instruments
+effective breadth
+label look-forward
+serial-correlation margin
+leading embargo
+
+2021-01-01 to 2025-01-01, one-minute bars
+2023-10-20, the 0.7 point
+6; block 0 selects 𝜅 and is excluded
+blocks 1–5, ≈ 2024-01-01 to 2025-01-01
+35,063
+40 of the 200 in the lake
+1.5
+60 bars
+60 bars
+120 bars
+
+Content addressing and environment
+
+The Gate-A anchor is a fixed evaluation of a frozen checkpoint through the full harness, re-proven
+twice from unpiped commands before and after any change to the evaluation instrument.
+artifact
+
+value
+
+anchor results hash
+anchor causal sweep
+anchor dataset hash
+anchor tokenizer hash
+anchor predictor hash
+universe Merkle root
+lake
+Python
+NumPy
+PyTorch
+
+sha256:3f86882a63dd06c78…
+420 of 420 checks
+sha256:1d3ec4f8db6686e2…
+sha256:ce7c8c4ae0b62c89…
+sha256:6d118ede6bfcab2e…
+sha256:5dfd667d05b97bda…
+7,024 Parquet files, 200 symbols, 304,625,181 bars
+3.11.7
+2.4.6
+2.12.1
+
+The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
+amendment log carries 41 distinct revision tags, each with its date, its reason, and the direction it
+moves the criterion, recorded before the amendment was evaluated.
+
+E Claims audit
+Every quantitative claim in this paper carries an inline comment in the LATEX source naming the artifact it came from — 123 such comments across 44 distinct artifact paths, stripped from the submitted
+version and present in the released source. This appendix summarizes them by status.
+Four statuses are used, and the boundaries between them are the point of the table. Measured
+means a value read from a committed receipt produced by executing something. Derived means
+computed in closed form from measured inputs, with the derivation shown at the point of use. Pin
+means a constant we chose before seeing data — a pin is not a finding, and no pin should ever be
+read as evidence. Pending means the quantity does not exist until the pre-registered run completes.
+E.1
+
+The mechanism (§3)
+
+7
+
+quantity
+
+value
+
+status
+
+source
+
+per-dim reconstruction, return channel
+per-dim reconstruction, correlated block
+per-dim reconstruction, independent dim
+fixture entropy match, per-dim deficit
+feature-space plant, information
+feature-space plant, probe correlation
+token-space plant, information
+token-space plant, recovery
+per-bar legibility, original interface
+chance rate
+per-bar legibility, re-specified
+legibility gate threshold
+bits per token, both designs
+class weight 𝜆
+
+0.98
+0.82–0.92
+0.001–0.014
+0.4631 → 0.462
+1.151 nats
+< 0.05 at all 40 evals
+0.900 nats
+94.4%
+0.5135
+0.50
+0.9047
+0.90
+20.058
+3.0
+
+measured
+measured
+measured
+measured
+derived
+measured
+measured
+derived
+measured
+pin
+measured
+pin
+derived
+pin
+
+interface re-spec receipt
+same, dims 1–8, 10–12
+same, dim 9, three seeds
+filler calibration
+1
+2
+2 ln(1 + 𝑐 ) at 𝑐 = 3
+canary v6 receipt
+token-control receipt
+0.8496/0.90027
+id-visibility probe
+probe construction
+𝜆-search, seed mean
+conformance
+∑
+log2 𝐿 𝑖
+fitted on the fixture, then pinned
+
+Two entries deserve a reader’s attention. The 1.151 nats is a closed-form quantity computed from
+a receipt constant rather than a measurement, and the derivation is shown in Section 3.3 rather than
+asserted. And 𝜆 = 3.0 is a pin whose value was fitted on the synthetic fixture; Section 7.8 states the
+transfer risk and names the gate that guards it.
+E.2
+
+The data (§5)
+
+quantity
+
+value
+
+status
+
+source
+
+bars
+instruments
+symbol-months present
+OHLCV-usable
+microstructure-usable
+microstructure availability
+stale / zero-volume share
+delisted at ingest scan
+data ends inside the window
+warm-up drop, thinnest instrument
+z-score half-lives
+clip range
+feature dimensions, total / live
+
+304,625,181
+200
+7,024 of 9,600
+303,283,972 (99.56%)
+300,311,536 (98.58%)
+99.0%, none below 0.7
+0.175% / 0.376%
+41
+17
+809 of 279,930
+1,440 / 5,760
+[−5, +5]
+16 / 13
+
+measured
+measured
+measured
+measured
+measured
+measured
+measured
+measured
+measured
+measured
+pin
+pin
+measured
+
+lake surface check
+same
+lake enumeration
+ingest DQ table
+same
+same
+same
+universe bootstrap
+lake enumeration
+DQ spot-check
+feature config
+feature config
+constants, mask census
+
+E.3
+
+The design (§4)
+
+quantity
+
+value
+
+status
+
+source
+
+minimum detectable effect, ℎ = 15
+economic floor
+prior, |RankIC| at ℎ = 5 / ℎ = 15
+DSR trial count
+bits-per-bar gap, FSQ vs BSQ
+parameter gap
+signed-return ACF at lag 60
+absolute-return ACF at lag 60
+placebo: micro–price correlation
+placebo: micro lag-1 autocorrelation
+capacity handicap in IR units
+filter activity on real data
+
+3.518 annualized IR
+0.5
+0.0270 / 0.0197
+60
+0.058
+69,632 (0.327%)
+0.0067 mean, 0.0191 worst
+0.2323 mean, 0.3604 worst
+0.2037 → 0.0005
+0.4165 → 0.0006
+—
+—
+
+derived
+pin
+measured
+pin
+derived
+measured
+measured
+measured
+measured
+measured
+not quantified
+pending
+
+MDE inputs receipt
+verdict constants
+M2 univariate screen
+conformance
+vocabulary arithmetic
+realized counts
+embargo premise
+same
+placebo mechanism doc
+same
+Section 7.3
+no artifact records it
+
+8
+
+The last two rows are the ones a reader should carry forward. The capacity handicap is disclosed
+and unquantified — no cell in the pre-registration brackets it. And no eval artifact in this project
+records decision activity on real bars, so whether the execution filter binds there is unmeasured rather
+than answered elsewhere.
+E.4
+
+E.5
+
+Verification (§8)
+quantity
+
+value
+
+status
+
+source
+
+defects in the ledger
+largest single detection layer
+determinism penalty
+false bit-exactness claims
+same-seed divergence
+amendment log
+anchor causal sweep
+test suite
+
+36 (19 critical)
+6 of 19 critical
+13.175%
+49 of 49 records
+0.5662 vs 0.99883
+41 revision tags
+420 of 420
+727 passing
+
+measured
+derived
+measured
+measured
+measured
+measured
+measured
+measured
+
+defect ledger
+ledger tabulation
+CUDA probe report
+the D20 entry
+h-sweep vs money-leg
+pre-registration
+Gate-A manifest
+pytest
+
+Everything in §6
+
+Every quantity in Section 6 is pending. Each is bound to a single named field of the verdict manifest, named beside the slot in the source, so that filling it is a mechanical substitution rather than
+a judgement. The three figures in that section are drawn on placeholder data that is implausible by
+construction — absent, symmetric about zero, or at magnitudes two orders above anything the design can produce — so that a cropped panel cannot be mistaken for a result. Section 6.5 carries both
+interpretation paragraphs, written and dated before the run.
+
+9
+
+References
+
+10
+
+

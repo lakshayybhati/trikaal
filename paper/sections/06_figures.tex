@@ -1,0 +1,46 @@
+% The three figures belonging to §6. Held in their own file so main.tex and review_s6.tex
+% share one copy and the export cannot drift from the manuscript.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig8_verdict.pdf}
+  \caption{\textbf{The decision surface, fixed before any result existed.} Five clauses, evaluated
+  conjunctively: the primary outcome is SURVIVES only if none fails, and NULL otherwise. Two
+  guards sit outside the clauses and are HALT-only --- they can refuse to report an outcome their
+  own inputs cannot support, and can never flip SURVIVES to NULL or back. The rule strings shown
+  are the ones persisted into the verdict manifest, not a restatement of them. \PH{no values} --- every outcome
+  cell is empty because the run has not been executed; each is filled from a single named field of
+  that manifest.}
+  \label{fig:verdict}
+\end{figure}
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig9_cost_stress.pdf}
+  \caption{\textbf{How far the result survives a worse cost assumption.} Cost-aware net information
+  ratio against the round-trip transaction cost, for the microstructure arm, the OHLCV-only arm and
+  the placebo. The headline is pinned at $0.30\%$ --- the pessimistic end of the pre-registered
+  $0.1$--$0.3\%$ band --- so the region to the right of that rule is stress beyond what was
+  committed to, and the crossing of the economic floor is the quantity a reader should look for
+  first. \PH{one coincident curve, magnitudes $\sim\pm45$} --- all three cells are drawn on a single
+  line at a scale roughly two orders of magnitude above anything this design could produce, so no
+  ordering between cells and no crossing point can be read off. The axes, the pinned rate and the
+  floor are real; nothing else on the panel is.}
+  \label{fig:cost}
+\end{figure}
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig10_seed_stability.pdf}
+  \caption{\textbf{Seed dispersion against the effect being claimed.} Each cell's five seeds are
+  replicates of one configuration, not five configurations; open circles are seeds, the diamond is
+  the seed mean, and the bars mark the across-seed range. The comparison that matters is the one
+  drawn on the right: if any cell's across-seed range reaches the size of the effect being claimed,
+  the power guard halts and the verdict is reported as adjudication-required rather than as an
+  outcome.
+  \PH{every cell centred on zero, magnitudes $\sim\pm40$} --- no cell is favoured and the claimed
+  effect is drawn symmetric about zero, so the panel shows the comparison's geometry and no
+  result.}
+  \label{fig:seeds}
+\end{figure}
+\clearpage
+
