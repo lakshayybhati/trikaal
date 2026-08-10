@@ -1073,6 +1073,7 @@ Every rule below exists because of a specific failure. None is a general princip
 | **Teardown rule** — `vastai destroy -y`, then **re-list** | `destroy` prompts, aborts, and returns exit 0 with the box still running. Extended after P2: **re-list after `create` too** — `create` printed nothing and still created a box |
 | **Cost a rental as setup + compute** | setup was 90% of a $0.14 probe; provisioning ranged 29 s to 45 min on hosts with reliability 0.992–0.9987 |
 | **No silent caps** | a bounded scope that is not stated reads as complete coverage |
+| **Context-stripping rule** — an artifact must remain safe when its context is stripped; assume every excerpt travels alone | paper Figs 9/10 drew placeholder IRs at plausible magnitudes in the hoped-for cell ordering, protected only by a DRAFT watermark that any crop removes. **Placeholder data must be impossible to mistake for a result with the watermark gone** — absent, absurd, or symmetric about zero. Binds captions, tables, abstracts and receipt fields, not just figures |
 
 ---
 

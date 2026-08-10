@@ -1,0 +1,291 @@
+% =============================================================================================
+% Trikaal — tokenizer study.  Build:  tectonic -X compile paper/main.tex
+%
+% DRAFT STATUS (2026-08-09)
+%   §3  Mechanism ........ drafted, every number traced to a committed artifact
+%   §1  Introduction ..... title / abstract / contributions drafted PROVISIONALLY; body pending
+%   §2, §4–§8 ............ structural stubs, drafted in the order §4, §5, §7, §8, §2, §1
+%   Any \TBD{...} is a quantity that does not exist until the pre-registered run completes.
+%   No \TBD may be filled by estimate.
+% =============================================================================================
+\documentclass[10pt]{article}
+\usepackage{preprint}
+
+% ---- TITLE: two candidates, neither locked until the legibility gate and verdict land -------
+% (mechanism-led — current)
+\title{Capacity Eviction in Reconstruction-Trained Tokenizers:\\
+       A Controlled Study on Financial Microstructure}
+% (ablation-led — alternate)
+% \title{Does Microstructure Survive Tokenization?\\
+%        A Pre-Registered, Capacity-Matched Ablation on Crypto K-Lines}
+
+\author{Lakshay Bhati\\ \TBD{affiliation} \\ \texttt{\TBD{email}}}
+\date{Preprint --- draft of \today}
+
+\begin{document}
+\maketitle
+
+% --- ABSTRACT TRACEABILITY (strip before final) -----------------------------------------------
+% Every number below is receipt-backed; the only unmeasured slot is \TBD{verdict}.
+%   0.98 / 0.82--0.92 / 0.001--0.014, 3 seeds
+%       runs_manifest/m6_interface_respec_design_pass.json ::
+%       tokenizers.new_pointwise_fine_3seed.seeds.{0,1,2}.nonlinear_diagnostics
+%         .point_decoder_per_dim_corrs
+%       seed0 [0.9818, ..., 0.0140, ...] seed1 [0.9815, ..., 0.0011, ...] seed2 [0.9823, ..., 0.0053, ...]
+%       dim 0 = return channel; dims 1--8,10--12 = correlated block (min 0.8235, max 0.9188);
+%       dim 9 = the independent dimension.
+%   1.151 nats   DERIVED: 0.5*ln(1+c^2) at c_signal = 3.0 (scripts/m6_canary.py C_SIGNAL);
+%                prereg records the same quantity as "~1.15-nat plant" at docs/m6_prereg.md:2923.
+%                Derivation shown in full at §3.3.
+%   0.05 / 40    runs_manifest/m6_canary_v6_stage1_manifest.json ::
+%                decision_inputs.{tf_corr_max = 0.0433, tf_flat_every_eval};
+%                40 = recipe.budget_steps 20000 / recipe.eval_every 500.
+%   0.900 nats   runs_manifest/m6_token_control_run_manifest.json ::
+%                full_stream_receipts.exact_info_nats = 0.9002715667652758
+%   94.4%        same :: decision_inputs.final_val_minus_H0 = -0.8496; 0.8496/0.90027 = 0.9437
+%   0.5135       runs_manifest/m6_token_control_step0.json ::
+%                id_visibility_probe.{logistic_sign_accuracy = 0.5135166645050049,
+%                logistic_chance = 0.50}
+%   0.9047 / 0.90  runs_manifest/m6_lambda_search_receipt.json ::
+%                formal_cell_path_pin3_omp3.{mean = 0.9047, min = 0.8839, restated_gate_pass}
+%   304,625,181 / 200  runs_manifest/m6_c15b_lake_surface_check.json :: bars, symbols
+%   20.058 bpt (unchanged bits/token)  git show c4cd082:runs_manifest/
+%                m6_interface_respec_design_pass.json ::
+%                gate2_blocked_diagnosis.capacity_arithmetic.total_bpt_pinned
+%   3.518 / 0.5 / 0.027  see the three comments at the end of this abstract.
+% ----------------------------------------------------------------------------------------------
+\begin{abstract}
+Two-stage models for financial time series learn a tokenizer under a reconstruction objective
+and then fit an autoregressive model to the resulting discrete codes. This design carries an
+unstated assumption: that a representation good enough to reconstruct from is good enough to
+forecast from. We show that it fails, and that it fails in a specific, predictable direction.
+Reconstruction objectives allocate code capacity by variance and covariance and never by
+downstream value, so wherever the code budget is tight enough that not every dimension can be
+coded and the competing dimensions are correlated enough to amortize one another, a low-variance
+channel that is weakly covariant with price --- which is what microstructure is --- is evicted
+deterministically rather than by chance. On an
+% The two conditions are carried here, not only in §3.1: an abstract is quoted without its section.
+entropy-calibrated fixture in which every non-price dimension carries identical marginal
+variance and differs only in cross-dimensional dependence, per-dimension reconstruction sorts
+by variance class: $0.98$ for the high-variance return channel, $0.82$--$0.92$ for the
+mutually correlated block, and $0.001$--$0.014$ for the one independent dimension, with the
+ordering near-identical across three seeds. A signal worth $1.151$ nats planted in feature
+space is not recovered at all (probe correlation below $0.05$ at all $40$ evaluations), while
+$0.900$ nats planted directly in token space is recovered by the identical backbone at $94.4\%$
+--- localizing the loss to the tokenizer--backbone interface rather than to model capacity. We
+re-specify that interface so the fine subtoken is a per-bar encoding of the current bar,
+restoring per-bar legibility from $0.5135$, against a chance rate of $0.50$, to $0.9047$ under a
+gate pinned at $0.90$, and recovering the original feature-space signal at unchanged bits per
+token. We then evaluate whether real
+% 0.9047 is the measured seed mean; 0.90 is the gate. The two were conflated here as "0.90".
+trade-flow imbalance survives this pipeline in a pre-registered, capacity-matched five-cell
+ablation with a shuffled-microstructure placebo, on $304{,}625{,}181$ one-minute bars across
+$200$ instruments, scored by cost-aware net information ratio: \TBD{verdict}. The design's
+minimum detectable effect is $3.518$ annualized IR against a $0.5$ economic floor, and the only
+prior we hold for the quantity under test is our own univariate screen of trade-flow imbalance on
+a single symbol, $|\text{RankIC}| = 0.027$ at $h=5$ and $0.020$ at the headline horizon --- so a
+null or inconclusive outcome is the most likely honest one. Both were pre-committed as publishable
+before any result existed. Microstructure-awareness is an architectural property of a tokenizer,
+not an emergent one.
+% artifact: runs_manifest/m6_mde_inputs.json :: h15_pooled.MDE_annualized_IR = 3.518
+% artifact: src/trikaal/eval/verdict.py :: ECON_FLOOR_IR = 0.5
+% artifact: docs/milestone2_btcusdt_stage1.md — TFI RankIC -0.0270 [-0.0304,-0.0236] at h=5,
+%   -0.0197 [-0.0230,-0.0166] at h=15, BTCUSDT only; that doc calls it "a univariate liveness
+%   screen, not the headline test", so the abstract must not let it read as a market prior.
+\end{abstract}
+
+% =============================================================================================
+\section{Introduction}
+\label{sec:intro}
+% STUB — funnel prose pending. Contributions and Figure 1 drafted for page-1 review.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig1_mechanism.pdf}
+  \caption{\textbf{One interface change decides whether a microstructure signal survives
+  tokenization.} Each bar is encoded to a token pair --- a coarse and a fine subtoken, together
+  $20.058$ bits --- which is what the autoregressive stage consumes. \textbf{Left, the original
+  design:} a single causal encoder produces both halves. Because that encoder is contextual, bar
+  $t$'s own state is distributed across the tokens of every later bar in the window, so the window
+  reconstructs while the per-bar symbol carries almost nothing: the sign of bar $t$'s
+  microstructure state is recoverable from bar $t$'s own token at $0.5135$, against a chance rate
+  of $0.50$. \textbf{Right, the re-specified design:} the fine half is produced by a pointwise
+  encoder that sees only the current bar, shaped by a per-bar bottleneck objective that weights the
+  microstructure block as a class. Recoverability rises to $0.9047$ and is enforced thereafter by a
+  gate at $0.90$. Bits per bar, the vocabulary split, the backbone and every evaluation instrument
+  are identical between the two panels. \textbf{Below:} the same fixture, the same training budget
+  and the same $1.151$-nat signal planted in the microstructure channel, before and after --- the
+  planted arm ends $0.0134$ nats \emph{worse} than its matched control on the left, and $1.3381$
+  nats better on the right.}
+  \label{fig:mechanism}
+\end{figure}
+
+\paragraph{Contributions.}
+\begin{itemize}[leftmargin=1.4em,itemsep=2pt,topsep=2pt]
+  \item We identify and mechanistically characterize \emph{capacity eviction}: under a
+    reconstruction objective, code capacity is allocated by variance and covariance and never by
+    downstream value, so a task-relevant channel that is low-variance and weakly covariant is
+    excluded deterministically. We isolate the effect with a fixture in which the evicted
+    dimension and the retained ones differ in exactly one property --- statistical independence
+    --- and show the exclusion reproduces across seeds (\cref{sec:mechanism}).
+  \item We localize the failure by construction rather than by inference: the same backbone at
+    the same budget recovers $94.4\%$ of a signal planted in token space and none of a
+    larger signal planted in feature space, which acquits model capacity and indicts the
+    tokenizer--backbone interface (\cref{sec:mech-localize}).
+  \item We introduce a per-bar tokenizer interface --- a pointwise fine subtoken with a
+    bottleneck decode leg and calibrated class weighting --- that restores per-bar legibility at
+    unchanged bits per token, and a \emph{legibility gate} that enforces the property on real
+    data as a pre-second-stage hard stop (\cref{sec:mech-fix,sec:mech-gate}).
+  \item We run a pre-registered, capacity-matched five-cell ablation with a shuffled
+    microstructure placebo on $304{,}625{,}181$ one-minute bars, scored by cost-aware
+    net information ratio under purged walk-forward validation, with the decision rule, seed
+    count and multiple-testing correction fixed before any result existed
+    (\cref{sec:setup,sec:results}).
+\end{itemize}
+
+% =============================================================================================
+\section{Related work}
+\label{sec:related}
+\TBD{§2 --- four clusters: K-line foundation models; discrete tokenization (VQ/FSQ/BSQ);
+microstructure prediction with the TFI-vs-OFI distinction; evaluation discipline. Drafted after
+§4, §5, §7, §8.}
+
+% =============================================================================================
+\input{sections/03_mechanism}
+
+% =============================================================================================
+\input{sections/04_design}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig5_design.pdf}
+  \caption{\textbf{The five cells, at matched capacity, and the exact reach of the placebo.}
+  \emph{Left:} a $2\times2$ over quantizer and input arm, plus a fifth cell that is cell 4 with the
+  microstructure block shuffled. Capacity is controlled rather than assumed: the two quantizer arms
+  differ by $0.058$ bits per bar and by $0.327\%$ of backbone parameters, so a difference between
+  them cannot be attributed to one arm simply having more room. \emph{Right:} what the shuffle
+  actually does, measured. It destroys the two things it was built to destroy --- microstructure's
+  contemporaneous link to price ($0.2037 \rightarrow 0.0005$) and its own lag-1 autocorrelation
+  ($0.4165 \rightarrow 0.0006$) --- and leaves the within-block and within-OHLCV correlations
+  exactly as they were. The consequence is stated rather than hidden: because cell 4's
+  microstructure dimensions are partly amortized against structure the code already carries,
+  shuffling removes that sharing too, so $\Delta$IR(4$-$5) is (information) $+$ (capacity
+  handicap). The handicap is not quantified in
+  information-ratio units. A sixth cell holding the block constant would bracket it, but no such
+  cell appears anywhere in the pre-registration, so it is future work rather than a committed
+  contingency, and \cref{sec:limitations} carries the handicap as an open disclosure.}
+  \label{fig:design}
+\end{figure}
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig6_validation.pdf}
+  \caption{\textbf{Train once, evaluate forward, and pay for the separation.} \textbf{(a)} The training
+  region ends at one boundary and is never refit. The forward region is cut into six blocks; block
+  0 is spent selecting the execution filter and is excluded from every headline number, so the
+  headline is scored on five blocks the selection never saw. \textbf{(b)} Between a training window
+  and any label that could contaminate it sit a $60$-bar label look-forward and a $60$-bar
+  serial-correlation margin, giving a $120$-bar embargo. \textbf{(c)} The premise behind that
+  margin is measured on all $200$ instruments rather than assumed, and a control arm recovers a
+  known AR(1) answer first, so a null reading is a measurement and not a silent failure. It holds
+  for signed returns --- the channel a label leak would travel on --- at ACF $0.0067$ mean and
+  $0.0191$ worst-symbol at lag $60$. It does \emph{not} hold for absolute returns
+  ($0.2323$ mean, $0.3604$ worst), which is volatility clustering rather than a label channel;
+  \cref{sec:limitations} carries that caveat.}
+  \label{fig:validation}
+\end{figure}
+\clearpage
+
+\section{Data}
+\label{sec:data}
+\TBD{§5 --- prose pending; the coverage figure is final and enumerated from the lake.}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig7_coverage.pdf}
+  \caption{\textbf{Survivorship is owned, not filtered away.} Month-by-month presence for all $200$
+  instruments over the four-year window, ordered by listing month: $7{,}024$ of a possible
+  $9{,}600$ symbol-months are present. The left staircase is instruments listing at different
+  times; the right edge is ragged because instruments that stop trading are \emph{kept}, and $17$
+  of them stop inside this window. A survivorship-filtered universe would render as a solid
+  rectangle, which is the artefact this panel exists to show we did not create. Two instruments
+  have interior gaps rather than truncated tails and appear as internal white streaks. The two
+  dashed rules are the committed fold plan: training ends at the first, and the headline metric is
+  scored only to the right of the second. Note that $17$ counts instruments whose data ends inside
+  the window; the ingest record's $41$ counts every instrument known to be delisted at any date,
+  including $24$ that delist after this window closes.}
+  \label{fig:coverage}
+\end{figure}
+\clearpage
+
+\section{Results}
+\label{sec:results}
+\TBD{§6 --- structured stubs only. No number below exists until the pre-registered run completes; the three figures are built against the artifact schema and are watermarked until then. Both interpretation paragraphs are pre-written and dated.}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig8_verdict.pdf}
+  \caption{\textbf{The decision surface, fixed before any result existed.} Five clauses, evaluated
+  conjunctively: the primary outcome is SURVIVES only if none fails, and NULL otherwise. Two
+  guards sit outside the clauses and are HALT-only --- they can refuse to report an outcome their
+  own inputs cannot support, and can never flip SURVIVES to NULL or back. The rule strings shown
+  are the ones persisted into the verdict manifest, not a restatement of them. \PH{no values} --- every outcome
+  cell is empty because the run has not been executed; each is filled from a single named field of
+  that manifest.}
+  \label{fig:verdict}
+\end{figure}
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig9_cost_stress.pdf}
+  \caption{\textbf{How far the result survives a worse cost assumption.} Cost-aware net information
+  ratio against the round-trip transaction cost, for the microstructure arm, the OHLCV-only arm and
+  the placebo. The headline is pinned at $0.30\%$ --- the pessimistic end of the pre-registered
+  $0.1$--$0.3\%$ band --- so the region to the right of that rule is stress beyond what was
+  committed to, and the crossing of the economic floor is the quantity a reader should look for
+  first. \PH{one coincident curve, magnitudes $\sim\pm45$} --- all three cells are drawn on a single
+  line at a scale roughly two orders of magnitude above anything this design could produce, so no
+  ordering between cells and no crossing point can be read off. The axes, the pinned rate and the
+  floor are real; nothing else on the panel is.}
+  \label{fig:cost}
+\end{figure}
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig10_seed_stability.pdf}
+  \caption{\textbf{Seed dispersion against the effect being claimed.} Each cell's five seeds are
+  replicates of one configuration, not five configurations; open circles are seeds, the diamond is
+  the seed mean, and the bars mark the across-seed range. The comparison that matters is the one
+  drawn on the right: if any cell's across-seed range reaches the size of the effect being claimed,
+  the power guard halts and the verdict is reported as adjudication-required rather than as an
+  outcome.
+  \PH{every cell centred on zero, magnitudes $\sim\pm40$} --- no cell is favoured and the claimed
+  effect is drawn symmetric about zero, so the panel shows the comparison's geometry and no
+  result.}
+  \label{fig:seeds}
+\end{figure}
+\clearpage
+
+\section{Limitations}
+\label{sec:limitations}
+\TBD{§7.}
+
+\section{Reproducibility and verification}
+\label{sec:repro}
+\TBD{§8.}
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\appendix
+\input{sections/appendix_mechanism}
+
+\section{Reproducibility and verification}
+\label{app:repro}
+\TBD{pinned decision surface; content hashes; environment lockfiles; amendment log.}
+
+\section{Claims audit}
+\label{app:claims}
+\TBD{measured-versus-estimated table.}
+
+\end{document}
