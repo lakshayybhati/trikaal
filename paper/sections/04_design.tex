@@ -1,0 +1,305 @@
+% =============================================================================================
+% §4 Experimental design. Zero run dependency: the design is frozen and every value below is a
+% pin or a measurement that already exists. Artifact citations in % comments; strip before final.
+% =============================================================================================
+\section{Experimental design}
+\label{sec:setup}
+
+The mechanism of \cref{sec:mechanism} says that a reconstruction-trained tokenizer will evict
+microstructure unless it is built not to. This section describes the experiment that asks the
+separate question the paper is organized around: whether real trade-flow imbalance, carried through
+a tokenizer built to preserve it, survives to a cost-aware trading decision. The design was frozen
+before any of its numbers existed, and this section describes it as frozen.
+
+\subsection{Five cells}
+\label{sec:cells}
+
+The experiment is a $2\times2$ over the two factors that could plausibly explain a difference ---
+the quantizer and the input arm --- plus a fifth cell that isolates the one thing a $2\times2$
+cannot: whether an effect attributed to microstructure is really microstructure.
+\Cref{fig:design} shows the layout; the registry that the runner reads is the authority.
+% artifact: src/trikaal/train/cells.py:40-44 — CellSpec(1,'bsq',ARM_OHLCV), (2,'fsq',ARM_OHLCV), (3,'bsq',ARM_MICRO), (4,'fsq',ARM_MICRO), (5,'fsq',ARM_MICRO_SHUFFLED)
+
+Cells 1 and 2 receive the seven OHLC-shape, volume and amount dimensions only; cells 3 and 4
+additionally receive the six microstructure dimensions (indices 7--12: trade-flow imbalance,
+signed count imbalance, trade count, mean trade size, trade-size dispersion, large-trade share).
+Cells 1 and 3 quantize with binary spherical quantization; cells 2 and 4 with finite scalar
+quantization. Cell 5 is cell 4 with the microstructure block shuffled, and is the placebo.
+% artifact: src/trikaal/constants.py :: OHLCV_ONLY_IDX = (0..6), MICRO_DIMS_IDX = (7..12), FEATURE_NAMES
+
+The comparison that carries the paper is the paired difference $\Delta\IR(4-5)$. The others are
+support: $\IR(4)-\IR(2)$ asks whether the microstructure arm beats the OHLCV arm without reference
+to the placebo, and the two BSQ cells anchor the quantizer axis. We are explicit in
+\cref{sec:limitations} that the three marginals involving a BSQ arm are withdrawn as claims,
+because the BSQ implementation has no external reference point; they are reported, not claimed.
+
+In the OHLCV-only arm the six microstructure dimensions are \emph{removed} from the input rather
+than supplied and left uninformative, so that arm's feature width is seven rather than sixteen.
+That choice matters for interpreting the legibility gate, which is undefined for an arm with no
+microstructure channel and is exempted there by a named registry entry rather than by silence.
+% src: src/trikaal/train/arms.py:49-59 — ARM_OHLCV: False with an explicit exemption reason string
+
+\subsection{Capacity is controlled, not assumed}
+\label{sec:parity}
+
+A comparison between two quantizers is meaningless if one of them simply has more room. We
+therefore control the two quantities that determine room, and report both rather than asserting
+parity. The finite-scalar arm uses per-dimension levels $(11,9,9,7,7,5,5)$, split into a coarse
+subtoken of $891$ codes and a fine subtoken of $1225$, for $20.058$ bits per bar; the
+binary-spherical arm spends $10+10$ bits for $20.000$. The two differ by $0.058$ bits per bar,
+inside a pre-registered parity band of $19.5$--$20.5$.
+% artifact: runs_manifest/m6_interface_respec_design_pass.json :: g_parity_new_layout.{bpt_a=20.05784765541185, bpt_b=20.0}; src/trikaal/constants.py :: FSQ_BPT_BAND=(19.5,20.5)
+
+The backbone realizes $21{,}301{,}248$ parameters at the finite-scalar vocabulary and
+$21{,}231{,}616$ at the binary-spherical one --- a difference of $69{,}632$ parameters, or
+$0.327\%$, arising entirely from vocabulary-dependent embedding and output-head rows. The backbone
+is otherwise identical across all five cells: eight layers, model width $512$, feed-forward width
+$1024$, eight heads, and a context of $512$ bars. It is held fixed on purpose. The tokenizer is
+the object under study; the backbone is the instrument that measures it.
+% artifact: CLAUDE.md §7 v1.6.17 realized parameter counts; percentage computed here
+
+Every cell trains under the same budget: $26{,}003$ steps at batch $32$ and context $512$, on the
+same draw. That budget is matched and fixed rather than chosen per cell by early stopping. The
+alternative --- stopping each cell when its own validation loss saturates --- would give five
+different budgets and confound $\Delta\IR(4-5)$ with ``cell 4 trained longer'', which is the same
+class of confound the placebo exists to remove. The cost is that no cell is guaranteed to be at
+its own optimum; saturation is measured and reported rather than optimized against.
+% artifact: runs_manifest/m6_training_budget.json; docs/m6_design.md:18 (all cells share the training draw)
+
+\subsection{The placebo, and the handicap it creates}
+\label{sec:placebo}
+
+The placebo answers a question no capacity control can: whether an effect attributed to
+microstructure comes from microstructure's \emph{information} or merely from the model having six
+more input channels to spend capacity on. Cell 5 receives the same six channels, with the same
+marginal distributions, carrying no usable information.
+
+The shuffle permutes the six microstructure dimensions as a block, within each contiguous segment
+of a symbol, with a full within-segment permutation rather than a fixed block length. Three
+properties are enforced rather than assumed. The block moves as a unit, so within-bar structure
+\emph{among} the microstructure dimensions survives and only their relationship to everything else
+is destroyed. The mask travels with the value, because permuting values alone would strand fill
+values on valid bars and real values on masked ones --- a defect found in review and fixed before
+any training. And the permutation is derived from the run seed and the symbol together, so the
+train and evaluation paths shuffle identically.
+% src: src/trikaal/eval/placebo.py — block permutation, cell5_seed(seed, symbol) = (seed << 16) ^ crc32(symbol)
+% artifact: docs/BUILD_RECORD.md D6 — the (value, mask) pairing defect, closed d64b42e
+
+\Cref{fig:design} reports what the shuffle measurably does. It destroys the contemporaneous link
+between microstructure and price shape, from mean absolute correlation $0.2037$ to $0.0005$, and
+it destroys microstructure's own lag-1 autocorrelation, from $0.4165$ to $0.0006$. It leaves the
+within-block correlation at $0.2886$ and the within-OHLCV correlation at $0.3105$, both unchanged.
+% artifact: docs/m6_c12_placebo_mechanism.md — the four-row before/after table
+
+This is where the design's principal known weakness lives, and we state it rather than let a
+reader find it. Because cell 4's microstructure dimensions are correlated with price at $0.20$ and
+autocorrelated at $0.42$, part of the capacity they consume is \emph{amortized} against structure
+the code is already carrying. Shuffling removes that amortization along with the information, so
+cell 5 pays a capacity price cell 4 does not. The consequence is a forfeit stated in the
+pre-registered rule string itself: $\Delta\IR(4-5)$ is (information) $+$ (capacity handicap), and
+the paper does not claim the information effect alone clears any threshold.
+% artifact: src/trikaal/eval/verdict.py — clause 4 rule string names the composite quantity explicitly
+The handicap is not quantified in information-ratio units, and \cref{sec:limitations} carries that
+as an open disclosure rather than a resolved question.
+
+\subsection{The headline metric}
+\label{sec:metric}
+
+The headline is a cost-aware net information ratio, annualized, computed on a portfolio return
+series rather than on pooled per-position returns. For a position of sign $s$ opened at the close
+of bar $t+1$ and closed $h$ bars later, the realized net log-return subtracts execution and
+funding cost directly:
+\begin{equation}
+  r^{\text{net}} \;=\; s \log\!\frac{C_{t+h}}{C_{t+1}} \;-\; c_{\text{total}} \;-\; c_{\text{funding}},
+  \qquad c_{\text{total}} = 2\,c_{\text{side}} .
+  \label{eq:netret}
+\end{equation}
+% artifact: src/trikaal/eval/harness.py — per-position net return; entry at t+1 close, exit at t+h
+Each period's portfolio return is the equal-weighted mean over the symbols active in that period,
+and the information ratio is computed on that series, so a symbol that is not trading contributes
+nothing rather than contributing a zero.
+% artifact: r_p = (1/|A_p|) * sum_{n in A_p} r_{n,p}^net
+
+The per-side cost has three additive components --- a taker fee, a volatility-scaled half-spread
+floored at the symbol's own decile spread, and a participation-based impact term:
+\begin{equation}
+  c_{\text{side}} \;=\; f_{\text{taker}}
+  \;+\; \tfrac12\,\text{spread}\cdot\max\!\bigl(1,\ \sigma_t/\bar{\sigma}\bigr)
+  \;+\; k_{\text{impact}}\,(Q/\text{ADV}).
+  \label{eq:cost}
+\end{equation}
+% artifact: src/trikaal/eval/harness.py; hand-computed KATs: pure taker round trip c_total = 8e-4; top-20 spread at 0.5% participation c_total = 2.1e-3
+This model is a secondary diagnostic. \textbf{The headline nets a flat $0.30\%$ round trip}, the
+pessimistic end of the pre-registered $0.1$--$0.3\%$ band, pinned on the conformance surface and
+hard-checked before any cell is scored. Reporting the headline at the worst end of the band, and
+the model-based figure alongside it, is deliberate: a result that needs the optimistic end of its
+own cost assumption is not a result.
+% artifact: src/trikaal/eval/conformance.py :: PINNED_HEADLINE_COST = 0.0030; conformance fails if cfg.headline_cost differs
+
+Positions are taken only when the forecast is large enough to be worth its cost. The execution
+filter is $\theta = \kappa c$: trade only when $|\hat{\mu}| > \theta$, with $\kappa$ selected on
+the validation block from the grid $\{1.0, 1.5, 2.0, 3.0\}$ and then held fixed. One measured
+property of this filter is worth stating, because it changes how the headline should be read: on
+the calibration fixture the threshold \emph{never bound} --- at every $\kappa$ and both volatility
+scalings, the set of periods traded equalled the set scored --- which makes the realized
+information ratio there a pure function of $\operatorname{sign}(\hat{\mu})$ rather than of
+forecast magnitude. Whether it binds on real data is not yet known.
+% artifact: docs/m6_prereg.md §7 v1.4.4 — theta never binds; traded == scored at every kappa, both sigmas
+
+Forecasts are the conditional mean $\hat{\mu}$, not the mode. The estimator was changed from
+greedy-argmax decoding to an expectation decode after argmax was found to compound a sign bias
+over a rollout --- fixture mean $-0.051$ against a standard deviation of $0.036$, with
+frac-negative $0.929$, versus $-0.004$ and $0.534$ under expectation, while the correlation
+between $\hat{\mu}$ and the planted state \emph{rose} from $0.858$ to $0.898$. The change is a
+correctness fix, made before any real cell was scored, and it re-anchored the reproducibility
+hash because the predictor sits inside the anchored evaluation instrument.
+% artifact: docs/m6_prereg.md §7 v1.4.2; runs_manifest/m6_acceptance_mu_drift_diagnostic.json
+
+Information coefficient, rank information coefficient, mean absolute error and $R^2$ are computed
+and reported as secondary diagnostics. They do not enter the decision rule.
+
+\subsection{Evaluation geometry}
+\label{sec:geometry}
+
+Models are trained once and evaluated forward; nothing is refit per fold. \Cref{fig:validation}
+shows the geometry. The four-year window is split at its $0.7$ point, on
+2023-10-20, into a training region and a forward region; the forward region is cut into six equal
+blocks. Block 0 is spent selecting $\kappa$ and is excluded from every headline number, so the
+headline is scored on blocks 1--5, spanning 2024-01-01 to 2025-01-01 --- a region the selection
+never saw.
+% artifact: runs_manifest/m6_mde_inputs.json :: n_blocks = 6, primary_region_ms = [1704132000000, 1735689600000]; conformance hard-asserts (val_block=0, n_blocks=6)
+
+Between any training window and a label that could contaminate it sit two margins: a $60$-bar
+label look-forward, which is the maximum horizon the autoregressive rollout reaches, and a $60$-bar
+serial-correlation margin. Their sum is a $120$-bar leading embargo.
+% artifact: runs_manifest/m6_c20_embargo_premise.json :: reading.{H_MAX_DEFAULT=60, L_CORR_DEFAULT=60, EMBARGO_DEFAULT=120}
+
+The premise behind the second margin --- that $60$ bars is enough for serial correlation to have
+decayed --- is measured rather than assumed, on all $200$ instruments, with a control arm that
+recovers a known AR(1) answer first so that a null reading is a measurement and not a silent
+failure. For signed returns, the channel through which a label leak would actually travel, the
+autocorrelation at lag $60$ is $0.0067$ on average and $0.0191$ at the worst symbol, against a
+margin of $60$: roughly a $24\times$ margin. For absolute returns it is $0.2323$ on average and
+$0.3604$ at the worst symbol, and the premise does \emph{not} hold. That is volatility clustering
+rather than a label-leakage channel, and \cref{sec:limitations} states what is and is not
+established by measuring only the signed channel.
+% artifact: same receipt :: reading.{ALL200_signed_acf_at_60_mean=0.006669, ALL200_signed_acf_at_60_worst=0.019079, abs_acf_at_L_corr_60_mean=0.2323, abs_acf_at_L_corr_60_worst_symbol=0.3604, premise_supported_for_ABS_returns=false}; control_arm.series = AR(1) rho=0.97, n=200000
+
+Confidence intervals on $\Delta\IR$ come from a paired moving-block bootstrap over the portfolio
+series, $B = 10{,}000$ resamples at a fixed seed, with $\lceil\sqrt{T}\,\rceil$ blocks and
+percentile intervals. The pairing is not cosmetic. Cells 4 and 5 hold the same market exposure, so
+the common factor cancels in the paired series; the average raw cross-sectional correlation is
+$0.6387$, which leaves an effective breadth of about $1.5$ symbols out of $40$. The cross-section
+here buys robustness, not statistical power, and we say so rather than counting $40$ independent
+bets.
+% artifact: runs_manifest/m6_mde_inputs.json :: h15_pooled.{rho_bar_raw=0.6387, N_breadth_eff=1.5, avg_breadth=40}
+
+\subsection{The decision rule}
+\label{sec:decision}
+
+The rule was written, timestamped and committed before any cell was trained. \Cref{fig:verdict}
+shows it as the runner evaluates it: five clauses, conjunctive, so the primary outcome is SURVIVES
+only if none fails and NULL otherwise.
+
+\begin{enumerate}[leftmargin=1.6em,itemsep=2pt,topsep=3pt]
+  \item \textbf{Paired interval.} The one-sided $95\%$ lower bound of $\Delta\IR(4-5)$ exceeds zero.
+  \item \textbf{Detectability.} $\Delta\IR(4-5)$ reaches the paired minimum detectable effect, so
+    an effect too small for this design to resolve cannot be reported as one.
+  \item \textbf{Placebo independence.} The one-sided lower bound of $\IR(4)-\IR(2)$ exceeds zero
+    --- a comparison that does not involve the placebo at all, so a placebo pathology cannot by
+    itself produce a positive verdict.
+  \item \textbf{Economic materiality.} $\Delta\IR(4-5) \geq 0.5$ annualized information ratio,
+    fixed before data. The rule string names the tested quantity as (information) $+$ (capacity
+    handicap), so the manifest cannot be read as claiming the information effect alone cleared it.
+  \item \textbf{Multiplicity.} The deflated Sharpe ratio is at least $0.95$ over the enumerated
+    trial set.
+\end{enumerate}
+% artifact: src/trikaal/eval/verdict.py — clause keys 1_paired_ci, 2_mde_paired, 3_placebo_validity, 4_economic_floor, 5_dsr; ECON_FLOOR_IR = 0.5 defined :74, read :1074
+
+Two guards sit outside the clauses, and both are HALT-only: they can refuse to report an outcome
+their own inputs cannot support, and they can never turn SURVIVES into NULL or the reverse. The
+degeneracy guard fails closed if any cell--seed pair yielded non-finite forecast diagnostics, or if
+a required diagnostic is missing --- a response to a defect in which the guard reported itself
+armed while examining nothing. The power guard compares each cell's across-seed range to the effect
+being claimed and halts if the wobble of the inputs reaches the size of the claim.
+% artifact: src/trikaal/eval/verdict.py — degeneracy_guard (armed computed, fails closed), power_guard (HALT-only, cannot flip)
+
+The outcome taxonomy has four words and all four are publishable: SURVIVES, NULL, INCONCLUSIVE,
+and HALT\_ADJUDICATE. Committing to INCONCLUSIVE in advance is what makes the design honest under
+low power --- the response to an underpowered result was written out and signed before the seed
+count was fixed, so ``we did not have the power'' is a pre-registered outcome rather than a
+post-hoc excuse.
+% artifact: src/trikaal/eval/verdict.py:75-79; docs/m6_prereg.md §7 v1.5 (R3 as the pre-committed inconclusive response)
+
+Two further requirements are enforced at the manifest level rather than trusted to prose. A
+verdict manifest missing any required field cannot be quoted, and the loader refuses it; the
+required set includes a \texttt{dual\_specification} field carrying the verdict computed under
+both the current and the pre-amendment specifications from the same artifacts, with any
+disagreement between them a first-class finding rather than a footnote. And every manifest carries
+a required disclosure, refused if absent: \emph{we cannot exclude that our BSQ baseline is weaker
+than a reference BSQ implementation, which would inflate the FSQ-versus-BSQ comparison}.
+% artifact: src/trikaal/eval/verdict.py :: REQUIRED_MANIFEST_FIELDS includes dual_specification and the external-validation record
+
+\subsection{Multiple testing and power}
+\label{sec:power}
+
+The deflated Sharpe ratio corrects for the number of configurations the design could have
+reported, and that number is enumerated rather than estimated: five cells $\times$ three horizons
+$\times$ four values of $\kappa$ $=$ $60$ trials. The factorization is computed from named axes in
+code and asserted by a gate, together with the negative form proving the count does not silently
+acquire a seeds axis.
+% artifact: src/trikaal/eval/conformance.py :: PINNED_DSR axes ('cells','horizons','kappas'), cells = (1,2,3,4,5), kappas = (1.0,1.5,2.0,3.0); DSR_N_TRIALS == 5 * len(H) * len(K)
+
+Seeds do not enter that count, and the reason is worth stating precisely because it looks like a
+convenience. The five seeds are \emph{replicates of one configuration}, not five configurations we
+could have chosen to report. A multiple-testing adjustment cannot legitimately become stricter
+because the same specification was repeated more times; if it did, replication --- which reduces
+variance --- would be penalized as though it were search. The full $300$-value cross-product of
+cells, seeds, horizons and $\kappa$ is retained as an audit trail so that a reader can verify no
+seed-level selection occurred, but the correction is applied over $60$.
+% artifact: docs/m6_prereg.md §7 v1.5 amendment (N 180 -> 60, seeds as replicates); the 300-value enumeration retained as the audit trail
+
+The null dispersion the deflation uses is taken from the placebo cell alone. The earlier
+specification pooled all arms, which made this clause anti-correlated with its own hypothesis: a
+larger treatment effect inflated the pooled dispersion and made the clause harder to pass, to the
+point of requiring a cell-4 information ratio of $3$--$10$ against an economic floor of $0.5$. A
+proposed fallback to cell 2 was rejected because §5 can claim $\IR(2)-\IR(1)$, which makes cell 2 a
+treatment arm rather than a null. The amendment was made before any data and its direction was
+recorded in advance as indeterminate: it loosens clause 5 by $0.859\times$ while clause 2 tightens
+by $1.24$--$1.60\times$.
+% artifact: docs/m6_prereg.md §7 v1.5; runs_manifest/m6_taxonomy_audit.json
+
+The minimum detectable effect carries two terms --- scoring noise and training variance --- and is
+computed with a self-written Student-$t$ quantile and Welch--Satterthwaite degrees of freedom
+rather than a normal approximation, because at three to five seeds the degrees of freedom are
+small enough that the difference matters. The reference figure at the pinned horizon is
+$3.518$ annualized information ratio.
+% artifact: runs_manifest/m6_mde_inputs.json :: h15_pooled.{MDE_annualized_IR=3.518, T=35063, T_eff=35002.3}
+
+We state the consequence plainly, in advance. That reference figure stands against an economic
+floor of $0.5$ and a prior, measured on this data at an earlier milestone, of
+$|\text{RankIC}| \approx 0.027$ for trade-flow imbalance. The paired minimum detectable effect
+governs and will sit below the reference figure to the extent that cells 4 and 5 share exposure, by
+an amount not knowable before the data. \textbf{On these numbers, NULL or INCONCLUSIVE is the most
+likely honest outcome}, and nothing in the design manufactures power it does not have.
+% artifact: docs/milestone2_btcusdt_stage1.md — per-feature causal IC screen, TFI RankIC -0.0270 [-0.0304, -0.0236] at h=5
+
+\subsection{Pre-registration as the integrity mechanism}
+\label{sec:prereg}
+
+Everything above --- the cells, the parity band, the placebo construction, the five clauses and
+their thresholds, the horizon, the cost, the $\kappa$ grid, the seed count, the trial count and the
+null basis --- is pinned on a conformance surface that the runner checks before it trains
+anything, and each pin carries a mutation test proving the gate rejects its predecessor value.
+Changing a pin is not a code edit that a reviewer must catch; it fails the run.
+% artifact: src/trikaal/eval/conformance.py; per-pin mutation KATs
+
+The pre-registration is a dated document with an append-only amendment log. Every amendment
+records what changed, when, why, and --- where the direction was knowable --- whether it made the
+bar easier or harder, recorded before the data that would reveal which. Amendments made after
+seeing calibration results are marked as such, including the one described in
+\cref{sec:mech-fix}. The log also contains withdrawn claims: statements this project made and
+later retracted, retained rather than deleted. We regard that as the load-bearing part. A
+pre-registration that only ever records successful predictions is not evidence of discipline; one
+that records its own corrections is.
+% artifact: docs/m6_prereg.md §7 — amendment log, entries v1.1 through v1.6.27, each dated
