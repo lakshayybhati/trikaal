@@ -1,0 +1,93 @@
+% =============================================================================================
+% STANDALONE EXPORT OF §7 FOR EXTERNAL COLD REVIEW.
+%
+% Contains §7 exactly as it stands in main.tex. Nothing is re-typed for this export, so it cannot
+% drift from the manuscript. §7 carries no figures of its own; the one figure it points at
+% (Figure 7, coverage) belongs to §5 and is reproduced at the end for reference only.
+%
+% Build:  tectonic -X compile paper/review_s7.tex
+% =============================================================================================
+\documentclass[10pt]{article}
+\usepackage{preprint}
+
+\author{}
+\date{}
+
+\begin{document}
+
+% §7 references six things outside this export. Bind each label to the number it carries in the
+% manuscript so every reference resolves to what a reader of the full paper would see.
+\makeatletter
+\@namedef{r@sec:mechanism}{{3}{1}{Mechanism}{section.3}{}}
+\@namedef{r@sec:mechanism@cref}{{[section][3][]3}{1}}
+\@namedef{r@sec:mech-fix}{{3.6}{1}{Intervention}{subsection.3.6}{}}
+\@namedef{r@sec:mech-fix@cref}{{[subsection][6][3]3.6}{1}}
+\@namedef{r@sec:setup}{{4}{1}{Experimental design}{section.4}{}}
+\@namedef{r@sec:setup@cref}{{[section][4][]4}{1}}
+\@namedef{r@sec:results}{{6}{1}{Results}{section.6}{}}
+\@namedef{r@sec:results@cref}{{[section][6][]6}{1}}
+\@namedef{r@sec:repro}{{8}{1}{Reproducibility and verification}{section.8}{}}
+\@namedef{r@sec:repro@cref}{{[section][8][]8}{1}}
+\@namedef{r@app:claims}{{C}{1}{Claims audit}{appendix.C}{}}
+\@namedef{r@app:claims@cref}{{[appendix][3][]C}{1}}
+\makeatother
+
+\setcounter{section}{6}   % so §7 numbers as §7, matching the manuscript
+\setcounter{figure}{6}    % Figures 1--6 precede this section
+\setcounter{table}{0}
+
+{\centering
+{\normalsize\textsc{Section 7 --- export for external review}}\\[0.5em]
+{\Large\bfseries Capacity Eviction in Reconstruction-Trained Tokenizers}\\[0.4em]
+{\small\color{tolgrey} Draft of \today\ --- section text frozen pending review}\\[1.6em]
+}
+
+\noindent\textbf{Note to the reviewer.} This is \S7 of a paper in preparation, exported verbatim
+from the manuscript. Numbering matches: \S7.1--\S7.9. The pre-registered experiment has \emph{not}
+been executed, so \S6 contains no results and nothing in \S7 is written with knowledge of an
+outcome --- every limitation here was known and written before any number existed. References to
+\S3, \S4, \S6, \S8 and Appendix~C point outside this export and are bound to their manuscript
+numbers; \cref{fig:coverage} belongs to \S5 and is reproduced at the end for reference.
+
+\medskip
+\noindent\textbf{Ordering principle.} The subsections are ordered by what we believe a referee
+would attack first, not chronologically and not by severity as we perceive it. The first three
+bound what the paper may claim \emph{even if every pre-registered clause passes}. If that ordering
+is wrong --- if something in \S7.5--\S7.9 belongs above something in \S7.1--\S7.4 --- that is
+itself a useful finding.
+
+\medskip
+\noindent\textbf{What we would most like challenged.} (i) Whether \S7.1 concedes enough: the
+headline mechanism is measured on a synthetic fixture, and we claim the entropy match licenses the
+construction without claiming it reproduces real covariance geometry. (ii) Whether the required
+disclosure in \S7.2 is sufficient, or whether a comparison with no external anchor should not be
+reported at all. (iii) Whether \S7.3's unquantified capacity handicap is a disclosure or a hole ---
+we state that $\Delta\text{IR}(4-5)$ mixes information with capacity and do not decompose them.
+(iv) Whether \S7.4's power discussion is honest about a minimum detectable effect two orders of
+magnitude above the prior. (v) Whether \S7.6's argument --- that signed returns are the only
+channel a label leak travels on --- actually holds, since it is the weakest link in the validation
+geometry and we know it. (vi) Anything a referee would raise that is not here at all.
+
+\bigskip
+\hrule
+\bigskip
+
+\input{sections/07_limitations}
+
+\clearpage
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig7_coverage.pdf}
+  \caption{\textbf{Reproduced from \S5 for reference only} --- \cref{sec:lim-universe} points at
+  this panel. Month-by-month presence for all $200$ instruments over the four-year window, ordered
+  by listing month: $7{,}024$ of a possible $9{,}600$ symbol-months are present. The right edge is
+  ragged because instruments that stop trading are \emph{kept}, and $17$ of them stop inside this
+  window.}
+  \label{fig:coverage}
+\end{figure}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

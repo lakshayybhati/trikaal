@@ -316,61 +316,29 @@ def panel(ax, *, after: bool):
 
 
 def main() -> None:
-    fig = plt.figure(figsize=(fs.SINGLE_COL, 3.0))
+    # §3 REVIEW, 2026-08-10: the Delta-val consequence strip is REMOVED. It carried the extraction
+    # result, which Figure 3 owns; two figures asserting the same result is one place for them to
+    # drift apart, and the strip made this figure argue a conclusion instead of showing a mechanism.
+    # Figure 1 is now purely the interface diagram plus the two legibility numbers -- the single
+    # quantity the interface change is about. DVAL_BEFORE / DVAL_AFTER stay loaded from their
+    # receipt so the removal is a layout decision, not a loss of provenance.
+    fig = plt.figure(figsize=(fs.SINGLE_COL, 2.55))
     gs = fig.add_gridspec(
+        1,
         2,
-        2,
-        height_ratios=[1, 0.20],
-        hspace=0.02,
         wspace=0.10,
         left=0.055,
         right=0.985,
-        top=0.905,
-        bottom=0.02,
+        top=0.890,
+        bottom=0.025,
     )
     panel(fig.add_subplot(gs[0, 0]), after=False)
     panel(fig.add_subplot(gs[0, 1]), after=True)
 
-    # ---- consequence strip, spanning both panels ------------------------------------------
-    ax = fig.add_subplot(gs[1, :])
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-    ax.axis("off")
-    ax.plot([0.0, 1.0], [0.93, 0.93], lw=0.5, color=fs.GRID)
-    ax.text(
-        0.5,
-        0.72,
-        "Same fixture, same budget, same 1.151-nat signal planted in the microstructure channel:",
-        ha="center",
-        va="center",
-        fontsize=6.6,
-        color=fs.INK,
-    )
-    ax.text(
-        0.255,
-        0.20,
-        f"$\\Delta$val {DVAL_BEFORE:+.4f} nats   —   not recovered",
-        ha="center",
-        va="center",
-        fontsize=7.2,
-        weight="bold",
-        color=fs.FAIL,
-    )
-    ax.text(
-        0.755,
-        0.20,
-        fs.minus(f"$\\Delta$val {DVAL_AFTER:+.4f} nats   —   recovered"),
-        ha="center",
-        va="center",
-        fontsize=7.2,
-        weight="bold",
-        color=fs.OHLCV,
-    )
-
     # bits parity note, since "unchanged capacity" is the claim that makes the pair fair
     fig.text(
         0.5,
-        0.975,
+        0.970,
         f"coarse {FSQ_V_C:,} codes / {BITS_C:.2f} bits  +  fine {FSQ_V_F:,} codes / "
         f"{BITS_F:.2f} bits  =  {BITS_C + BITS_F:.3f} bits per bar, both panels"
         f"      ($\\lambda$ = {LAMBDA:g} on the micro block, right panel only)",
