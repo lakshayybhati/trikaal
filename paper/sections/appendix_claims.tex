@@ -89,7 +89,8 @@ quantity & value & status & source \\
 minimum detectable effect, $h=15$ & $3.518$ annualized IR & derived & MDE inputs receipt \\
 economic floor & $0.5$ & pin & verdict constants \\
 prior, $|\text{RankIC}|$ at $h=5$ / $h=15$ & $0.0270$ / $0.0197$ & measured & M2 univariate screen \\
-DSR trial count & $60$ & pin & conformance \\
+DSR trial count & $60$ & pin & conformance; $= 5\times3\times4$, but the \\
+ & & & enumeration was our choice, not a finding \\
 bits-per-bar gap, FSQ vs BSQ & $0.058$ & derived & vocabulary arithmetic \\
 parameter gap & $69{,}632$ ($0.327\%$) & measured & realized counts \\
 signed-return ACF at lag 60 & $0.0067$ mean, $0.0191$ worst & measured & embargo premise \\
@@ -129,9 +130,9 @@ test suite & $727$ passing & measured & \texttt{pytest} \\
 \subsection*{E.5\quad Everything in \S6}
 
 Every quantity in \cref{sec:results} is \textbf{pending}. Each is bound to a single named field of
-the verdict manifest, named beside the slot in the source, so that filling it is a mechanical
-substitution rather than a judgement. The three figures in that section are drawn on placeholder
+the verdict manifest, tabulated in \cref{app:repro} D.5 and named beside the slot in the
+source, so that filling it is a mechanical substitution rather than a judgement. The three figures in that section are drawn on placeholder
 data that is implausible by construction --- absent, symmetric about zero, or at magnitudes two
 orders above anything the design can produce --- so that a cropped panel cannot be mistaken for a
-result. \Cref{sec:res-interpretation} carries both interpretation paragraphs, written and dated
-before the run.
+result. \Cref{sec:res-interpretation} carries all five interpretation branches, written and dated
+before the run; exactly one survives it.

@@ -79,6 +79,14 @@ between cells 2 and 4, and between cell 4 and the placebo, is internal to our ow
 on both sides, and a weak baseline cannot inflate a difference in which the same baseline appears
 twice.
 
+The consequence is a withdrawal, and we make it here rather than leaving it implicit. \textbf{The
+three marginals involving a BSQ arm --- $\IR(2) - \IR(1)$, $\IR(4) - \IR(3)$, and $\IR(3) -
+\IR(1)$ --- are reported, not claimed.} They appear in \cref{sec:results} with their confidence
+intervals because suppressing them would be worse, and they are excluded from every claim this
+paper makes. A reader who wants the FSQ-versus-BSQ question answered will not find it answered
+here; what is answered is the input-arm question, on which the same implementation stands on both
+sides of every comparison.
+
 \subsection{The placebo removes information and capacity together}
 \label{sec:lim-placebo}
 
@@ -136,6 +144,41 @@ can manufacture neither a positive nor a negative claim --- which is what makes 
 have added it before the run. It does not increase power. It prevents us from reporting a number
 smaller than its own inputs' wobble.
 % artifact: src/trikaal/eval/verdict.py :: power_guard; tests/eval/test_degeneracy_guard.py
+
+\subsection{Whether the execution filter binds on real data is unmeasured}
+\label{sec:lim-filter}
+
+The headline metric is a cost-aware net information ratio \emph{under a forecast-magnitude
+execution filter}, $\theta = \kappa c$. Whether that filter does any per-bar work on real data is
+not known, and nothing in this project measures it: no evaluation artifact from a real-lake run
+retains a decision-activity value, so the question is genuinely open rather than answered
+elsewhere. On the calibration fixture it behaved in both extremes --- inert on the degenerate
+checkpoints at the pinned horizon, and binding at every $\kappa$ on a non-degenerate one
+(\cref{sec:metric}).
+
+The reason this is a limitation and not a detail is arithmetic. Binding is decided by the
+\emph{forecast} magnitude, and for a calibrated conditional mean
+$\operatorname{std}(\hat{\mu}) = \text{IC}\cdot\operatorname{std}(y)$. The $15$-bar forward return
+has a standard deviation of $0.004238$ on our largest instrument and a $192$-instrument median of
+$0.00536$; at our own prior of $|\text{RankIC}| = 0.027$ the threshold sits between seven and
+twenty-eight standard deviations out in the forecast distribution across the modeled-cost range,
+and one instrument in $192$ would trade even $5\%$ of bars at the most favourable cost. If the
+trained models are calibrated, activity is near zero everywhere. If they are over-dispersed, they
+trade, but the realized information ratio then partly reflects miscalibration rather than skill.
+% artifact: measured on processed/universe_bars — BTCUSDT 15-bar forward log-return std = 0.004238
+%   over n = 1,051,199; 192-instrument median 0.00536 (p5 0.00372, p95 0.00887), 2024-06.
+%   theta = kappa * c_modeled per src/trikaal/eval/xsection.py:335; modeled c_total range 8e-4 to
+%   2.1e-3 per the harness KATs. Arithmetic over measured inputs; the harness was not run at these
+%   values.
+
+The pre-registration does not assume an answer. A HALT-only degeneracy guard refuses a verdict for
+any cell whose decision activity at $\kappa^\ast$ is exactly $0$ or $1$, tested on the seed mean
+and on every individual seed. We state its limit rather than leave it to be found: unlike the
+companion sign-balance test, which carries a $[0.05, 0.95]$ band, the activity test fires only at
+the exact endpoints, so an activity of $0.999$ passes it. Whether to band that leg is an open
+decision at the time of writing, and \cref{app:repro} records it as open rather than resolved.
+% artifact: src/trikaal/eval/verdict.py :: FRAC_NEG_BAND = (0.05, 0.95) on the sign leg;
+%   _never_binds tests v <= 0.0 or v >= 1.0 on the activity leg. No amendment supersedes this.
 
 \subsection{One exchange, one venue, one year of scored data}
 \label{sec:lim-universe}

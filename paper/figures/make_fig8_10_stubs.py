@@ -180,20 +180,23 @@ def fig8_verdict() -> None:
         color="#b0b0b0",
     )
     ax.add_patch(
-        Rectangle((0.53, 0.012), 0.47, 0.125, fc="white", ec="#c8c8c8", lw=0.7, ls=(0, (2, 1.5)))
+        Rectangle((0.53, 0.008), 0.47, 0.150, fc="white", ec="#c8c8c8", lw=0.7, ls=(0, (2, 1.5)))
     )
+    # Two lines, not one: at 5.5 pt the single-line form overran the dashed box's right edge
+    # (caught by looking at the render, not by any check). The box is 0.47 wide in axes units.
     ax.text(
         0.765,
-        0.100,
-        "SURVIVES / NULL / INCONCLUSIVE / HALT_ADJUDICATE",
+        0.112,
+        "SURVIVES / NULL /\nINCONCLUSIVE / HALT_ADJUDICATE",
         ha="center",
         va="center",
-        fontsize=5.5,
+        fontsize=5.2,
+        linespacing=1.35,
         color=fs.RULE,
     )
     ax.text(
         0.765,
-        0.045,
+        0.038,
         "emitted  —",
         ha="center",
         va="center",

@@ -7,8 +7,9 @@
 % from a single named field of the verdict manifest -- the field is named beside every slot so the
 % substitution is mechanical and cannot be improvised.
 %
-% BOTH interpretation paragraphs in §6.6 are written NOW and dated, before any result exists, so
-% that neither can be tuned to an outcome. That is the point of writing them here.
+% ALL FIVE interpretation branches in §6.5 are written NOW and dated, before any result exists, so
+% that none can be tuned to an outcome. Exactly one is retained after the run; the other four are
+% DELETED, not softened. The branch that fires is determined by the manifest, not chosen.
 % =============================================================================================
 \section{Results}
 \label{sec:results}
@@ -116,9 +117,26 @@ manifest schema and are watermarked until the run lands.
 \subsection{Interpretation}
 \label{sec:res-interpretation}
 
-\emph{Both paragraphs below were written on 2026-08-10, before the run was executed and before any
-result existed. Exactly one will be retained; the other is deleted rather than softened. They are
-placed here, in advance, so that neither can be written to fit an outcome.}
+\emph{The five paragraphs below were written on 2026-08-10, before the run was executed and before
+any result existed. Exactly one will be retained; the other four are deleted rather than softened.
+They are placed here, in advance, so that no interpretation can be composed with an outcome in
+front of us. The branch that fires is determined by the verdict manifest, not chosen.}
+
+\paragraph{If the legibility gate fails on real data.} This is the mechanism's own modal
+prediction, and it is a result rather than an accident. The gate requires at least $0.90$ sign
+accuracy on every one of the six live microstructure dimensions, recovered from each bar's own
+token; a hard stop means the re-specified interface, which restores that property on an
+entropy-calibrated fixture, does not restore it on real microstructure. What that establishes is
+the first non-fixture confirmation of capacity eviction: on real data, at the pinned budget, a
+reconstruction-trained tokenizer does not make microstructure legible per-bar even when built to.
+The claim ends there. It does \emph{not} establish that no tokenizer can --- $\lambda$ was fitted
+on a synthetic proxy (\cref{sec:lim-matching}), the budget is one point in a space we did not
+search, and a gate failure is uninformative about how far short the interface fell. It also does
+not test the microstructure hypothesis at all: no second-stage training is authorized, so cells 1
+through 5 are never scored and no verdict is emitted. The pre-registered adjudication executes ---
+the gate raises rather than degrading, the failure is recorded with its per-dimension values, and
+the decision to re-specify, re-tune or stop is made against the recorded numbers rather than
+retrospectively.
 
 \paragraph{If the outcome is \textsc{survives}.} A positive $\Delta\IR(4-5)$ that clears the
 paired confidence interval, the minimum detectable effect, the economic floor and the deflation
@@ -134,19 +152,39 @@ result here is an existence proof on this slice, not a property of markets. The 
 \cref{sec:mechanism} would remain a fixture result; a positive outcome is consistent with it and
 does not confirm it, because many differences between cells 2 and 4 could produce the same sign.
 
-\paragraph{If the outcome is \textsc{null} or \textsc{inconclusive}.} This is the outcome the
-design's own arithmetic makes most likely, and we pre-committed it as publishable before any result
-existed, so it is reported without reframing. A null here means that under this pre-registered
-decision rule, at this budget, on this slice, the microstructure arm did not beat its placebo by a
-margin the design could resolve. It does \emph{not} mean microstructure carries no information: the
-minimum detectable effect is $3.518$ annualized IR against a prior of $|\text{RankIC}| = 0.027$, so
-the design would fail to detect a real effect of the size we actually expect, and
-\cref{sec:lim-power} states that the effect we can detect is larger than the effect we predict.
-Nor does it mean the mechanism of \cref{sec:mechanism} is wrong --- the mechanism is established on
-a fixture and is not contingent on this outcome. What a null does establish is narrower and still
-worth publishing: that the pipeline, with the interface defect removed and the legibility gate
-passed, does not convert this microstructure signal into net information ratio at this scale.
-Given how much of this literature reports only positive results, a pre-registered null with its
-power analysis stated in advance is a contribution to the record rather than a failed experiment.
-\Cref{sec:lim-power} names what would change the answer: more scored data, a lower-cost venue, or
-an effect larger than our own prior.
+\paragraph{If the outcome is \textsc{null}.} A null is the outcome the design's own arithmetic
+makes most likely, and we pre-committed it as publishable before any result existed, so it is
+reported without reframing. It means that under this pre-registered decision rule, at this budget,
+on this slice, the microstructure arm did not beat its placebo by a margin the design could
+resolve. It does \emph{not} mean microstructure carries no information: the minimum detectable
+effect is $3.518$ annualized IR against a prior of $|\text{RankIC}| = 0.027$, so the design would
+fail to detect a real effect of the size we actually expect, and \cref{sec:lim-power} states that
+the effect we can detect is larger than the effect we predict. Nor does it falsify the mechanism of
+\cref{sec:mechanism}, which is established on a fixture and is not contingent on this outcome. What
+a null does establish is narrower and still worth publishing: that the pipeline, with the interface
+defect removed and the legibility gate passed, does not convert this microstructure signal into net
+information ratio at this scale. Given that the published record in adjacent fields is measurably
+skewed toward positive findings --- \citet{franco2014publication} track a population of studies
+from design to publication and find null results systematically less likely to be written up at all
+--- a pre-registered null with its power analysis stated in advance is a contribution to the record
+rather than a failed experiment. \Cref{sec:lim-power} names what would change the answer: more
+scored data, a lower-cost venue, or an effect larger than our own prior.
+
+\paragraph{If the outcome is \textsc{inconclusive}.} \textsc{inconclusive} is a distinct outcome
+from \textsc{null}, and conflating them would be the more comfortable error. A null says the effect
+was not there to the resolution we committed to. \textsc{inconclusive} says the instrument did not
+resolve the question either way --- the clauses did not separate, or they separated in a pattern
+the pre-registered rule does not map to a decision. The correct report is that the experiment did
+not answer its question, not that the answer was negative. We name in advance what we will not do:
+we will not re-run with more seeds to break the tie, because the seed count was fixed at five up
+front precisely so that this response is unavailable, and we will not promote a secondary
+diagnostic to a headline. \Cref{sec:lim-power} carries the reason an inconclusive outcome is
+foreseeable rather than surprising.
+
+\paragraph{If a guard emits \textsc{halt\_adjudicate}.} Neither guard can change an outcome; each
+can only withhold one. A halt means the verdict's own inputs cannot support a verdict --- a cell's
+book is constant-direction, or a cell's across-seed range reaches the size of the effect being
+claimed. What happens next is procedural rather than interpretive: the halting cell and the guard
+that fired are reported with their per-seed values, no primary outcome is stated, and the clause
+results are published unchanged, since the guards are computed after the clauses and do not touch
+them. A halt is not a null and must not be reported as one.
