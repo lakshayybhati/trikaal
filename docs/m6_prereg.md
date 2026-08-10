@@ -216,6 +216,81 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.28 (2026-08-11, ★ RULING — THE DEGENERACY GUARD'S ACTIVITY LEG IS **NOT** BANDED.
+  $0, documentation only. NO GATE VALUE MOVES.)**
+  - **Ruling of record:** `docs/degeneracy_guard_activity_leg_RULING.md`, commit `2012acc`. This
+    entry is the log's copy; the ruling document is the long form. **The ruling previously existed
+    only as that side document and named a tag that was not in this log** — caught by the paper's
+    own count, which reported what the log CONTAINED rather than what the ruling ASSERTED. The
+    discipline that caught it is the one being recorded here.
+  - **THE RULING: keep as is. The activity leg tests the exact endpoints 0 and 1, with no band.**
+    The reason is **INSUFFICIENCY OF THE STATISTIC, NOT ACCEPTANCE OF THE RISK.** Verified against
+    `runs_manifest/m6_h_sweep.json :: cells.moneyleg_noise_cell2.by_h.5.mu_diag`:
+    `activity_decisions_by_kappa = {1: 1.0, 1.5: 1.0, 2: 1.0, 3: 0.9318333333333333}` — **the
+    filter is FULLY INERT at three of the four pinned grid values while the κ\* scalar the guard
+    reads sits at 0.9318**, interior to `[0.05, 0.95]` and to any plausible widening. A perfect
+    band on that scalar would not have seen it. The κ\* scalar answers *"did the filter bind at the
+    selected κ"*; the degeneracy is *"did the filter do per-bar work"*. Banding a provably
+    insufficient statistic buys the APPEARANCE of coverage. Secondary reasons: activity is a
+    scale-dependent FRACTION (9 trades is 7e-6 at n = 1.3M and 7.5e-4 at n = 12k — the same disease
+    three orders of magnitude apart, and no single band expresses it at both scales); the endpoints
+    target the two fixed points of the argmax-over-κ map rather than a rounding boundary; and a
+    false HALT is not cheap, since C.1 ruled S=5 up front so R1/R2b collapse into R3 and
+    `grep -c "HALT\|degenerac" docs/m6_fanout_runbook.md` returns **0** — no recovery procedure
+    exists.
+  - **THE BLIND SPOT IS REAL, WIDE, AND DISCLOSED RATHER THAN CLOSED.** An endpoint-only test does
+    not see a book trading 0.1% of bars, and that is the EXPECTED real-data regime rather than a
+    corner case. This ruling does **not** find the exposure acceptable; it finds that **banding
+    this scalar does not close it**. The closure is the disclosure plus the three reads below.
+  - **TWO CORRECTIONS THE VERIFICATION PRODUCED AGAINST `docs/degeneracy_guard_band_decision.md`
+    (`5c9ab3f`), BOTH CONSERVATIVE — the memo understated its own finding.**
+    1. **`std(y_15)` = 0.003504 over n = 2,103,825**, not 0.004238 over n = 1,051,199. Measured on
+       `processed/universe_bars/symbol=BTCUSDT` over the FULL 48 symbol-months, respecting segment
+       boundaries and counting only complete 15-bar windows. **Independently reproduced at
+       v1.6.28-time to six decimals and to the exact bar count under that convention** (a naive
+       window that bridges segment gaps gives n = 2,103,839, a 14-bar difference that does not move
+       the standard deviation). Direction: a SMALLER std(y) puts the execution threshold FURTHER
+       out — **8.5 / 11.6 / 22.2 sd** at IC = 0.027, κ=1 across the modeled-cost range rather than
+       7.0 / 9.6 / 18.4 — and raises the IC a calibrated forecast needs to trade 5% of bars from
+       0.096–0.253 to **0.116–0.306**, four to eleven times our own prior.
+    2. **The memo's "7.7% of compute-optimal" hedge is STALE**, superseded by `591ec44`
+       (2026-08-03). The pinned budget is 26,003 steps = **426,033,152 tokens = 20.00
+       tokens/param**, independently recorded at `docs/BUILD_RECORD.md:422`. **A model trained to
+       compute-optimal is MORE likely to be calibrated, not less**, so the no-trades branch is MORE
+       likely than the memo states and the over-dispersion escape it leaned on is WEAKER.
+       *Sourcing note recorded at v1.6.28-time:* the token figure needs three inputs, and only two
+       are pins — `PINNED_STEPS_STAGE2` (26,003) and `PINNED_MONEY_SEQ_LEN` (512). The batch size
+       of 32 is a **dataclass default** at `src/trikaal/train/orchestrator.py:90`, not a
+       conformance pin, so it can drift where a pin cannot. The arithmetic and the conclusion hold
+       — 20.00 tok/param is independently recorded in the build record — but the ruling document's
+       claim that the figure was "verified from `PINNED_STEPS_STAGE2` at HEAD" is **incomplete as
+       stated**, and is corrected here rather than in the side document.
+  - **THREE $0 REPORTING CHANGES ADOPTED**, all reads of quantities the code already computes, all
+    taking the same required-field treatment as `mu_diag`: (i) persist
+    `activity_decisions_by_kappa` over the FULL grid per (cell, seed) — exactly the quantity the
+    κ\* scalar hides; (ii) persist the trade **COUNT** beside the fraction per (cell, seed), since
+    a fraction is scale-dependent and a count is not; (iii) persist `std(μ̂)/θ` at κ\* per
+    (cell, seed) — the dimensionless margin, which tells an adjudicator immediately which branch
+    the run landed in.
+  - **NO GATE VALUE MOVES.** No pin, threshold, seed, enumeration or gate value is altered, so the
+    v1.5 freeze is untouched, **no direction-blind test is engaged, and no mutation test is
+    required** — there is no changed gate for a mutation to falsify. The three additions are
+    manifest fields, not gates.
+  - **DOES NOT BLOCK THE RUN**, under the pre-committed bar (K21, 2026-08-03, fixed before its
+    first application): a finding delays the run **iff** it would cause a FALSE VERDICT that
+    disclosure cannot neutralize. The exposure produces `HALT_ADJUDICATE`, which is the guard
+    working rather than a false verdict, and HALT is one of the five pre-written, pre-dated
+    interpretation branches in the paper's §6.5. The κ grid is **unchanged**: θ = κ·c with κ ≥ 1
+    means *trade only when the forecast exceeds its own cost*, and κ < 1 is economically incoherent
+    for a cost-aware filter. If the filter admits nothing, **that is a result** — at a measured
+    RankIC of 0.027 no forecast clears a 0.30% round trip on any of 192 instruments — and a study
+    unable to reach that conclusion would be the defective one.
+  - **PAPER TOUCH-POINTS:** §7.5 carries both `std(y)` measurements with both sample windows named
+    and the direction stated; Appendix D.2 records the leg as endpoint-only **by ruling, not by
+    omission**, cites `2012acc`, and names the three reads above. The paper's amendment-tag count
+    moves 41 → 42 **only now that this entry exists**, which is the ordering the discipline
+    requires.
+
 - **v1.6.26 (2026-08-04, ★ P2 EXECUTED ON REAL CUDA — $0.426, three defects, primary question
   still OPEN. Boxes destroyed, re-list confirms 0.)**
   - **P2 DID NOT ANSWER ITS QUESTION AND IS REPORTED AS A RESULT.** Eval under forced determinism
