@@ -1,0 +1,75 @@
+% =============================================================================================
+% STANDALONE EXPORT OF §5 FOR EXTERNAL COLD REVIEW.
+%
+% Contains §5 exactly as it stands in main.tex, with its figure. Nothing is re-typed for this
+% export, so it cannot drift from the manuscript: the figure float lives in sections/05_figures.tex,
+% which main.tex and this file both \input.
+%
+% Build:  tectonic -X compile paper/review_s5.tex
+% =============================================================================================
+\documentclass[10pt]{article}
+\usepackage{preprint}
+
+\author{}
+\date{}
+
+\begin{document}
+
+% §5 references three things outside this export, all in §7 and §8. Bind each label to the number
+% it carries in the manuscript so every reference resolves to what a reader of the full paper
+% would see.
+\makeatletter
+\@namedef{r@sec:lim-universe}{{7.5}{1}{One exchange, one venue, one year of scored data}{subsection.7.5}{}}
+\@namedef{r@sec:lim-universe@cref}{{[subsection][5][7]7.5}{1}}
+\@namedef{r@sec:lim-features}{{7.7}{1}{The microstructure leg is narrower than ``microstructure'' suggests}{subsection.7.7}{}}
+\@namedef{r@sec:lim-features@cref}{{[subsection][7][7]7.7}{1}}
+\@namedef{r@sec:repro}{{8}{1}{Reproducibility and verification}{section.8}{}}
+\@namedef{r@sec:repro@cref}{{[section][8][]8}{1}}
+\makeatother
+
+\setcounter{section}{4}   % so §5 numbers as §5, matching the manuscript
+\setcounter{figure}{6}    % Figures 1--6 precede this section
+\setcounter{table}{0}
+
+{\centering
+{\normalsize\textsc{Section 5 --- export for external review}}\\[0.5em]
+{\Large\bfseries Capacity Eviction in Reconstruction-Trained Tokenizers}\\[0.4em]
+{\small\color{tolgrey} Draft of \today\ --- section text frozen pending review}\\[1.6em]
+}
+
+\noindent\textbf{Note to the reviewer.} This is \S5 of a paper in preparation, exported verbatim
+from the manuscript with its figure. Numbering matches: \S5.1--\S5.7 and Figure~7. References to
+\S7 and \S8 point outside this export and are bound to their manuscript numbers. \S5 is being
+reviewed alongside \S7, which carries the limitations these facts imply; where \S5 states a scope
+boundary it names the \S7 subsection that owns it rather than arguing it here.
+
+\medskip
+\noindent\textbf{Every number in this section was re-verified against its artifact by script}
+before export --- 25 of 25, re-read from the milestone record, the lake-surface receipt, the
+design-inputs receipt and the pinned constants imported live, rather than transcribed from an
+earlier draft.
+
+\medskip
+\noindent\textbf{What we would most like challenged.} (i) Whether \S5.1's construction actually
+removes survivorship bias, or only the most visible part of it --- the universe is bootstrapped
+from the dump index rather than a live instrument list, but an instrument still had to list on
+this venue to be in it. (ii) Whether \S5.2's disclosure is placed strongly enough: the feature
+vector is 16 wide and 13 live, and three specified dimensions are constant-zero on every bar.
+(iii) Whether the causal-normalization argument in \S5.3 is complete, or whether there is a
+lookahead path the planted-leak tests do not cover. (iv) Whether \S5.4's $99.0\%$ microstructure
+availability is really enough to say the placebo comparison is not confounded by absence.
+(v) Whether the $41$-versus-$17$ delisting distinction in \S5.5 is stated clearly enough to
+survive being quoted out of context. (vi) Any number that does not follow from what is stated.
+
+\bigskip
+\hrule
+\bigskip
+
+\input{sections/05_data}
+\input{sections/05_figures}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
