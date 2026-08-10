@@ -8,6 +8,16 @@ VERDICT THE FIGURE MUST CARRY WITHOUT ITS CAPTION
     and leaves the within-block correlation standing, which is why the headline difference carries
     a capacity handicap that the design discloses rather than removes.
 
+CONTEXT-STRIPPING RULE (CLAUDE.md standing rules; BUILD_RECORD.md section 5). Until 2026-08-10 the
+    red annotation block read "Cell 6 ... is conditional on a pre-committed probe" while the LaTeX
+    caption had already been corrected to "future work rather than a committed contingency". Cell 6
+    appears nowhere in docs/m6_prereg.md -- verified by exhaustive case-insensitive search -- so the
+    in-figure text asserted a commitment the pre-registration explicitly refuses. Cropped out of its
+    caption, which is the state this figure is most likely to be read in, the panel made a claim the
+    project has no basis for. The rule is that the ARTEFACT must be safe with its context stripped,
+    so the graphic and the caption must land on the same statement, not merely be reconcilable.
+    Standing constraint on this figure: the string "pre-committed" must not appear in the pixels.
+
 ARTIFACTS — loaded at render time.
     src/trikaal/train/cells.py            the five CellSpec entries (the authoritative registry)
     src/trikaal/constants.py              FSQ_LEVELS, FSQ_V_C, FSQ_V_F, MICRO_DIMS_IDX
@@ -295,8 +305,9 @@ def main() -> None:
         0.138,
         "cell 4's micro dims are partly free: they share structure the code already carries.\n"
         "Shuffling removes that sharing too, so $\\Delta$IR(4$-$5) is "
-        "(information) + (capacity handicap),\nnot information alone. Cell 6 would bracket it; "
-        "it is conditional on a pre-committed probe.",
+        "(information) + (capacity handicap),\nnot information alone. The handicap is NOT "
+        "quantified in IR units. A sixth cell holding the\nblock constant would bracket it; "
+        "no such cell is in the pre-registration, so it is future work.",
         ha="center",
         va="center",
         fontsize=5.9,

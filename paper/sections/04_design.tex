@@ -141,11 +141,16 @@ filter is $\theta = \kappa c$: trade only when $|\hat{\mu}| > \theta$, with $\ka
 the validation block from the grid $\{1.0, 1.5, 2.0, 3.0\}$ and then held fixed.
 
 One measured property of this filter is worth stating, because it changes how a calibration result
-should be read. On the fixture's degenerate checkpoints the threshold never bound: for the three
-noise-arm cells re-scored at the pinned horizon, the set of periods traded equalled the set scored
---- $12{,}000$ of $12{,}000$ --- at every $\kappa$ and at both volatility scalings tested, which
-makes the realized information ratio on those cells a pure function of
-$\operatorname{sign}(\hat{\mu})$ rather than of forecast magnitude.
+should be read. At the pinned horizon the threshold never bound on the fixture's degenerate
+checkpoints: for the three noise-arm cells re-scored there, the set of periods traded equalled the
+set scored --- $12{,}000$ of $12{,}000$ --- at every $\kappa$ and at both volatility scalings
+tested, which makes the realized information ratio on those cells a pure function of
+$\operatorname{sign}(\hat{\mu})$ rather than of forecast magnitude. At shorter horizons the same
+checkpoints fail at the opposite endpoint, trading nothing at all: one of the three traded zero of
+$12{,}000$ at $h \in \{1,2,3,5\}$, and every noise checkpoint we hold is pinned to one endpoint or
+the other at $h \le 3$. Both are the same pathology --- a filter that never discriminates --- and
+the guard below treats them alike.
+% artifact: runs_manifest/m6_h_sweep.json :: cells.moneyleg_noise_cell3.by_h.{1,2,3,5}.mu_diag.activity_decisions = 0.0; cells.moneyleg_noise_cell{1,2}.by_h.{1,2}, cells.acceptance_noise_cell4.by_h.1 likewise 0.0
 % artifact: runs_manifest/m6_moneyleg_local_rescore.json :: cells.{1,2,3}.per_sigma.{0.01,0.05}.{filter_ever_binds=false, filter_binds_by_kappa}; L2_L4_finding
 On a non-degenerate checkpoint of the \emph{same} fixture it bound at every $\kappa$: the planted
 cell~4 traded $96.2\%$, $94.4\%$, $92.5\%$ and $88.7\%$ of scored decisions at
@@ -153,10 +158,18 @@ $\kappa = 1.0, 1.5, 2.0, 3.0$.
 % artifact: runs_manifest/m6_h_sweep.json :: cells.acceptance_planted_cell4.by_h.15.mu_diag.activity_decisions_by_kappa = {1: 0.96225, 1.5: 0.9444166666666667, 2: 0.92475, 3: 0.8874166666666666}
 The two readings together identify the cause, and it is not the fixture. Binding is decided by the
 \emph{forecast} magnitude, never by the realized return: on the non-binding cells $\hat{\mu}$ had
-collapsed to a near-constant per-step offset --- a decode artifact, with $|\text{mean}|$ some $283$
-times its own standard deviation --- so it sat far outside the threshold everywhere. Raising the
+collapsed to a near-constant per-step offset --- a decode artifact, with $|\text{mean}|$ between
+$23$ and $283$ times its own standard deviation across the three cells --- so at $\kappa = 1.0$ it
+sat $4.4$ to $31.6$ thresholds away from zero while its own standard deviation was only $0.11$ to
+$0.48$ of one threshold, and cleared the filter everywhere. Raising the
 volatility scaling moved those cells \emph{further} from binding rather than nearer, which is the
 signature of an offset rather than of a threshold set too low.
+% artifact: runs_manifest/m6_moneyleg_local_rescore.json :: cells.{1,2,3}.per_sigma.0.01.mu_diag.{mean,std}
+%   = (-0.03473499, 1.226e-4), (0.01242130, 5.330e-4), (0.00487827, 1.348e-4)
+%   -> |mean|/std = 283.2 / 23.3 / 36.2; theta(kappa=1) = 0.0011 (src/trikaal/eval/costs.py CostModel.c_total
+%   at spread_frac 1e-4, q_over_adv 1e-3) -> |mean|/theta = 31.58 / 11.29 / 4.43; std/theta = 0.111 / 0.484 / 0.123.
+% CORRECTION (2026-08-10): this passage first quoted "some 283 times", which is cell 1 ALONE. Stating the
+%   largest of three as the property of all three overstated the weakest by 12x. Range now given.
 % artifact: docs/m6_prereg.md §7 v1.4.4 — noise cells obey mu = (h-1)*c, "a fixed, context-independent per-step value"; SIGMA 0.01 -> 0.05 recorded as a measured NON-FIX
 
 Whether the filter binds on real data is therefore an open question about the trained models, not
