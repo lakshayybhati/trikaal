@@ -1,0 +1,73 @@
+% =============================================================================================
+% STANDALONE EXPORT OF §4 FOR EXTERNAL COLD REVIEW.
+%
+% Contains §4 exactly as it stands in main.tex, together with its two figures. Section, figure
+% and equation numbering, cross-references and citations are all live — nothing is re-typed for
+% this export, so it cannot drift from the manuscript. The two figure floats live in
+% sections/04_figures.tex, which main.tex and this file both \input.
+%
+% Build:  tectonic -X compile paper/review_s4.tex
+% =============================================================================================
+\documentclass[10pt]{article}
+\usepackage{preprint}
+
+\author{}
+\date{}
+
+\begin{document}
+
+% §4 forward-references three things outside this export: §3 and two of its subsections, the
+% Limitations section, and Figure 8 (the decision-surface panel, which lives in §6). Bind each
+% label to the number it carries in the manuscript so every reference resolves to what a reader
+% of the full paper would see.
+\makeatletter
+\@namedef{r@sec:mechanism}{{3}{1}{Mechanism}{section.3}{}}
+\@namedef{r@sec:mechanism@cref}{{[section][3][]3}{1}}
+\@namedef{r@sec:mech-fix}{{3.6}{1}{Intervention}{subsection.3.6}{}}
+\@namedef{r@sec:mech-fix@cref}{{[subsection][6][3]3.6}{1}}
+\@namedef{r@sec:limitations}{{7}{1}{Limitations}{section.7}{}}
+\@namedef{r@sec:limitations@cref}{{[section][7][]7}{1}}
+\@namedef{r@fig:verdict}{{8}{1}{The decision surface}{figure.8}{}}
+\@namedef{r@fig:verdict@cref}{{[figure][8][]8}{1}}
+\makeatother
+
+\setcounter{section}{3}   % so §4 numbers as §4, matching the manuscript
+\setcounter{figure}{4}    % Figures 1--4 precede this section
+\setcounter{equation}{0}
+\setcounter{table}{0}
+
+{\centering
+{\normalsize\textsc{Section 4 --- export for external review}}\\[0.5em]
+{\Large\bfseries Capacity Eviction in Reconstruction-Trained Tokenizers}\\[0.4em]
+{\small\color{tolgrey} Draft of \today\ --- section text frozen pending review}\\[1.6em]
+}
+
+\noindent\textbf{Note to the reviewer.} This is \S4 of a paper in preparation, exported verbatim
+from the manuscript with its two figures. Numbering matches the manuscript: \S4.1--\S4.8,
+\cref{eq:netret,eq:cost}, and Figures~5 and~6. \S4 specifies the experiment; it reports no result,
+and the pre-registered run has not been executed. References to \S3, \S7 and Figure~8 point
+outside this export and are bound to their manuscript numbers.
+
+\medskip
+\noindent\textbf{What we would most like challenged.} (i) Whether the five cells, as specified,
+can separate microstructure \emph{information} from input \emph{capacity} --- \S4.3 states that
+they cannot fully, and quantifies nothing; we would like to know whether the disclosure is
+sufficient or whether the design should not ship without the sixth cell. (ii) Whether the
+execution filter and its selection procedure (\S4.4) are sound given that the filter never bound
+on the calibration fixture. (iii) Whether the decision rule (\S4.6) is genuinely falsifiable ---
+whether there is a result we would be forced to call a null. (iv) Whether the multiple-testing and
+power treatment (\S4.7) is honest about what five seeds can and cannot resolve. (v) Any number
+that does not follow from what is stated.
+
+\bigskip
+\hrule
+\bigskip
+
+\input{sections/04_design}
+\input{sections/04_figures}
+
+\clearpage
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
