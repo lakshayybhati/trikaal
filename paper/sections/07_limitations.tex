@@ -158,15 +158,31 @@ checkpoints at the pinned horizon, and binding at every $\kappa$ on a non-degene
 
 The reason this is a limitation and not a detail is arithmetic. Binding is decided by the
 \emph{forecast} magnitude, and for a calibrated conditional mean
-$\operatorname{std}(\hat{\mu}) = \text{IC}\cdot\operatorname{std}(y)$. The $15$-bar forward return
-has a standard deviation of $0.004238$ on our largest instrument and a $192$-instrument median of
-$0.00536$; at our own prior of $|\text{RankIC}| = 0.027$ the threshold sits between seven and
-twenty-eight standard deviations out in the forecast distribution across the modeled-cost range,
-and one instrument in $192$ would trade even $5\%$ of bars at the most favourable cost. If the
-trained models are calibrated, activity is near zero everywhere. If they are over-dispersed, they
-trade, but the realized information ratio then partly reflects miscalibration rather than skill.
-% artifact: measured on processed/universe_bars — BTCUSDT 15-bar forward log-return std = 0.004238
-%   over n = 1,051,199; 192-instrument median 0.00536 (p5 0.00372, p95 0.00887), 2024-06.
+$\operatorname{std}(\hat{\mu}) = \text{IC}\cdot\operatorname{std}(y)$. The scale of $y$ was
+measured twice, and we report both because the second supersedes the first and moves the
+conclusion in the harder direction. A first measurement over the $1{,}051{,}199$ bars of one
+partial history gave $\operatorname{std}(y_{15}) = 0.004238$; a subsequent measurement over the
+full $2{,}103{,}825$-bar history of the same instrument gives $0.003504$. The corrected, smaller
+figure puts the execution threshold \emph{further} out, not nearer: at our own prior of
+$|\text{RankIC}| = 0.027$ it sits $8.5$, $11.6$ and $22.2$ standard deviations out across the
+modeled-cost range rather than $7.0$, $9.6$ and $18.4$, and the information coefficient a
+calibrated forecast would need to trade $5\%$ of bars rises from $0.096$--$0.253$ to
+$0.116$--$0.306$ --- four to eleven times our measured prior. The finding is strengthened by its
+own correction.
+
+Two branches follow, and the more likely one is the worse one. If the trained models are
+calibrated, activity is near zero everywhere and the headline metric is computed on a handful of
+decisions or none. If they are over-dispersed they trade, but the realized information ratio then
+partly reflects miscalibration rather than skill. We previously hedged toward the second branch on
+the grounds that the training budget was a small fraction of compute-optimal; that is no longer
+true --- the pinned budget is $20.00$ tokens per parameter, which is compute-optimal --- and a
+model trained to compute-optimal is \emph{more} likely to be calibrated, not less. The near-zero
+activity branch is therefore the one to plan for.
+% artifact: measured on processed/universe_bars — BTCUSDT 15-bar forward log-return std:
+%   0.004238 over n = 1,051,199 (partial history, 2026-08-10) SUPERSEDED BY
+%   0.003504 over n = 2,103,825 (full BTCUSDT history, docs/degeneracy_guard_activity_leg_RULING.md,
+%   2026-08-11). Both windows named in the prose. sd-out and required-IC figures from the ruling's
+%   table. Budget: 426,033,152 tokens / 21,301,248 params = 20.00 tok/param, per 591ec44.
 %   theta = kappa * c_modeled per src/trikaal/eval/xsection.py:335; modeled c_total range 8e-4 to
 %   2.1e-3 per the harness KATs. Arithmetic over measured inputs; the harness was not run at these
 %   values.

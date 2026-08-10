@@ -1546,10 +1546,41 @@ are watermarked until the run lands.
 
 Interpretation
 
-The five paragraphs below were written on 2026-08-10, before the run was executed and before any
-result existed. Exactly one will be retained; the other four are deleted rather than softened. They are
-placed here, in advance, so that no interpretation can be composed with an outcome in front of us.
-The branch that fires is determined by the verdict manifest, not chosen.
+The five paragraphs below were written before the run was executed and before any result existed —
+four on 2026-08-10, the trigger and this preamble on 2026-08-11. Exactly one is retained; the other
+four are deleted rather than softened.
+Four of the five branches are selected by the manifest. The fifth is a ruling made against
+it, and we say so rather than implying an automatic that does not exist. The verdict emitter
+defines exactly three outcome words — SURVIVES, NULL and HALT_ADJUDICATE — and the primary
+outcome is a total binary function of the clauses: SURVIVES if none fails, NULL otherwise, with a
+guard superseding to HALT_ADJUDICATE. No manifest can contain the word INCONCLUSIVE. It is an
+adjudication outcome, consistent with the pre-registration committing the design to an inconclusive
+response when five seeds cannot separate the arms, and it is reached by a person reading the manifest,
+not emitted by it.
+That distinction has a consequence we are obliged to close rather than note. If the manifest reads
+NULL and nobody adjudicates, we publish a null for a result that did not resolve — the error this
+section exists to prevent — and a branch with no trigger is a check that cannot fire. We therefore fix
+the trigger in advance, in terms readable off the manifest without judgement.
+Trigger for the INCONCLUSIVE adjudication. Where verdict.primary is NULL, the INCONCLUSIVE branch is obliged — not merely permitted — if any of the following holds.
+1. clauses.1_paired_ci.pass is true while clauses.2_mde_paired.pass is false. The confidence interval excludes zero — the effect’s sign is established — while its magnitude falls below
+what the design declared in advance it could resolve. That is an underpowered measurement, not
+an absent effect.
+2. power_guard.checks.*.worst_within_cell_ir_range is at least clauses.2_mde_paired.mde_paired.
+The across-seed spread of the statistic equals or exceeds the smallest effect the design claims to
+detect. Because that minimum detectable effect is built from scoring noise alone and carries no
+training-variance term (Section 7.4), this state means the power claim rests on an incomplete
+noise model, and a null computed under it cannot be read as absence.
+3. dual_specification.agree is false. The two pre-registered specifications, run on the same
+artifacts, disagree on the outcome word. Which answer one believes then depends on which
+specification one believes, which is what unresolved means.
+The condition is sufficient, not necessary: a NULL meeting none of the three is reported as a null.
+Two candidates were considered and rejected. verdict.double_null and verdict.fallback
+concern the quantizer axis — whether IR(2) − IR(1) is claimable under the identical rule — and a
+clean two-arm negative is a null, not an unresolved measurement. And a sub-endpoint reading of the
+degeneracy guard’s activity leg was rejected because that leg is endpoint-only by ruling (Appendix D
+D.2); using a sub-endpoint threshold here would smuggle in the band the ruling declined to adopt.
+We also declined to express clause 2 as a fraction of the claimed effect, because that would require
+inventing a constant; the form above compares two quantities the manifest already carries.
 If the legibility gate fails on real data. This is the mechanism’s own modal prediction, and it is
 a result rather than an accident. The gate requires at least 0.90 sign accuracy on every one of the
 six live microstructure dimensions, recovered from each bar’s own token; a hard stop means the respecified interface, which restores that property on an entropy-calibrated fixture, does not restore it
@@ -1557,7 +1588,10 @@ on real microstructure. What that establishes is the first non-fixture confirmat
 on real data, at the pinned budget, a reconstruction-trained tokenizer does not make microstructure
 legible per-bar even when built to. The claim ends there. It does not establish that no tokenizer
 can — 𝜆 was fitted on a synthetic proxy (Section 7.9), the budget is one point in a space we did not
-search, and a gate failure is uninformative about how far short the interface fell. It also does not
+
+23
+
+search, and a gate failure is uninformative about how far short the interface fell. It also does not
 test the microstructure hypothesis at all: no second-stage training is authorized, so cells 1 through
 5 are never scored and no verdict is emitted. The pre-registered adjudication executes — the gate
 raises rather than degrading, the failure is recorded with its per-dimension values, and the decision
@@ -1590,72 +1624,6 @@ from design to publication and find null results systematically less likely to b
 a pre-registered null with its power analysis stated in advance is a contribution to the record rather
 than a failed experiment. Section 7.4 names what would change the answer: more scored data, a
 lower-cost venue, or an effect larger than our own prior.
-
-23
-
-the pre-registered decision surface
-
-conjunctive — SURVIVES only if none fails
-outcome
-
-one-sided 95% CI lower bound of ΔIR(4−5) > 0
-
-1 paired ci
-
-—
-
-e ru
-h
-t
-g
-n
-iti
-CI lower bound of IR(4)−IR(2) > 0
-(placebo-independent)
-3 placebo validity
-awa
-—
-DEIRR
-ΔIR(4−5) ≥ 0.5 L
-annualized
-4 economic floor
-O
-CEH
-A
-L
-P
-deflated
-Sharpe ratio ≥ 0.95 over 60 enumerated trials
-5 dsr
-2 mde paired
-
-ΔIR(4−5) ≥ paired MDE (tabled 3.518 at h=15)
-
-—
-—
-—
-—
-
-SURVIVES / NULL /
-INCONCLUSIVE / HALT_ADJUDICATE
-
-HALT-only guards — never flip SURVIVES ↔ NULL
-
-degeneracy —
-
-n
-
-power —
-
-emitted —
-
-Figure 8: The decision surface, fixed before any result existed. Five clauses, evaluated conjunctively: the
-primary outcome is SURVIVES only if none fails, and NULL otherwise. Two guards sit outside the clauses
-and are HALT-only — they can refuse to report an outcome their own inputs cannot support, and can never flip
-SURVIVES to NULL or back. The rule strings shown are the ones persisted into the verdict manifest, not a
-restatement of them. [PH: no values] — every outcome cell is empty because the run has not been executed;
-each is filled from a single named field of that manifest.
-
 If the outcome is INCONCLUSIVE. INCONCLUSIVE is a distinct outcome from NULL, and conflating
 them would be the more comfortable error. A null says the effect was not there to the resolution
 we committed to. INCONCLUSIVE says the instrument did not resolve the question either way — the
@@ -1673,6 +1641,71 @@ since the guards are computed after the clauses and do not touch them. A halt is
 not be reported as one.
 
 24
+
+the pre-registered decision surface
+
+conjunctive — SURVIVES only if none fails
+outcome
+
+1 paired ci
+
+one-sided 95% CI lower bound of ΔIR(4−5) > 0
+
+2 mde paired
+
+ΔIR(4−5) ≥ paired MDE (tabled 3.518 at h=15)
+
+—
+
+he ru
+t
+g
+n
+i
+t
+
+n
+
+awai
+—
+DEIRR
+ΔIR(4−5) ≥ 0.5 L
+annualized
+4 economic floor
+O
+CEH
+PLA
+deflated Sharpe ratio ≥ 0.95 over 60 enumerated trials
+5 dsr
+3 placebo validity
+
+CI lower bound of IR(4)−IR(2) > 0 (placebo-independent)
+
+—
+—
+—
+
+SURVIVES / NULL /
+INCONCLUSIVE / HALT_ADJUDICATE
+
+HALT-only guards — never flip SURVIVES ↔ NULL
+
+degeneracy —
+
+—
+
+power —
+
+emitted —
+
+Figure 8: The decision surface, fixed before any result existed. Five clauses, evaluated conjunctively: the
+primary outcome is SURVIVES only if none fails, and NULL otherwise. Two guards sit outside the clauses
+and are HALT-only — they can refuse to report an outcome their own inputs cannot support, and can never flip
+SURVIVES to NULL or back. The rule strings shown are the ones persisted into the verdict manifest, not a
+restatement of them. [PH: no values] — every outcome cell is empty because the run has not been executed;
+each is filled from a single named field of that manifest.
+
+25
 
 how far the result survives a worse cost assumption
 pinned headline
@@ -1740,7 +1773,7 @@ single line at a scale roughly two orders of magnitude above anything this desig
 between cells and no crossing point can be read off. The axes, the pinned rate and the floor are real; nothing
 else on the panel is.
 
-25
+26
 
 per-seed dispersion against the effect claimed (5 seeds, seeds are replicates)
 
@@ -1806,7 +1839,7 @@ reaches the size of the effect being claimed, the power guard halts and the verd
 and the claimed effect is drawn symmetric about zero, so the panel shows the comparison’s geometry and no
 result.
 
-26
+27
 
 7 Limitations
 The limitations below are stated at the same confidence as the contributions, and in the order a sceptical reader should apply them. Three of them — the synthetic basis of the mechanism, the absent
@@ -1863,7 +1896,7 @@ implementation, which would inflate the FSQ-vs-BSQ comparison reported in Sectio
 This bounds the quantizer leg specifically. It does not bound the input-arm leg: the comparison
 between cells 2 and 4, and between cell 4 and the placebo, is internal to our own implementation on
 both sides, and a weak baseline cannot inflate a difference in which the same baseline appears twice.
-27
+28
 
 The consequence is a withdrawal, and we make it here rather than leaving it implicit. The three
 marginals involving a BSQ arm — IR(2)−IR(1), IR(4)−IR(3), and IR(3)−IR(1) — are reported,
@@ -1923,17 +1956,26 @@ project measures it: no evaluation artifact from a real-lake run retains a decis
 the question is genuinely open rather than answered elsewhere. On the calibration fixture it behaved
 in both extremes — inert on the degenerate checkpoints at the pinned horizon, and binding at every
 𝜅 on a non-degenerate one (Section 4.4).
-28
+29
 
 The reason this is a limitation and not a detail is arithmetic. Binding is decided by the forecast
 magnitude, and for a calibrated conditional mean std( ˆ
-𝜇) = IC · std(𝑦). The 15-bar forward return has
-a standard deviation of 0.004238 on our largest instrument and a 192-instrument median of 0.00536;
-at our own prior of |RankIC| = 0.027 the threshold sits between seven and twenty-eight standard
-deviations out in the forecast distribution across the modeled-cost range, and one instrument in 192
-would trade even 5% of bars at the most favourable cost. If the trained models are calibrated, activity
-is near zero everywhere. If they are over-dispersed, they trade, but the realized information ratio then
-partly reflects miscalibration rather than skill.
+𝜇) = IC · std(𝑦). The scale of 𝑦 was measured
+twice, and we report both because the second supersedes the first and moves the conclusion in the
+harder direction. A first measurement over the 1,051,199 bars of one partial history gave std(𝑦 15 ) =
+0.004238; a subsequent measurement over the full 2,103,825-bar history of the same instrument
+gives 0.003504. The corrected, smaller figure puts the execution threshold further out, not nearer:
+at our own prior of |RankIC| = 0.027 it sits 8.5, 11.6 and 22.2 standard deviations out across the
+modeled-cost range rather than 7.0, 9.6 and 18.4, and the information coefficient a calibrated forecast
+would need to trade 5% of bars rises from 0.096–0.253 to 0.116–0.306 — four to eleven times our
+measured prior. The finding is strengthened by its own correction.
+Two branches follow, and the more likely one is the worse one. If the trained models are calibrated,
+activity is near zero everywhere and the headline metric is computed on a handful of decisions or
+none. If they are over-dispersed they trade, but the realized information ratio then partly reflects
+miscalibration rather than skill. We previously hedged toward the second branch on the grounds that
+the training budget was a small fraction of compute-optimal; that is no longer true — the pinned
+budget is 20.00 tokens per parameter, which is compute-optimal — and a model trained to computeoptimal is more likely to be calibrated, not less. The near-zero activity branch is therefore the one to
+plan for.
 The pre-registration does not assume an answer. A HALT-only degeneracy guard refuses a verdict
 for any cell whose decision activity at 𝜅 ∗ is exactly 0 or 1, tested on the seed mean and on every
 individual seed. We state its limit rather than leave it to be found: unlike the companion sign-balance
@@ -1974,7 +2016,9 @@ For absolute returns it does not hold: 0.2323 on average and 0.3604 at the worst
 same lag. We report this as a red finding rather than a footnote. Our position is that signed returns
 are the channel a label leak would actually travel on — the labels are signed forward returns, and a
 leak means a training window seeing the sign of a future return it should not — and that persistent
-absolute-return autocorrelation is volatility clustering, a well-established property of the series that
+30
+
+absolute-return autocorrelation is volatility clustering, a well-established property of the series that
 is present in the training region and the evaluation region alike and is not a path from label to feature.
 That is an argument, and it is the weakest link in the validation geometry. What we have established
 is that the signed channel is clean at the chosen margin. What we have not established is that no
@@ -1983,10 +2027,7 @@ volatility could in principle be advantaged by a training window whose volatilit
 evaluation region. Extending the margin until the absolute-return premise also holds would require
 a margin several times longer and would cost evaluation data we do not have; we chose the shorter
 margin and we are stating the choice.
-
-29
-
-7.8
+7.8
 
 The microstructure leg is narrower than “microstructure” suggests
 
@@ -2029,7 +2070,10 @@ Reproducibility is bit-exact except in one place, and that place is training
 The data pipeline, the frozen normalization statistics and prediction replay are bit-exact from one configuration file, a pinned seed and content-hashed inputs. GPU training is not, unless the deterministicattention fallback is enabled, and the two are not the same claim: deterministic attention is necessary
 for bit-exact training and is not sufficient, because reduction order elsewhere in the backward pass
 is unconstrained. We record the mode for every run. Section 8 states exactly which artifacts carry
-which guarantee, and Appendix E separates what was measured from what was estimated across the
+
+31
+
+which guarantee, and Appendix E separates what was measured from what was estimated across the
 whole paper.
 
 8 Reproducibility and verification
@@ -2041,9 +2085,7 @@ Reproducibility here is a deliverable rather than hygiene, and it is scoped rath
 Three things are bit-exact from one configuration file, a pinned seed and content-hashed inputs: the
 data pipeline, the frozen normalization statistics, and prediction replay. Any recorded prediction can
 be reconstructed from the recorded inputs.
-30
-
-GPU training is not bit-exact by default, and the honest version of that sentence took us a correction
+GPU training is not bit-exact by default, and the honest version of that sentence took us a correction
 to write. The production path now sets deterministic algorithms explicitly, at a measured throughput
 cost of 13.175%, and every run records the mode it ran in.
 The correction is worth stating because it is the kind of error a reproducibility section normally
@@ -2087,7 +2129,10 @@ buys is specific: any past prediction can be reconstructed, because the exact by
 from are identified rather than described. The compaction of the lake was proven content-preserving
 by re-deriving all 200 per-symbol hashes and recomputing the root, rather than by inspecting the
 compactor.
-8.4
+
+32
+
+8.4
 
 Pre-registration, and an amendment log that records the direction
 
@@ -2099,9 +2144,7 @@ it tightens or loosens the criterion. The log carries 41 distinct revision tags.
 The direction test is not decorative, and it has already overturned our own summary of our own
 amendments. The most consequential window changed the multiple-testing trial count and the dispersion basis for the deflation benchmark — moved from all arms to the placebo arm alone — together,
 and it was written up as every amendment in this window loosens the effective bar. That was false.
-31
-
-The deflation clause does loosen, by a factor of 0.859. But the clause that most directly tests the headline contrast tightens, twice over: its quantile multiplier rises from 2.4865 to 3.0728 at five seeds, a
+The deflation clause does loosen, by a factor of 0.859. But the clause that most directly tests the headline contrast tightens, twice over: its quantile multiplier rises from 2.4865 to 3.0728 at five seeds, a
 factor of 1.236, and the total standard error gains a training-variance term that can only increase it.
 The net across a conjunctive gate is indeterminate before the run and is not monotonically loosening. Had the original framing reached this paper it would have been a false statement about our own
 amendments, in the section a referee reads most carefully. We report the aggregate as one number
@@ -2143,7 +2186,10 @@ produced a wrong published result — 15 high, and 2 medium. All but one are clo
 is the capacity-eviction finding itself, which is mitigated rather than closed because it is a property
 of the objective and not a bug.
 The useful column is not severity but how each was found:
-detection layer
+
+33
+
+detection layer
 
 defects
 
@@ -2182,9 +2228,7 @@ Total
 No single layer found even a third of the critical defects. The largest contributor, the first
 independent audit, accounts for 6 of 19. Three critical defects were found only by planting a signal
 of known information content and observing that it was not recovered — no review of that code
-32
-
-would have found them, because the code was correct and the interface was not. Two were found
+would have found them, because the code was correct and the interface was not. Two were found
 only by executing the pipeline, which is the basis for the operational rule that a component whose
 first execution is on rented hardware is an untested component whatever its coverage says.
 The reason to publish this table is that it is the strongest available argument against the verification
@@ -2221,7 +2265,10 @@ Rama Cont, Arseniy Kukanov, and Sasha Stoikov. The price impact of order book ev
 of Financial Econometrics, 12(1):47–88, 2014.
 Abhimanyu Das, Weihao Kong, Rajat Sen, and Yichen Zhou. A decoder-only foundation model for
 time-series forecasting. arXiv preprint arXiv:2310.10688, 2023.
-David Easley, Marcos López de Prado, and Maureen O’Hara. Flow toxicity and liquidity in a highfrequency world. The Review of Financial Studies, 25(5):1457–1493, 2012.
+
+34
+
+David Easley, Marcos López de Prado, and Maureen O’Hara. Flow toxicity and liquidity in a highfrequency world. The Review of Financial Studies, 25(5):1457–1493, 2012.
 Annie Franco, Neil Malhotra, and Gabor Simonovits. Publication bias in the social sciences: Unlocking the file drawer. Science, 345(6203):1502–1505, 2014.
 Campbell R. Harvey, Yan Liu, and Heqing Zhu. … and the cross-section of expected returns. The
 Review of Financial Studies, 29(1):5–68, 2016.
@@ -2230,9 +2277,7 @@ Finance, 46(2):733–746, 1991.
 Marcos López de Prado. Advances in Financial Machine Learning. John Wiley & Sons, 2018.
 Fabian Mentzer, David Minnen, Eirikur Agustsson, and Michael Tschannen. Finite scalar quantization: VQ-VAE made simple. In International Conference on Learning Representations (ICLR),
 2024.
-33
-
-Yuqi Nie, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. A time series is worth
+Yuqi Nie, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. A time series is worth
 64 words: Long-term forecasting with transformers. In International Conference on Learning
 Representations (ICLR), 2023.
 Yu Shi, Zongliang Fu, Shuo Chen, Bohan Zhao, Wei Xu, Changshui Zhang, and Jian Li. Kronos: A
@@ -2255,7 +2300,18 @@ Eviction measurement, per dimension
 Table 2 gives the per-dimension point-decoder correlations summarized in Table 1. Marginal√standard deviations are implied by each dimension’s predict-the-mean baseline through E|𝑋 | = 𝜎 2/𝜋,
 and confirm the fixture’s construction: every dimension except the return is unit-variance to two decimal places, so the return is the only high-variance channel and the signal dimension is distinguished
 from the fillers by dependence structure alone.
-Table 2: Point-decoder correlation for every fixture dimension, three seeds. Recovery of a dimension’s
+Four dimensions clear a point-decoder correlation of 0.90 in each of the three seeds, which is the
+number the capacity arithmetic of Section 3.1 anticipates: a 10.26-bit fine budget cannot support
+thirteen dimensions at the fidelity that a 0.90 sign accuracy requires.
+
+B Token-space plant: construction and calibration
+The control of Section 3.4 requires a plant in token space whose information content is known exactly,
+is large enough to be detectable under the pre-registered branch condition (0.7–1.1 nats), and does
+not perturb the carrier’s marginal distribution enough to be detectable by that route instead.
+
+35
+
+Table 2: Point-decoder correlation for every fixture dimension, three seeds. Recovery of a dimension’s
 value at bar 𝑡 from bar 𝑡’s own fine code. The eleven fillers are coupled by an AR(1) chain across dimensions at
 𝜌 = 0.7993; the signal dimension is independent of everything. Seed-to-seed variation within a class is at most
 0.006, while the gap between the filler class and the signal dimension is more than 0.80.
@@ -2355,16 +2411,6 @@ seed 2
 0.9171
 0.8940
 
-Four dimensions clear a point-decoder correlation of 0.90 in each of the three seeds, which is the
-number the capacity arithmetic of Section 3.1 anticipates: a 10.26-bit fine budget cannot support
-thirteen dimensions at the fidelity that a 0.90 sign accuracy requires.
-
-34
-
-B Token-space plant: construction and calibration
-The control of Section 3.4 requires a plant in token space whose information content is known exactly,
-is large enough to be detectable under the pre-registered branch condition (0.7–1.1 nats), and does
-not perturb the carrier’s marginal distribution enough to be detectable by that route instead.
 A first design, retired. The natural construction — a deterministic translation of one digit by an
 amount determined by another — cannot carry enough information on this carrier. The carrier’s
 coarse digit marginals are already near-uniform: measured entropies of 2.3938, 2.1796 and 2.1873
@@ -2421,7 +2467,9 @@ Two defects in the legibility gate
 Both defects are instances of the same failure — a check that cannot fail is not a check — and both
 were closed before the gate was relied upon. They are recorded because the gate is a hard stop on
 expenditure, and because the second one was material.
-A skipped dimension could not lower the verdict. A dimension with too few unmasked bars to
+36
+
+A skipped dimension could not lower the verdict. A dimension with too few unmasked bars to
 measure took a code path that continued the loop before the pass flag was accumulated. A gate run
 in which all six microstructure dimensions were too thin therefore returned pass: True having
 measured nothing, and a run with five thin and one passing dimension returned pass: True on a
@@ -2432,10 +2480,7 @@ spans one of 200 symbols, so the check governing all second-stage expenditure wa
 a single instrument. The naive repair — shuffling before the split — would have broken the other
 property that matters, since one-minute bars are autocorrelated and an interleaved split puts nearduplicate neighbours on both sides. The fix is a per-symbol stratified split that is blocked in time
 within each symbol, which preserves both coverage and blocking.
-
-35
-
-The materiality of the two legs differs, and we measured rather than asserted it. On the production
+The materiality of the two legs differs, and we measured rather than asserted it. On the production
 data the minimum per-dimension unmasked bar count across all 200 symbols is 277,758 against the
 gate’s 10,000-bar floor, with zero symbols below it, so the all-thin case cannot arise here: the first
 defect was real but immaterial on this data. The second was severe.
@@ -2505,7 +2550,9 @@ D.2
 
 Decision thresholds and the deflation recipe
 
-constant
+37
+
+constant
 
 value
 
@@ -2549,17 +2596,20 @@ degeneracy guard, sign-balance leg
 
 Two conventions, stated so a reader is not left to infer them. DSR_N_TRIALS is a pin, not a derived
 quantity: its value 60 equals the product of the factorization (5 cells × 3 horizons × 4 values of 𝜅), and
-conformance asserts both the literal and the factorization, but the decision to enumerate trials that
-way was made by us before the run and is not a measurement. Appendix E classifies it accordingly.
-And FRAC_NEG_BAND governs only the sign-balance leg of the degeneracy guard; the filter-binding
-leg of the same guard tests the exact endpoints 0 and 1 with no band, so an activity of 0.999 passes
-where a fraction-negative of 0.999 halts. That asymmetry is disclosed rather than resolved: whether
-to band the activity leg is an open decision at the time of writing, with no amendment superseding
-the current form, and Section 7.5 states what it leaves uncovered.
-
-36
-
-Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
+conformance asserts both the literal and the factorization, but the decision to enumerate trials that way
+was made by us before the run and is not a measurement. Appendix E classifies it accordingly. And
+FRAC_NEG_BAND governs only the sign-balance leg of the degeneracy guard; the filter-binding leg of
+the same guard tests the exact endpoints 0 and 1 with no band, so an activity of 0.999 passes where
+a fraction-negative of 0.999 halts. That asymmetry is endpoint-only by ruling, not by omission.
+It was adjudicated against both a proposal to band the leg to match its sibling and a proposal to leave
+it, and the leg was kept as is: activity at 𝜅 ∗ is a scale-dependent fraction rather than a count, and it
+is not a sufficient statistic for whether the filter did per-bar work, since a cell can read interior at 𝜅 ∗
+while being fully inert at three of the four grid values. Three compensating disclosures are required
+in its place: activity_decisions_by_kappa across the full grid rather than the 𝜅 ∗ scalar alone,
+the trade count beside the fraction, and std( ˆ
+𝜇)/𝜃 at 𝜅 ∗ . Section 7.5 states what the ruling leaves
+uncovered.
+Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
 The trial count was reduced from 180 to 60 when seeds were recognized as replicates rather than
 configurations, and the dispersion basis was moved to the placebo arm because the earlier all-arms
 basis made clause 5 anti-correlated with its own hypothesis. The first tightens the criterion and the
@@ -2600,7 +2650,10 @@ Content addressing and environment
 
 The Gate-A anchor is a fixed evaluation of a frozen checkpoint through the full harness, re-proven
 twice from unpiped commands before and after any change to the evaluation instrument.
-artifact
+
+38
+
+artifact
 
 value
 
@@ -2633,23 +2686,36 @@ D.5
 
 Slot-to-field bindings for §6
 
-Every empty slot in Section 6 binds to exactly one named field of the verdict manifest. The binding
-is recorded here so that filling §6 after the run is a mechanical substitution rather than a judgement,
-and so that a reader can check any published value against the artifact without our assistance. A slot
-with more than one defensible source would be a specification defect, not a choice; none below has
-one.
+Every empty slot in Section 6 binds to exactly one named field. The binding is recorded here so that
+filling §6 after the run is a mechanical substitution rather than a judgement.
+These bindings were re-verified against the emitter on 2026-08-11 and six of the twenty-one
+were wrong as first written. The clause outcomes were given as .passed where the emitter writes
+.pass; the power-guard fields were given names the emitter does not use; and the legibility gate was
+given a verdict-manifest path when it is a separate Stage-1 receipt that no verdict manifest contains.
+The corrected table is below. We report the error rather than silently fixing it, because D.5’s own
+claim — that no slot has more than one defensible source — is worth less if the table naming the
+sources was not itself checked.
 
-37
+39
 
 §6 slot
 
-manifest field
+field
 
-type
+artifact
 
 per-dimension sign accuracy
 minimum across the six
 gate outcome
+
+per_dim.<7..12>.sign_acc
+min(per_dim.*.sign_acc)
+pass
+
+Stage-1 legibility
+receipt, not the
+verdict manifest
+
 clause 1 outcome
 clause 2 outcome
 clause 3 outcome
@@ -2658,66 +2724,51 @@ clause 5 outcome
 degeneracy guard
 power guard
 primary outcome
-dual-specification pair
+emitted outcome
+failing clauses
+dual-spec pair
+
+clauses.1_paired_ci.pass
+clauses.2_mde_paired.pass
+clauses.3_placebo_validity.pass
+clauses.4_economic_floor.pass
+clauses.5_dsr.pass
+verdict.halted_for_degeneracy
+verdict.halted_for_power
+verdict.primary
+verdict.emitted
+verdict.failing_clauses
+dual_specification.
+{v1_2_original,v1_5_amended}
+.primary
+dual_specification.agree
+point_diagnostics / cell_ir
+power_guard.per_cell.<c>.
+ir_range_across_seeds
+degeneracy_guard.per_cell.<c>.
+activity_decisions_seed_mean
+power_guard.per_cell.<c>.ir_by_seed
+power_guard.checks.<name>.
+{delta_ir_claimed,
+worst_within_cell_ir_range}
+verdict.emitted
+
+verdict manifest
+
 specifications agree
 net IR, seed mean
 across-seed range
-RankIC
 decision activity at 𝜅 ∗
-
-gates.gate2_legibility.new_by_seed
-gates.gate2_legibility.min
-gates.gate2_legibility.pass
-clauses.1_paired_ci.passed
-clauses.2_mde_paired.passed
-clauses.3_placebo_validity.passed
-clauses.4_economic_floor.passed
-clauses.5_dsr.passed
-degeneracy_guard.halted
-power_guard.halted
-primary
-dual_specification.{primary,alternative}
-dual_specification.agree
-per_cell.{1..5}.ir_seed_mean
-per_cell.{1..5}.ir_range_across_seeds
-per_cell.{1..5}.rankic
-degeneracy_guard.per_cell.{1..5}.
-activity_decisions_seed_mean
-cost_stress.<bps>.<cell>.net_ir
-per_cell.<cell>.per_seed.<seed>.net_ir
-power_guard.{claimed_delta,worst_range}
-primary
-
-6 floats
-float
-bool
-bool
-bool
-bool
-bool
-bool
-bool
-bool
-enum
-enum ×2
-bool
-5 floats
-5 floats
-5 floats
-5 floats
-
-cost-stress curves (Fig 9)
 seed scatter (Fig 10)
 claimed effect (Fig 10)
+
 abstract verdict slot
 
-grid
-5×5
-2 floats
-enum
-
-The enumerated outcome values are SURVIVES, NULL, INCONCLUSIVE and HALT_ADJUDICATE. The
-activity row is published whatever it reads, including at an endpoint, for the reason Section 7.5 gives.
+Two notes a reader needs. The manifest key for the minimum detectable effect is clauses.2_mde_paired.mde_paired;
+mde_paired_scoring_only is the attribute on the bootstrap object that supplies it and appears under no key. And the outcome words a manifest can carry are SURVIVES, NULL and HALT_ADJUDICATE
+only — INCONCLUSIVE is an adjudication reached against the manifest under the trigger of Section 6.5,
+never a value read from it. The activity row is published whatever it reads, including at an endpoint,
+for the reason Section 7.5 gives.
 D.6
 
 Required fields of the verdict manifest
@@ -2752,15 +2803,16 @@ activity_decisions}
 external-validation disclosure
 conformance.*
 
-Two of these are worth naming as design choices rather than bookkeeping. armed is a measurement of whether the guard could read its inputs, not a literal — an earlier contract let a guard report
+40
+
+Two of these are worth naming as design choices rather than bookkeeping. armed is a measurement of whether the guard could read its inputs, not a literal — an earlier contract let a guard report
 armed: true having inspected nothing, which is the check-that-cannot-fail pattern sitting in the decision path. And the external-validation disclosure is required rather than optional precisely because
 it is the sentence an author would most like to omit.
+Ruling of record for D.2: docs/degeneracy_guard_activity_leg_RULING.md, dated 2026-0811, carried as pre-registration amendment tag v1.6.28.
 
 E Claims audit
 Every quantitative claim in this paper carries an inline comment in the LATEX source naming the artifact it came from — 123 such comments across 44 distinct artifact paths, stripped from the submitted
-38
-
-version and present in the released source. This appendix summarizes them by status.
+version and present in the released source. This appendix summarizes them by status.
 Four statuses are used, and the boundaries between them are the point of the table. Measured
 means a value read from a committed receipt produced by executing something. Derived means
 computed in closed form from measured inputs, with the derivation shown at the point of use. Pin
@@ -2849,7 +2901,9 @@ E.2
 
 The data (§5)
 
-quantity
+41
+
+quantity
 
 value
 
@@ -2917,9 +2971,7 @@ E.3
 
 The design (§4)
 
-39
-
-quantity
+quantity
 
 value
 
@@ -3041,7 +3093,9 @@ Everything in §6
 Every quantity in Section 6 is pending. Each is bound to a single named field of the verdict manifest,
 tabulated in Appendix D D.5 and named beside the slot in the source, so that filling it is a mechanical
 substitution rather than a judgement. The three figures in that section are drawn on placeholder data
-that is implausible by construction — absent, symmetric about zero, or at magnitudes two orders
+42
+
+that is implausible by construction — absent, symmetric about zero, or at magnitudes two orders
 above anything the design can produce — so that a cropped panel cannot be mistaken for a result.
 Section 6.5 carries all five interpretation branches, written and dated before the run; exactly one
 survives it.
@@ -3052,14 +3106,19 @@ Self-audit against the completion directive
 
 This appendix is internal. It is removed before submission and exists so that the paper’s completeness
 can be checked rather than taken on assurance.
-F.1 One item is blocked, and it is named first
-The ruling on the degeneracy guard’s activity leg has not been made. The decision was routed
-for adjudication; at the time of writing no amendment supersedes the current form, the guard’s filterbinding leg still tests the exact endpoints with no band, no revision tag past the 41st exists, and no
-ruling document is committed. The paper therefore records the asymmetry as disclosed and open
-— Appendix D D.2 states it, Section 7.5 states what it leaves uncovered — rather than describing
-either an amendment that did not happen or a decision that was not taken. If the ruling lands before
-submission, D.2 and Section 7.5 are the two places that change.
-40
+F.1 Status of the item that was blocked
+The ruling on the degeneracy guard’s activity leg has been made: the leg is not banded, recorded
+in docs/degeneracy_guard_activity_leg_RULING.md and carried as pre-registration amendment tag v1.6.28. Appendix D D.2 now records the leg as endpoint-only by ruling rather than by
+omission, with the three compensating disclosures the ruling requires; Section 7.5 states what it
+leaves uncovered.
+One discrepancy remains open and is recorded rather than smoothed. The ruling document
+states tag v1.6.28 and describes itself as the forty-second amendment, but that tag does not yet appear
+in the amendment log: grep -c v1.6.28 docs/m6_prereg.md returns zero. This paper therefore
+continues to report the log as carrying 41 tags, which is what the log contains, and cites the ruling by
+document rather than by tag. If the log is updated before submission, Section 8.4 and Appendix D
+D.4 are the two places that change.
+
+43
 
 F.2 Directive items
 #
@@ -3081,9 +3140,11 @@ done
 done
 
 1d
+
+done
+
 2
 
-blocked
 done
 
 3
@@ -3110,15 +3171,22 @@ done
 
 done
 
-Five dated interpretation branches in Section 6.5:
-gate-fail, SURVIVES, NULL, INCONCLUSIVE, HALT.
-One retained, four deleted.
-Appendix D D.5 binds all 21 §6 slots to named manifest fields; D.6 gives the required-field schema including dual_specification.
+Five dated branches in Section 6.5. §6.5 now states
+that four are manifest-selected and INCONCLUSIVE is
+an adjudication — no manifest can carry that word
+— with a three-condition trigger fixed in advance.
+Appendix D D.5 binds all 21 §6 slots; D.6 gives the
+required-field schema. Six bindings were wrong as
+first written and were corrected against the emitter
+— F.4.
 Publication-bias evidence cited in the NULL branch;
 DSR trial count settled as a pin in D.2 and E.3; Fig
 8’s watermark verified visually in the compiled PDF
 — see F.4.
-F.1. Recorded as open, not written around.
+The ruling landed: leg not banded. D.2 records it
+by ruling with the three compensating disclosures;
+Section 7.5 carries what it leaves uncovered. One
+open discrepancy on the amendment tag — F.1.
 Section 7, ten subsections ordered by referee
 weaponization. Two gaps found during this pass
 and closed: the BSQ-marginals withdrawal that §4
@@ -3148,9 +3216,9 @@ figures
 bibliography entries
 
 count
-40
+45
 0
-125
+128
 46
 42
 35
@@ -3162,29 +3230,40 @@ affiliation and email, and source comments
 16
 
 F.4 Claims we could not trace, and checks that misreported
-One prose-versus-constants gap is left open rather than reconciled. The ingest record describes
-the normalization warm-up as “the ∼800-bar z-score warm-up”. The pinned constants give 180 bars
-for the fast z-score, 720 for the slow and 1,440 for the volatility scale. We could not reconcile the
-description with the constants, so Section 5.3 quotes only the measured drop — 809 bars of 279,930
-on the thinnest instrument — and a source comment records the unreconciled description. No number
-in the paper depends on the reconciliation.
-41
+The warm-up figures are reconciled by category, and the residual arithmetic is not. The ingest
+record describes a “∼800-bar z-score warm-up” while the pinned constants give 180 bars fast, 720
+44
 
-Two verification checks misreported during this pass, and both were the check’s fault. A
-bibliography-versus-PDF checker reported an entry missing; the entry renders correctly and the
-checker’s surname extraction had broken on a LATEX accent escape. And a watermark check reported
-Fig 8 unwatermarked; the watermark is present and legible, and pdftotext fragments rotated glyphs
-in that figure so the string match failed. Both were resolved by looking at the artifact rather than by
-trusting the probe, and neither was reported as a finding. They are recorded here because a probe’s
-own defect presenting as a finding is the failure mode this project has hit most often.
-One layout defect was found by looking at a render rather than by any check: Fig 8’s outcome
-box overran its panel at the original font size. Fixed and re-verified visually.
+slow and 1,440 for the volatility scale, and the measured drop is 809 bars of 279,930 on the thinnest
+instrument. The apparent conflict — a drop smaller than the largest constant — dissolves on inspection of what the constants do: warm-ups mask rather than delete. They set mask bits and invalidate
+targets; the bars remain in the lake. The 809 is a count of rows dropped to warm-up and quality
+control, which is a different quantity from a mask length, and the same record separately reports
+1,363 micro bars masked on that instrument. What we have not reconciled is the exact per-symbol
+arithmetic relating segment count, mask length and dropped rows, and we do not attempt it here.
+Section 5.3 quotes only the measured drop; no number in the paper depends on the residual.
+Six of the twenty-one bindings in Appendix D D.5 were wrong as first written, and the error
+is more serious than a transcription slip because D.5’s own claim is that each slot has exactly one
+defensible source. Five clause outcomes named .passed where the emitter writes .pass; the powerguard rows named fields the emitter does not define; and the legibility gate was given a verdictmanifest path when it is a separate Stage-1 receipt that no verdict manifest contains. All twenty-one
+were re-verified against the emitter and the table corrected. An external spot-check of ten bindings
+had reported nine resolving, which is consistent with the error rate and is the reason we re-checked
+all of them rather than the two we were pointed at.
+Three verification checks misreported during these passes, and all three were the check’s
+fault. A bibliography-versus-PDF checker reported an entry missing, when the entry renders correctly and the checker’s surname extraction had broken on a LATEX accent escape. A watermark
+check reported Figure 8 unwatermarked, when the watermark is present and legible and pdftotext
+fragments rotated glyphs. And an appendix-presence check reported two appendices missing, when
+it had been given titles the document never used. Each was resolved by looking at the artifact; none
+was reported as a finding. They are recorded because a probe’s own defect presenting as a finding is
+the failure mode this project has hit most often.
+One layout defect was found by looking at a render rather than by any check: Figure 8’s
+outcome box overran its panel. Fixed and re-verified visually.
+Coverage of the claims audit is partial and is not represented otherwise. An external spotcheck covered six numbers, not spread across the 46 artifact paths, and all six reconciled exactly.
+The remainder of Appendix E is unverified by independent check, not passed.
 F.5 What the run changes
 Filling Section 6 from the manifest, deleting four of the five interpretation branches, selecting one
 title and abstract variant, re-rendering Figs 8–10 from the artifact with --real, and removing this
 appendix. Nothing else in the paper is contingent on the outcome; every other section is written to
 be correct under all five branches, which is the property that makes that list short.
 
-42
+45
 
 

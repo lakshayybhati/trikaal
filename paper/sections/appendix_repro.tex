@@ -67,10 +67,16 @@ literal and the factorization, but the decision to enumerate trials that way was
 the run and is not a measurement. \Cref{app:claims} classifies it accordingly. And
 \texttt{FRAC\_NEG\_BAND} governs only the sign-balance leg of the degeneracy guard; the
 filter-binding leg of the same guard tests the exact endpoints $0$ and $1$ with no band, so an
-activity of $0.999$ passes where a fraction-negative of $0.999$ halts. That asymmetry is disclosed
-rather than resolved: whether to band the activity leg is an open decision at the time of writing,
-with no amendment superseding the current form, and \cref{sec:lim-filter} states what it leaves
-uncovered.
+activity of $0.999$ passes where a fraction-negative of $0.999$ halts. \textbf{That asymmetry is
+endpoint-only by ruling, not by omission.} It was adjudicated against both a proposal to band the
+leg to match its sibling and a proposal to leave it, and the leg was kept as is: activity at
+$\kappa^\ast$ is a scale-dependent fraction rather than a count, and it is not a sufficient
+statistic for whether the filter did per-bar work, since a cell can read interior at
+$\kappa^\ast$ while being fully inert at three of the four grid values. Three compensating
+disclosures are required in its place: \texttt{activity\_decisions\_by\_kappa} across the full
+grid rather than the $\kappa^\ast$ scalar alone, the trade \emph{count} beside the fraction, and
+$\operatorname{std}(\hat{\mu})/\theta$ at $\kappa^\ast$. \Cref{sec:lim-filter} states what the
+ruling leaves uncovered.
 
 Two of these carry a history that \cref{sec:repro-prereg} summarizes and the amendment log states
 in full. The trial count was reduced from $180$ to $60$ when seeds were recognized as replicates
@@ -130,46 +136,62 @@ direction it moves the criterion, recorded before the amendment was evaluated.
 
 \subsection*{D.5\quad Slot-to-field bindings for \S6}
 
-Every empty slot in \cref{sec:results} binds to exactly one named field of the verdict manifest.
-The binding is recorded here so that filling \S6 after the run is a mechanical substitution rather
-than a judgement, and so that a reader can check any published value against the artifact without
-our assistance. A slot with more than one defensible source would be a specification defect, not a
-choice; none below has one.
+Every empty slot in \cref{sec:results} binds to exactly one named field. The binding is recorded
+here so that filling \S6 after the run is a mechanical substitution rather than a judgement.
+
+\textbf{These bindings were re-verified against the emitter on 2026-08-11 and six of the
+twenty-one were wrong as first written.} The clause outcomes were given as \texttt{.passed} where
+the emitter writes \texttt{.pass}; the power-guard fields were given names the emitter does not
+use; and the legibility gate was given a verdict-manifest path when it is a \emph{separate}
+Stage-1 receipt that no verdict manifest contains. The corrected table is below. We report the
+error rather than silently fixing it, because D.5's own claim --- that no slot has more than one
+defensible source --- is worth less if the table naming the sources was not itself checked.
 
 \begin{center}
-\begin{tabular}{lll}
+\begin{tabular}{llp{0.22\textwidth}}
 \toprule
-\S6 slot & manifest field & type \\
+\S6 slot & field & artifact \\
 \midrule
-per-dimension sign accuracy & \texttt{gates.gate2\_legibility.new\_by\_seed} & 6 floats \\
-minimum across the six & \texttt{gates.gate2\_legibility.min} & float \\
-gate outcome & \texttt{gates.gate2\_legibility.pass} & bool \\
-clause 1 outcome & \texttt{clauses.1\_paired\_ci.passed} & bool \\
-clause 2 outcome & \texttt{clauses.2\_mde\_paired.passed} & bool \\
-clause 3 outcome & \texttt{clauses.3\_placebo\_validity.passed} & bool \\
-clause 4 outcome & \texttt{clauses.4\_economic\_floor.passed} & bool \\
-clause 5 outcome & \texttt{clauses.5\_dsr.passed} & bool \\
-degeneracy guard & \texttt{degeneracy\_guard.halted} & bool \\
-power guard & \texttt{power\_guard.halted} & bool \\
-primary outcome & \texttt{primary} & enum \\
-dual-specification pair & \texttt{dual\_specification.\{primary,alternative\}} & enum $\times2$ \\
-specifications agree & \texttt{dual\_specification.agree} & bool \\
-net IR, seed mean & \texttt{per\_cell.\{1..5\}.ir\_seed\_mean} & 5 floats \\
-across-seed range & \texttt{per\_cell.\{1..5\}.ir\_range\_across\_seeds} & 5 floats \\
-RankIC & \texttt{per\_cell.\{1..5\}.rankic} & 5 floats \\
-decision activity at $\kappa^\ast$ & \texttt{degeneracy\_guard.per\_cell.\{1..5\}.} & 5 floats \\
+per-dimension sign accuracy & \texttt{per\_dim.<7..12>.sign\_acc} & Stage-1 legibility \\
+minimum across the six & \texttt{min(per\_dim.*.sign\_acc)} & receipt, \emph{not} the \\
+gate outcome & \texttt{pass} & verdict manifest \\
+\midrule
+clause 1 outcome & \texttt{clauses.1\_paired\_ci.pass} & verdict manifest \\
+clause 2 outcome & \texttt{clauses.2\_mde\_paired.pass} & \\
+clause 3 outcome & \texttt{clauses.3\_placebo\_validity.pass} & \\
+clause 4 outcome & \texttt{clauses.4\_economic\_floor.pass} & \\
+clause 5 outcome & \texttt{clauses.5\_dsr.pass} & \\
+degeneracy guard & \texttt{verdict.halted\_for\_degeneracy} & \\
+power guard & \texttt{verdict.halted\_for\_power} & \\
+primary outcome & \texttt{verdict.primary} & \\
+emitted outcome & \texttt{verdict.emitted} & \\
+failing clauses & \texttt{verdict.failing\_clauses} & \\
+dual-spec pair & \texttt{dual\_specification.} & \\
+ & \quad\texttt{\{v1\_2\_original,v1\_5\_amended\}} & \\
+ & \quad\texttt{.primary} & \\
+specifications agree & \texttt{dual\_specification.agree} & \\
+net IR, seed mean & \texttt{point\_diagnostics} / \texttt{cell\_ir} & \\
+across-seed range & \texttt{power\_guard.per\_cell.<c>.} & \\
+ & \quad\texttt{ir\_range\_across\_seeds} & \\
+decision activity at $\kappa^\ast$ & \texttt{degeneracy\_guard.per\_cell.<c>.} & \\
  & \quad\texttt{activity\_decisions\_seed\_mean} & \\
-cost-stress curves (Fig 9) & \texttt{cost\_stress.<bps>.<cell>.net\_ir} & grid \\
-seed scatter (Fig 10) & \texttt{per\_cell.<cell>.per\_seed.<seed>.net\_ir} & $5\times5$ \\
-claimed effect (Fig 10) & \texttt{power\_guard.\{claimed\_delta,worst\_range\}} & 2 floats \\
-abstract verdict slot & \texttt{primary} & enum \\
+seed scatter (Fig 10) & \texttt{power\_guard.per\_cell.<c>.ir\_by\_seed} & \\
+claimed effect (Fig 10) & \texttt{power\_guard.checks.<name>.} & \\
+ & \quad\texttt{\{delta\_ir\_claimed,} & \\
+ & \quad\texttt{worst\_within\_cell\_ir\_range\}} & \\
+abstract verdict slot & \texttt{verdict.emitted} & \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The enumerated outcome values are \textsc{survives}, \textsc{null}, \textsc{inconclusive} and
-\textsc{halt\_adjudicate}. The activity row is published whatever it reads, including at an
-endpoint, for the reason \cref{sec:lim-filter} gives.
+Two notes a reader needs. The manifest key for the minimum detectable effect is
+\texttt{clauses.2\_mde\_paired.mde\_paired}; \texttt{mde\_paired\_scoring\_only} is the
+\emph{attribute} on the bootstrap object that supplies it and appears under no key. And the
+outcome words a manifest can carry are \textsc{survives}, \textsc{null} and
+\textsc{halt\_adjudicate} only --- \textsc{inconclusive} is an adjudication reached against the
+manifest under the trigger of \cref{sec:res-interpretation}, never a value read from it. The
+activity row is published whatever it reads, including at an endpoint, for the reason
+\cref{sec:lim-filter} gives.
 
 \subsection*{D.6\quad Required fields of the verdict manifest}
 
@@ -202,3 +224,11 @@ contract let a guard report \texttt{armed: true} having inspected nothing, which
 check-that-cannot-fail pattern sitting in the decision path. And the external-validation
 disclosure is required rather than optional precisely because it is the sentence an author would
 most like to omit.
+
+\medskip
+\noindent\emph{Ruling of record for D.2:} \texttt{docs/degeneracy\_guard\_activity\_leg\_RULING.md},
+dated 2026-08-11, carried as pre-registration amendment tag v1.6.28.
+% NOTE (2026-08-11): the ruling document states tag v1.6.28 and describes itself as the 42nd
+% amendment, but `grep -c v1.6.28 docs/m6_prereg.md` returns 0 — the tag is not yet written into
+% the amendment log itself. Appendix F records this as an open discrepancy rather than reporting
+% the log as carrying 42 tags.

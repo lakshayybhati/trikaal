@@ -12,16 +12,20 @@
 \emph{This appendix is internal. It is removed before submission and exists so that the paper's
 completeness can be checked rather than taken on assurance.}
 
-\subsection*{F.1\quad One item is blocked, and it is named first}
+\subsection*{F.1\quad Status of the item that was blocked}
 
-\textbf{The ruling on the degeneracy guard's activity leg has not been made.} The decision was
-routed for adjudication; at the time of writing no amendment supersedes the current form, the
-guard's filter-binding leg still tests the exact endpoints with no band, no revision tag past the
-$41$st exists, and no ruling document is committed. The paper therefore records the asymmetry as
-\emph{disclosed and open} --- \cref{app:repro} D.2 states it, \cref{sec:lim-filter} states what it
-leaves uncovered --- rather than describing either an amendment that did not happen or a decision
-that was not taken. If the ruling lands before submission, D.2 and \cref{sec:lim-filter} are the
-two places that change.
+The ruling on the degeneracy guard's activity leg has been made: \textbf{the leg is not banded},
+recorded in \texttt{docs/degeneracy\_guard\_activity\_leg\_RULING.md} and carried as
+pre-registration amendment tag v1.6.28. \Cref{app:repro} D.2 now records the leg as endpoint-only
+\emph{by ruling} rather than by omission, with the three compensating disclosures the ruling
+requires; \cref{sec:lim-filter} states what it leaves uncovered.
+
+\textbf{One discrepancy remains open and is recorded rather than smoothed.} The ruling document
+states tag v1.6.28 and describes itself as the forty-second amendment, but that tag does not yet
+appear in the amendment log: \texttt{grep -c v1.6.28 docs/m6\_prereg.md} returns zero. This paper
+therefore continues to report the log as carrying $41$ tags, which is what the log contains, and
+cites the ruling by document rather than by tag. If the log is updated before submission,
+\cref{sec:repro-prereg} and \cref{app:repro} D.4 are the two places that change.
 
 \subsection*{F.2\quad Directive items}
 
@@ -30,15 +34,17 @@ two places that change.
 \toprule
 \# & status & note \\
 \midrule
-1a & done & Five dated interpretation branches in \cref{sec:res-interpretation}: gate-fail,
-\textsc{survives}, \textsc{null}, \textsc{inconclusive}, \textsc{halt}. One retained, four
-deleted. \\
-1b & done & \cref{app:repro} D.5 binds all $21$ \S6 slots to named manifest fields; D.6 gives the
-required-field schema including \texttt{dual\_specification}. \\
+1a & done & Five dated branches in \cref{sec:res-interpretation}. \S6.5 now states that four are
+manifest-selected and \textsc{inconclusive} is an \emph{adjudication} --- no manifest can carry
+that word --- with a three-condition trigger fixed in advance. \\
+1b & done & \cref{app:repro} D.5 binds all $21$ \S6 slots; D.6 gives the required-field schema.
+Six bindings were wrong as first written and were corrected against the emitter --- F.4. \\
 1c & done & Publication-bias evidence cited in the \textsc{null} branch; DSR trial count settled
 as a \emph{pin} in D.2 and E.3; Fig 8's watermark verified \emph{visually} in the compiled
 PDF --- see F.4. \\
-1d & \textbf{blocked} & F.1. Recorded as open, not written around. \\
+1d & done & The ruling landed: leg not banded. D.2 records it \emph{by ruling} with the three
+compensating disclosures; \cref{sec:lim-filter} carries what it leaves uncovered. One open
+discrepancy on the amendment tag --- F.1. \\
 2 & done & \cref{sec:limitations}, ten subsections ordered by referee weaponization. Two gaps
 found during this pass and closed: the BSQ-marginals withdrawal that \S4 promised \S7 would carry,
 and the filter-binding question, now \cref{sec:lim-filter}. \\
@@ -63,9 +69,9 @@ section-local lists. \\
 \toprule
 quantity & count \\
 \midrule
-compiled pages & $40$ \\
+compiled pages & $45$ \\
 undefined references & $0$ \\
-inline \texttt{\% artifact:} comments & $125$ \\
+inline \texttt{\% artifact:} comments & $128$ \\
 distinct artifact paths cited & $46$ \\
 marked placeholders (\texttt{\textbackslash TBD}) & $42$ \\
 \quad of which in \cref{sec:results} & $35$ \\
@@ -81,25 +87,44 @@ bibliography entries & $16$ \\
 
 \subsection*{F.4\quad Claims we could not trace, and checks that misreported}
 
-\textbf{One prose-versus-constants gap is left open rather than reconciled.} The ingest record
-describes the normalization warm-up as ``the $\sim$800-bar z-score warm-up''. The pinned constants
-give $180$ bars for the fast z-score, $720$ for the slow and $1{,}440$ for the volatility scale.
-We could not reconcile the description with the constants, so \cref{sec:data-causal} quotes only
-the \emph{measured} drop --- $809$ bars of $279{,}930$ on the thinnest instrument --- and a source
-comment records the unreconciled description. No number in the paper depends on the
-reconciliation.
+\textbf{The warm-up figures are reconciled by category, and the residual arithmetic is not.} The
+ingest record describes a ``$\sim$800-bar z-score warm-up'' while the pinned constants give $180$
+bars fast, $720$ slow and $1{,}440$ for the volatility scale, and the measured drop is $809$ bars
+of $279{,}930$ on the thinnest instrument. The apparent conflict --- a drop smaller than the
+largest constant --- dissolves on inspection of what the constants do: warm-ups \emph{mask} rather
+than delete. They set mask bits and invalidate targets; the bars remain in the lake. The $809$ is a
+count of rows dropped to warm-up and quality control, which is a different quantity from a mask
+length, and the same record separately reports $1{,}363$ micro bars masked on that instrument. What
+we have \emph{not} reconciled is the exact per-symbol arithmetic relating segment count, mask
+length and dropped rows, and we do not attempt it here. \Cref{sec:data-causal} quotes only the
+measured drop; no number in the paper depends on the residual.
+% artifact: src/trikaal/data/features.py:180 `m[s0:s1, idx] = np.maximum(m[s0:s1, idx], warm)` and
+%   :200--201, :209 — warm-ups write MASK bits and invalidate targets; they do not delete rows.
 
-\textbf{Two verification checks misreported during this pass, and both were the check's fault.} A
-bibliography-versus-PDF checker reported an entry missing; the entry renders correctly and the
-checker's surname extraction had broken on a \LaTeX{} accent escape. And a watermark check
-reported Fig 8 unwatermarked; the watermark is present and legible, and \texttt{pdftotext}
-fragments rotated glyphs in that figure so the string match failed. Both were resolved by looking
-at the artifact rather than by trusting the probe, and neither was reported as a finding. They are
-recorded here because a probe's own defect presenting as a finding is the failure mode this
-project has hit most often.
+\textbf{Six of the twenty-one bindings in \cref{app:repro} D.5 were wrong as first written}, and
+the error is more serious than a transcription slip because D.5's own claim is that each slot has
+exactly one defensible source. Five clause outcomes named \texttt{.passed} where the emitter writes
+\texttt{.pass}; the power-guard rows named fields the emitter does not define; and the legibility
+gate was given a verdict-manifest path when it is a separate Stage-1 receipt that no verdict
+manifest contains. All twenty-one were re-verified against the emitter and the table corrected. An
+external spot-check of ten bindings had reported nine resolving, which is consistent with the error
+rate and is the reason we re-checked all of them rather than the two we were pointed at.
 
-\textbf{One layout defect was found by looking at a render rather than by any check:} Fig 8's
-outcome box overran its panel at the original font size. Fixed and re-verified visually.
+\textbf{Three verification checks misreported during these passes, and all three were the check's
+fault.} A bibliography-versus-PDF checker reported an entry missing, when the entry renders
+correctly and the checker's surname extraction had broken on a \LaTeX{} accent escape. A watermark
+check reported Figure 8 unwatermarked, when the watermark is present and legible and
+\texttt{pdftotext} fragments rotated glyphs. And an appendix-presence check reported two appendices
+missing, when it had been given titles the document never used. Each was resolved by looking at the
+artifact; none was reported as a finding. They are recorded because a probe's own defect presenting
+as a finding is the failure mode this project has hit most often.
+
+\textbf{One layout defect was found by looking at a render rather than by any check:} Figure 8's
+outcome box overran its panel. Fixed and re-verified visually.
+
+\textbf{Coverage of the claims audit is partial and is not represented otherwise.} An external
+spot-check covered six numbers, not spread across the $46$ artifact paths, and all six reconciled
+exactly. The remainder of \cref{app:claims} is \emph{unverified by independent check}, not passed.
 
 \subsection*{F.5\quad What the run changes}
 
