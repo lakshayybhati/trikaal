@@ -1,0 +1,202 @@
+% =============================================================================================
+% §8 Reproducibility and verification.
+%
+% The section's job is to let a reader decide how much to trust the numbers, which means being
+% specific about which guarantees hold and which do not. A blanket "our results are reproducible"
+% is worth less than a scoped claim a reader can check, so the section leads with the boundary
+% rather than with the guarantee.
+% =============================================================================================
+\section{Reproducibility and verification}
+\label{sec:repro}
+
+\subsection{What is bit-exact, and what is not}
+\label{sec:repro-bitexact}
+
+Reproducibility here is a deliverable rather than hygiene, and it is scoped rather than asserted
+whole. Three things are bit-exact from one configuration file, a pinned seed and content-hashed
+inputs: the data pipeline, the frozen normalization statistics, and prediction replay. Any recorded
+prediction can be reconstructed from the recorded inputs.
+
+GPU training is not bit-exact by default, and the honest version of that sentence took us a
+correction to write. The production path now sets deterministic algorithms explicitly, at a
+measured throughput cost of $13.175\%$, and every run records the mode it ran in.
+% artifact: docs/BUILD_RECORD.md §2 D20 — fixed at 591ec44, deterministic_algorithms=True on the production path; penalty 13.175% per docs/m6_cuda_probe_report.md
+
+The correction is worth stating because it is the kind of error a reproducibility section normally
+hides. For a period, $49$ of $49$ run records carried an assertion of bit-exactness beside a
+configuration that had determinism switched off. The cause was a single line that computed the
+claim as \emph{attention mode equals the deterministic kernel} --- our own invariant's sufficiency
+premise encoded as code. Deterministic attention is necessary for bit-exact training and is not
+sufficient, because reduction order elsewhere in the backward pass is unconstrained. The scope of
+the false claim was established at the time and is narrow: only the GPU-training clause was
+affected; the pipeline, frozen-statistics and prediction-replay clause held, the anchor of
+\cref{sec:repro-anchor} held, and no prior result was invalidated. We report it here rather than
+quietly shipping the fix because a reader assessing our other claims should know that this one was
+wrong for a while and how it was caught.
+% artifact: docs/BUILD_RECORD.md §2 D20 — "49 of 49 run records carried bit_exact_claim: true beside deterministic_algorithms=False"; root cause attention_mode.py `claim = attention_mode == MODE_SDPA`
+
+One consequence survives the fix. Same-seed runs were observed to diverge --- fraction-negative
+$0.5662$ against $0.99883$ for the same cell at identical horizon, cap, estimator, seed and recipe
+--- which is basin-hopping, and a lower bound on across-seed variance. Forcing determinism removes
+the same-seed component and leaves the across-seed component untouched, so it does not repair the
+statistical consequence. \Cref{sec:lim-power} carries that; \cref{sec:repro-guards} describes what
+we do about it.
+
+\subsection{The anchor}
+\label{sec:repro-anchor}
+
+A reproducibility claim that is only checked at the end is a claim about one moment. We instead
+carry a standing anchor: a fixed evaluation of a frozen checkpoint through the full harness, whose
+results hash is re-proven before and after any change to the evaluation instrument. The current
+anchor is \texttt{sha256:3f86882a63dd06c78\ldots}, over inputs that are themselves content-hashed
+--- dataset, tokenizer and predictor each carry their own SHA-256 --- and it is accompanied by an
+exhaustive causal sweep at $420$ of $420$ checks.
+% artifact: runs_manifest/gate_a_run_manifest.json :: results_hash = sha256:3f86882a63dd06c780e7d73f61a5253e39f5b07564d4c84152bbaad62c886dc3; gate_a_causal_sweep.{coverage=420, total=420, passed=true}; inputs.{dataset_hash, tokenizer_hash, predictor_hash}; env.{python 3.11.7, numpy 2.4.6, torch 2.12.1}
+
+Two procedural rules attach to it, both of which exist because of a specific failure. The anchor is
+re-proven \emph{twice}, from separate invocations. And its exit status is read from an unpiped
+command, because an exit code read through a pipe is the pipe's --- a `\texttt{| grep | tail}`
+once masked a non-zero exit and let a false anchor claim into a commit message. The anchor has been
+legitimately re-based once, when a file inside the anchored instrument changed for a correctness
+fix; the re-basing is recorded rather than presented as continuity.
+% artifact: docs/BUILD_RECORD.md §5 standing rules — pipefail rider (born from D13), anchor rule; the 5eead7b6 -> 3f86882a re-anchoring
+
+The environment is pinned by a lockfile: Python 3.11.7, NumPy 2.4.6, PyTorch 2.12.1. That pin is
+itself a response to a defect --- environment drift with no lockfile --- and load-bearing results
+are re-verified under it rather than under whatever interpreter happened to be first on the path.
+% artifact: uv.lock; pyproject.toml requires-python >= 3.11; docs/BUILD_RECORD.md §2 D5
+
+\subsection{Content addressing}
+\label{sec:repro-content}
+
+Every produced dataset is content-hashed, and the universe carries a single Merkle root over the
+lake, recorded in the manifest with per-symbol listing and delisting dates
+(\cref{sec:data-provenance}). The property this buys is specific: any past prediction can be
+reconstructed, because the exact bytes it was computed from are identified rather than described.
+The compaction of the lake was proven content-preserving by re-deriving all $200$ per-symbol hashes
+and recomputing the root, rather than by inspecting the compactor.
+
+\subsection{Pre-registration, and an amendment log that records the direction}
+\label{sec:repro-prereg}
+
+The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, the seed count and
+the trial count --- was fixed before any of its inputs existed, and the design was frozen before
+the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
+date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $41$
+distinct revision tags.
+
+The direction test is not decorative, and it has already overturned our own summary of our own
+amendments. The most consequential window changed the multiple-testing trial count and the
+dispersion basis for the deflation benchmark together, and it was written up as \emph{every
+amendment in this window loosens the effective bar}. That was false. The deflation clause does
+loosen, by a factor of $0.859$. But the clause that most directly tests the headline contrast
+\emph{tightens}, twice over: its quantile multiplier rises from $2.4865$ to $3.0728$ at five seeds,
+a factor of $1.236$, and the total standard error gains a training-variance term that can only
+increase it. The net across a conjunctive gate is indeterminate before the run and is not
+monotonically loosening. Had the original framing reached this paper it would have been a false
+statement about our own amendments, in the section a referee reads most carefully. We report the
+aggregate as one number rather than letting a favourable half stand for the whole.
+% artifact: docs/m6_prereg.md §7 v1.5 — the amendment window, the direction-blind test per amendment, the aggregate-as-one-number safeguard
+
+Where a specification change means two defensible analyses exist, both are computed from the same
+artifacts and both are reported. \texttt{dual\_specification} is a required field of the verdict
+manifest, and a manifest that lacks it cannot be quoted; disagreement between the two
+specifications is a first-class finding rather than a footnote.
+% artifact: src/trikaal/eval/verdict.py :: dual_specification assembled and emitted into the manifest; §7 v1.5 makes it a REQUIRED field
+
+\subsection{The conformance surface}
+\label{sec:repro-conformance}
+
+Pre-registration is only binding if something checks it. Every pinned quantity is a named constant
+that is hard-asserted before any cell is scored: the symbol set by hash, the $\kappa$ grid, the
+five seeds, the flat headline cost of $0.0030$, the evaluation sequence length, the realized
+backbone parameter count of $21{,}301{,}248$, the $\hat{\mu}$ estimator, the training step counts,
+the bootstrap configuration, the causal-encoder flag, the pointwise-fine flag and the
+microstructure class weight. A run whose configuration differs from any of these does not produce a
+downgraded result; it raises and produces none.
+% artifact: src/trikaal/eval/conformance.py :: PINNED_SYMBOLS_SHA256, PINNED_KAPPAS, PINNED_SEEDS, PINNED_HEADLINE_COST = 0.0030, PINNED_MONEY_SEQ_LEN = 512, PINNED_BACKBONE_PARAMS = 21_301_248, PINNED_MU_ESTIMATOR = "expectation", PINNED_STEPS_STAGE1/2 = 26_003, PINNED_BOOT = {B: 10000, seed: 20260704, alpha: 0.05}, PINNED_ENCODER_CAUSAL, PINNED_FINE_POINTWISE, PINNED_MICRO_POINT_WEIGHT = 3.0
+
+\subsection{Guards that refuse rather than decide}
+\label{sec:repro-guards}
+
+Two guards sit outside the decision rule, and their design constraint is that neither can change an
+outcome --- each can only withhold one. The degeneracy guard refuses a verdict for any cell whose
+book is constant-direction. The power guard refuses one when a cell's across-seed range reaches the
+size of the effect being claimed. Both are computed after the clauses, neither mutates them, and
+neither can flip a survival to a null or the reverse.
+
+That asymmetry is what made it legitimate to add them after the design was frozen: a guard that can
+only produce \textsc{halt\_adjudicate} can manufacture neither a positive result nor a negative
+one. It is also why they are described here rather than in \cref{sec:setup} --- they are part of
+how the result is verified, not part of what is being tested. \Cref{sec:setup} states one
+asymmetry we chose not to remove and the reason.
+% artifact: src/trikaal/eval/verdict.py :: degeneracy_guard, power_guard — both HALT-only, computed post-hoc; tests/eval/test_degeneracy_guard.py includes a KAT proving byte-identical clauses and primary with and without a degenerate cell
+
+\subsection{How the defects were actually found}
+\label{sec:repro-defects}
+
+We keep a defect ledger, and we report it because the distribution in it is more informative than
+any assurance we could offer. It records $36$ defects: $19$ we classify as critical --- meaning
+they would have produced a wrong published result --- $15$ high, and $2$ medium. All but one are
+closed; the exception is the capacity-eviction finding itself, which is mitigated rather than
+closed because it is a property of the objective and not a bug.
+
+The useful column is not severity but \emph{how each was found}:
+
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+detection layer & defects & of which critical \\
+\midrule
+Independent audit (first pass) & 9 & 6 \\
+Builder or supervisor, outside a formal pass & 8 & 3 \\
+Independent re-audit & 6 & 2 \\
+Execution (found by running it) & 5 & 2 \\
+Design review & 4 & 2 \\
+Planted-signal canary & 3 & 3 \\
+Independent audit (third pass) & 1 & 1 \\
+\midrule
+Total & 36 & 19 \\
+\bottomrule
+\end{tabular}
+\end{center}
+% artifact: docs/BUILD_RECORD.md §2 — the ledger; layer and severity columns tabulated directly from it
+
+\textbf{No single layer found even a third of the critical defects.} The largest contributor, the
+first independent audit, accounts for $6$ of $19$. Three critical defects were found only by
+planting a signal of known information content and observing that it was not recovered --- no
+review of that code would have found them, because the code was correct and the \emph{interface}
+was not. Two were found only by executing the pipeline, which is the basis for the operational rule
+that a component whose first execution is on rented hardware is an untested component whatever its
+coverage says.
+
+The reason to publish this table is that it is the strongest available argument against the
+verification story a paper normally tells. Code review, a green test suite and a careful author
+would have caught roughly a third of what mattered here. We do not claim the remaining defects are
+gone; we claim that seven independent detection layers were run, that each found something the
+others missed, and that the count of defects found by the most recent layer has not yet reached
+zero.
+
+A recurring pattern is worth naming, because it changes what a reader should count as evidence.
+Several defects were checks that could not fail: a mutation test whose fixture made the two cases
+it separated numerically identical; a gate that shipped below a \texttt{return} and had never
+executed; a unit test whose written contract was the defect. In each, a test existed and was
+green. Our operating rule is therefore that a gate or negative test is suspect until it has been
+observed to fail, and that closing a finding requires restoring the pre-fix source in an isolated
+tree and watching the new test fail there.
+% artifact: docs/BUILD_RECORD.md §5 standing rules — fixture-discrimination, "a check that cannot fail is not a check", remediation rule; scripts/m6_reaudit_mutations.py is the harness, with its own negative control
+
+\subsection{What is released, and what a reader can check without it}
+\label{sec:repro-release}
+
+The artifact is the code, the trained weights, the pre-registration with its full amendment log,
+the run manifests, and the scripts that regenerate every figure in this paper from those manifests
+at render time. No number in any figure is transcribed; each is loaded from the receipt that
+produced it, so a figure that disagrees with its artifact fails to build rather than rendering a
+stale value.
+
+Two things a reader can check without rerunning anything: the anchor hash, which fixes the
+evaluation instrument, and \cref{app:claims}, which separates every claim in this paper into
+measured and estimated, with the artifact path for each. \Cref{sec:limitations} states what remains
+unestablished.
