@@ -1,0 +1,124 @@
+% =============================================================================================
+% §2 Related work. Four clusters, each closing on what this paper does differently.
+%
+% Every entry cited here had its metadata verified against the arXiv abstract page or the
+% publisher record on 2026-08-10; refs.bib records which venue fields were confirmed and which
+% were left in preprint form rather than guessed.
+% =============================================================================================
+\section{Related work}
+\label{sec:related}
+
+\subsection{Foundation models for time series, and for K-lines}
+\label{sec:rel-foundation}
+
+A line of recent work trains a single sequence model on large, heterogeneous collections of time
+series and evaluates it zero-shot or with light adaptation. \citet{ansari2024chronos} discretize
+scaled real values into a fixed token vocabulary and train a language model over the resulting
+symbols; \citet{das2024timesfm} train a decoder-only model over patched inputs;
+\citet{woo2024moirai} train across frequencies and domains with a unified objective. Upstream of
+these, \citet{nie2023patchtst} established the patch-as-token treatment that much of the line
+inherits. The shared premise is that a general representation of temporal structure transfers.
+
+\citet{shi2025kronos} apply that premise to financial K-lines, and it is the design this paper
+starts from: a tokenizer trained to reconstruct per-bar market features, followed by an
+autoregressive model over the resulting discrete codes. We inherit the two-stage arrangement, the
+backbone dimensions and much of the training and evaluation scaffolding, and we vary one thing.
+Every component here is written from scratch; the parent's weights are not used, and no result in
+this paper is a comparison against them.
+
+We should be exact about what this artifact is, because the surrounding literature invites a
+larger claim than we can support. This is not a foundation model. The backbone is a fixed,
+$21{,}301{,}248$-parameter measurement instrument, held identical across every arm so that the
+quantizer and input arm are the only varied factors. It is trained on one venue, one instrument
+class and one frequency, and we make no transfer claim of any kind. The object under study is the
+tokenizer.
+
+\subsection{Discrete tokenization, and what its objective actually optimizes}
+\label{sec:rel-tokenization}
+
+Learned discrete representations descend from \citet{oord2017vqvae}, which pairs an encoder with a
+learned codebook and a commitment loss. Two later families remove the codebook.
+\citet{mentzer2024fsq} quantize each latent dimension to a small fixed set of levels, which
+eliminates the codebook, the commitment term and codebook collapse together, at the cost of a
+vocabulary that is a product of per-dimension level counts. \citet{zhao2024bsq} project to a
+hypersphere and binarize, giving an implicit vocabulary exponential in dimension.
+\citet{yu2024lfq} report that tokenizer design, rather than the generative model above it, is what
+determines downstream quality --- a finding adjacent to ours in spirit and opposite in method,
+since it is established by improving a tokenizer rather than by measuring what one discards.
+
+The relevant observation for this paper is about evaluation rather than architecture. These
+methods are compared on reconstruction fidelity, codebook utilization and downstream generation
+quality, and the first of those is the objective they are trained on. That is appropriate where
+reconstruction is the goal --- an image tokenizer that reconstructs well has done its job. It
+becomes an assumption when the codes are handed to a forecaster, because the quantity that matters
+downstream is not how much of the input survives but \emph{which parts} do. Reconstruction error
+is an average over dimensions weighted by their contribution to that average, so a dimension can
+be discarded almost entirely while the aggregate metric barely moves.
+
+We are not aware of work that measures, for a reconstruction-trained tokenizer, which input
+dimensions are preferentially discarded and whether the discarded ones are the task-relevant ones.
+\Cref{sec:mechanism} is that measurement, on a fixture built so the answer is checkable, and
+\cref{sec:mech-fix} is an interface that changes it.
+
+\subsection{Microstructure as a predictive signal, and the distinction we are careful about}
+\label{sec:rel-micro}
+
+Order-flow imbalance is among the most robust short-horizon predictors in the microstructure
+literature. \citet{cont2014ofi} show that price changes over short intervals are driven largely by
+the imbalance between order-book events at the best quotes, a linear relationship with substantial
+explanatory power. Related work reads informational content from the composition of flow rather
+than its direction: \citet{easley2012vpin} construct a toxicity measure from volume-bucketed trade
+imbalance and relate it to liquidity provision.
+
+The distinction that governs this paper is that these are not one quantity. Order-flow imbalance
+in the sense of \citet{cont2014ofi} is computed from \emph{order-book depth} --- the arrival,
+cancellation and execution of resting liquidity at the best quotes. What we compute is signed
+\emph{executed-volume} imbalance from aggregated trades, which requires no depth feed and is
+available in the public dumps this study is built on. Trade signing itself has a literature
+\citep{lee1991trade}; our source labels the aggressor side directly, so no signing heuristic is
+applied and none of that literature's classification error enters our features.
+% artifact: src/trikaal/data/reduce.py:75 — buy = pl.col("is_buyer_maker").not_(), i.e. taker BUY is
+%   read from the exchange's own flag on each aggregated trade, not inferred from a quote rule.
+
+We therefore use the name trade-flow imbalance throughout, in prose, configuration and code, and
+never the order-flow name. This is not pedantry about terminology. The published effect sizes
+belong to the depth-based quantity, they are not evidence about ours, and a negative result here
+is evidence about trade-flow imbalance only. Order-book depth is explicit future work
+(\cref{sec:lim-features}).
+
+\subsection{Evaluation discipline}
+\label{sec:rel-eval}
+
+The methodological literature this paper leans on is concerned with a single failure: that a
+sufficiently determined search over strategies will produce an impressive backtest from noise.
+\citet{harvey2016crosssection} argue that the accumulated multiplicity of published cross-sectional
+predictors demands a substantially raised significance bar, and that most published findings would
+not survive one. \citet{bailey2014dsr} give the deflated Sharpe ratio, which discounts an observed
+Sharpe by the number of trials it was selected from and by the non-normality of the return series.
+\citet{lopezdeprado2018advances} supplies the sample-hygiene machinery --- purging, embargoing and
+combinatorially purged cross-validation --- that keeps overlapping labels from leaking a training
+window into its own evaluation.
+
+Our design takes all four instruments: purged walk-forward with a measured embargo, a paired
+moving-block bootstrap, a deflated Sharpe ratio against an enumerated trial count, and a
+cost-aware net information ratio rather than a gross one. \Cref{sec:setup} specifies them.
+
+What we add is not a new statistic but a procedural commitment. The deflated Sharpe ratio corrects
+for a trial count, and the trial count is supplied by the researcher; nothing in the instrument
+prevents an author from reporting a smaller one than they searched. Pre-registration is what makes
+that number checkable, and it is rare in this literature. We fixed the decision rule, the
+thresholds, the horizon, the cost, the seed count and the trial enumeration before any of their
+inputs existed, published the amendment log with the direction of each change recorded before the
+change was evaluated, and pre-committed a null as publishable. \Cref{sec:repro} describes the
+machinery; \cref{sec:repro-defects} reports what it caught.
+
+\subsection{Position}
+\label{sec:rel-position}
+
+Against that background this paper makes one claim. Reconstruction-trained tokenizers allocate
+code capacity by variance and covariance and never by downstream value, so a task-relevant channel
+that is low-variance and weakly covariant is excluded --- deterministically, under conditions
+\cref{sec:mech-claim} states --- and microstructure is exactly such a channel. The remedy is an
+interface property rather than a bigger model or a longer schedule. Whether the same effect governs
+real trade-flow imbalance in a real market is a separate question, and it is the one
+\cref{sec:setup} was pre-registered to answer.
