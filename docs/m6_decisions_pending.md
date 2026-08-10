@@ -283,7 +283,18 @@ the value is a smoke-test default rather than a designed budget — visibility, 
 
 ---
 
-## 7. ADDENDUM (§7 v1.6.21) — three more items, all Lakshay's
+## 7. ADDENDUM (§7 v1.6.22) — three more items, all Lakshay's
+
+> **RENUMBERED, AND THE RENUMBERING IS THE RECORD (2026-08-04).** This header read
+> **`§7 v1.6.21`**, a tag that **has never existed in the amendment log** — the log runs
+> v1.6.20 → v1.6.22 and `v1.6.21` appears nowhere in `docs/m6_prereg.md`. The SUBSTANCE
+> below did land: the IR(2)−IR(1) withdrawal is in the **v1.6.22** entry (`m6_prereg.md:606`,
+> the withdrawal sentence at **`:646`** — *"covers all three marginals with a BSQ arm
+> (IR(2)−IR(1), IR(4)−IR(3), IR(3)−IR(1))"*). So the decision is dated and binding; only
+> the pointer was dangling. **Corrected here rather than silently rewritten**, because a
+> ruling document that cites a tag which does not exist is the same class as prose that
+> describes a gate which does not fire — and the next reader needs the failure mode, not
+> just the right number.
 
 ### 7.1 ★ IR(2)−IR(1): withdraw it as a CLAIM — and it is worse than stated
 
