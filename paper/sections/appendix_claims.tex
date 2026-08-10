@@ -1,0 +1,137 @@
+% =============================================================================================
+% Appendix E — the claims audit.
+%
+% PURPOSE. Separate every load-bearing number in this paper into what was MEASURED, what was
+% DERIVED from a measurement, what is a PIN (a chosen constant, not a finding), and what DOES NOT
+% YET EXIST. The distinction a reader most needs is the last one: a paper whose headline is
+% pending must make it impossible to mistake a pin or a fixture result for a run result.
+%
+% The census figures below are counted from the source, not estimated:
+%   123 inline `% artifact:` comments across the section files and main.tex
+%   44 distinct artifact paths referenced
+% Re-count with:  cat paper/sections/*.tex paper/main.tex | grep -c '^% artifact:'
+% =============================================================================================
+\section{Claims audit}
+\label{app:claims}
+
+Every quantitative claim in this paper carries an inline comment in the \LaTeX{} source naming the
+artifact it came from --- $123$ such comments across $44$ distinct artifact paths, stripped from
+the submitted version and present in the released source. This appendix summarizes them by status.
+
+Four statuses are used, and the boundaries between them are the point of the table.
+\textbf{Measured} means a value read from a committed receipt produced by executing something.
+\textbf{Derived} means computed in closed form from measured inputs, with the derivation shown at
+the point of use. \textbf{Pin} means a constant we chose before seeing data --- a pin is not a
+finding, and no pin should ever be read as evidence. \textbf{Pending} means the quantity does not
+exist until the pre-registered run completes.
+
+\subsection*{E.1\quad The mechanism (\S3)}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+quantity & value & status & source \\
+\midrule
+per-dim reconstruction, return channel & $0.98$ & measured & interface re-spec receipt \\
+per-dim reconstruction, correlated block & $0.82$--$0.92$ & measured & same, dims 1--8, 10--12 \\
+per-dim reconstruction, independent dim & $0.001$--$0.014$ & measured & same, dim 9, three seeds \\
+fixture entropy match, per-dim deficit & $0.4631 \to 0.462$ & measured & filler calibration \\
+feature-space plant, information & $1.151$ nats & derived & $\tfrac12\ln(1+c^2)$ at $c=3$ \\
+feature-space plant, probe correlation & $< 0.05$ at all $40$ evals & measured & canary v6 receipt \\
+token-space plant, information & $0.900$ nats & measured & token-control receipt \\
+token-space plant, recovery & $94.4\%$ & derived & $0.8496 / 0.90027$ \\
+per-bar legibility, original interface & $0.5135$ & measured & id-visibility probe \\
+chance rate & $0.50$ & pin & probe construction \\
+per-bar legibility, re-specified & $0.9047$ & measured & $\lambda$-search, seed mean \\
+legibility gate threshold & $0.90$ & pin & conformance \\
+bits per token, both designs & $20.058$ & derived & $\sum \log_2 L_i$ \\
+class weight $\lambda$ & $3.0$ & pin & fitted on the fixture, then pinned \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two entries deserve a reader's attention. The $1.151$ nats is a closed-form quantity computed from
+a receipt constant rather than a measurement, and the derivation is shown in \cref{sec:mech-predict}
+rather than asserted. And $\lambda = 3.0$ is a pin whose value was \emph{fitted on the synthetic
+fixture}; \cref{sec:lim-matching} states the transfer risk and names the gate that guards it.
+
+\subsection*{E.2\quad The data (\S5)}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+quantity & value & status & source \\
+\midrule
+bars & $304{,}625{,}181$ & measured & lake surface check \\
+instruments & $200$ & measured & same \\
+symbol-months present & $7{,}024$ of $9{,}600$ & measured & lake enumeration \\
+OHLCV-usable & $303{,}283{,}972$ ($99.56\%$) & measured & ingest DQ table \\
+microstructure-usable & $300{,}311{,}536$ ($98.58\%$) & measured & same \\
+microstructure availability & $99.0\%$, none below $0.7$ & measured & same \\
+stale / zero-volume share & $0.175\%$ / $0.376\%$ & measured & same \\
+delisted at ingest scan & $41$ & measured & universe bootstrap \\
+data ends inside the window & $17$ & measured & lake enumeration \\
+warm-up drop, thinnest instrument & $809$ of $279{,}930$ & measured & DQ spot-check \\
+z-score half-lives & $1{,}440$ / $5{,}760$ & pin & feature config \\
+clip range & $[-5, +5]$ & pin & feature config \\
+feature dimensions, total / live & $16$ / $13$ & measured & constants, mask census \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{E.3\quad The design (\S4)}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+quantity & value & status & source \\
+\midrule
+minimum detectable effect, $h=15$ & $3.518$ annualized IR & derived & MDE inputs receipt \\
+economic floor & $0.5$ & pin & verdict constants \\
+prior, $|\text{RankIC}|$ at $h=5$ / $h=15$ & $0.0270$ / $0.0197$ & measured & M2 univariate screen \\
+DSR trial count & $60$ & pin & conformance \\
+bits-per-bar gap, FSQ vs BSQ & $0.058$ & derived & vocabulary arithmetic \\
+parameter gap & $69{,}632$ ($0.327\%$) & measured & realized counts \\
+signed-return ACF at lag 60 & $0.0067$ mean, $0.0191$ worst & measured & embargo premise \\
+absolute-return ACF at lag 60 & $0.2323$ mean, $0.3604$ worst & measured & same \\
+placebo: micro--price correlation & $0.2037 \to 0.0005$ & measured & placebo mechanism doc \\
+placebo: micro lag-1 autocorrelation & $0.4165 \to 0.0006$ & measured & same \\
+capacity handicap in IR units & --- & \textbf{not quantified} & \cref{sec:lim-placebo} \\
+filter activity on real data & --- & \textbf{pending} & no artifact records it \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The last two rows are the ones a reader should carry forward. The capacity handicap is disclosed
+and unquantified --- no cell in the pre-registration brackets it. And no eval artifact in this
+project records decision activity on real bars, so whether the execution filter binds there is
+unmeasured rather than answered elsewhere.
+
+\subsection*{E.4\quad Verification (\S8)}
+
+\begin{center}
+\begin{tabular}{llll}
+\toprule
+quantity & value & status & source \\
+\midrule
+defects in the ledger & $36$ ($19$ critical) & measured & defect ledger \\
+largest single detection layer & $6$ of $19$ critical & derived & ledger tabulation \\
+determinism penalty & $13.175\%$ & measured & CUDA probe report \\
+false bit-exactness claims & $49$ of $49$ records & measured & the D20 entry \\
+same-seed divergence & $0.5662$ vs $0.99883$ & measured & h-sweep vs money-leg \\
+amendment log & $41$ revision tags & measured & pre-registration \\
+anchor causal sweep & $420$ of $420$ & measured & Gate-A manifest \\
+test suite & $727$ passing & measured & \texttt{pytest} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{E.5\quad Everything in \S6}
+
+Every quantity in \cref{sec:results} is \textbf{pending}. Each is bound to a single named field of
+the verdict manifest, named beside the slot in the source, so that filling it is a mechanical
+substitution rather than a judgement. The three figures in that section are drawn on placeholder
+data that is implausible by construction --- absent, symmetric about zero, or at magnitudes two
+orders above anything the design can produce --- so that a cropped panel cannot be mistaken for a
+result. \Cref{sec:res-interpretation} carries both interpretation paragraphs, written and dated
+before the run.

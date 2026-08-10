@@ -1,0 +1,152 @@
+% =============================================================================================
+% §6 Results — STRUCTURED STUBS ONLY. The pre-registered run has not been executed.
+%
+% CONTEXT-STRIPPING RULE (CLAUDE.md standing rules). Every slot below is \TBD{} or \PH{}, in red,
+% and NO slot contains a plausible value. A reader who crops a paragraph out of this section must
+% not be able to mistake any of it for a measurement. When the run lands, each \TBD is replaced
+% from a single named field of the verdict manifest -- the field is named beside every slot so the
+% substitution is mechanical and cannot be improvised.
+%
+% BOTH interpretation paragraphs in §6.6 are written NOW and dated, before any result exists, so
+% that neither can be tuned to an outcome. That is the point of writing them here.
+% =============================================================================================
+\section{Results}
+\label{sec:results}
+
+\emph{The pre-registered run has not been executed. Every quantity in this section is an empty
+slot bound to a named field of the verdict manifest, and every figure is drawn on placeholder data
+that is implausible by construction. Nothing here is a measurement.}
+
+\subsection{The pre-second-stage gate}
+\label{sec:res-gate}
+
+The legibility gate of \cref{sec:mech-gate} runs on real data before any second-stage training is
+authorized, and it is a hard stop rather than a diagnostic: it requires at least $0.90$ sign
+accuracy on \emph{every one} of the six live microstructure dimensions, with no mean clause and no
+floor. Its outcome determines whether the rest of this section exists.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+quantity & value \\
+\midrule
+per-dimension sign accuracy, dims 7--12 & \TBD{six values} \\
+minimum across the six & \TBD{min} \\
+gate outcome & \TBD{pass or hard stop} \\
+\bottomrule
+\end{tabular}
+\end{center}
+% manifest binding: gates.gate2_legibility.{new_by_seed, min, threshold=0.90, pass}
+
+\subsection{Primary outcome}
+\label{sec:res-primary}
+
+The five clauses of \cref{sec:decision} are evaluated conjunctively: the primary outcome is
+\textsc{survives} only if none fails, and \textsc{null} otherwise. Two guards sit outside the
+clauses and are \textsc{halt}-only. \Cref{fig:verdict} draws the surface.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+clause & tests & outcome \\
+\midrule
+1 paired CI & $\Delta\IR(4-5)$ lower bound $> 0$ & \TBD{} \\
+2 MDE & $\Delta\IR(4-5) \ge$ paired MDE & \TBD{} \\
+3 placebo validity & $\IR(4) - \IR(2)$ lower bound $> 0$ & \TBD{} \\
+4 economic floor & materiality against the $0.5$ floor & \TBD{} \\
+5 deflated Sharpe & against $SR_0$ at $N = 60$ trials & \TBD{} \\
+\midrule
+degeneracy guard & constant-direction book, any cell & \TBD{halt or clear} \\
+power guard & across-seed range vs claimed effect & \TBD{halt or clear} \\
+\midrule
+\textbf{primary} & & \TBD{SURVIVES / NULL / INCONCLUSIVE} \\
+\bottomrule
+\end{tabular}
+\end{center}
+% manifest binding: clauses.{1_paired_ci, 2_mde_paired, 3_placebo_validity, 4_economic_floor,
+% 5_dsr}.passed; degeneracy_guard.halted; power_guard.halted; primary. The rule STRINGS printed in
+% Fig 8 are read from the manifest, not restated.
+
+Both specifications required by the amendment window are reported from the same artifacts, and
+their agreement or disagreement is stated here rather than in a footnote.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+ & v1.5 specification (primary) & retained alternative \\
+\midrule
+primary outcome & \TBD{} & \TBD{} \\
+specifications agree & \multicolumn{2}{l}{\TBD{yes or no --- a first-class finding either way}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+% manifest binding: dual_specification.* — a manifest lacking this field cannot be quoted (§7 v1.5)
+
+\subsection{Effect sizes and secondary diagnostics}
+\label{sec:res-effects}
+
+Information coefficient, rank information coefficient, mean absolute error and $R^2$ are reported
+as secondary diagnostics and do not enter the decision rule.
+
+\begin{center}
+\begin{tabular}{lccccc}
+\toprule
+cell & 1 BSQ/OHLCV & 2 FSQ/OHLCV & 3 BSQ/+micro & 4 FSQ/+micro & 5 placebo \\
+\midrule
+net IR, seed mean & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
+across-seed range & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
+RankIC & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
+decision activity at $\kappa^\ast$ & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
+\bottomrule
+\end{tabular}
+\end{center}
+% manifest binding: per_cell.{ir_seed_mean, ir_range_across_seeds, rankic}; degeneracy_guard.
+% per_cell.activity_decisions_seed_mean. The activity row is printed whatever it reads, per §4.4.
+
+The three marginals involving a BSQ arm are reported and not claimed, for the reason
+\cref{sec:lim-baseline} gives, and the required disclosure ships with them verbatim.
+
+\subsection{Cost stress and seed dispersion}
+\label{sec:res-stress}
+
+\Cref{fig:cost} sweeps the round-trip cost around the pinned $0.30\%$; \cref{fig:seeds} plots each
+cell's five seeds against the size of the effect being claimed. Both figures are built against the
+manifest schema and are watermarked until the run lands.
+
+\subsection{Interpretation}
+\label{sec:res-interpretation}
+
+\emph{Both paragraphs below were written on 2026-08-10, before the run was executed and before any
+result existed. Exactly one will be retained; the other is deleted rather than softened. They are
+placed here, in advance, so that neither can be written to fit an outcome.}
+
+\paragraph{If the outcome is \textsc{survives}.} A positive $\Delta\IR(4-5)$ that clears the
+paired confidence interval, the minimum detectable effect, the economic floor and the deflation
+benchmark establishes that real trade-flow imbalance carries information beyond input capacity, and
+that a tokenizer built to preserve it delivers that information to a cost-aware trading decision.
+The claim ends there, and three limits bind it immediately. It is not a calibrated estimate of how
+much: \cref{sec:lim-placebo} states that $\Delta\IR(4-5)$ mixes information with an unquantified
+capacity handicap, so the measured difference is an upper bound on the information effect rather
+than an estimate of it. It is not evidence that our BSQ baseline is competitive, so the
+quantizer-axis marginals remain reported rather than claimed. And it is one exchange, one venue,
+one instrument class and one year of scored data, with no regime-transfer test --- a positive
+result here is an existence proof on this slice, not a property of markets. The mechanism of
+\cref{sec:mechanism} would remain a fixture result; a positive outcome is consistent with it and
+does not confirm it, because many differences between cells 2 and 4 could produce the same sign.
+
+\paragraph{If the outcome is \textsc{null} or \textsc{inconclusive}.} This is the outcome the
+design's own arithmetic makes most likely, and we pre-committed it as publishable before any result
+existed, so it is reported without reframing. A null here means that under this pre-registered
+decision rule, at this budget, on this slice, the microstructure arm did not beat its placebo by a
+margin the design could resolve. It does \emph{not} mean microstructure carries no information: the
+minimum detectable effect is $3.518$ annualized IR against a prior of $|\text{RankIC}| = 0.027$, so
+the design would fail to detect a real effect of the size we actually expect, and
+\cref{sec:lim-power} states that the effect we can detect is larger than the effect we predict.
+Nor does it mean the mechanism of \cref{sec:mechanism} is wrong --- the mechanism is established on
+a fixture and is not contingent on this outcome. What a null does establish is narrower and still
+worth publishing: that the pipeline, with the interface defect removed and the legibility gate
+passed, does not convert this microstructure signal into net information ratio at this scale.
+Given how much of this literature reports only positive results, a pre-registered null with its
+power analysis stated in advance is a contribution to the record rather than a failed experiment.
+\Cref{sec:lim-power} names what would change the answer: more scored data, a lower-cost venue, or
+an effect larger than our own prior.

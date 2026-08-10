@@ -1,0 +1,117 @@
+% =============================================================================================
+% Appendix D — the pinned decision surface, verbatim.
+%
+% §8 DESCRIBES the conformance surface; this appendix TABULATES it, so a reader can check a run's
+% configuration against the pre-registration without reading our code. Every value below is
+% imported live from src/trikaal/eval/conformance.py and src/trikaal/eval/verdict.py -- none is
+% transcribed. Renamed from "Reproducibility and verification" so it does not duplicate §8's title.
+% =============================================================================================
+\section{The pinned decision surface}
+\label{app:repro}
+
+Every quantity below was fixed before any of its inputs existed and is hard-asserted before any
+cell is scored. A run whose configuration differs from any of these raises rather than producing a
+downgraded result. The values are reproduced from the constants themselves, not from prose.
+
+\subsection*{D.1\quad Experiment pins}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+constant & value & governs \\
+\midrule
+\texttt{PINNED\_SYMBOLS\_SHA256} & \texttt{60e24f59\ldots dc32631} & the evaluation universe \\
+\texttt{PINNED\_SEEDS} & $(0,1,2,3,4)$ & five replicates, fixed up front \\
+\texttt{PINNED\_KAPPAS} & $(1.0, 1.5, 2.0, 3.0)$ & the execution-filter grid \\
+\texttt{PINNED\_HEADLINE\_COST} & $0.0030$ & flat round trip, the pessimistic band end \\
+\texttt{PINNED\_MONEY\_SEQ\_LEN} & $512$ & eval surface and training context \\
+\texttt{PINNED\_BACKBONE\_PARAMS} & $21{,}301{,}248$ & the realized parameter count \\
+\texttt{PINNED\_STEPS\_STAGE1} & $26{,}003$ & tokenizer budget, matched across arms \\
+\texttt{PINNED\_STEPS\_STAGE2} & $26{,}003$ & backbone budget, matched across arms \\
+\texttt{PINNED\_MU\_ESTIMATOR} & \texttt{expectation} & conditional mean, not mode \\
+\texttt{PINNED\_ENCODER\_CAUSAL} & \texttt{True} & forced for every cell \\
+\texttt{PINNED\_FINE\_POINTWISE} & \texttt{True} & the re-specified interface \\
+\texttt{PINNED\_MICRO\_POINT\_WEIGHT} & $3.0$ & the class weight $\lambda$ \\
+\texttt{PINNED\_MICRO\_LEGIBILITY\_MIN} & $0.90$ & the gate, on every live micro dimension \\
+\texttt{PINNED\_CODEBOOK\_MIN\_UTILIZATION} & $0.95$ & BSQ collapse check \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{D.2\quad Decision thresholds and the deflation recipe}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+constant & value & governs \\
+\midrule
+\texttt{ECON\_FLOOR\_IR} & $0.5$ & clause 4 materiality floor \\
+\texttt{DSR\_N\_TRIALS} & $60$ & clause 5 trial count \\
+\texttt{DSR\_THRESHOLD} & $0.95$ & clause 5 deflated-Sharpe threshold \\
+trial factorization & cells $\times$ horizons $\times$ $\kappa$ & $5 \times 3 \times 4 = 60$ \\
+\texttt{DSR\_HORIZONS} & $(5, 15, 60)$ & the horizon axis \\
+\texttt{DSR\_VAR\_SR\_BASIS\_CELL} & $5$ & dispersion basis is the \emph{placebo} arm \\
+de-annualization horizon & $15$ & the unit $SR_0$ is compared against \\
+\texttt{PLACEBO\_DISPERSION\_TRIPWIRE} & $1.5\times$ & disclose if the placebo arm is over-dispersed \\
+\texttt{PINNED\_BOOT} & $B = 10{,}000$, seed $20260704$, $\alpha = 0.05$ & the paired bootstrap \\
+\texttt{BOOT\_POWER} & $0.80$ & the MDE's power term \\
+\texttt{FRAC\_NEG\_BAND} & $[0.05, 0.95]$ & degeneracy guard, sign-balance leg \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Two of these carry a history that \cref{sec:repro-prereg} summarizes and the amendment log states
+in full. The trial count was reduced from $180$ to $60$ when seeds were recognized as replicates
+rather than configurations, and the dispersion basis was moved to the placebo arm because the
+earlier all-arms basis made clause 5 anti-correlated with its own hypothesis. The first tightens
+the criterion and the second loosens it; the net is indeterminate before the run, and
+\cref{sec:repro-prereg} explains why we report it that way rather than as a single direction.
+
+\subsection*{D.3\quad Evaluation geometry}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+quantity & value \\
+\midrule
+window & 2021-01-01 to 2025-01-01, one-minute bars \\
+train/forward split & 2023-10-20, the $0.7$ point \\
+forward blocks & $6$; block $0$ selects $\kappa$ and is excluded \\
+headline region & blocks 1--5, $\approx$ 2024-01-01 to 2025-01-01 \\
+periods per instrument at $h=15$ & $35{,}063$ \\
+scored instruments & $40$ of the $200$ in the lake \\
+effective breadth & $1.5$ \\
+label look-forward & $60$ bars \\
+serial-correlation margin & $60$ bars \\
+leading embargo & $120$ bars \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection*{D.4\quad Content addressing and environment}
+
+The Gate-A anchor is a fixed evaluation of a frozen checkpoint through the full harness, re-proven
+twice from unpiped commands before and after any change to the evaluation instrument.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+artifact & value \\
+\midrule
+anchor results hash & \texttt{sha256:3f86882a63dd06c78\ldots} \\
+anchor causal sweep & $420$ of $420$ checks \\
+anchor dataset hash & \texttt{sha256:1d3ec4f8db6686e2\ldots} \\
+anchor tokenizer hash & \texttt{sha256:ce7c8c4ae0b62c89\ldots} \\
+anchor predictor hash & \texttt{sha256:6d118ede6bfcab2e\ldots} \\
+universe Merkle root & \texttt{sha256:5dfd667d05b97bda\ldots} \\
+lake & $7{,}024$ Parquet files, $200$ symbols, $304{,}625{,}181$ bars \\
+Python & 3.11.7 \\
+NumPy & 2.4.6 \\
+PyTorch & 2.12.1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
+amendment log carries $41$ distinct revision tags, each with its date, its reason, and the
+direction it moves the criterion, recorded before the amendment was evaluated.

@@ -1,12 +1,18 @@
 % =============================================================================================
 % Trikaal — tokenizer study.  Build:  tectonic -X compile paper/main.tex
 %
-% DRAFT STATUS (2026-08-09)
-%   §3  Mechanism ........ drafted, every number traced to a committed artifact
-%   §1  Introduction ..... title / abstract / contributions drafted PROVISIONALLY; body pending
-%   §2, §4–§8 ............ structural stubs, drafted in the order §4, §5, §7, §8, §2, §1
-%   Any \TBD{...} is a quantity that does not exist until the pre-registered run completes.
-%   No \TBD may be filled by estimate.
+% DRAFT STATUS (2026-08-10)
+%   §1–§5, §7, §8, Appendices A–E, References ... DRAFTED. Every number traced to a committed
+%       artifact by an inline `% artifact:` comment (123 of them, 44 distinct paths).
+%   §6  Results ........... STRUCTURED STUBS ONLY. No quantity in it exists until the
+%       pre-registered run completes; each slot names the verdict-manifest field it binds to, so
+%       filling it is a mechanical substitution. Both interpretation paragraphs are written and
+%       dated 2026-08-10, before the run, so neither can be tuned to an outcome.
+%   TITLE and ABSTRACT remain unlocked; two title variants are carried below.
+%
+%   Any \TBD{...} is a quantity that does not exist yet. No \TBD may be filled by estimate.
+%   Any \PH{...} marks placeholder FIGURE data, which is implausible by construction per the
+%   context-stripping rule — absent, symmetric about zero, or at an absurd magnitude.
 % =============================================================================================
 \documentclass[10pt]{article}
 \usepackage{preprint}
@@ -161,9 +167,7 @@ not an emergent one.
 \input{sections/05_figures}
 \clearpage
 
-\section{Results}
-\label{sec:results}
-\TBD{§6 --- structured stubs only. No number below exists until the pre-registered run completes; the three figures are built against the artifact schema and are watermarked until then. Both interpretation paragraphs are pre-written and dated.}
+\input{sections/06_results}
 
 \begin{figure}[t]
   \centering
@@ -219,12 +223,8 @@ not an emergent one.
 \appendix
 \input{sections/appendix_mechanism}
 
-\section{Reproducibility and verification}
-\label{app:repro}
-\TBD{pinned decision surface; content hashes; environment lockfiles; amendment log.}
+\input{sections/appendix_repro}
 
-\section{Claims audit}
-\label{app:claims}
-\TBD{measured-versus-estimated table.}
+\input{sections/appendix_claims}
 
 \end{document}
