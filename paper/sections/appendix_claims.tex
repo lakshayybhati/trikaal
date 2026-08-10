@@ -127,10 +127,38 @@ test suite & $727$ passing & measured & \texttt{pytest} \\
 \end{tabular}
 \end{center}
 
+\subsection*{E.4a\quad A header-less tag is cited on a shipped clause}
+
+\Cref{app:audit} F.1 records that the amendment log carries $42$ distinct revision tags across
+$39$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
+references without headers of their own. One consequence belongs here rather than there, because
+it touches a field that ships.
+
+\textbf{The verdict manifest cites one of those header-less tags on its headline clause.} The
+\texttt{rule} string of \texttt{4\_economic\_floor} --- a field written into every emitted
+manifest --- ends ``see \texttt{placebo\_capacity\_disclosure} and \S7 v1.6.27''.
+
+\textbf{The pointer resolves, and the distinction matters: header-less is not absent.} The tag
+marks a full correction in the body of the log, recorded there as the clause it replaced being
+false. It sits inside the entry that introduced the placebo capacity disclosure the same rule
+string names, so a reader following the pointer arrives at the disclosure and its correction
+together.
+
+\textbf{v1.6.24 is the weaker case.} It appears in the log only as two back-references, with no
+entry of its own defining it, and is cited from several places outside the pre-registration ---
+including this paper, a limitations document, a run manifest, and the repository's own
+instructions. A reader following that tag into the log finds it used but never defined.
+
+\textbf{The entries are not backfilled, and the reason is the ruling.} Retro-dating
+pre-registration entries to tidy a count would make the log less trustworthy, not more: a log
+whose entries can appear after the fact is not a pre-registration. The gap is therefore disclosed
+rather than closed --- which is the same disposition, and the same reasoning, as the activity-leg
+ruling in Appendix~D.2. Ruled by the supervisor, 2026-08-11.
+
 \subsection*{E.5\quad Everything in \S6}
 
 Every quantity in \cref{sec:results} is \textbf{pending}. Each is bound to a single named field of
-the verdict manifest, tabulated in \cref{app:repro} D.5 and named beside the slot in the
+the verdict manifest, tabulated in Appendix~D.5 and named beside the slot in the
 source, so that filling it is a mechanical substitution rather than a judgement. The three figures in that section are drawn on placeholder
 data that is implausible by construction --- absent, symmetric about zero, or at magnitudes two
 orders above anything the design can produce --- so that a cropped panel cannot be mistaken for a

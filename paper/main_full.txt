@@ -3,7 +3,7 @@ A Controlled Study on Financial Microstructure
 Lakshay Bhati
 [aﬀiliation]
 [email]
-Preprint — draft of August 10, 2026
+Preprint — draft of August 11, 2026
 
 Abstract
 Two-stage models for financial time series learn a tokenizer under a reconstruction objective and
@@ -1575,12 +1575,11 @@ artifacts, disagree on the outcome word. Which answer one believes then depends 
 specification one believes, which is what unresolved means.
 The condition is sufficient, not necessary: a NULL meeting none of the three is reported as a null.
 Two candidates were considered and rejected. verdict.double_null and verdict.fallback
-concern the quantizer axis — whether IR(2) − IR(1) is claimable under the identical rule — and a
-clean two-arm negative is a null, not an unresolved measurement. And a sub-endpoint reading of the
-degeneracy guard’s activity leg was rejected because that leg is endpoint-only by ruling (Appendix D
-D.2); using a sub-endpoint threshold here would smuggle in the band the ruling declined to adopt.
-We also declined to express clause 2 as a fraction of the claimed effect, because that would require
-inventing a constant; the form above compares two quantities the manifest already carries.
+concern the quantizer axis — whether IR(2) − IR(1) is claimable under the identical rule — and
+a clean two-arm negative is a null, not an unresolved measurement. And a sub-endpoint reading
+of the degeneracy guard’s activity leg was rejected because that leg is endpoint-only by ruling (Appendix D.2); using a sub-endpoint threshold here would smuggle in the band the ruling declined to
+adopt. We also declined to express clause 2 as a fraction of the claimed effect, because that would
+require inventing a constant; the form above compares two quantities the manifest already carries.
 If the legibility gate fails on real data. This is the mechanism’s own modal prediction, and it is
 a result rather than an accident. The gate requires at least 0.90 sign accuracy on every one of the
 six live microstructure dimensions, recovered from each bar’s own token; a hard stop means the respecified interface, which restores that property on an entropy-calibrated fixture, does not restore it
@@ -3041,7 +3040,7 @@ records decision activity on real bars, so whether the execution filter binds th
 than answered elsewhere.
 E.4
 
-E.5
+E.4a
 
 Verification (§8)
 quantity
@@ -3088,14 +3087,37 @@ pre-registration
 Gate-A manifest
 pytest
 
+A header-less tag is cited on a shipped clause
+
+Appendix F F.1 records that the amendment log carries 42 distinct revision tags across 39 top-level
+entries, three tags — v1.0, v1.6.24 and v1.6.27 — appearing as in-body references without headers
+of their own. One consequence belongs here rather than there, because it touches a field that ships.
+42
+
+The verdict manifest cites one of those header-less tags on its headline clause. The rule string
+of 4_economic_floor — a field written into every emitted manifest — ends “see placebo_capacity_disclosure
+and §7 v1.6.27”.
+The pointer resolves, and the distinction matters: header-less is not absent. The tag marks
+a full correction in the body of the log, recorded there as the clause it replaced being false. It sits
+inside the entry that introduced the placebo capacity disclosure the same rule string names, so a
+reader following the pointer arrives at the disclosure and its correction together.
+v1.6.24 is the weaker case. It appears in the log only as two back-references, with no entry of its
+own defining it, and is cited from several places outside the pre-registration — including this paper, a
+limitations document, a run manifest, and the repository’s own instructions. A reader following that
+tag into the log finds it used but never defined.
+The entries are not backfilled, and the reason is the ruling. Retro-dating pre-registration entries
+to tidy a count would make the log less trustworthy, not more: a log whose entries can appear after
+the fact is not a pre-registration. The gap is therefore disclosed rather than closed — which is the
+same disposition, and the same reasoning, as the activity-leg ruling in Appendix D.2. Ruled by the
+supervisor, 2026-08-11.
+E.5
+
 Everything in §6
 
 Every quantity in Section 6 is pending. Each is bound to a single named field of the verdict manifest,
-tabulated in Appendix D D.5 and named beside the slot in the source, so that filling it is a mechanical
+tabulated in Appendix D.5 and named beside the slot in the source, so that filling it is a mechanical
 substitution rather than a judgement. The three figures in that section are drawn on placeholder data
-42
-
-that is implausible by construction — absent, symmetric about zero, or at magnitudes two orders
+that is implausible by construction — absent, symmetric about zero, or at magnitudes two orders
 above anything the design can produce — so that a cropped panel cannot be mistaken for a result.
 Section 6.5 carries all five interpretation branches, written and dated before the run; exactly one
 survives it.
@@ -3108,9 +3130,8 @@ This appendix is internal. It is removed before submission and exists so that th
 can be checked rather than taken on assurance.
 F.1 Status of the item that was blocked
 The ruling on the degeneracy guard’s activity leg has been made: the leg is not banded, recorded
-in docs/degeneracy_guard_activity_leg_RULING.md and carried as pre-registration amendment tag v1.6.28. Appendix D D.2 now records the leg as endpoint-only by ruling rather than by
-omission, with the three compensating disclosures the ruling requires; Section 7.5 states what it
-leaves uncovered.
+in docs/degeneracy_guard_activity_leg_RULING.md and carried as pre-registration amendment tag v1.6.28. Appendix D.2 now records the leg as endpoint-only by ruling rather than by omission, with the three compensating disclosures the ruling requires; Section 7.5 states what it leaves
+uncovered.
 The tag now exists, and the sequence is worth recording because the discipline is the point.
 The ruling named itself amendment v1.6.28 while that tag was absent from the log: grep -c v1.6.28
 docs/m6_prereg.md returned zero, and the highest tag present was v1.6.27. For as long as that held,
@@ -3118,7 +3139,7 @@ this paper reported the log as carrying 41 tags — what the log contained — a
 document rather than by tag, because a count written to an assertion about a log rather than to the log
 is exactly the failure the log exists to prevent. The entry has since been written (§7 v1.6.28, dated
 2026-08-11, citing commit 2012acc), and only then did the count move to 42 in Section 8.4 and
-Appendix D D.4.
+Appendix D.4.
 Two facts about the log that a reader checking this should have. The 42 counts distinct revision
 tags, which is what the paper claims; the log carries 39 top-level entries, because three tags — v1.0,
 v1.6.24 and v1.6.27 — appear as in-body references without headers of their own. And one claim
@@ -3186,7 +3207,7 @@ Five dated branches in Section 6.5. §6.5 now states
 that four are manifest-selected and INCONCLUSIVE is
 an adjudication — no manifest can carry that word
 — with a three-condition trigger fixed in advance.
-Appendix D D.5 binds all 21 §6 slots; D.6 gives the
+Appendix D.5 binds all 21 §6 slots; D.6 gives the
 required-field schema. Six bindings were wrong as
 first written and were corrected against the emitter
 — F.4.
@@ -3252,7 +3273,7 @@ control, which is a different quantity from a mask length, and the same record s
 1,363 micro bars masked on that instrument. What we have not reconciled is the exact per-symbol
 arithmetic relating segment count, mask length and dropped rows, and we do not attempt it here.
 Section 5.3 quotes only the measured drop; no number in the paper depends on the residual.
-Six of the twenty-one bindings in Appendix D D.5 were wrong as first written, and the error
+Six of the twenty-one bindings in Appendix D.5 were wrong as first written, and the error
 is more serious than a transcription slip because D.5’s own claim is that each slot has exactly one
 defensible source. Five clause outcomes named .passed where the emitter writes .pass; the powerguard rows named fields the emitter does not define; and the legibility gate was given a verdictmanifest path when it is a separate Stage-1 receipt that no verdict manifest contains. All twenty-one
 were re-verified against the emitter and the table corrected. An external spot-check of ten bindings
