@@ -2174,19 +2174,23 @@ The rental market exposes no kernel filter, so a box’s kernel is knowable only
 a probe and two batches we rented fourteen machines and observed fourteen distinct kernels with
 no matched pair; filtering on driver, the only axis exposed, determines nothing about the kernel. A
 matched multi-machine pool was therefore not purchasable at any price we found, which forced the
-entire 270.4 GPU-hour workload onto one machine — 11.3 days of wall-clock. The split makes a
-five-machine fan-out purchasable and takes that to 54.1 hours. It costs approximately one additional
-dollar, because the work is identical and only per-machine setup multiplies, so there was no costversus-time trade to make: the change buys time and nothing else.
+entire 270.4 GPU-hour workload onto one machine — 11.3 days of wall-clock. The split makes
+a five-machine fan-out purchasable and takes that to 54.1 hours. The additional work is about 1.1
+GPU-hours — roughly a dollar — because the computation is identical and only per-machine setup
+multiplies. Any further difference in outlay comes from renting the five cheapest machines rather
+than the single cheapest, which raises the mean hourly rate; that is a market condition rather than a
+property of the change. There was accordingly no work-versus-time trade to make: the change buys
+wall-clock and nothing else.
 The technical argument is that a kernel patch release does not participate in GPU floating-point
 computation — with GPU model, driver, CUDA build and framework fixed and deterministic algorithms forced, no float operation or kernel selection differs. We hold that argument to its scope: it
 concerns GPU arithmetic, not a general claim that kernel versions are immaterial.
 Two properties make the relaxation checkable rather than a matter of trust. It fails closed: the
-kernel is removed by stripping an exact expected prefix, and where that prefix does not match —
-as on a non-Linux host — the full string is returned and the key compares everything it compared
-before, so an unrecognised format cannot silently widen the gate. And the kernel remains stamped
 33
 
-per artifact, so a reader can enumerate exactly which kernels ran and test any result against them. The
+kernel is removed by stripping an exact expected prefix, and where that prefix does not match —
+as on a non-Linux host — the full string is returned and the key compares everything it compared
+before, so an unrecognised format cannot silently widen the gate. And the kernel remains stamped
+per artifact, so a reader can enumerate exactly which kernels ran and test any result against them. The
 change was made before any unit was trained at the pinned budget, which is mechanically checkable:
 no evaluation artifact carries the pinned step count.
 8.6
@@ -2267,12 +2271,12 @@ only by executing the pipeline, which is the basis for the operational rule that
 first execution is on rented hardware is an untested component whatever its coverage says.
 The reason to publish this table is that it is the strongest available argument against the verification
 story a paper normally tells. Code review, a green test suite and a careful author would have caught
-roughly a third of what mattered here. We do not claim the remaining defects are gone; we claim
-that seven independent detection layers were run, that each found something the others missed, and
-that the count of defects found by the most recent layer has not yet reached zero.
 34
 
-A recurring pattern is worth naming, because it changes what a reader should count as evidence.
+roughly a third of what mattered here. We do not claim the remaining defects are gone; we claim
+that seven independent detection layers were run, that each found something the others missed, and
+that the count of defects found by the most recent layer has not yet reached zero.
+A recurring pattern is worth naming, because it changes what a reader should count as evidence.
 Several defects were checks that could not fail: a mutation test whose fixture made the two cases it
 separated numerically identical; a gate that shipped below a return and had never executed; a unit
 test whose written contract was the defect. In each, a test existed and was green. Our operating rule
@@ -2313,12 +2317,11 @@ Fabian Mentzer, David Minnen, Eirikur Agustsson, and Michael Tschannen. Finite s
 Yuqi Nie, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. A time series is worth
 64 words: Long-term forecasting with transformers. In International Conference on Learning
 Representations (ICLR), 2023.
-Yu Shi, Zongliang Fu, Shuo Chen, Bohan Zhao, Wei Xu, Changshui Zhang, and Jian Li. Kronos: A
-foundation model for the language of financial markets. arXiv preprint arXiv:2508.02739, 2025.
-
 35
 
-Aäron van den Oord, Oriol Vinyals, and Koray Kavukcuoglu. Neural discrete representation learning.
+Yu Shi, Zongliang Fu, Shuo Chen, Bohan Zhao, Wei Xu, Changshui Zhang, and Jian Li. Kronos: A
+foundation model for the language of financial markets. arXiv preprint arXiv:2508.02739, 2025.
+Aäron van den Oord, Oriol Vinyals, and Koray Kavukcuoglu. Neural discrete representation learning.
 In Advances in Neural Information Processing Systems (NeurIPS), 2017.
 Gerald Woo, Chenghao Liu, Akshat Kumar, Caiming Xiong, Silvio Savarese, and Doyen Sahoo. Unified training of universal time series forecasting transformers. arXiv preprint arXiv:2402.02592,
 2024.
@@ -2444,12 +2447,13 @@ B Token-space plant: construction and calibration
 The control of Section 3.4 requires a plant in token space whose information content is known exactly,
 is large enough to be detectable under the pre-registered branch condition (0.7–1.1 nats), and does
 not perturb the carrier’s marginal distribution enough to be detectable by that route instead.
-A first design, retired. The natural construction — a deterministic translation of one digit by an
-amount determined by another — cannot carry enough information on this carrier. The carrier’s
-coarse digit marginals are already near-uniform: measured entropies of 2.3938, 2.1796 and 2.1873
+
 36
 
-nats against maxima of ln 11 = 2.3979 and ln 9 = 2.1972, i.e. 99.2–99.8% of maximum. Under
+A first design, retired. The natural construction — a deterministic translation of one digit by an
+amount determined by another — cannot carry enough information on this carrier. The carrier’s
+coarse digit marginals are already near-uniform: measured entropies of 2.3938, 2.1796 and 2.1873
+nats against maxima of ln 11 = 2.3979 and ln 9 = 2.1972, i.e. 99.2–99.8% of maximum. Under
 near-uniform marginals a translation plant is capped at 0.2769 nats, below the required band, so it
 was retired as information-poor by construction rather than tuned.
 The adopted design. The target digit is redrawn from a discretized Gaussian on the level grid, centred monotonically on the source level, with width 𝜎plant solved so that the exact mutual information
@@ -2518,15 +2522,15 @@ data the minimum per-dimension unmasked bar count across all 200 symbols is 277,
 gate’s 10,000-bar floor, with zero symbols below it, so the all-thin case cannot arise here: the first
 defect was real but immaterial on this data. The second was severe.
 
-D
+37
+
+D
 
 The pinned decision surface
 
 Every quantity below was fixed before any of its inputs existed and is hard-asserted before any cell
 is scored. A run whose configuration differs from any of these raises rather than producing a downgraded result. The values are reproduced from the constants themselves, not from prose.
-37
-
-D.1
+D.1
 
 Experiment pins
 
@@ -2642,15 +2646,16 @@ in its place: activity_decisions_by_kappa across the full grid rather than the �
 the trade count beside the fraction, and std( ˆ
 𝜇)/𝜃 at 𝜅 ∗ . Section 7.5 states what the ruling leaves
 uncovered.
-Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
+
+38
+
+Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
 The trial count was reduced from 180 to 60 when seeds were recognized as replicates rather than
 configurations, and the dispersion basis was moved to the placebo arm because the earlier all-arms
 basis made clause 5 anti-correlated with its own hypothesis. The first tightens the criterion and the
 second loosens it; the net is indeterminate before the run, and Section 8.4 explains why we report it
 that way rather than as a single direction.
-38
-
-D.3
+D.3
 
 D.4
 

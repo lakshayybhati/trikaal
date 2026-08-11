@@ -290,9 +290,18 @@ three stacked judgment calls = an unlimited re-run license):**
     billed GPU-h at $79/$108, five boxes is 271.8 at $79/$109 — **a delta of +1.1 GPU-h and about
     +$1**, because the work is identical and only the 0.28 h/box setup multiplies. The $121 figure
     is real but is the worst-case total for *determinism on the eval leg at $0.40/hr spot*, not a
-    fan-out delta. So the honest statement is stronger than the briefed one: **fan-out buys a 5.0×
-    wall-clock reduction for roughly one dollar.** There was no money-versus-time trade to make,
-    which removes the only reading under which the motive could have been cost.
+    fan-out delta.
+    **THE ACCURATE STATEMENT, which is about WORK and not about DOLLARS.** The fan-out adds
+    **~1.1 GPU-h of work — about a dollar**. Any dollar difference beyond that comes from the
+    POOL'S MEAN HOURLY RATE against the single cheapest box: total cost is
+    `(270.4 + 0.28×N) GPU-h × mean hourly rate`, and at N=1 you buy the single cheapest machine
+    while at N=5 you buy the five cheapest, so the mean rises — the cheapest matched box measured
+    $0.3556/h and the next ones $0.58–$0.74 in an earlier cohort. **That is a market condition,
+    not a property of the change.** "Roughly one dollar" is true of HOURS and can be false of
+    DOLLARS, and the distinction is kept here because collapsing it would understate what the
+    operator actually pays. The conclusion survives and is stronger for being exact: **there was
+    no WORK-versus-time trade to make**, which removes the only reading under which the motive
+    could have been cost.
   - **NO GATE VALUE MOVES elsewhere; the freeze is otherwise untouched.** The identity surface
     still refuses on 16 keys, and a deleted key now fails a test rather than deleting its own test
     case (`test_the_identity_surface_IS_the_literal_list_and_nothing_drifted`).

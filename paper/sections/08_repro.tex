@@ -131,9 +131,12 @@ Across a probe and two batches we rented fourteen machines and observed fourteen
 with no matched pair; filtering on driver, the only axis exposed, determines nothing about the
 kernel. A matched multi-machine pool was therefore not purchasable at any price we found, which
 forced the entire $270.4$ GPU-hour workload onto one machine --- $11.3$ days of wall-clock. The
-split makes a five-machine fan-out purchasable and takes that to $54.1$ hours. It costs
-approximately one additional dollar, because the work is identical and only per-machine setup
-multiplies, so there was no cost-versus-time trade to make: the change buys time and nothing else.
+split makes a five-machine fan-out purchasable and takes that to $54.1$ hours. The additional
+\emph{work} is about $1.1$ GPU-hours --- roughly a dollar --- because the computation is identical
+and only per-machine setup multiplies. Any further difference in outlay comes from renting the five
+cheapest machines rather than the single cheapest, which raises the mean hourly rate; that is a
+market condition rather than a property of the change. There was accordingly no work-versus-time
+trade to make: the change buys wall-clock and nothing else.
 
 The technical argument is that a kernel patch release does not participate in GPU floating-point
 computation --- with GPU model, driver, CUDA build and framework fixed and deterministic
