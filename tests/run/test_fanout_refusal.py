@@ -47,7 +47,7 @@ EXPECTED_IDENTITY_KEYS = (
     "torch",
     "numpy",
     "python",
-    "platform",
+    "platform_abi",
     "attention_mode",
     "deterministic_algorithms",
     "cudnn_deterministic",
@@ -76,7 +76,8 @@ PROV = {
     "numpy": "2.4.6",
     "python": "3.11.10",
     "python_executable": "/opt/conda/bin/python3",
-    "platform": "Linux-x86_64",
+    "platform": "Linux-5.15.0-179-generic-x86_64-with-glibc2.35",
+    "platform_abi": "x86_64-with-glibc2.35",
     "attention_mode": "sdpa_deterministic",
     "deterministic_algorithms": True,
     "cudnn_deterministic": True,
@@ -224,3 +225,39 @@ def test_git_commit_and_step_budgets_are_identity_keys():
     stamped = run_provenance()
     assert stamped["steps_stage1"] == PINNED_STEPS_STAGE1
     assert stamped["steps_stage2"] == PINNED_STEPS_STAGE2
+
+
+# ------------------------------------------------------- THE KERNEL RELAXATION, both directions
+# The compared surface swapped `platform` for `platform_abi`. These two tests are a matched pair
+# and neither is meaningful alone: the first proves the relaxation HAPPENED, the second proves it
+# did not go one field too far. A change that neutered the key would pass the first and fail the
+# second; a change that did nothing would fail the first and pass the second.
+def test_a_KERNEL_difference_no_longer_refuses(tmp_path):
+    """The whole point. One unit on a different kernel patch release must now assemble.
+
+    A kernel patch release changes no float operation, no CUDA kernel and no torch code path, and
+    it is the one component of the one key vast exposes no way to filter on — measured: eight
+    boxes from the cheap end of the market produced eight distinct kernels."""
+    out = build_fanout(tmp_path, mutate_unit=7, mutate_key="platform")
+    evals, _shas = load_cell_evals(out)  # must NOT raise
+    assert len(evals) == 25
+    kernels = {d["meta"]["provenance"]["platform"] for d in evals.values()}
+    assert len(kernels) == 2, "the fixture did not actually vary the recorded kernel"
+
+
+def test_the_DRIFTED_KERNEL_IS_STILL_RECORDED_on_the_artifact(tmp_path):
+    """Tolerated is not the same as discarded. A reviewer must still be able to read which kernel
+    each unit ran, or the relaxation has cost us the audit trail it promised to keep."""
+    evals, _ = load_cell_evals(build_fanout(tmp_path, mutate_unit=7, mutate_key="platform"))
+    for (cell_id, seed), doc in evals.items():
+        p = doc["meta"]["provenance"]
+        assert p.get("platform"), f"cell{cell_id}_seed{seed} lost its kernel string"
+    drifted = [d for d in evals.values() if d["meta"]["provenance"]["platform"].endswith("DRIFTED")]
+    assert len(drifted) == 1, "the drifted kernel is not visible in any artifact"
+
+
+def test_an_ABI_difference_STILL_refuses(tmp_path):
+    """arch + libc still separate. Without this the test above would pass just as well against a
+    `platform_abi` that had been quietly dropped from the compared set."""
+    with pytest.raises(VerdictInputError, match="provenance"):
+        load_cell_evals(build_fanout(tmp_path, mutate_unit=7, mutate_key="platform_abi"))

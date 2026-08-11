@@ -51,6 +51,7 @@ CUDA_PROV = {
     "numpy": "2.4.6",
     "python": "3.11.10",
     "platform": "Linux-5.15.0-181-generic-x86_64-with-glibc2.35",
+    "platform_abi": "x86_64-with-glibc2.35",
     "attention_mode": "sdpa_deterministic",
     "deterministic_algorithms": True,
     "cudnn_deterministic": True,

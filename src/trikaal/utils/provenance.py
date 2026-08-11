@@ -48,7 +48,7 @@ PROVENANCE_IDENTITY_KEYS = (
     "torch",
     "numpy",
     "python",
-    "platform",
+    "platform_abi",
     "attention_mode",
     "deterministic_algorithms",
     "cudnn_deterministic",
@@ -122,6 +122,35 @@ def _driver_version() -> str:
         return UNAVAILABLE
 
 
+def platform_abi(full: str, system: str, release: str) -> str:
+    """The ABI-bearing part of ``platform.platform()`` — architecture + libc, kernel REMOVED.
+
+    **WE CHANGED WHAT WE REFUSE ON, NEVER WHAT WE RECORD.** ``platform`` is still stamped in full
+    on every artifact, kernel included, so a reviewer can audit exactly which kernels ran. What
+    moved is the COMPARISON: ``platform_abi`` is the identity key, ``platform`` is a recorded
+    field.
+
+    THE ARGUMENT. ``platform.platform()`` on Linux is ``Linux-<kernel>-<arch>-with-<libc>``.
+    ``arch`` obviously bears on numerics; ``libc`` can, through libm. **A kernel patch release
+    does not participate in GPU arithmetic** — 5.15.0-179 vs 5.15.0-186 changes no float
+    operation, no CUDA kernel and no torch code path — and it was the one component of the one
+    key that vast exposes no way to filter on, so it priced a multi-box pool out of the market
+    while defending nothing.
+
+    **FAILS CLOSED.** The kernel is identified by stripping the exact ``"{system}-{release}-"``
+    prefix. When that prefix does not match — macOS reports ``platform()`` as
+    ``macOS-26.5.1-arm64-arm-64bit`` while ``system()``/``release()`` say ``Darwin``/``25.5.0`` —
+    the FULL string is returned and the key goes on comparing everything it compared before. A
+    relaxation whose parser silently mangles an unrecognised format would be the fail-open class,
+    and it would look exactly like success.
+
+    Pure in its inputs so the LINUX behaviour is testable off Linux, on the literal strings the
+    rented boxes actually produced.
+    """
+    prefix = f"{system}-{release}-"
+    return full[len(prefix) :] if full.startswith(prefix) and len(full) > len(prefix) else full
+
+
 def identity_placeholder_failures(prov: dict) -> list[str]:
     """Identity keys still carrying a PLACEHOLDER on a device that should have resolved them.
 
@@ -191,7 +220,9 @@ def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> d
         "numpy": np.__version__,
         "python": platform.python_version(),  # C-18 — the pin uv.lock does NOT carry
         "python_executable": sys.executable,
+        # RECORDED IN FULL, KERNEL INCLUDED — never compared. `platform_abi` is the identity key.
         "platform": platform.platform(),
+        "platform_abi": platform_abi(platform.platform(), platform.system(), platform.release()),
         "attention_mode": attention_mode,
         "deterministic_algorithms": bool(torch.are_deterministic_algorithms_enabled()),
         "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
