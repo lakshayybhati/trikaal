@@ -78,6 +78,7 @@ from trikaal.eval.conformance import (
 )
 from trikaal.eval.verdict import PRIMARY_H
 from trikaal.eval.xsection import SymbolEval, primary_region_grid_ms
+from trikaal.model.attention_mode import resolve_attention_mode
 from trikaal.run.matrix import (
     MatrixSpec,
     all_units,
@@ -105,6 +106,37 @@ from trikaal.utils.preflight import (
 from trikaal.utils.provenance import identity_placeholder_failures, run_provenance
 
 LAKE = Path("processed/universe_bars")
+
+
+def preflight_provenance(device: str) -> dict:
+    """The stamp the PRE-FLIGHT identity gate checks. Extracted so it can be tested off-GPU.
+
+    BUG FIX, NOT A SPEC CHANGE — no gate value, pin or threshold moves here; this makes an
+    already-specified gate REACHABLE, so it mints no §7 tag. Sibling of the v1.6.26 F3 fix at the
+    run-level stamp below.
+
+    THIS GATE REFUSED ITSELF ON EVERY CUDA DEVICE. The call
+    was ``run_provenance(args.device)``, whose ``attention_mode`` defaults to ``"unknown"``, and
+    the next line refuses any identity key reading ``"unknown"`` on CUDA. ``--device cuda`` could
+    therefore never get past the gate: the money run was UNRUNNABLE on a GPU. 727 tests could not
+    see it because none of them execute the driver on a CUDA device — the EXECUTION rule, and
+    execution is what found it, at the P2 gate, before a training step was paid for.
+
+    It is the P2-deliverable-1 fix's own sibling: that pass corrected the RUN-LEVEL stamp far
+    below and left this one standing, and this is the one that gates everything. Class rule.
+
+    RESOLVED, not observed, is correct HERE and only here: at pre-flight no unit has trained, so
+    there is no observed mode to read. The question this gate asks is "will this box produce real
+    values", and :func:`resolve_attention_mode` is exactly what the orchestrator will choose. The
+    run-level stamp still OBSERVES from the trained units and must never re-resolve — re-resolving
+    there would report what *this* process would pick rather than what the run *did*.
+
+    Testable off-GPU because ``resolve_attention_mode`` returns the SDPA fallback without
+    consulting CUDA whenever ``prefer_flash`` is false, so the pre-fix source fails this in CI.
+    """
+    return run_provenance(device, attention_mode=resolve_attention_mode(device))
+
+
 # A9 bounds. Small enough that the WIRING proof takes minutes; large enough that scoring, kappa
 # selection and the artifact schema are all genuinely exercised on real data.
 # THE REAL BOUND IS THE CAP, and it is the only one. A first draft also sliced the recorded grid,
@@ -250,7 +282,9 @@ def main(argv: list[str] | None = None) -> int:
     # every shard, so it can never produce a refusal — the fan-out would assemble 25 units whose
     # provenance agreed only because none of them knew anything. Discovering that at artifact-write
     # time means discovering it after the training spend; this costs microseconds and fires first.
-    _prov = run_provenance(args.device)
+    # See `preflight_provenance` (bug fix, no §7 tag) — this gate used to refuse
+    # ITSELF on every CUDA device, because the stamp was taken without the attention_mode kwarg.
+    _prov = preflight_provenance(args.device)
     _ph = identity_placeholder_failures(_prov)
     if _ph:
         print("IDENTITY SURFACE REFUSED — placeholders on a CUDA device:", file=sys.stderr)
