@@ -32,7 +32,14 @@ import numpy as np
 
 from trikaal.constants import N_FEATURES
 from trikaal.data.universe import date_to_ms
-from trikaal.train.arms import ARM_MICRO, ARM_MICRO_SHUFFLED, select_arm, shuffle_micro
+from trikaal.train.arms import (
+    ARM_MICRO,
+    ARM_MICRO_CONSTANT,
+    ARM_MICRO_SHUFFLED,
+    constant_micro,
+    select_arm,
+    shuffle_micro,
+)
 
 BAR_MS = 60_000
 EMBARGO_BARS_DEFAULT = 120  # E = H_max + L_corr (folds.py — the M5 fold design)
@@ -166,6 +173,18 @@ def build_symbol_windows(
     """Pure-array core of :func:`load_symbol_windows` (unit-testable without a lake)."""
     if arm == ARM_MICRO_SHUFFLED:
         x, mask = shuffle_micro(x, mask, segment_id, symbol=symbol, seed=seed)
+        x = x.astype(np.float32)
+    # THE CELL-6 ARM WAS A NO-OP AND THAT IS A SILENT WRONG NUMBER, not a crash.
+    # `arm_feature_idx` returns the SAME 16 dims for micro, micro_shuffled and micro_constant, so
+    # this dispatch is the ONLY thing that distinguishes them. Without this branch, `micro_constant`
+    # column-selects the full micro vector and returns it untouched: cell 6 trains clean, scores
+    # clean, and IS CELL 4 UNDER A DIFFERENT NAME — ΔIR(4−6) comes out ≈ 0 and reads as "the
+    # capacity handicap is negligible". The bracket's lower end would have been fabricated.
+    # It belongs HERE, beside the shuffle, for the same reason the shuffle does: the transform
+    # needs the full [T,16] layout and must run BEFORE arm selection. Applied after windowing it
+    # would index the wrong axis of an [N, seq_len, F] array.
+    if arm == ARM_MICRO_CONSTANT:
+        x, mask = constant_micro(x, mask)
         x = x.astype(np.float32)
     x_arm, m_arm = select_arm(np.asarray(x, dtype=np.float32), mask, arm)
     starts = fold_valid_starts(

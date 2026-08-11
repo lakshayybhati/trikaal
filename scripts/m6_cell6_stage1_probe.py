@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 import time
 from pathlib import Path
@@ -35,7 +36,7 @@ from pathlib import Path
 import numpy as np
 
 from trikaal.constants import FSQ_BPT_BAND
-from trikaal.data.universe_loader import build_symbol_windows, calendar_boundary_ms, connect_lake
+from trikaal.data.universe_loader import calendar_boundary_ms, connect_lake
 from trikaal.eval.conformance import (
     MDE_INPUTS,
     PINNED_CODEBOOK_MIN_UTILIZATION,
@@ -43,7 +44,8 @@ from trikaal.eval.conformance import (
     PINNED_STEPS_STAGE1,
 )
 from trikaal.eval.diagnostics import cell_codebook_diagnostic
-from trikaal.train.arms import ARM_MICRO_CONSTANT, constant_micro, select_arm
+from trikaal.run.matrix import load_symbol_arrays, windows_by_arm
+from trikaal.train.arms import ARM_MICRO_CONSTANT
 from trikaal.train.cells import CellSpec
 from trikaal.train.orchestrator import OrchestratorConfig, run_cell
 from trikaal.train.token_stream import tokenize_features
@@ -103,6 +105,29 @@ def decide(utilization_coarse: float, utilization_fine: float, bpt: float) -> di
     }
 
 
+def stage2_never_entered(manifest: dict) -> bool:
+    """Did Stage 2 genuinely not run? A CHECK THAT COULD NEVER PASS, until now.
+
+    The field was ``manifest["final_loss"]["stage2"] is None``. The key ALWAYS EXISTS and carries
+    ``nan`` when ``steps_stage2 == 0``, so the receipt reported ``stage2_never_entered: False`` —
+    "Stage 2 WAS entered" — on a run where Stage 2 provably never ran. It could not return True
+    under any input. That is the mirror image of a check that cannot fail, and it sat on the
+    receipt that documents the WIRE/DECLINE decision: a reader either believes the probe silently
+    became a full training run, or learns to ignore the field. Both are worse than no field.
+
+    A trained Stage 2 leaves a FINITE loss. ``nan`` (or a missing key) is the signature of "never
+    entered", so that is what this tests. Discrimination is asserted in
+    ``tests/train/test_cell6_decision_rule.py`` rather than assumed.
+    """
+    s2 = (manifest.get("final_loss") or {}).get("stage2")
+    if s2 is None:
+        return True
+    try:
+        return not math.isfinite(float(s2))
+    except (TypeError, ValueError):
+        return True
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--lake", type=Path, default=Path("processed/universe_bars"))
@@ -121,15 +146,24 @@ def main() -> int:
     boundary = calendar_boundary_ms(window[0], window[1], train_frac)
     con = connect_lake(args.lake)
 
+    # THE DRIVER'S PATH, NOT A SECOND ONE. `load_symbol_arrays` -> `windows_by_arm` is exactly
+    # what m6_money_run.py:361/388 does. The previous form invented its own loading path and was
+    # wrong in every argument — it passed the CONNECTION as `symbol`, the symbol string as `x`,
+    # and a `window=` kwarg that `build_symbol_windows` does not accept — then applied
+    # `constant_micro` to already-windowed [N, seq_len, F] data, which indexes the wrong axis.
+    # None of it had ever executed; only `decide()` was tested. The Cell-6 transform now lives in
+    # the loader beside `shuffle_micro`, so this path gets it for free and by the same route the
+    # money run would.
     t0 = time.time()
-    per_symbol = []
-    for sym in symbols:
-        sw = build_symbol_windows(
-            con, sym, seq_len=PINNED_MONEY_SEQ_LEN, boundary_ms=boundary, window=window
-        )
-        x, m = constant_micro(sw.x, sw.mask)  # ← the Cell-6 transform
-        xa, ma = select_arm(np.asarray(x, np.float32), m, ARM_MICRO_CONSTANT)
-        per_symbol.append(sw.__class__(**{**sw.__dict__, "x": xa, "mask": ma}))
+    raw = {s: load_symbol_arrays(con, s, boundary_ms=boundary, tail_bars=None) for s in symbols}
+    by_arm = windows_by_arm(
+        raw,
+        seq_len=PINNED_MONEY_SEQ_LEN,
+        boundary_ms=boundary,
+        seed=args.seed,
+        arms=(ARM_MICRO_CONSTANT,),
+    )
+    per_symbol = by_arm[ARM_MICRO_CONSTANT]
 
     cfg = OrchestratorConfig(
         seeds=(args.seed,),
@@ -181,7 +215,7 @@ def main() -> int:
             "fsq_bpt_band": list(FSQ_BPT_BAND),
         },
         "PRE_COMMITTED_DECISION": d,
-        "stage2_never_entered": manifest.get("final_loss", {}).get("stage2") is None,
+        "stage2_never_entered": stage2_never_entered(manifest),
         "cell_6_is_a_control": "it enters NO verdict clause; PINNED_DSR['cells'] stays (1,2,3,4,5) "
         "and verdict._CELL_BY_ID must still hold exactly those five (asserted in the conformance "
         "gate, because n_trials_v12 is computed from the LIVE registry)",

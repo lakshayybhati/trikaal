@@ -83,3 +83,27 @@ def test_wiring_carries_the_INVERSION_pre_commitment():
     assert "whichever way they fall" in d["if_wired"]
     assert "not an identity" in d["if_wired"]
     assert "OPPOSITE directions" in d["if_wired"]
+
+
+# ---------------------------------------------------------------- stage2_never_entered
+# THE FIELD COULD NEVER RETURN True. It was `final_loss["stage2"] is None`, but the key always
+# exists and carries nan when steps_stage2 == 0, so the receipt asserted "Stage 2 WAS entered" on
+# a run where it provably was not. These assert the predicate DISCRIMINATES — without the finite
+# case, a predicate hardcoded to True would pass just as well.
+def test_stage2_never_entered_discriminates():
+    f = _decide().stage2_never_entered
+    assert f({"final_loss": {"stage1": 0.38, "stage2": float("nan")}}) is True, "nan => never ran"
+    assert f({"final_loss": {"stage1": 0.38, "stage2": None}}) is True, "None => never ran"
+    assert f({"final_loss": {"stage1": 0.38}}) is True, "absent => never ran"
+    assert f({}) is True, "no final_loss at all => never ran"
+    # the case that makes the others meaningful: a REAL Stage-2 loss must report False
+    assert f({"final_loss": {"stage1": 0.38, "stage2": 4.21}}) is False, "finite loss => it RAN"
+    assert f({"final_loss": {"stage1": 0.38, "stage2": 0.0}}) is False, "0.0 is finite => it RAN"
+
+
+def test_stage2_predicate_rejects_the_pre_fix_form():
+    """The pre-fix predicate on the ACTUAL manifest shape, so the regression is pinned to reality
+    rather than to a hand-made dict: nan is not None, so `is None` returned False."""
+    real_shape = {"final_loss": {"stage1": 0.3853527307510376, "stage2": float("nan")}}
+    assert (real_shape["final_loss"]["stage2"] is None) is False  # what the old code computed
+    assert _decide().stage2_never_entered(real_shape) is True  # what is true
