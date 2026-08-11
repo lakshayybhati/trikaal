@@ -216,6 +216,87 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.29 (2026-08-11, ★ THE `platform` IDENTITY KEY IS SPLIT — WE CHANGED WHAT WE REFUSE ON,
+  NEVER WHAT WE RECORD. Docs + a bounded src change. THIS IS A SCHEDULE DECISION.)**
+  - **★ THE MOTIVE, IN PLAIN WORDS, AHEAD OF THE TECHNICAL ARGUMENT: WE LOOSENED A GATE BECAUSE
+    THE RUN WAS TOO SLOW.** With the kernel inside the identity key, no two rentable boxes matched,
+    so the fan-out was impossible and the run was a single box: **270.4 GPU-h serial = 11.3 days
+    wall-clock.** Splitting the key makes the five-box fan-out purchasable and takes compute
+    wall-clock to **54.1 h ≈ 2.3 days**, a 5.0× reduction. A reader should see that ordering, judge
+    it, and find the technical argument sitting BESIDE it rather than IN PLACE OF it. The
+    technical argument is real and is stated below; it is not why this was done now.
+  - **THE TECHNICAL CLAIM, STATED AND NOT OVERCLAIMED.** A Linux kernel patch release does not
+    participate in GPU floating-point computation: with the same GPU model, the same driver, the
+    same CUDA build, the same torch and deterministic algorithms forced, 5.15.0-179 against
+    5.15.0-186 changes no float operation, no CUDA kernel and no torch code path. **This is an
+    argument about GPU arithmetic. It is not a proof that kernels never matter for anything** —
+    scheduling, page-cache behaviour and driver-kernel interaction are all real, and none of them
+    is what the identity key was defending.
+  - **THE MEASUREMENT THAT FORCED IT.** vast.ai exposes no kernel filter; a box's kernel is
+    knowable only by renting it. Across two batches and a probe: the **probe rented 6 boxes**
+    driver-filtered and got **one driver and THREE kernels** (6.8.0-124 ×2, 5.15.0-186 ×2,
+    5.15.0-179 ×2); **batch 1 rented 8**, stamped 7, and got **SEVEN distinct 16-key tuples**;
+    **batch 2 rented 4** across two driver cohorts and **both cohorts split**, largest matched
+    group = 1. **TOTAL: 14 boxes rented, 14 distinct kernels, ZERO matched pairs.** Driver and
+    kernel are independent axes, and filtering on driver — the only one exposed — collapses one
+    axis and determines nothing about the other. A matched pool was not purchasable at any price
+    found.
+  - **THE CHANGE, PRECISELY. The key count stays 16.** `platform_abi` — the ABI-bearing part,
+    e.g. `x86_64-with-glibc2.35` — REPLACES `platform` in `PROVENANCE_IDENTITY_KEYS` and still
+    refuses the whole verdict on mismatch. `platform` — the full string, kernel included — is
+    still stamped on EVERY artifact as a recorded, non-compared field. Nothing else moved: GPU
+    model, driver, CUDA build, torch, numpy, python, `git_commit`, image, `lockfile_sha256`,
+    `attention_mode` and all three determinism flags still must match exactly.
+  - **IT FAILS CLOSED.** The kernel is stripped by removing the exact `"{system}-{release}-"`
+    prefix; where that prefix does not match, **the FULL string is returned** and the key goes on
+    comparing everything it compared before. Not hypothetical: macOS reports `platform()` as
+    `macOS-26.5.1-arm64-arm-64bit` while `system()`/`release()` say `Darwin`/`25.5.0`. A parser
+    that silently mangled an unrecognised format would be the fail-open class wearing a success
+    mask.
+  - **VERIFIED INDEPENDENTLY AT ENTRY-TIME, on the literal strings, not adopted on the brief's
+    word.** All **seven** kernels named in the builder's test as actually rented collapse to the
+    single value `x86_64-with-glibc2.35`; `glibc2.31` still separates; `aarch64` still separates;
+    the macOS prefix mismatch returns the full string. `PROVENANCE_IDENTITY_KEYS` reads 16 with
+    `platform_abi` at position 12 and `platform` absent from the comparison set.
+    `tests/run/test_platform_abi_split.py` and `tests/run/test_fanout_refusal.py`: **40 passed.**
+  - **THE TIMING, AND HOW A READER CHECKS IT.** Decided and landed **before any unit was trained
+    at the pinned budget**, so it cannot have been motivated by seeing a result. The check is
+    mechanical: no eval artifact anywhere under `runs_cloud/` carries
+    `provenance.steps_stage2 == 26003`. **Stated precisely, because the loose form is falsifiable:
+    23 eval artifacts DO exist on disk** — 15 from the toy rehearsal, 7 from the CUDA validation
+    probe, 1 from P2 — and every one of them is a probe at a non-pinned budget. "Zero units
+    existed" is true of M6 money units and false of eval artifacts; the entry says which.
+  - **WHO — the sequence, because two of these are easy to misattribute.**
+    1. **The builder** made the technical observation — that the platform key's kernel component is
+       stricter than the invariant it defends — and **explicitly declined to propose acting on
+       it**, writing *"I am not proposing to weaken it, and I have changed nothing. Your call."*
+    2. **The supervisor** ruled the key STAYS, on the premise that a gate satisfiable for ~$2 by
+       filtered rental is never weakened. **That premise was later refuted by measurement** — 14
+       boxes, 14 kernels, no purchasable pool at any price found.
+    3. **The supervisor** then converted the builder's observation into a live option, presented it
+       to the operator against the 11.3-day wall-clock, **and recommended against it.**
+    4. **The operator** ruled to take it.
+    The builder originated the technical claim and declined to act on it; the supervisor
+    originated the PROPOSAL and argued against his own proposal; the operator decided. Recorded at
+    the builder's specific request, so that observing a gate is stricter than necessary is not
+    filed as proposing to weaken a scientific gate.
+  - **WHAT IS PRESERVED: the relaxation is AUDITABLE, not invisible.** The kernel is still stamped
+    per artifact, so a reader can read off exactly which kernels ran and check for themselves
+    whether any result correlates with one. Had we dropped the field instead of demoting it, that
+    check would be impossible.
+  - **COST — THE BRIEF'S FIGURE DOES NOT SURVIVE, AND THE CORRECTION STRENGTHENS THE POINT.** The
+    brief stated the change "raises cost from ~$96 to ~$121". **$96 appears in no artifact in this
+    repository**, and the runbook's own measured table contradicts the direction: one box is 270.7
+    billed GPU-h at $79/$108, five boxes is 271.8 at $79/$109 — **a delta of +1.1 GPU-h and about
+    +$1**, because the work is identical and only the 0.28 h/box setup multiplies. The $121 figure
+    is real but is the worst-case total for *determinism on the eval leg at $0.40/hr spot*, not a
+    fan-out delta. So the honest statement is stronger than the briefed one: **fan-out buys a 5.0×
+    wall-clock reduction for roughly one dollar.** There was no money-versus-time trade to make,
+    which removes the only reading under which the motive could have been cost.
+  - **NO GATE VALUE MOVES elsewhere; the freeze is otherwise untouched.** The identity surface
+    still refuses on 16 keys, and a deleted key now fails a test rather than deleting its own test
+    case (`test_the_identity_surface_IS_the_literal_list_and_nothing_drifted`).
+
 - **v1.6.28 (2026-08-11, ★ RULING — THE DEGENERACY GUARD'S ACTIVITY LEG IS **NOT** BANDED.
   $0, documentation only. NO GATE VALUE MOVES.)**
   - **Ruling of record:** `docs/degeneracy_guard_activity_leg_RULING.md`, commit `2012acc`. This
