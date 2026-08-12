@@ -288,21 +288,80 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
     if not isinstance(cb, dict) or not cb:
         bad.append(f"{name}: codebook diagnostic is missing or empty (§7 v1.6.22; spec :1859)")
     else:
+        # §7 v1.6.30 — THE THRESHOLD IS FSQ-SCOPED. FOR BSQ THE NUMBER IS REPORTED, NOT GATED.
+        # design :1859 sets ">= 95%" for "the fraction of FSQ codes used" and justifies it as
+        # "FSQ rarely collapses, THIS CONFIRMS IT" — a confirmation of an FSQ CONSTRUCTION
+        # property, not a quality bar. :986 says collapse is a VQ/BSQ mode FSQ structurally lacks
+        # ("we monitor usage as a HEALTH DIAGNOSTIC, not as a failure mode to be engineered
+        # around"). :1154 says the dead-code rate "THAT PLAGUES BSQ is REPORTED for the BSQ
+        # ablation arm". A 37-hit sweep of design + prereg + m6_design found ZERO BSQ-scoped
+        # utilization minimums. MEASURED at the pinned budget on an identical 84,153,600-token
+        # basis, same seed, same ohlcv arm, quantizer the only difference: FSQ fine 0.9951, BSQ
+        # fine 0.8672. Gating BSQ at 0.95 refused all 25 units for exhibiting exactly what the
+        # spec says the BSQ arm exists to report.
+        # FAIL CLOSED: THE QUANTIZER COMES FROM THE PINNED CELL REGISTRY, NEVER FROM THE
+        # ARTIFACT'S SELF-DECLARATION — a self-declared field is a lever an artifact could pull to
+        # relabel itself out of the threshold, so a disagreement is a SCHEMA FAILURE.
+        spec = _CELL_BY_ID.get(int(doc.get("cell_id", -1)))
+        if spec is None:
+            bad.append(f"{name}: cell_id {doc.get('cell_id')!r} is not in the pinned registry")
+        elif doc.get("quantizer") != spec.quantizer:
+            bad.append(
+                f"{name}: quantizer {doc.get('quantizer')!r} disagrees with the pinned registry "
+                f"({spec.quantizer!r}) — an artifact may not relabel its own quantizer"
+            )
+        thresholded = spec is not None and spec.quantizer == "fsq"
         for sub in ("coarse", "fine"):
             leg = cb.get(sub)
             if not isinstance(leg, dict):
                 bad.append(f"{name}: codebook.{sub} missing (§7 v1.6.22)")
                 continue
             u = leg.get("utilization")
+            # REQUIRED AND FINITE FOR EVERY CELL — v1.6.22's requirement half is untouched; only
+            # the THRESHOLD is rescoped. A BSQ artifact with a missing utilization is still
+            # refused, or this amendment would reopen the defect it is amending.
             if not isinstance(u, (int, float)) or not np.isfinite(float(u)):
                 bad.append(f"{name}: codebook.{sub}.utilization missing/non-finite")
-            elif float(u) < PINNED_CODEBOOK_MIN_UTILIZATION:
+            elif thresholded and float(u) < PINNED_CODEBOOK_MIN_UTILIZATION:
                 bad.append(
                     f"{name}: codebook.{sub}.utilization {float(u):.4f} < the pinned "
                     f"{PINNED_CODEBOOK_MIN_UTILIZATION} (dead-code collapse; spec :1859). This "
                     "catches COLLAPSE only — it does not certify the quantizer is competitive."
                 )
     return bad
+
+
+def codebook_report(evals: dict[tuple[int, int], dict]) -> dict:
+    """§7 v1.6.30 — every cell's codebook occupancy, REQUIRED in the manifest.
+
+    THIS IS WHAT REPLACES THE THRESHOLD ON THE BSQ ARMS. design :1154: *"The dead-code rate that
+    plagues BSQ is REPORTED for the BSQ ablation arm and is expected to be 0 for FSQ by
+    construction — itself a result to report."* That is a REPORTING obligation, and it is not
+    discharged by a number sitting in 25 artifact files nobody opens. Carried in the manifest on
+    the C-2 principle: a disclosure that MAY be absent WILL be absent.
+
+    ``thresholded`` records, per unit, whether the 0.95 gate actually applied to it — so a reader
+    can never mistake a reported BSQ utilization for one that passed a bar."""
+    out: dict[str, dict] = {}
+    for (c, s), doc in sorted(evals.items()):
+        spec, cb = _CELL_BY_ID[c], doc["codebook"]
+        rec: dict[str, object] = {
+            "quantizer": spec.quantizer,
+            "thresholded": spec.quantizer == "fsq",
+            "effective_bits_per_token": cb.get("effective_bits_per_token"),
+            "capacity_bits_per_token": cb.get("capacity_bits_per_token"),
+        }
+        for leg in ("coarse", "fine"):
+            lg = cb[leg]
+            rec[f"{leg}_utilization"] = lg.get("utilization")
+            rec[f"{leg}_n_used"] = lg.get("n_used")
+            rec[f"{leg}_vocab"] = lg.get("vocab")
+            rec[f"{leg}_entropy_bits"] = lg.get("entropy_bits")
+            rec[f"{leg}_perplexity"] = lg.get("perplexity")
+            if isinstance(lg.get("vocab"), int) and isinstance(lg.get("n_used"), int):
+                rec[f"{leg}_dead_codes"] = int(lg["vocab"]) - int(lg["n_used"])
+        out[f"cell{c}_seed{s}"] = rec
+    return out
 
 
 def placebo_capacity_disclosure(evals: dict[tuple[int, int], dict]) -> dict:
@@ -1327,6 +1386,36 @@ def assemble_verdict(
         "placebo_dispersion_tripwire": placebo_tripwire,
         "degeneracy_guard": guard,
         "power_guard": power,
+        # §7 v1.6.30: the BSQ arms' occupancy is REPORTED where the threshold no longer applies
+        # (design :1154). REQUIRED — `load_verdict_manifest` refuses a manifest without it.
+        "codebook_report": codebook_report(evals),
+        # §7 v1.6.30 — BOTH DISPERSION STATISTICS, because refusing on the wrong one is survivable
+        # if the right one is printed beside it.
+        "dispersion": {
+            "level_range_by_cell": {
+                str(c): power["per_cell"][str(c)]["ir_range_across_seeds"] for c in (1, 2, 3, 4, 5)
+            },
+            "paired_delta_by_seed": {
+                "4-5": _per_seed_delta(4, 5).tolist(),
+                "4-2": _per_seed_delta(4, 2).tolist(),
+            },
+            "paired_delta_range": {
+                "4-5": float(np.ptp(_per_seed_delta(4, 5))),
+                "4-2": float(np.ptp(_per_seed_delta(4, 2))),
+            },
+            "why_both": (
+                "power_guard HALTs on the WITHIN-CELL IR LEVEL range (verdict.py:894 rule). "
+                "Whether the LEVELS or the PAIRED DIFFERENCES are the right basis is an OPEN "
+                "DESIGN QUESTION, deliberately NOT resolved here: if the seed effect is "
+                "COMMON-MODE, the paired dIR can be stable while both levels swing, and the guard "
+                "would HALT on a well-measured effect; if the wobble is independent per cell, the "
+                "level range is the honest read. Two seeds of ONE cell and none of the headline "
+                "pair could not distinguish them, so `_per_seed_delta` — which already computes "
+                "the paired contrast for pb45 — is printed BESIDE the level ranges. The question "
+                "is then answerable from this manifest if the run HALTs, instead of requiring a "
+                "re-run to ask it."
+            ),
+        },
         "verdict": {
             # `emitted` is the FINAL verdict: HALT_ADJUDICATE if the guard fired, else the
             # clause-derived `primary`. `primary` is retained un-altered (the guard is HALT-only —
@@ -1369,6 +1458,12 @@ REQUIRED_MANIFEST_FIELDS = (
     "decode_agreement_disclosure",
     "degeneracy_guard",
     "power_guard",
+    # §7 v1.6.30: the BSQ arms' occupancy is REPORTED where the threshold no longer applies
+    # (design :1154), and BOTH dispersion statistics are printed so the open levels-vs-paired
+    # question is answerable from the manifest. Both REQUIRED for the C-2 reason — a disclosure
+    # that may be absent will be absent, and this one REPLACES a gate.
+    "codebook_report",
+    "dispersion",
     "content_hash",
 )
 

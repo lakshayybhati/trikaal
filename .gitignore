@@ -37,3 +37,6 @@ coverage.xml
 # Local reference notes containing third-party paper text (not our own paraphrase,
 # not redistributed). Kept on disk for reference, untracked to keep the public repo clean.
 /docs/kronos doc summary.md
+
+# Rented-box artifact pulls (checkpoints, ~1.7 GB). Evidence, never source.
+runs_cloud/

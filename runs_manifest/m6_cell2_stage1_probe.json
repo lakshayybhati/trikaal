@@ -1,0 +1,48 @@
+{
+  "NO_INTERPRETATION": "reports the numbers; which hypothesis they support is not this script's call (supervisor ruling, item 1).",
+  "PROBE_NOT_A_UNIT": "money_run=False, steps_stage2=0, own out-dir, no eval artifact, enters no verdict clause, HEAD unmoved. It cannot join the 25.",
+  "arm": "ohlcv",
+  "cell": "cell2_fsq_ohlcv",
+  "codebook": {
+    "capacity_bits_per_token": 20.057847655411855,
+    "coarse": {
+      "capacity_bits": 9.799281621521923,
+      "efficiency": 0.9743530062963104,
+      "entropy_bits": 9.547959507474069,
+      "n_tokens": 84153600,
+      "n_used": 891,
+      "perplexity": 748.5524034559304,
+      "utilization": 1.0,
+      "vocab": 891
+    },
+    "effective_bits_per_token": 19.1843709516016,
+    "fine": {
+      "capacity_bits": 10.258566033889933,
+      "efficiency": 0.9393526748565962,
+      "entropy_bits": 9.636411444127532,
+      "n_tokens": 84153600,
+      "n_used": 1219,
+      "perplexity": 795.8823896345151,
+      "utilization": 0.9951020408163266,
+      "vocab": 1225
+    }
+  },
+  "final_loss": {
+    "stage1": 0.02506452612578869,
+    "stage2": NaN
+  },
+  "n_symbols": 40,
+  "n_tokens_per_leg": 84153600,
+  "quantizer": "fsq",
+  "receipt": "m6_cell2_stage1_probe",
+  "seconds": {
+    "load": 62.91458988189697,
+    "stage1": 1612.63157248497,
+    "tokenize": 54.73784255981445
+  },
+  "seed": 0,
+  "steps_stage1": 26003,
+  "steps_stage2": 0,
+  "threshold_under_test": 0.95,
+  "what": "FSQ codebook utilization at the pinned Stage-1 budget, 40 symbols \u2014 the controlled counterpart to cell1_seed0's 0.8672 (same seed, same ohlcv arm, ONLY the quantizer differs)."
+}

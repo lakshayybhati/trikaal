@@ -21,6 +21,8 @@ train-side guarantee from the other direction.
 
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -211,13 +213,21 @@ def score_cell(
     cfg: XSectionConfig,
     *,
     val_only: bool = False,
+    progress: Callable[[dict], None] | None = None,
 ) -> CellScore:
     """Score ONE trained (cell, seed) model cross-sectionally: VAL κ-search → pooled headline.
 
     ``val_only=True`` stops after the VAL block (the per-κ curve + κ*): the verdict artifacts
     need the h∈{5,60} secondary horizons ONLY as VAL trial entries (prereg §3 clause 5), and
     the headline grid at those horizons would be wasted rollout compute. Headline fields come
-    back NaN/None and must never be read from a val_only score."""
+    back NaN/None and must never be read from a val_only score.
+
+    ``progress`` (§7 finding 12) is an OPTIONAL OBSERVER called once per scored symbol with a
+    plain dict. It is ``None`` by default, computes nothing this function returns, and CANNOT
+    RAISE — see the call site. The measured cost of not having it: a 14.65-hour eval leg that
+    emitted NOTHING, so a healthy run and a hung one were indistinguishable for a whole day. The
+    driver supplies the callback, which keeps ``trikaal.eval`` free of W&B exactly as it is
+    today."""
     cost = CostModel()
     rng = np.random.default_rng(cfg.seed)
 
@@ -304,6 +314,7 @@ def score_cell(
         # which is traded/full-calendar-grid (diluted by the eval cap; never reaches 1.0).
         traded_by_k: dict[float, int] = {k: 0 for k in cfg.kappas}
         n_scored = 0
+        _t_pass, _n_syms = time.perf_counter(), len(prepared)
         for sym, d in prepared.items():
             se = d["se"]
             dec = symbol_decisions(se, grid, cfg)
@@ -329,6 +340,38 @@ def score_cell(
                 estimator=cfg.mu_estimator,
             )
             mu_pool.append(mu)
+            if progress is not None:
+                # ★ AN OBSERVER MUST NEVER BE ABLE TO KILL THE MEASUREMENT IT WATCHES.
+                # SWALLOWING IS CORRECT HERE AND WRONG IN A GATE, and the distinction is the whole
+                # point. A GATE that hides its own failure is this project's oldest defect ("a
+                # check that cannot fail is not a check" — the pipefail rider, the control-arm
+                # rule, the fixture-discrimination rule). An OBSERVER that throws destroys a
+                # 14.65-hour eval at hour 12 to protect a progress line. DO NOT "fix" this into a
+                # bare call: that converts a readability feature into a matrix-killer. Nothing
+                # inside this block feeds any value this function returns.
+                try:
+                    _el = time.perf_counter() - _t_pass
+                    _done = len(n_dec)
+                    _nan = float("nan")
+                    progress(
+                        {
+                            "run": run,
+                            "phase": "val" if val_only else "grid",
+                            "h": cfg.h,
+                            "symbol": sym,
+                            "symbols_done": _done,
+                            "symbols_total": _n_syms,
+                            "decisions_done": n_scored,
+                            "elapsed_s": _el,
+                            "ms_per_decision": (_el / n_scored * 1e3) if n_scored else _nan,
+                            # ETA FOR THIS PASS ONLY. A unit is four passes of UNEQUAL size (the
+                            # headline grid spans forward blocks 1..k-1; VAL is block 0, measured
+                            # at exactly 0.2000x), so this must never be read as a unit ETA.
+                            "eta_pass_s": (_el / _done * (_n_syms - _done)) if _done else _nan,
+                        }
+                    )
+                except Exception:
+                    pass
             y_d = d["y"][dec]
             c_mod = _per_bar_cost(cost, se.sigma, dec, spread_for(sym))
             pidx = np.searchsorted(grid, se.ts[dec])  # the decision's global period id

@@ -185,3 +185,92 @@ def test_val_only_matches_full_val_curve_and_headline_series_is_the_ir_basis():
     assert vo.codebook["coarse"]["vocab"] == tok.v_c  # diagnostic still rides val_only scores
     assert full.headline_series is not None
     assert information_ratio(full.headline_series, cfg.h) == pytest.approx(full.ir_headline)
+
+
+# ---------------------------------------------- §7 finding 12: the eval-progress OBSERVER
+def _tiny_model_and_tok():
+    kw = dict(d_model=16, n_layers=1, n_heads=2, d_ff=32, max_len=64)
+    tok = TokenizerAE(**kw).eval()
+    model = TrikaalAR(
+        n_layers=1,
+        d_model=16,
+        d_ff=32,
+        n_heads=2,
+        mtp_depths=0,
+        max_len=64,
+        ffn_dropout=0.0,
+        resid_dropout=0.0,
+        attn_dropout=0.0,
+        token_dropout=0.0,
+    ).eval()
+    return model, tok
+
+
+@pytest.mark.slow
+def test_progress_observer_changes_NOTHING_it_returns():
+    """The default is `None` and the observer is inert: same inputs, same numbers, byte for byte.
+
+    A progress feature that perturbs the measurement is worse than no progress feature."""
+    set_determinism(0)
+    model, tok = _tiny_model_and_tok()
+    syms = [_sym("AAAUSDT", seed=1), _sym("BBBUSDT", seed=2)]
+    a = score_cell("noprog", model, tok, ARM_MICRO, syms, _cfg())
+    b = score_cell("prog", model, tok, ARM_MICRO, syms, _cfg(), progress=lambda ev: None)
+    assert float(a.ir_headline) == float(b.ir_headline)
+    assert np.array_equal(np.asarray(a.headline_series), np.asarray(b.headline_series))
+    assert a.n_decisions == b.n_decisions and a.kappa_chosen == b.kappa_chosen
+
+
+@pytest.mark.slow
+def test_progress_observer_is_called_with_the_ARGUMENTS_the_production_code_passes():
+    """MOCK RULE — assert the CALL, not a stub's reply. The events must describe the real loop:
+    one per scored symbol, `symbols_done` strictly increasing, `decisions_done` non-decreasing,
+    and the symbol names the ones actually scored."""
+    set_determinism(0)
+    model, tok = _tiny_model_and_tok()
+    syms = [_sym("AAAUSDT", seed=1), _sym("BBBUSDT", seed=2)]
+    seen: list[dict] = []
+    score_cell("rec", model, tok, ARM_MICRO, syms, _cfg(), progress=seen.append)
+
+    assert seen, "the observer was never called — no progress would be emitted at all"
+    assert {e["symbol"] for e in seen} <= {"AAAUSDT", "BBBUSDT"}
+    for e in seen:
+        assert e["symbols_total"] == 2
+        assert 1 <= e["symbols_done"] <= 2
+        assert e["decisions_done"] > 0
+        assert e["elapsed_s"] >= 0.0
+        assert set(e) >= {
+            "run",
+            "phase",
+            "h",
+            "symbol",
+            "symbols_done",
+            "symbols_total",
+            "decisions_done",
+            "elapsed_s",
+            "ms_per_decision",
+            "eta_pass_s",
+        }
+    # within one pass symbols_done increases; `phase` distinguishes the val pass from the grid pass
+    assert {e["phase"] for e in seen} <= {"val", "grid"}
+
+
+@pytest.mark.slow
+def test_A_THROWING_OBSERVER_CANNOT_KILL_THE_EVAL():
+    """★ THE ONE THAT MATTERS. An observer that raises must not take the measurement with it.
+
+    The failure being bought down: a callback that throws at hour 12 of a 14.65-hour eval leg
+    destroys the unit to protect a progress line. Swallowing is CORRECT for an OBSERVER and WRONG
+    for a GATE — a gate that hides its own failure is this project's oldest defect. If someone
+    later "fixes" the try/except into a bare call, THIS test fails, which is the point of it."""
+    set_determinism(0)
+    model, tok = _tiny_model_and_tok()
+    syms = [_sym("AAAUSDT", seed=1), _sym("BBBUSDT", seed=2)]
+
+    def boom(ev):
+        raise RuntimeError("the observer is broken and the eval must not care")
+
+    good = score_cell("good", model, tok, ARM_MICRO, syms, _cfg())
+    bad = score_cell("bad", model, tok, ARM_MICRO, syms, _cfg(), progress=boom)
+    assert float(good.ir_headline) == float(bad.ir_headline)
+    assert np.array_equal(np.asarray(good.headline_series), np.asarray(bad.headline_series))

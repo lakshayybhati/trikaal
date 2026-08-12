@@ -103,9 +103,47 @@ from trikaal.utils.preflight import (
     resource_failures,
     resource_record,
 )
-from trikaal.utils.provenance import identity_placeholder_failures, run_provenance
+from trikaal.utils.provenance import (
+    PROVENANCE_IDENTITY_KEYS,
+    identity_placeholder_failures,
+    identity_reference_failures,
+    run_provenance,
+)
+
+# The instrument every unit must match. COMMITTED, written by the first money unit — never taken
+# from "the first box I happen to talk to", which would make the instrument an accident of
+# scheduling. See `identity_reference_failures`.
+IDENTITY_REFERENCE = Path("runs_manifest/m6_identity_reference.json")
 
 LAKE = Path("processed/universe_bars")
+
+
+def _eval_progress(ev: dict) -> None:
+    """§7 finding 12 — the eval leg's ONLY output, to stdout so it lands in the shard log.
+
+    THE MEASURED COST OF NOT HAVING THIS: the first money unit's eval ran 52,745.9 s — 14.65 hours
+    — and printed NOTHING between "checkpoints reloaded OK" and the finished artifact. A healthy
+    run and a hung one were byte-identical from outside for a whole day, and the only way to tell
+    them apart was to ssh in and read nvidia-smi.
+
+    ONE LINE PER SCORED SYMBOL: 4 passes x 40 symbols = 160 lines per unit, one roughly every
+    5.5 minutes. Negligible against 1,402,520 decisions.
+
+    ``flush=True`` IS LOAD-BEARING, not decoration. The shard log is a redirected file, so stdout
+    is block-buffered; without the flush these lines sit in a 4 KiB buffer and the log still looks
+    dead — the same defect wearing a new costume.
+
+    NO W&B. The training path has a W&B run (orchestrator.py) but whether it is still open when
+    scoring happens was NOT established, and a `.log()` on a finished run at hour 12 of a 14.65-hour
+    eval is precisely the thing not to discover then. stdout is what makes the hours readable; the
+    dashboard can come later, off the back of a run that survived."""
+    print(
+        f"[eval:{ev['unit']}] h={ev['h']} {ev['phase']} "
+        f"{ev['symbols_done']}/{ev['symbols_total']} {ev['symbol']} "
+        f"dec={ev['decisions_done']:,} elapsed={ev['elapsed_s']:.0f}s "
+        f"{ev['ms_per_decision']:.2f} ms/dec eta_pass={ev['eta_pass_s']:.0f}s",
+        flush=True,
+    )
 
 
 def preflight_provenance(device: str) -> dict:
@@ -292,6 +330,53 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  - {m}", file=sys.stderr)
         return 1
 
+    # THE REFERENCE COMPARISON — the placeholder gate above checks that the keys carry REAL
+    # VALUES; it never checked that they carry the SAME values as the rest of the matrix. A box
+    # with a different driver passes it and is caught only by `provenance_failures` at assembly,
+    # i.e. after every unit has been paid for. At 25 units across many boxes over days that is the
+    # cheapest route to losing the whole matrix, so the comparison happens here, before compute.
+    # Skipped only when the reference does not yet exist — unit 1 is what writes it.
+    if IDENTITY_REFERENCE.exists():
+        _ref = json.loads(IDENTITY_REFERENCE.read_text())["provenance"]
+        _id = identity_reference_failures(_prov, _ref)
+        if _id:
+            print(
+                f"IDENTITY REFUSED — this box disagrees with {IDENTITY_REFERENCE}:",
+                file=sys.stderr,
+            )
+            for m in _id:
+                print(f"  - {m}", file=sys.stderr)
+            return 1
+        print(
+            f"[gate]  identity MATCHES {IDENTITY_REFERENCE} on all "
+            f"{len(PROVENANCE_IDENTITY_KEYS)} keys",
+            flush=True,
+        )
+    elif not args.dry_run:
+        # `platform` is written for the record and is NEVER compared (§7 v1.6.29) — the pool ran
+        # kernel 5.15.0-52 beside 6.8.0-101 and comparing it would refuse a healthy matrix.
+        IDENTITY_REFERENCE.parent.mkdir(parents=True, exist_ok=True)
+        IDENTITY_REFERENCE.write_text(
+            json.dumps(
+                {
+                    "receipt": "m6_identity_reference",
+                    "what": "the instrument all 25 units must match, written by the FIRST money "
+                    "unit and committed. Every later box is refused before compute if it "
+                    "disagrees on any of the 16 identity keys.",
+                    "platform_is_recorded_never_compared": _prov.get("platform"),
+                    "compared_keys": list(PROVENANCE_IDENTITY_KEYS),
+                    "provenance": _prov,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n"
+        )
+        print(
+            f"[gate]  identity REFERENCE WRITTEN → {IDENTITY_REFERENCE} (first money unit)",
+            flush=True,
+        )
+
     con = connect_lake(args.lake) if Path(args.lake).exists() else None
     if con is None:
         print(f"LAKE MISSING at {args.lake} — refusing to invent data", file=sys.stderr)
@@ -404,6 +489,7 @@ def main(argv: list[str] | None = None) -> int:
         grid_n_periods=int(grid.size),
         units=mine,
         label="m6_money_run",
+        progress=_eval_progress,
     )
 
     monitor = TripwireMonitor(TripwireConfig(k_first_steps=min(100, max(1, orch.steps_stage1))))

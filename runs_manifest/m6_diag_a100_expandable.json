@@ -1,0 +1,36 @@
+{
+  "DIAGNOSTIC_ONLY": "gpu_name is identity key #6 \u2014 nothing here can join the 25 units",
+  "receipt": "diag_eval_throughput_A100",
+  "runs": [
+    {
+      "decisions": 10000,
+      "decisions_per_s": 42.616,
+      "fragmentation_gib": 2.99,
+      "max_memory_allocated_bytes": 9557262336,
+      "max_memory_allocated_gib": 8.901,
+      "max_memory_reserved_bytes": 12767461376,
+      "max_memory_reserved_gib": 11.891,
+      "ms_per_decision": 23.46517,
+      "mu_finite_frac": 1.0,
+      "mu_mean": 0.00036373,
+      "mu_std": 0.00301152,
+      "num_alloc_retries": 0,
+      "num_ooms": 0,
+      "wall_s_mean": 234.6517,
+      "wall_s_std": 0.0
+    }
+  ],
+  "surface": {
+    "chunk": 512,
+    "device": "cuda",
+    "estimator": "expectation",
+    "gpu": "NVIDIA A100-SXM4-40GB",
+    "gpu_total_gib": 39.49,
+    "h": 15,
+    "seq_len": 512,
+    "torch": "2.12.1+cu130",
+    "v_c": 1024,
+    "v_f": 1024
+  },
+  "weights": "REAL, from /root/ckpt"
+}

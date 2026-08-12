@@ -177,6 +177,41 @@ def identity_placeholder_failures(prov: dict) -> list[str]:
     ]
 
 
+def identity_reference_failures(prov: dict, reference: dict) -> list[str]:
+    """This box's identity vs the PINNED REFERENCE — refuse at second zero, not at assembly.
+
+    THE DEFECT THIS CLOSES. Until now the only pre-spend identity check was
+    :func:`identity_placeholder_failures`, which rejects PLACEHOLDER VALUES and nothing else — its
+    own docstring says "a placeholder is not a refusal *across* shards". A box carrying driver
+    ``580.x``, a different glibc, or a different 4090 SKU has all-REAL values, passes the
+    pre-flight gate, computes its unit, and is caught only at assembly by
+    ``verdict.provenance_failures`` — after every unit has been paid for. Survivable at three
+    boxes rented in one driver-filtered batch and hand-verified; NOT survivable at 25 units across
+    many boxes over days, where each new box is a silent chance to poison the whole matrix and the
+    failure surfaces at the end.
+
+    COMPARES EXACTLY :data:`PROVENANCE_IDENTITY_KEYS` — no more, no fewer. If this gate and
+    ``provenance_failures`` compared different sets they could disagree, and a run could pass the
+    cheap gate while being doomed at the expensive one; ``test_identity_gate_key_set_matches``
+    asserts the equality directly rather than trusting that both call sites were kept in step.
+
+    ``platform`` is RECORDED, NEVER COMPARED (§7 v1.6.29). Its kernel component differs
+    legitimately across hosts — the live pool ran 5.15.0-52 beside 6.8.0-101 — and comparing it
+    would have refused a healthy pool. ``platform_abi`` is the identity key.
+
+    The reference is a COMMITTED FILE written at unit 1, never "the first box I happen to talk
+    to": a reference taken from whichever machine answered first makes the instrument an accident
+    of scheduling.
+    """
+    return [
+        f"identity key {k!r} = {prov.get(k)!r} but the pinned reference is {reference.get(k)!r} "
+        "— this box is a DIFFERENT INSTRUMENT and its unit could never join the matrix "
+        "(refused before compute rather than at assembly)"
+        for k in PROVENANCE_IDENTITY_KEYS
+        if prov.get(k) != reference.get(k)
+    ]
+
+
 def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> dict:
     """Stamp the live environment. Recorded, never chosen.
 

@@ -146,6 +146,9 @@ class MatrixSpec:
     label: str
     horizons: tuple[int, ...] = DSR_HORIZONS
     extra_meta: dict = field(default_factory=dict)
+    # §7 finding 12 — OPTIONAL eval-progress observer, supplied by the driver so this module and
+    # `trikaal.eval` stay free of any logging backend. None = today's behaviour exactly.
+    progress: Callable[[dict], None] | None = None
 
     def unit_name(self, spec: CellSpec, seed: int) -> str:
         return f"{spec.name}_seed{seed}"
@@ -312,6 +315,13 @@ def eval_matrix(
         if bad:
             raise RuntimeError("EVAL REFUSED — " + "; ".join(bad))
 
+        def _progress(ev: dict, _unit: str = unit, _cell: int = cell.cell_id, _seed: int = seed):
+            # Bound at definition, not captured by reference — a late-binding closure inside the
+            # unit loop would label every event with the LAST unit, which is the classic Python
+            # loop-capture bug and would make the progress log quietly wrong rather than absent.
+            if spec.progress is not None:
+                spec.progress({**ev, "unit": _unit, "cell": _cell, "seed": _seed})
+
         val_by_h, kappa_by_h, dec_by_h, head = {}, {}, {}, None
         for h in spec.horizons:
             sc = score_cell(
@@ -322,6 +332,7 @@ def eval_matrix(
                 spec.sym_evals,
                 replace(spec.base_eval_cfg, h=h, seed=seed),
                 val_only=(h != PRIMARY_H),
+                progress=_progress if spec.progress is not None else None,
             )
             val_by_h[h], kappa_by_h[h] = sc.val_ir_by_kappa, sc.kappa_chosen
             dec_by_h[h] = int(sc.n_decisions)
