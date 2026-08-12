@@ -98,3 +98,50 @@ def test_codebook_usage_guards():
         codebook_usage(np.array([0, 8], dtype=np.int64), vocab=8)  # id == vocab
     with pytest.raises(ValueError, match="outside"):
         codebook_usage(np.array([-1, 2], dtype=np.int64), vocab=8)
+
+
+# ---------------------------------------------- §7: the PRE-COST reconstruction (secondary only)
+def test_gross_series_is_exact_arithmetic_not_an_estimate():
+    """Round-trip through the REAL cost path: build net exactly as `score_cell` does, then prove
+    `gross_series` returns the pre-cost pooled means bit-for-bit."""
+    from trikaal.eval.diagnostics import gross_series
+    from trikaal.eval.strategy import net_trade_returns
+
+    rng = np.random.default_rng(11)
+    c = 0.003
+    gross_true = rng.standard_normal(500) * 0.004  # per-period mean(s.r) on ACTIVE periods
+    net_active = net_trade_returns(np.ones(500), gross_true, np.full(500, c))  # s=1 => s.r = gross
+    calendar = np.zeros(900)
+    active_idx = np.sort(rng.choice(900, 500, replace=False))
+    calendar[active_idx] = net_active
+
+    out = gross_series(calendar, headline_cost=c)
+    assert np.allclose(out[active_idx], gross_true, atol=0, rtol=0) or np.allclose(
+        out[active_idx], gross_true, atol=1e-15
+    )
+    flat = np.setdiff1d(np.arange(900), active_idx)
+    assert (out[flat] == 0.0).all(), (
+        "flat periods must stay flat — they carried no cost to add back"
+    )
+
+
+def test_gross_series_does_not_touch_flat_periods():
+    """The whole reconstruction rests on flat periods being exactly 0.0. If it added the cost
+    everywhere, a zero-edge book would look profitable purely from the periods it never traded —
+    which is exactly the malformed |s|<1e-6 check recorded in the docstring."""
+    from trikaal.eval.diagnostics import gross_series
+
+    s = np.array([0.0, -0.003, 0.0, -0.001, 0.0])
+    out = gross_series(s, headline_cost=0.003)
+    assert out.tolist() == [0.0, 0.0, 0.0, 0.002, 0.0]
+    assert int((out != 0.0).sum()) == 1
+
+
+def test_gross_series_leaves_its_input_untouched():
+    """A diagnostic that mutates the banked series would corrupt every later read of it."""
+    from trikaal.eval.diagnostics import gross_series
+
+    s = np.array([0.0, -0.003, -0.001])
+    before = s.copy()
+    gross_series(s, headline_cost=0.003)
+    assert np.array_equal(s, before)

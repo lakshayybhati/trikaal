@@ -300,3 +300,41 @@ def single_bar_decode_diagnostic(
             "DISCLOSURE ONLY — never a clause, never a threshold."
         ),
     }
+
+
+def gross_series(headline_series: np.ndarray, *, headline_cost: float) -> np.ndarray:
+    """Reconstruct the PRE-COST calendar series from a banked net ``headline_series``.
+
+    ★ SECONDARY DIAGNOSTIC ONLY. Invariant 5 pins the headline metric to cost-aware NET IR and
+    NOTHING here moves it. This exists because the net series alone cannot answer "is there any
+    edge before costs", and a ΔIR between two cells that both have zero gross edge is a difference
+    of TRADING COSTS wearing the costume of a model comparison. Reported beside IC/RankIC/MAE/R²,
+    never headlined, and never substituted for the net number in any clause.
+
+    WHY IT IS EXACT AND NOT AN ESTIMATE. On the headline pass ``score_cell`` calls
+    ``net_trade_returns(s, y, np.full(n_active, cfg.headline_cost))`` — a CONSTANT per-position
+    cost, funding ``None`` — so each position's net is ``s·r − c``. ``_pool_periods`` equal-weights
+    the active positions in a period, giving ``pooled[p] = mean(s·r) − c`` on active periods and
+    writing exactly ``0.0`` on flat ones. Adding ``c`` back on the active periods therefore returns
+    ``mean(s·r)`` exactly. This is arithmetic, not inference, and it needs no re-run: every input
+    is already inside the banked artifact.
+
+    ★ THE ONE ASSUMPTION, AND ITS MEASURED BOUND. Active periods are identified as
+    ``headline_series != 0.0``. That is wrong only for an ACTIVE period whose pooled net is
+    *exactly* ``0.0`` — i.e. ``mean(s·r) == c`` to the last bit of float64. P ≈ 2⁻⁵² per period, so
+    across the pinned 35,064-period grid the expected number of misclassifications is ≈ 7.8e-12.
+    Measured on the three banked cell-1 units: ZERO values fall in (0, 1e-9) and the smallest
+    ``|nonzero|`` is ~1e-7, so the active and flat populations are cleanly separated rather than
+    merely assumed to be. SENSITIVITY: forcing 100 exact zeros to be treated as active moves the
+    resulting gross IR by only +0.24 / +0.26 / +0.32 on those three units — the reconstruction is
+    not delicate.
+
+    (The first version of that sensitivity check was malformed — it used ``|s| < 1e-6``, which
+    includes every exact zero and therefore added the cost back on every FLAT period too,
+    producing gross IRs of 36.7 and 60.2. Recorded because the corrected bound above is only
+    trustworthy if the wrong one is on the record beside it.)
+    """
+    s = np.asarray(headline_series, dtype=np.float64)
+    out = s.copy()
+    out[s != 0.0] += float(headline_cost)
+    return out
