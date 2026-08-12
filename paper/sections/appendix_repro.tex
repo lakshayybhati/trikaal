@@ -33,7 +33,8 @@ constant & value & governs \\
 \texttt{PINNED\_FINE\_POINTWISE} & \texttt{True} & the re-specified interface \\
 \texttt{PINNED\_MICRO\_POINT\_WEIGHT} & $3.0$ & the class weight $\lambda$ \\
 \texttt{PINNED\_MICRO\_LEGIBILITY\_MIN} & $0.90$ & the gate, on every live micro dimension \\
-\texttt{PINNED\_CODEBOOK\_MIN\_UTILIZATION} & $0.95$ & BSQ collapse check \\
+\texttt{PINNED\_CODEBOOK\_MIN\_UTILIZATION} & $0.95$ & FSQ-scoped collapse check; the BSQ
+ cells report and do not gate \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -131,7 +132,7 @@ PyTorch & 2.12.1 \\
 \end{center}
 
 The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
-amendment log carries $43$ distinct revision tags, each with its date, its reason, and the
+amendment log carries $44$ distinct revision tags, each with its date, its reason, and the
 direction it moves the criterion, recorded before the amendment was evaluated.
 
 \subsection*{D.5\quad Slot-to-field bindings for \S6}

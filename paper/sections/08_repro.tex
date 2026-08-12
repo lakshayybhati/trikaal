@@ -83,8 +83,24 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $43$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $44$
 distinct revision tags.
+
+\textbf{One of those amendments was made after the run began, and it is flagged as such wherever
+it bears.} Every other entry predates the existence of any evaluation unit. The exception rescoped
+a codebook-utilization gate to the quantizer the specification had scoped it to, after two units
+had been evaluated. We hold it to be a restoration rather than a relaxation --- the specification
+sets that target for one quantizer, calls the diagnostic a health signal rather than a failure
+mode, and says the other quantizer's figure is \emph{reported}; the gate had been transcribed into
+our own log without its scope. But a reader is entitled to the mechanical fact independently of our
+reading, so the log records it as a loosening, records what was visible when it was made, and
+records the counterfactual: had the measurement come out the other way, the same restoration would
+still have been correct. One consequence is pre-committed rather than left to discretion --- the
+two units evaluated at that point bear on the direction of the secondary fallback comparison, so
+\textbf{any fallback claim arising from this run is reported as evaluated under a post-data
+amendment}, whether or not the fallback fires.
+% artifact: docs/m6_prereg.md §7 v1.6.30 — the rescope, the four specification citations, the
+%   transcription defect at §7 v1.6.22(e), the leak disclosure and the pre-commitment.
 
 The direction test is not decorative, and it has already overturned our own summary of our own
 amendments. The most consequential window changed the multiple-testing trial count and the
@@ -149,7 +165,9 @@ not match --- as on a non-Linux host --- the full string is returned and the key
 everything it compared before, so an unrecognised format cannot silently widen the gate. And the
 kernel remains \textbf{stamped per artifact}, so a reader can enumerate exactly which kernels ran
 and test any result against them. The change was made before any unit was trained at the pinned
-budget, which is mechanically checkable: no evaluation artifact carries the pinned step count.
+budget, which was mechanically checkable at the time: no evaluation artifact then carried the
+pinned step count. That statement is dated rather than standing --- the run has since begun, and
+two units at the pinned budget now exist.
 % artifact: src/trikaal/utils/provenance.py :: PROVENANCE_IDENTITY_KEYS (16 keys, `platform_abi`
 %   at position 12, `platform` absent from the comparison set); platform_abi() strips the exact
 %   "{system}-{release}-" prefix and returns the FULL string otherwise; run_provenance() stamps
@@ -161,7 +179,10 @@ budget, which is mechanically checkable: no evaluation artifact carries the pinn
 %   5 boxes 54.1 h compute / 271.8 billed / $79--$109. Delta +1.1 GPU-h, about +$1.
 % artifact: docs/m6_prereg.md §7 v1.6.29 — the 14-box measurement, the attribution sequence, and
 %   the correction to the briefed "$96 -> $121" cost figure ($96 appears in no artifact).
-% artifact: zero eval artifacts under runs_cloud/ carry provenance.steps_stage2 == 26003; the 23
+% artifact: AS OF 2026-08-11, zero eval artifacts under runs_cloud/ carried
+%   provenance.steps_stage2 == 26003. AS OF 2026-08-12 two do (results/r0 cell1_seed0,
+%   results/r2 cell1_seed4) — the run has started. The claim above is dated, not standing;
+%   §7 v1.6.30 records the change and its consequence for the timing claims. The 23
 %   that exist are toy-rehearsal (15), CUDA-validation probe (7) and P2 (1), all at other budgets.
 
 \subsection{The conformance surface}

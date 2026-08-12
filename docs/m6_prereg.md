@@ -216,6 +216,95 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.30 (2026-08-12, ★ THE CODEBOOK GATE IS RESCOPED TO FSQ. ★ THE FIRST POST-DATA
+  AMENDMENT IN THIS LOG — read the disclosure below before the justification.)**
+  - **★ WHAT WAS KNOWN WHEN THIS WAS MADE, STATED FIRST BECAUSE A HOSTILE REVIEWER OPENS HERE.**
+    The run had started. **Two cell-1 evaluations existed at the pinned budget** —
+    `runs_cloud/results/r0/cell1_seed0_eval.json` and `runs_cloud/results/r2/cell1_seed4_eval.json`,
+    both `steps_stage2 = 26003`, both `dry_run: false`, both stamped `git_commit 055d14f`. Every
+    prior entry in this log was written before any unit existed; this one was not. That difference
+    is the reason the disclosure leads.
+  - **THE INFORMATION THOSE TWO ARTIFACTS LEAK, AND IN WHICH DIRECTION.** They are not bare
+    diagnostics: each carries a full `headline_series` of 35,064 periods and twelve
+    `val_ir_by_kappa_by_h` readings, **and every one of those readings is negative**. The §5
+    fallback claims **IR(2) − IR(1)**, FSQ minus BSQ (§7, prereg :774). A cell 1 that looks poor
+    makes that difference **more likely to be positive**, which makes a fallback claim **more
+    likely to be attempted and more likely to succeed**. We record the direction and deliberately
+    do not transcribe the magnitudes here, because repeating them would spread the leak further
+    than disclosing it requires.
+  - **★ PRE-COMMITMENT, MADE NOW AND BINDING: any §5 fallback claim arising from this run is
+    flagged, in the paper and in the verdict manifest, as EVALUATED UNDER A POST-DATA AMENDMENT.**
+    That flag is not contingent on the fallback's outcome and may not be dropped if the fallback
+    fails to fire.
+  - **THE COUNTERFACTUAL, WHICH IS WHAT SEPARATES THIS FROM GOALPOST-MOVING. Had BSQ returned
+    0.96 and passed the gate untouched, restoring the spec's scope would still have been
+    correct**, because the justification is a reading of the specification and not a reading of
+    the data. The measurement below determined the *timing* of this amendment. It did not
+    determine its *content*.
+  - **THE CHANGE.** The codebook block stays **REQUIRED and finite on all 25 artifacts** — a
+    missing, empty or non-finite block still refuses the whole verdict. The **0.95 threshold is
+    retained, scoped to the FSQ cells 2, 4 and 5**. The **BSQ cells 1 and 3 become
+    REQUIRED-AND-REPORTED**: the number must be present and finite, is published, and does not
+    gate. **Fail-closed on identity:** the quantizer is read from the **pinned cell registry**,
+    never from the artifact's own `quantizer` field, and a cell id absent from the registry or an
+    artifact whose self-declaration disagrees with the registry is refused. A self-declared field
+    would be a lever for an artifact to relabel itself out of the threshold.
+  - **WHY THIS IS SPEC RESTORATION, NOT RELAXATION — each verified against the source at
+    entry-time rather than taken from the brief.**
+    - **design `:1859`** — the ≥95% target appears inside the **FSQ Stage-1 report-metrics**
+      paragraph and is scoped in its own words: *"codebook usage = fraction of **FSQ** codes used
+      over the eval set (target ≥ 95% — FSQ rarely collapses, this confirms it)"*. The target was
+      never written as a cross-quantizer minimum.
+    - **design `:1154`** — *"The dead-code rate that plagues BSQ is **reported** for the **BSQ
+      ablation arm** … itself **a result to report**."* Reported, not gated, and named as a result.
+    - **design `:986`** — *"We monitor usage as a **health diagnostic** (§f), **not as a failure
+      mode** to be engineered around."*
+    - **`CLAUDE.md:13`** — *"If anything here conflicts with the spec, **the spec wins**."* The
+      conflict is pre-committed in our favour, and not by this entry.
+    - **THE ORIGIN OF THE OVER-BROAD GATE IS IN THIS LOG.** §7 v1.6.22(e) reads *"enforces the
+      spec's own **≥95% utilization**"* — **with no quantizer scope**. That transcription dropped
+      the scope the spec carried. The defect is ours and it is a transcription defect, not a
+      design decision that is now being reversed.
+    - **THE CODE CITES THE LINE THAT CONTRADICTS IT.** `verdict.py:302` emits *"dead-code
+      collapse; **spec :1859**"* on every cell — citing, as authority for an all-cells threshold,
+      the one line that scopes the target to FSQ.
+    - **NO BSQ-SCOPED MINIMUM EXISTS ANYWHERE.** Verified across the design spec, `m6_design.md`
+      and this pre-registration: every utilization mention is FSQ-scoped or concerns another
+      gate. There is nothing to relax, because nothing was ever set.
+  - **THE MEASUREMENT.** Same seed, same OHLCV arm, same 84,153,600 tokens per leg, same 26,003
+    steps — only the quantizer differs. FSQ (cell 2 probe): coarse 1.0000 (891/891), **fine
+    0.9951** (1219/1225), fine perplexity 795.88. BSQ at the pinned budget: **fine 0.8672**
+    (888/1024, perplexity 255.75) on r0/seed0 and **fine 0.939453125** (perplexity
+    302.81498823353724) on r2/seed4, both with **coarse utilization 1.0000**. **Neither BSQ unit
+    is collapsed** — a collapsed codebook has perplexity near 1 against a 1024 vocabulary, and
+    these sit at 256 and 303 with every coarse code in use. The gate would have refused the
+    entire verdict over a non-collapse.
+  - **THE GATE'S PASS PATH HAS NEVER PASSED A REALISTIC ARTIFACT.** Of the 25 evaluation
+    artifacts on disk carrying a codebook block, **5 would pass both legs and 20 would refuse**.
+    All five that pass are **FSQ cells (4 and 5) from the toy rehearsal at a non-pinned budget**.
+    **No BSQ artifact has ever passed it, and no artifact at the pinned budget has ever passed
+    it.** Its fixtures are invented: the healthy cases are 0.98 and 0.99, the collapsed case is
+    0.01, and **no realistic BSQ reading — the 0.87 to 0.94 band the hardware actually
+    produces — is exercised anywhere in its tests.** A gate whose pass path is reachable only by
+    values no measurement has produced has not been tested against the world it governs.
+  - **DIRECTION, RECORDED BEFORE THE OUTCOME IS KNOWN, per the standing direction-blind rule:
+    this amendment LOOSENS** the artifact-admission surface for two of five cells. It is recorded
+    as a loosening even though we hold it to be a restoration, because the reader is entitled to
+    the mechanical fact independent of our reading of it.
+  - **WHAT THIS ENTRY DOES NOT CITE, AND WHY.** The brief directed that an independent auditor
+    reached the same reading without being told ours, and that the entry cite that finding and its
+    conditions. **No such report is committed to this repository** — the only document describing
+    the rescope is `runs_manifest/m6_codebook_gate_fix_proposal.md`, which is the builder's own
+    proposal and contains no auditor citation, no independence statement and no conditions.
+    Citing a corroboration whose artifact does not exist is the v1.6.28 failure exactly, and the
+    justification above does not need it: it stands on four spec lines and a transcription defect
+    in this log. **If the auditor's report lands, it is added here as a dated addendum, with its
+    conditions.**
+  - **CONSEQUENCE FOR THE PAPER'S TIMING CLAIMS.** §7 v1.6.29 and the paper's Appendix F both
+    state that no evaluation artifact carries `steps_stage2 == 26003`. That was true when it was
+    written and is **now false** — two do. Those claims are to be read as of their own date, and
+    the paper is corrected accordingly rather than left to be discovered.
+
 - **v1.6.29 (2026-08-11, ★ THE `platform` IDENTITY KEY IS SPLIT — WE CHANGED WHAT WE REFUSE ON,
   NEVER WHAT WE RECORD. Docs + a bounded src change. THIS IS A SCHEDULE DECISION.)**
   - **★ THE MOTIVE, IN PLAIN WORDS, AHEAD OF THE TECHNICAL ARGUMENT: WE LOOSENED A GATE BECAUSE

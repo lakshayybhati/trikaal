@@ -3,7 +3,7 @@ A Controlled Study on Financial Microstructure
 Lakshay Bhati
 [aﬀiliation]
 [email]
-Preprint — draft of August 11, 2026
+Preprint — draft of August 12, 2026
 
 Abstract
 Two-stage models for financial time series learn a tokenizer under a reconstruction objective and
@@ -2139,7 +2139,19 @@ The decision surface — clauses, thresholds, horizon, cost, the 𝜅 grid, the 
 — was fixed before any of its inputs existed, and the design was frozen before the run. Amendments
 are not forbidden; unlogged amendments are. Every change is recorded with its date, its reason and,
 crucially, a direction-blind test: before looking at whether the amendment helps, we record whether
-it tightens or loosens the criterion. The log carries 43 distinct revision tags.
+it tightens or loosens the criterion. The log carries 44 distinct revision tags.
+One of those amendments was made after the run began, and it is flagged as such wherever
+it bears. Every other entry predates the existence of any evaluation unit. The exception rescoped
+a codebook-utilization gate to the quantizer the specification had scoped it to, after two units had
+been evaluated. We hold it to be a restoration rather than a relaxation — the specification sets that
+target for one quantizer, calls the diagnostic a health signal rather than a failure mode, and says the
+other quantizer’s figure is reported; the gate had been transcribed into our own log without its scope.
+But a reader is entitled to the mechanical fact independently of our reading, so the log records it
+as a loosening, records what was visible when it was made, and records the counterfactual: had
+the measurement come out the other way, the same restoration would still have been correct. One
+consequence is pre-committed rather than left to discretion — the two units evaluated at that point
+bear on the direction of the secondary fallback comparison, so any fallback claim arising from this
+run is reported as evaluated under a post-data amendment, whether or not the fallback fires.
 The direction test is not decorative, and it has already overturned our own summary of our own
 amendments. The most consequential window changed the multiple-testing trial count and the dispersion basis for the deflation benchmark — moved from all arms to the placebo arm alone — together,
 and it was written up as every amendment in this window loosens the effective bar. That was false.
@@ -2174,7 +2186,9 @@ The rental market exposes no kernel filter, so a box’s kernel is knowable only
 a probe and two batches we rented fourteen machines and observed fourteen distinct kernels with
 no matched pair; filtering on driver, the only axis exposed, determines nothing about the kernel. A
 matched multi-machine pool was therefore not purchasable at any price we found, which forced the
-entire 270.4 GPU-hour workload onto one machine — 11.3 days of wall-clock. The split makes
+33
+
+entire 270.4 GPU-hour workload onto one machine — 11.3 days of wall-clock. The split makes
 a five-machine fan-out purchasable and takes that to 54.1 hours. The additional work is about 1.1
 GPU-hours — roughly a dollar — because the computation is identical and only per-machine setup
 multiplies. Any further difference in outlay comes from renting the five cheapest machines rather
@@ -2185,14 +2199,13 @@ The technical argument is that a kernel patch release does not participate in GP
 computation — with GPU model, driver, CUDA build and framework fixed and deterministic algorithms forced, no float operation or kernel selection differs. We hold that argument to its scope: it
 concerns GPU arithmetic, not a general claim that kernel versions are immaterial.
 Two properties make the relaxation checkable rather than a matter of trust. It fails closed: the
-33
-
-kernel is removed by stripping an exact expected prefix, and where that prefix does not match —
+kernel is removed by stripping an exact expected prefix, and where that prefix does not match —
 as on a non-Linux host — the full string is returned and the key compares everything it compared
 before, so an unrecognised format cannot silently widen the gate. And the kernel remains stamped
-per artifact, so a reader can enumerate exactly which kernels ran and test any result against them. The
-change was made before any unit was trained at the pinned budget, which is mechanically checkable:
-no evaluation artifact carries the pinned step count.
+per artifact, so a reader can enumerate exactly which kernels ran and test any result against them.
+The change was made before any unit was trained at the pinned budget, which was mechanically
+checkable at the time: no evaluation artifact then carried the pinned step count. That statement is
+dated rather than standing — the run has since begun, and two units at the pinned budget now exist.
 8.6
 
 The conformance surface
@@ -2227,7 +2240,10 @@ produced a wrong published result — 15 high, and 2 medium. All but one are clo
 is the capacity-eviction finding itself, which is mitigated rather than closed because it is a property
 of the objective and not a bug.
 The useful column is not severity but how each was found:
-detection layer
+
+34
+
+detection layer
 
 defects
 
@@ -2271,9 +2287,7 @@ only by executing the pipeline, which is the basis for the operational rule that
 first execution is on rented hardware is an untested component whatever its coverage says.
 The reason to publish this table is that it is the strongest available argument against the verification
 story a paper normally tells. Code review, a green test suite and a careful author would have caught
-34
-
-roughly a third of what mattered here. We do not claim the remaining defects are gone; we claim
+roughly a third of what mattered here. We do not claim the remaining defects are gone; we claim
 that seven independent detection layers were run, that each found something the others missed, and
 that the count of defects found by the most recent layer has not yet reached zero.
 A recurring pattern is worth naming, because it changes what a reader should count as evidence.
@@ -2305,7 +2319,10 @@ Rama Cont, Arseniy Kukanov, and Sasha Stoikov. The price impact of order book ev
 of Financial Econometrics, 12(1):47–88, 2014.
 Abhimanyu Das, Weihao Kong, Rajat Sen, and Yichen Zhou. A decoder-only foundation model for
 time-series forecasting. arXiv preprint arXiv:2310.10688, 2023.
-David Easley, Marcos López de Prado, and Maureen O’Hara. Flow toxicity and liquidity in a highfrequency world. The Review of Financial Studies, 25(5):1457–1493, 2012.
+
+35
+
+David Easley, Marcos López de Prado, and Maureen O’Hara. Flow toxicity and liquidity in a highfrequency world. The Review of Financial Studies, 25(5):1457–1493, 2012.
 Annie Franco, Neil Malhotra, and Gabor Simonovits. Publication bias in the social sciences: Unlocking the file drawer. Science, 345(6203):1502–1505, 2014.
 Campbell R. Harvey, Yan Liu, and Heqing Zhu. … and the cross-section of expected returns. The
 Review of Financial Studies, 29(1):5–68, 2016.
@@ -2317,9 +2334,7 @@ Fabian Mentzer, David Minnen, Eirikur Agustsson, and Michael Tschannen. Finite s
 Yuqi Nie, Nam H. Nguyen, Phanwadee Sinthong, and Jayant Kalagnanam. A time series is worth
 64 words: Long-term forecasting with transformers. In International Conference on Learning
 Representations (ICLR), 2023.
-35
-
-Yu Shi, Zongliang Fu, Shuo Chen, Bohan Zhao, Wei Xu, Changshui Zhang, and Jian Li. Kronos: A
+Yu Shi, Zongliang Fu, Shuo Chen, Bohan Zhao, Wei Xu, Changshui Zhang, and Jian Li. Kronos: A
 foundation model for the language of financial markets. arXiv preprint arXiv:2508.02739, 2025.
 Aäron van den Oord, Oriol Vinyals, and Koray Kavukcuoglu. Neural discrete representation learning.
 In Advances in Neural Information Processing Systems (NeurIPS), 2017.
@@ -2339,7 +2354,18 @@ Eviction measurement, per dimension
 Table 2 gives the per-dimension point-decoder correlations summarized in Table 1. Marginal√standard deviations are implied by each dimension’s predict-the-mean baseline through E|𝑋 | = 𝜎 2/𝜋,
 and confirm the fixture’s construction: every dimension except the return is unit-variance to two decimal places, so the return is the only high-variance channel and the signal dimension is distinguished
 from the fillers by dependence structure alone.
-Table 2: Point-decoder correlation for every fixture dimension, three seeds. Recovery of a dimension’s
+Four dimensions clear a point-decoder correlation of 0.90 in each of the three seeds, which is the
+number the capacity arithmetic of Section 3.1 anticipates: a 10.26-bit fine budget cannot support
+thirteen dimensions at the fidelity that a 0.90 sign accuracy requires.
+
+B Token-space plant: construction and calibration
+The control of Section 3.4 requires a plant in token space whose information content is known exactly,
+is large enough to be detectable under the pre-registered branch condition (0.7–1.1 nats), and does
+not perturb the carrier’s marginal distribution enough to be detectable by that route instead.
+
+36
+
+Table 2: Point-decoder correlation for every fixture dimension, three seeds. Recovery of a dimension’s
 value at bar 𝑡 from bar 𝑡’s own fine code. The eleven fillers are coupled by an AR(1) chain across dimensions at
 𝜌 = 0.7993; the signal dimension is independent of everything. Seed-to-seed variation within a class is at most
 0.006, while the gap between the filler class and the signal dimension is more than 0.80.
@@ -2439,18 +2465,7 @@ seed 2
 0.9171
 0.8940
 
-Four dimensions clear a point-decoder correlation of 0.90 in each of the three seeds, which is the
-number the capacity arithmetic of Section 3.1 anticipates: a 10.26-bit fine budget cannot support
-thirteen dimensions at the fidelity that a 0.90 sign accuracy requires.
-
-B Token-space plant: construction and calibration
-The control of Section 3.4 requires a plant in token space whose information content is known exactly,
-is large enough to be detectable under the pre-registered branch condition (0.7–1.1 nats), and does
-not perturb the carrier’s marginal distribution enough to be detectable by that route instead.
-
-36
-
-A first design, retired. The natural construction — a deterministic translation of one digit by an
+A first design, retired. The natural construction — a deterministic translation of one digit by an
 amount determined by another — cannot carry enough information on this carrier. The carrier’s
 coarse digit marginals are already near-uniform: measured entropies of 2.3938, 2.1796 and 2.1873
 nats against maxima of ln 11 = 2.3979 and ln 9 = 2.1972, i.e. 99.2–99.8% of maximum. Under
@@ -2506,7 +2521,9 @@ Two defects in the legibility gate
 Both defects are instances of the same failure — a check that cannot fail is not a check — and both
 were closed before the gate was relied upon. They are recorded because the gate is a hard stop on
 expenditure, and because the second one was material.
-A skipped dimension could not lower the verdict. A dimension with too few unmasked bars to
+37
+
+A skipped dimension could not lower the verdict. A dimension with too few unmasked bars to
 measure took a code path that continued the loop before the pass flag was accumulated. A gate run
 in which all six microstructure dimensions were too thin therefore returned pass: True having
 measured nothing, and a run with five thin and one passing dimension returned pass: True on a
@@ -2522,9 +2539,7 @@ data the minimum per-dimension unmasked bar count across all 200 symbols is 277,
 gate’s 10,000-bar floor, with zero symbols below it, so the all-thin case cannot arise here: the first
 defect was real but immaterial on this data. The second was severe.
 
-37
-
-D
+D
 
 The pinned decision surface
 
@@ -2583,13 +2598,15 @@ forced for every cell
 the re-specified interface
 the class weight 𝜆
 the gate, on every live micro dimension
-BSQ collapse check
+FSQ-scoped collapse check; the BSQ cells report and do n
 
 D.2
 
 Decision thresholds and the deflation recipe
 
-constant
+38
+
+constant
 
 value
 
@@ -2646,10 +2663,7 @@ in its place: activity_decisions_by_kappa across the full grid rather than the �
 the trade count beside the fraction, and std( ˆ
 𝜇)/𝜃 at 𝜅 ∗ . Section 7.5 states what the ruling leaves
 uncovered.
-
-38
-
-Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
+Two of these carry a history that Section 8.4 summarizes and the amendment log states in full.
 The trial count was reduced from 180 to 60 when seeds were recognized as replicates rather than
 configurations, and the dispersion basis was moved to the placebo arm because the earlier all-arms
 basis made clause 5 anti-correlated with its own hypothesis. The first tightens the criterion and the
@@ -2690,7 +2704,10 @@ Content addressing and environment
 
 The Gate-A anchor is a fixed evaluation of a frozen checkpoint through the full harness, re-proven
 twice from unpiped commands before and after any change to the evaluation instrument.
-artifact
+
+39
+
+artifact
 
 value
 
@@ -2717,7 +2734,7 @@ sha256:5dfd667d05b97bda…
 2.12.1
 
 The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
-amendment log carries 43 distinct revision tags, each with its date, its reason, and the direction it
+amendment log carries 44 distinct revision tags, each with its date, its reason, and the direction it
 moves the criterion, recorded before the amendment was evaluated.
 D.5
 
@@ -2733,7 +2750,7 @@ The corrected table is below. We report the error rather than silently fixing it
 claim — that no slot has more than one defensible source — is worth less if the table naming the
 sources was not itself checked.
 
-39
+40
 
 §6 slot
 
@@ -2840,7 +2857,7 @@ activity_decisions}
 external-validation disclosure
 conformance.*
 
-40
+41
 
 Two of these are worth naming as design choices rather than bookkeeping. armed is a measurement of whether the guard could read its inputs, not a literal — an earlier contract let a guard report
 armed: true having inspected nothing, which is the check-that-cannot-fail pattern sitting in the decision path. And the external-validation disclosure is required rather than optional precisely because
@@ -2938,7 +2955,7 @@ E.2
 
 The data (§5)
 
-41
+42
 
 quantity
 
@@ -3103,7 +3120,7 @@ test suite
 13.175%
 49 of 49 records
 0.5662 vs 0.99883
-43 revision tags
+44 revision tags
 420 of 420
 727 passing
 
@@ -3127,10 +3144,10 @@ pytest
 
 A header-less tag is cited on a shipped clause
 
-Appendix F.1 records that the amendment log carries 43 distinct revision tags across 40 top-level
+Appendix F.1 records that the amendment log carries 44 distinct revision tags across 41 top-level
 entries, three tags — v1.0, v1.6.24 and v1.6.27 — appearing as in-body references without headers
 of their own. One consequence belongs here rather than there, because it touches a field that ships.
-42
+43
 
 The verdict manifest cites one of those header-less tags on its headline clause. The rule string
 of 4_economic_floor — a field written into every emitted manifest — ends “see placebo_capacity_disclosure
@@ -3178,8 +3195,8 @@ document rather than by tag, because a count written to an assertion about a log
 is exactly the failure the log exists to prevent. The entry has since been written (§7 v1.6.28, dated
 2026-08-11, citing commit 2012acc), and only then did the count move to 42 in Section 8.4 and
 Appendix D.4.
-Two facts about the log that a reader checking this should have. The 43 counts distinct revision
-tags, which is what the paper claims; the log carries 40 top-level entries, because three tags — v1.0,
+Two facts about the log that a reader checking this should have. The 44 counts distinct revision
+tags, which is what the paper claims; the log carries 41 top-level entries, because three tags — v1.0,
 v1.6.24 and v1.6.27 — appear as in-body references without headers of their own. And one claim
 inside the ruling document does not survive checking: it states that the compute-optimal token figure
 was “verified from PINNED_STEPS_STAGE2 at HEAD”, but that pin supplies only the step count. The
@@ -3188,7 +3205,7 @@ pin, so it can drift where a pin cannot. The arithmetic and the conclusion hold 
 parameter is independently recorded in the build record — and the incomplete sourcing is corrected
 in the log entry rather than left in the side document.
 
-43
+44
 
 F.2 Directive items
 #
@@ -3302,7 +3319,7 @@ affiliation and email, and source comments
 F.4 Claims we could not trace, and checks that misreported
 The warm-up figures are reconciled by category, and the residual arithmetic is not. The ingest
 record describes a “∼800-bar z-score warm-up” while the pinned constants give 180 bars fast, 720
-44
+45
 
 slow and 1,440 for the volatility scale, and the measured drop is 809 bars of 279,930 on the thinnest
 instrument. The apparent conflict — a drop smaller than the largest constant — dissolves on inspection of what the constants do: warm-ups mask rather than delete. They set mask bits and invalidate
@@ -3334,6 +3351,6 @@ title and abstract variant, re-rendering Figs 8–10 from the artifact with --re
 appendix. Nothing else in the paper is contingent on the outcome; every other section is written to
 be correct under all five branches, which is the property that makes that list short.
 
-45
+46
 
 
