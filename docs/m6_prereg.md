@@ -216,6 +216,82 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.31 (2026-08-12, ★★ THE MICRO-LEGIBILITY GATE FIRED ON REAL DATA. ITEM E TAKES EFFECT.
+  THE PRIMARY IS NOW THE MECHANISM FINDING. ★★ No threshold moved. No rescope. No re-run.)**
+  - **THE FIRING.** `runs_manifest/m6_micro_legibility_stop.json`, git_commit `448e4fe`.
+    `stage2_entered: false`, `artifacts_produced: 0`, `ALL_FILES_VERIFIED: true` over 6 files with
+    byte totals and sha256 reconciled against on-box production time. Both gated arms refused
+    before any Stage-2 spend, at `min_acc = 0.90`, n = 150,000 per dimension, 40 symbols,
+    stratified by symbol with an 80/20 blocked-in-time split within each symbol.
+
+    | dim | feature | cell 4 acc | cell 5 acc | base rate + |
+    |---|---|---|---|---|
+    | 7 | `TFI` | **0.8223** | **0.6135** | 0.4869 |
+    | 8 | `signed_count_imbalance` | **0.7528** | **0.5896** | 0.4665 |
+    | 9 | `trade_count` | 0.8975 | 0.8916 | 0.4725 |
+    | 10 | `mean_trade_size` | 0.9076 | 0.8525 | 0.5462 |
+    | 11 | `trade_size_dispersion` | 0.8962 | 0.8691 | 0.4073 |
+    | 12 | `large_trade_share` | 0.9320 | 0.8685 | 0.8577 |
+
+  - **★ ITEM E, WRITTEN PRE-DATA, PRE-WROTE THIS DISPOSITION.** §7 v1.5 item E reads: *"a firing
+    is the **MODAL prediction of our own finding**, and simultaneously the ablation's blocker and
+    the mechanism's strongest real-data evidence. Rules: gate fires → **STOP and report**
+    (unchanged); **the PRIMARY becomes the mechanism finding**"*. **The primary is now the
+    mechanism finding.** λ may be re-derived at most ONCE, by the pinned formula, on a slice
+    carved from the END of the TRAIN region — never block 0 — and item E binds the consequence in
+    advance: the re-derived λ counts as an additional configuration in the clause-5 multiplicity
+    (**N 60 → 120**), and **any ablation under a re-derived λ is reported SECONDARY/exploratory,
+    never a primary**, because the contingency can only ever help the ablation.
+  - **★ WHY THE FIRING WAS PREDICTABLE RATHER THAN SURPRISING — the unflattering fact, stated
+    plainly because it was in the repository from the day the gate was pinned.** The pinned
+    λ = 3.0 was calibrated on **ONE dimension**: `scripts/m6_canary.py:531` probes
+    `d0["x"][:, 9]` and nothing else. Dim 9 is `trade_count` — **a magnitude channel, not a
+    signed one** — so the calibration dimension is not representative of the dimensions the gate
+    governs. It was calibrated under a **restated** rule (mean ≥ 0.9 AND min ≥ 0.85), and its own
+    receipt records the shortfall verbatim: *"no searched (lambda, beta) clears 0.9 on all 3
+    seeds; the gate constant sits inside the instrument's seed-noise band (~±0.03) at the
+    achievable ceiling"*. The standing gate demands 0.9 on **all six** dims in **one** run. That
+    gap between what was calibrated and what is demanded sat unexamined in this repository, and
+    nobody named it until the gate fired.
+  - **★ THE SCIENTIFIC CONTENT, WHICH IS NOW THE PAPER'S SPINE.** Measured on the shortfall
+    against 0.90: **97.3% of cell 4's total shortfall and 83.5% of cell 5's sit in dims 7 and 8** —
+    `TFI` and `signed_count_imbalance`, **the two SIGNED channels**, which are exactly what
+    invariant 1 scopes the claim to. The four magnitude dims essentially pass (9 and 11 miss by
+    0.0025 and 0.0038; 10 and 12 clear). **THE TOKENIZER PRESERVES MICROSTRUCTURE THAT DUPLICATES
+    OHLCV AND LOSES MICROSTRUCTURE INDEPENDENT OF IT.** That is *reconstruction buys variance and
+    covariance, never independence* — on real data, with the evicted features named.
+  - **THE PLACEBO DIFFERENTIAL IS THE ROBUST FORM OF THAT CLAIM, AND IS STRONGER THAN THE RAW
+    SHORTFALL.** Against the majority-class baseline `max(p, 1−p)`, cell 4's lifts are: dim 7
+    **+0.3092**, dim 8 **+0.2193**, dim 9 +0.3700, dim 10 +0.3614, dim 11 +0.3035, dim 12
+    **+0.0743**. Under the shuffle, dims 7 and 8 **collapse to +0.1004 and +0.0561** while the
+    magnitude dims hold at +0.3641, +0.3063 and +0.2764. **Shuffling destroys the signed channels'
+    recoverability and leaves the magnitude channels intact** — a placebo-controlled statement of
+    the same finding that does not depend on where the 0.90 line happens to fall.
+  - **A CAVEAT THE RAW READING HIDES, RECORDED BECAUSE THE DEGENERACY RULE DEMANDS IT.** Dim 12
+    `large_trade_share` has a base rate of **0.8577**, so its majority-class baseline is 0.8577 and
+    its 0.9320 is a lift of only **+0.0743** — the weakest recovery of any dimension in cell 4, yet
+    one of only two that clear the threshold. **The gate reads raw sign accuracy, not lift, so an
+    imbalanced dimension passes cheaply.** This does not change the disposition — the gate fired on
+    other dimensions — but any downstream reading of "dim 12 passed" must carry it.
+  - **NO DRY-RUN PRE-FLIGHT COULD HAVE CAUGHT THIS.** `scripts/m6_money_run.py:423` sets
+    `micro_legibility_min=None if args.dry_run`, with the comment *"A dry run cannot clear a gate
+    that needs a trained tokenizer, and must not pretend to."* Neither P1 nor P2 reached a gated
+    arm. **Pre-flight green implied nothing about this gate**, and the execution rule's own claim —
+    that a component whose first execution is on rented hardware is untested — is confirmed here at
+    full cost.
+  - **SCOPE, as the paper already states it.** One budget point; λ fitted on a synthetic proxy and
+    on a single unrepresentative dimension; this reconstruction objective and this architecture.
+    **It does NOT establish that no tokenizer can make microstructure per-bar legible** — only that
+    this one, built to and weighted for it, does not at this budget.
+  - **WHAT THIS ENTRY DOES NOT CITE, FOR THE SECOND CONSECUTIVE AMENDMENT.** The brief directed
+    citing an independent auditor who reached this reading unprompted and who located §7 v1.5
+    item E when neither the builder nor the supervisor had. **No such report is committed.** An
+    exhaustive search returns item E in exactly three places — `docs/m6_prereg_v1_5_drafts.md`,
+    `src/trikaal/train/gates.py` and `tests/train/test_micro_legibility_gate.py` — and no auditor
+    document, no independence statement and no conditions anywhere. The reading above stands on
+    the receipt and on item E's own text, neither of which needs corroboration to be checkable.
+    **If the report lands it is added as a dated addendum, with its conditions.**
+
 - **v1.6.30 (2026-08-12, ★ THE CODEBOOK GATE IS RESCOPED TO FSQ. ★ THE FIRST POST-DATA
   AMENDMENT IN THIS LOG — read the disclosure below before the justification.)**
   - **★ WHAT WAS KNOWN WHEN THIS WAS MADE, STATED FIRST BECAUSE A HOSTILE REVIEWER OPENS HERE.**

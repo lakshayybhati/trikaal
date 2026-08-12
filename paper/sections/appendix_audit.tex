@@ -30,8 +30,8 @@ to prevent. The entry has since been written (\S7 v1.6.28, dated 2026-08-11, cit
 \texttt{2012acc}), and only then did the count move to $42$ in \cref{sec:repro-prereg} and
 Appendix~D.4.
 
-Two facts about the log that a reader checking this should have. The $44$ counts \emph{distinct
-revision tags}, which is what the paper claims; the log carries $41$ top-level entries, because
+Two facts about the log that a reader checking this should have. The $45$ counts \emph{distinct
+revision tags}, which is what the paper claims; the log carries $42$ top-level entries, because
 three tags --- v1.0, v1.6.24 and v1.6.27 --- appear as in-body references without headers of their
 own. And one claim inside the ruling document does not survive checking: it states that the
 compute-optimal token figure was ``verified from \texttt{PINNED\_STEPS\_STAGE2} at HEAD'', but that
@@ -48,9 +48,9 @@ the side document.
 \toprule
 \# & status & note \\
 \midrule
-1a & done & Five dated branches in \cref{sec:res-interpretation}. \S6.5 now states that four are
-manifest-selected and \textsc{inconclusive} is an \emph{adjudication} --- no manifest can carry
-that word --- with a three-condition trigger fixed in advance. \\
+1a & \textbf{spent} & Five dated branches were written pre-run. \textbf{The gate fired and the
+gate-fail branch was selected}; the other four are deleted, as pre-committed. The trigger for the
+\textsc{inconclusive} branch was never reached --- no verdict exists to adjudicate. \\
 1b & done & Appendix~D.5 binds all $21$ \S6 slots; D.6 gives the required-field schema.
 Six bindings were wrong as first written and were corrected against the emitter --- F.4. \\
 1c & done & Publication-bias evidence cited in the \textsc{null} branch; DSR trial count settled
@@ -69,8 +69,9 @@ directions. \\
 6 & done & \cref{sec:intro}, written last. \\
 7 & done & $16$ entries, $16$ used, zero orphans in either direction; one master bibliography, no
 section-local lists. \\
-8 & done & Both variants written in full; variant B carried as a commented block in
-\texttt{main.tex}. Neither locked. \\
+8 & \textbf{closed} & \textbf{Title and abstract are now LOCKED.} The ablation-led variant is
+superseded as a matter of fact, not preference: the ablation never ran. Both earlier candidates are
+retained struck in \texttt{main.tex}. \\
 9 & done & This appendix. \\
 \bottomrule
 \end{tabular}
@@ -85,12 +86,11 @@ quantity & count \\
 \midrule
 compiled pages & $45$ \\
 undefined references & $0$ \\
-inline \texttt{\% artifact:} comments & $128$ \\
-distinct artifact paths cited & $46$ \\
-marked placeholders (\texttt{\textbackslash TBD}) & $42$ \\
-\quad of which in \cref{sec:results} & $35$ \\
-\quad remainder & abstract verdict slot ($\times2$, one per variant), author \\
- & affiliation and email, and source comments \\
+inline \texttt{\% artifact:} comments & $131$ \\
+distinct artifact paths cited & $49$ \\
+marked placeholders (\texttt{\textbackslash TBD}) & $7$ \\
+\quad all of them & author affiliation and email, and source comments. \\
+ & \textbf{The verdict slot is gone: there is no verdict.} \\
 marked placeholder figure data (\texttt{\textbackslash PH}) & $6$ \\
 \textbf{unmarked placeholders} & $\mathbf{0}$ \\
 figures & $11$ \\

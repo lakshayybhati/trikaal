@@ -1,14 +1,13 @@
 % =============================================================================================
 % Trikaal — tokenizer study.  Build:  tectonic -X compile paper/main.tex
 %
-% DRAFT STATUS (2026-08-10)
-%   §1–§5, §7, §8, Appendices A–E, References ... DRAFTED. Every number traced to a committed
-%       artifact by an inline `% artifact:` comment (123 of them, 44 distinct paths).
-%   §6  Results ........... STRUCTURED STUBS ONLY. No quantity in it exists until the
-%       pre-registered run completes; each slot names the verdict-manifest field it binds to, so
-%       filling it is a mechanical substitution. Both interpretation paragraphs are written and
-%       dated 2026-08-10, before the run, so neither can be tuned to an outcome.
-%   TITLE and ABSTRACT remain unlocked; two title variants are carried below.
+% DRAFT STATUS (2026-08-12) — THE LEGIBILITY GATE FIRED; §7 v1.6.31.
+%   §6  Results ........... §6.1 carries the gate receipt (MEASURED). §6.2-6.4 record what was
+%       NOT reached: Stage 2 was never entered, no cell was scored, no verdict exists. §6.5 keeps
+%       the ONE pre-written branch the outcome selected; the other four are deleted, as
+%       pre-committed. Item E made this the PRIMARY result by a rule written pre-data.
+%   TITLE and ABSTRACT ... LOCKED. The skeleton left them open because the gate decides which
+%       paper this is. It decided.
 %
 %   Any \TBD{...} is a quantity that does not exist yet. No \TBD may be filled by estimate.
 %   Any \PH{...} marks placeholder FIGURE data, which is implausible by construction per the
@@ -17,13 +16,17 @@
 \documentclass[10pt]{article}
 \usepackage{preprint}
 
-% ---- TITLE: two candidates, neither locked until the legibility gate and verdict land -------
-% (mechanism-led — current)
-\title{Capacity Eviction in Reconstruction-Trained Tokenizers:\\
-       A Controlled Study on Financial Microstructure}
-% (ablation-led — alternate)
-% \title{Does Microstructure Survive Tokenization?\\
-%        A Pre-Registered, Capacity-Matched Ablation on Crypto K-Lines}
+% ---- TITLE: LOCKED 2026-08-12. The skeleton deliberately locked no title because "the legibility
+% gate decides which paper this is." It fired (§7 v1.6.31), Stage 2 was never entered, and the
+% primary became the mechanism finding by a rule written pre-data. Both earlier candidates are
+% retained below, struck, so the record shows what was on the table before the gate ruled.
+\title{Reconstruction Buys Variance, Not Independence:\\
+       A Tokenizer Preserves the Microstructure That Duplicates Price and Loses the Rest}
+% (superseded, mechanism-led)  Capacity Eviction in Reconstruction-Trained Tokenizers:
+%                              A Controlled Study on Financial Microstructure
+% (superseded, ablation-led)   Does Microstructure Survive Tokenization?
+%                              A Pre-Registered, Capacity-Matched Ablation on Crypto K-Lines
+%   The ablation-led title is now unavailable as a matter of fact: the ablation was never run.
 
 \author{Lakshay Bhati\\ \TBD{affiliation} \\ \texttt{\TBD{email}}}
 \date{Preprint --- draft of \today}
@@ -32,7 +35,8 @@
 \maketitle
 
 % --- ABSTRACT TRACEABILITY (strip before final) -----------------------------------------------
-% Every number below is receipt-backed; the only unmeasured slot is \TBD{verdict}.
+% Every number below is receipt-backed. The \TBD{verdict} slot is GONE — there is no verdict:
+% the gate stopped the run before Stage 2. The gate's own numbers are in §6.1 and the abstract.
 %   0.98 / 0.82--0.92 / 0.001--0.014, 3 seeds
 %       runs_manifest/m6_interface_respec_design_pass.json ::
 %       tokenizers.new_pointwise_fine_3seed.seeds.{0,1,2}.nonlinear_diagnostics
@@ -61,48 +65,43 @@
 %   3.518 / 0.5 / 0.027  see the three comments at the end of this abstract.
 % ----------------------------------------------------------------------------------------------
 \begin{abstract}
-Two-stage models for financial time series learn a tokenizer under a reconstruction objective
-and then fit an autoregressive model to the resulting discrete codes. This design carries an
-unstated assumption: that a representation good enough to reconstruct from is good enough to
-forecast from. We show that it fails, and that it fails in a specific, predictable direction.
-Reconstruction objectives allocate code capacity by variance and covariance and never by
-downstream value, so wherever the code budget is tight enough that not every dimension can be
-coded and the competing dimensions are correlated enough to amortize one another, a low-variance
-channel that is weakly covariant with price --- which is what microstructure is --- is evicted
-deterministically rather than by chance. On an
-% The two conditions are carried here, not only in §3.1: an abstract is quoted without its section.
-entropy-calibrated fixture in which every non-price dimension carries identical marginal
-variance and differs only in cross-dimensional dependence, per-dimension reconstruction sorts
-by variance class: $0.98$ for the high-variance return channel, $0.82$--$0.92$ for the
-mutually correlated block, and $0.001$--$0.014$ for the one independent dimension, with the
-ordering near-identical across three seeds. A signal worth $1.151$ nats planted in feature
-space is not recovered at all (probe correlation below $0.05$ at all $40$ evaluations), while
-$0.900$ nats planted directly in token space is recovered by the identical backbone at $94.4\%$
---- localizing the loss to the tokenizer--backbone interface rather than to model capacity. We
-re-specify that interface so the fine subtoken is a per-bar encoding of the current bar,
-restoring per-bar legibility from $0.5135$, against a chance rate of $0.50$, to $0.9047$ under a
-gate pinned at $0.90$, and recovering the original feature-space signal at unchanged bits per
-token. We then evaluate whether real
-% 0.9047 is the measured seed mean; 0.90 is the gate. The two were conflated here as "0.90".
-trade-flow imbalance survives this pipeline in a pre-registered, capacity-matched five-cell
-ablation with a shuffled-microstructure placebo, on $304{,}625{,}181$ one-minute bars across
-$200$ instruments, scored by cost-aware net information ratio: \TBD{verdict}. The design's
-minimum detectable effect is $3.518$ annualized IR against a $0.5$ economic floor, and the only
-prior we hold for the quantity under test is our own univariate screen of trade-flow imbalance on
-a single symbol, $|\text{RankIC}| = 0.027$ at $h=5$ and $0.020$ at the headline horizon --- so a
-null or inconclusive outcome is the most likely honest one. Both were pre-committed as publishable
-before any result existed. Microstructure-awareness is an architectural property of a tokenizer,
-not an emergent one.
-% artifact: runs_manifest/m6_mde_inputs.json :: h15_pooled.MDE_annualized_IR = 3.518
-% artifact: src/trikaal/eval/verdict.py :: ECON_FLOOR_IR = 0.5
-% artifact: docs/milestone2_btcusdt_stage1.md — TFI RankIC -0.0270 [-0.0304,-0.0236] at h=5,
-%   -0.0197 [-0.0230,-0.0166] at h=15, BTCUSDT only; that doc calls it "a univariate liveness
-%   screen, not the headline test", so the abstract must not let it read as a market prior.
+Two-stage models for financial time series learn a tokenizer under a reconstruction objective and
+then fit an autoregressive model to the resulting discrete codes. This design carries an unstated
+assumption: that a representation good enough to reconstruct from is good enough to forecast from.
+We show that it fails in a specific, predictable direction. Reconstruction objectives allocate code
+capacity by variance and covariance and never by downstream value, so wherever the budget is tight
+and the competing dimensions are correlated enough to amortize one another, a low-variance channel
+that is weakly covariant with price is excluded deterministically rather than by chance. On an
+entropy-calibrated fixture, per-dimension reconstruction sorts by variance class --- $0.98$ for the
+high-variance return channel, $0.82$--$0.92$ for the mutually correlated block, and
+$0.001$--$0.014$ for the one independent dimension --- and a signal worth $1.151$ nats planted in
+feature space is not recovered at all, while $0.900$ nats planted directly in token space is
+recovered by the identical backbone at $94.4\%$, localizing the loss to the tokenizer--backbone
+interface. We re-specify that interface so the fine subtoken is a per-bar encoding of the current
+bar, restoring per-bar legibility on the fixture from $0.5135$, against a chance rate of $0.50$, to
+$0.9047$ at unchanged bits per token, and we convert that property into a pre-registered hard stop
+on real data.
+\textbf{On $304{,}625{,}181$ one-minute bars across $200$ instruments, that gate fired.} The
+re-specified tokenizer does not make microstructure per-bar legible on real market data, and the
+failure localizes: $97.3\%$ of the shortfall falls on trade-flow imbalance and signed count
+imbalance --- the two \emph{signed} channels --- while the four magnitude channels essentially
+pass, and under a shuffled-microstructure placebo the signed channels collapse toward their base
+rates while the magnitude channels hold. \textbf{The tokenizer preserves the microstructure that
+duplicates what price already carries and loses the microstructure that is independent of it.}
+A firing was pre-registered as the modal prediction of the mechanism and as the event that makes
+the mechanism the primary result; the five-cell ablation it gates was therefore never run, and this
+paper reports no information ratio, no null and no verdict. The finding is bounded by one budget
+point, one objective and one architecture, and by a class weight fitted on a synthetic proxy: it
+establishes that this tokenizer does not carry the signed channels, not that none can.
+% artifact: runs_manifest/m6_micro_legibility_stop.json — per-dim sign_acc and base_rate_positive,
+%   n=150,000, 40 symbols, both gated arms; stage2_entered false, artifacts_produced 0.
+% artifact: docs/m6_prereg.md §7 v1.5 item E (pre-data) and §7 v1.6.31 (the firing).
 \end{abstract}
 
 % =============================================================================================
-% ABSTRACT VARIANT B — ABLATION-LED. Neither variant is locked; selection happens after the
-% legibility gate and the verdict land, because which one is honest depends on what the run says.
+% ABSTRACT VARIANT B — ABLATION-LED. ★ SUPERSEDED 2026-08-12, and not by preference: the gate
+% fired, Stage 2 was never entered, and an ablation-led abstract would describe an experiment that
+% did not run. Retained struck, so the record shows what was on the table before the gate ruled.
 % Variant A (above, mechanism-led) leads with capacity eviction and treats the ablation as the
 % downstream test. Variant B leads with the pre-registered ablation and treats the mechanism as
 % the reason to expect its result. Both carry the SAME numbers, the SAME \TBD{verdict} slot, and

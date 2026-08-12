@@ -1,5 +1,7 @@
 % =============================================================================================
-% §6 Results — STRUCTURED STUBS ONLY. The pre-registered run has not been executed.
+% §6 Results — THE LEGIBILITY GATE FIRED (§7 v1.6.31). Stage 2 was never entered, so the ablation
+% has no numbers and says so. §6.1 carries the gate receipt; §6.2-6.4 record what was not reached;
+% §6.5 retains the ONE pre-written branch that fired and deletes the other four, per item E.
 %
 % CONTEXT-STRIPPING RULE (CLAUDE.md standing rules). Every slot below is \TBD{} or \PH{}, in red,
 % and NO slot contains a plausible value. A reader who crops a paragraph out of this section must
@@ -15,9 +17,12 @@
 \section{Results}
 \label{sec:results}
 
-\emph{The pre-registered run has not been executed. Every quantity in this section is an empty
-slot bound to a named field of the verdict manifest, and every figure is drawn on placeholder data
-that is implausible by construction. Nothing here is a measurement.}
+\emph{The pre-registered micro-legibility gate refused both gated arms before any second-stage
+training. Stage~2 was never entered and no evaluation artifact was produced, so the five-cell
+ablation has no result --- not a null, and not an inconclusive one, but an experiment that its own
+pre-registered entry condition stopped. \Cref{sec:res-gate} is therefore the whole of the
+measurement; \cref{sec:res-primary,sec:res-effects,sec:res-stress} record what was not reached, and
+\cref{sec:res-interpretation} carries the branch that pre-committed this disposition.}
 
 \subsection{The pre-second-stage gate}
 \label{sec:res-gate}
@@ -25,216 +30,111 @@ that is implausible by construction. Nothing here is a measurement.}
 The legibility gate of \cref{sec:mech-gate} runs on real data before any second-stage training is
 authorized, and it is a hard stop rather than a diagnostic: it requires at least $0.90$ sign
 accuracy on \emph{every one} of the six live microstructure dimensions, with no mean clause and no
-floor. Its outcome determines whether the rest of this section exists.
+floor. \textbf{It fired.} Both gated arms were refused before any second-stage spend; no unit
+entered Stage~2 and no evaluation artifact was produced.
 
 \begin{center}
-\begin{tabular}{ll}
+\begin{tabular}{llccc}
 \toprule
-quantity & value \\
+dim & feature & cell 4 & cell 5 (shuffled) & base rate $+$ \\
 \midrule
-per-dimension sign accuracy, dims 7--12 & \TBD{six values} \\
-minimum across the six & \TBD{min} \\
-gate outcome & \TBD{pass or hard stop} \\
+7 & \texttt{TFI} & \textbf{0.8223} & \textbf{0.6135} & 0.4869 \\
+8 & \texttt{signed\_count\_imbalance} & \textbf{0.7528} & \textbf{0.5896} & 0.4665 \\
+9 & \texttt{trade\_count} & 0.8975 & 0.8916 & 0.4725 \\
+10 & \texttt{mean\_trade\_size} & 0.9076 & 0.8525 & 0.5462 \\
+11 & \texttt{trade\_size\_dispersion} & 0.8962 & 0.8691 & 0.4073 \\
+12 & \texttt{large\_trade\_share} & 0.9320 & 0.8685 & 0.8577 \\
+\midrule
+\multicolumn{2}{l}{gate outcome} & \textsc{stop} & \textsc{stop} & threshold $0.90$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-% manifest binding: gates.gate2_legibility.{new_by_seed, min, threshold=0.90, pass}
+% artifact: runs_manifest/m6_micro_legibility_stop.json :: legibility_receipt.{cell4_fsq_micro_seed0,
+%   cell5_fsq_micro_shuffled_seed0}.per_dim.<dim>.{sign_acc, base_rate_positive, n=150000};
+%   ALL_FILES_VERIFIED true over 6 files, stage2_entered false, artifacts_produced 0, git_commit 448e4fe.
 
-\subsection{Primary outcome}
+Two readings of that table matter, and they point the same way. \textbf{The shortfall is
+concentrated in the signed channels.} Measured against the $0.90$ threshold, $97.3\%$ of cell 4's
+total shortfall and $83.5\%$ of cell 5's fall in dims 7 and 8 --- trade-flow imbalance and signed
+count imbalance --- while the four magnitude dimensions essentially pass, two clearing the
+threshold and two missing it by $0.0025$ and $0.0038$.
+
+\textbf{The placebo differential says it without depending on where the threshold sits.} Against
+the majority-class baseline $\max(p, 1-p)$, cell 4 recovers the signed dims at lifts of $+0.3092$
+and $+0.2193$; under the shuffle those collapse to $+0.1004$ and $+0.0561$, while the magnitude
+dims hold at $+0.3641$, $+0.3063$ and $+0.2764$. Destroying the microstructure block's own
+structure destroys the recoverability of the signed channels and leaves the magnitude channels
+standing.
+
+One caveat belongs with the table rather than after it. \texttt{large\_trade\_share} carries a base
+rate of $0.8577$, so its majority-class baseline is $0.8577$ and its $0.9320$ is a lift of only
+$+0.0743$ --- the weakest recovery in the arm, on a dimension that nonetheless clears the
+threshold. The gate reads raw sign accuracy rather than lift, so an imbalanced dimension passes
+cheaply. This does not change the outcome, and it is recorded so that no reader takes that pass as
+evidence of recovery.
+
+\subsection{What was not reached}
 \label{sec:res-primary}
 
-The five clauses of \cref{sec:decision} are evaluated conjunctively: the primary outcome is
-\textsc{survives} only if none fails, and \textsc{null} otherwise. Two guards sit outside the
-clauses and are \textsc{halt}-only. \Cref{fig:verdict} draws the surface.
+No cell was trained through Stage~2, so none of the five clauses of \cref{sec:decision} was
+evaluated, no verdict manifest was emitted, and the primary outcome is neither \textsc{survives}
+nor \textsc{null}. The decision surface of \cref{fig:verdict} stands as specified and unexercised.
+The same holds for every secondary diagnostic --- information coefficient, rank information
+coefficient, mean absolute error and $R^2$ --- and for the dual-specification report, whose inputs
+do not exist.
 
-\begin{center}
-\begin{tabular}{lll}
-\toprule
-clause & tests & outcome \\
-\midrule
-1 paired CI & $\Delta\IR(4-5)$ lower bound $> 0$ & \TBD{} \\
-2 MDE & $\Delta\IR(4-5) \ge$ paired MDE & \TBD{} \\
-3 placebo validity & $\IR(4) - \IR(2)$ lower bound $> 0$ & \TBD{} \\
-4 economic floor & materiality against the $0.5$ floor & \TBD{} \\
-5 deflated Sharpe & against $SR_0$ at $N = 60$ trials & \TBD{} \\
-\midrule
-degeneracy guard & constant-direction book, any cell & \TBD{halt or clear} \\
-power guard & across-seed range vs claimed effect & \TBD{halt or clear} \\
-\midrule
-\textbf{primary} & & \TBD{SURVIVES / NULL / INCONCLUSIVE} \\
-\bottomrule
-\end{tabular}
-\end{center}
-% manifest binding: clauses.{1_paired_ci, 2_mde_paired, 3_placebo_validity, 4_economic_floor,
-% 5_dsr}.passed; degeneracy_guard.halted; power_guard.halted; primary. The rule STRINGS printed in
-% Fig 8 are read from the manifest, not restated.
-
-Both specifications required by the amendment window are reported from the same artifacts, and
-their agreement or disagreement is stated here rather than in a footnote.
-
-\begin{center}
-\begin{tabular}{lll}
-\toprule
- & v1.5 specification (primary) & retained alternative \\
-\midrule
-primary outcome & \TBD{} & \TBD{} \\
-specifications agree & \multicolumn{2}{l}{\TBD{yes or no --- a first-class finding either way}} \\
-\bottomrule
-\end{tabular}
-\end{center}
-% manifest binding: dual_specification.* — a manifest lacking this field cannot be quoted (§7 v1.5)
-
-\subsection{Effect sizes and secondary diagnostics}
 \label{sec:res-effects}
+The three marginals involving a BSQ arm, which \cref{sec:lim-baseline} withdraws as claims in any
+case, are likewise unmeasured. Two BSQ units at the pinned budget were evaluated before the gate
+refused the microstructure arms; they are not a cell comparison and no difference is computed from
+them.
 
-Information coefficient, rank information coefficient, mean absolute error and $R^2$ are reported
-as secondary diagnostics and do not enter the decision rule.
-
-\begin{center}
-\begin{tabular}{lccccc}
-\toprule
-cell & 1 BSQ/OHLCV & 2 FSQ/OHLCV & 3 BSQ/+micro & 4 FSQ/+micro & 5 placebo \\
-\midrule
-net IR, seed mean & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
-across-seed range & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
-RankIC & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
-decision activity at $\kappa^\ast$ & \TBD{} & \TBD{} & \TBD{} & \TBD{} & \TBD{} \\
-\bottomrule
-\end{tabular}
-\end{center}
-% manifest binding: per_cell.{ir_seed_mean, ir_range_across_seeds, rankic}; degeneracy_guard.
-% per_cell.activity_decisions_seed_mean. The activity row is printed whatever it reads, per §4.4.
-
-The three marginals involving a BSQ arm are reported and not claimed, for the reason
-\cref{sec:lim-baseline} gives, and the required disclosure ships with them verbatim.
-
-\subsection{Cost stress and seed dispersion}
 \label{sec:res-stress}
-
-\Cref{fig:cost} sweeps the round-trip cost around the pinned $0.30\%$; \cref{fig:seeds} plots each
-cell's five seeds against the size of the effect being claimed. Both figures are built against the
-manifest schema and are watermarked until the run lands.
+\Cref{fig:cost,fig:seeds} are retained as the specified analyses, drawn on placeholder data that is
+implausible by construction --- one coincident curve at magnitudes two orders above anything this
+design could produce, and five cells centred on zero --- and they remain watermarked. They are
+published unfilled rather than removed, because the analyses were pre-registered and their absence
+is part of the record.
 
 \subsection{Interpretation}
 \label{sec:res-interpretation}
 
-\emph{The five paragraphs below were written before the run was executed and before any result
-existed --- four on 2026-08-10, the trigger and this preamble on 2026-08-11. Exactly one is
-retained; the other four are deleted rather than softened.}
+\emph{Five interpretation branches were written and dated before the run --- four on 2026-08-10,
+one on 2026-08-11 --- so that no reading could be composed with an outcome in front of us. The
+branch below is the one the outcome selected. The other four are deleted rather than softened, as
+pre-committed. This branch was additionally pre-written in the pre-registration itself, months
+earlier, as the \emph{modal} prediction of the mechanism: ``a firing is the MODAL prediction of our
+own finding \ldots{} gate fires $\rightarrow$ STOP and report; the PRIMARY becomes the mechanism
+finding.'' It is now the primary.}
 
-\textbf{Four of the five branches are selected by the manifest. The fifth is a ruling made against
-it, and we say so rather than implying an automatic that does not exist.} The verdict emitter
-defines exactly three outcome words --- \textsc{survives}, \textsc{null} and
-\textsc{halt\_adjudicate} --- and the primary outcome is a total binary function of the clauses:
-\textsc{survives} if none fails, \textsc{null} otherwise, with a guard superseding to
-\textsc{halt\_adjudicate}. \textbf{No manifest can contain the word \textsc{inconclusive}.} It is
-an adjudication outcome, consistent with the pre-registration committing the design to an
-inconclusive response when five seeds cannot separate the arms, and it is reached by a person
-reading the manifest, not emitted by it.
-% artifact: src/trikaal/eval/verdict.py:75--77 (SURVIVES, NULL, HALT_ADJUDICATE — three words);
-%   :1103 `primary = SURVIVES if not failing else NULL`; guards supersede at :1268/:1331.
-%   `grep -rn INCONCLUSIVE src/` returns nothing.
+\paragraph{The legibility gate fired on real data.} The re-specified interface, which restores
+per-bar legibility on an entropy-calibrated fixture, does not restore it on real microstructure at
+this budget. What that establishes is the first non-fixture confirmation of capacity eviction: a
+reconstruction-trained tokenizer, built and explicitly weighted to carry the microstructure block,
+does not make it recoverable from each bar's own token.
 
-That distinction has a consequence we are obliged to close rather than note. If the manifest reads
-\textsc{null} and nobody adjudicates, we publish a null for a result that did not resolve --- the
-error this section exists to prevent --- and a branch with no trigger is a check that cannot fire.
-We therefore fix the trigger in advance, in terms readable off the manifest without judgement.
+\textbf{And the failure is informative about where, which we did not anticipate.} The per-dimension
+receipt localizes it: the shortfall is concentrated in the two signed channels, trade-flow imbalance
+and signed count imbalance, while the four magnitude channels essentially pass. Under the placebo
+shuffle the signed channels collapse toward their base rates while the magnitude channels hold.
+\textbf{The tokenizer preserves the microstructure that duplicates what OHLCV already carries and
+loses the microstructure that is independent of it.} That is the mechanism of \cref{sec:mechanism}
+--- allocation by variance and covariance, never by independence --- observed on real market data,
+with the evicted features named rather than inferred. It is also, precisely, the channel that
+invariant 1 scopes this study's claim to.
 
-\paragraph{Trigger for the \textsc{inconclusive} adjudication.} Where
-\texttt{verdict.primary} is \textsc{null}, the \textsc{inconclusive} branch is \emph{obliged} ---
-not merely permitted --- if any of the following holds.
+The claim ends there, and four limits bind it. It does \emph{not} establish that no tokenizer can:
+$\lambda$ was fitted on a synthetic proxy and, as \cref{sec:lim-matching} now records, on a single
+dimension that is itself a magnitude channel rather than a signed one. The budget is one point in a
+space we did not search. The threshold is a pinned constant whose calibration receipt already
+recorded that no searched configuration cleared it on all seeds. And it does not test the economic
+hypothesis at all --- no cell was scored, so whether real trade-flow imbalance converts to
+cost-aware net information ratio remains unmeasured, and this paper does not answer it.
 
-\begin{enumerate}[leftmargin=1.6em,itemsep=1pt,topsep=2pt]
-  \item \texttt{clauses.1\_paired\_ci.pass} is true while \texttt{clauses.2\_mde\_paired.pass} is
-    false. The confidence interval excludes zero --- the effect's sign is established --- while its
-    magnitude falls below what the design declared in advance it could resolve. That is an
-    underpowered measurement, not an absent effect.
-  \item \texttt{power\_guard.checks.*.worst\_within\_cell\_ir\_range} is at least
-    \texttt{clauses.2\_mde\_paired.mde\_paired}. The across-seed spread of the statistic equals or
-    exceeds the smallest effect the design claims to detect. Because that minimum detectable effect
-    is built from scoring noise alone and carries no training-variance term
-    (\cref{sec:lim-power}), this state means the power claim rests on an incomplete noise model,
-    and a null computed under it cannot be read as absence.
-  \item \texttt{dual\_specification.agree} is false. The two pre-registered specifications, run on
-    the same artifacts, disagree on the outcome word. Which answer one believes then depends on
-    which specification one believes, which is what unresolved means.
-\end{enumerate}
-
-The condition is sufficient, not necessary: a \textsc{null} meeting none of the three is reported
-as a null. Two candidates were considered and rejected. \texttt{verdict.double\_null} and
-\texttt{verdict.fallback} concern the quantizer axis --- whether $\IR(2)-\IR(1)$ is claimable under
-the identical rule --- and a clean two-arm negative is a null, not an unresolved measurement. And a
-sub-endpoint reading of the degeneracy guard's activity leg was rejected because that leg is
-endpoint-only by ruling (Appendix~D.2); using a sub-endpoint threshold here would smuggle
-in the band the ruling declined to adopt. We also declined to express clause~2 as a fraction of the
-claimed effect, because that would require inventing a constant; the form above compares two
-quantities the manifest already carries.
-% artifact: src/trikaal/eval/verdict.py :: clauses.<key>.pass; dual_specification.agree at :1263;
-%   power_guard.checks.<name>.worst_within_cell_ir_range; verdict.{double_null, fallback}.
-
-\paragraph{If the legibility gate fails on real data.} This is the mechanism's own modal
-prediction, and it is a result rather than an accident. The gate requires at least $0.90$ sign
-accuracy on every one of the six live microstructure dimensions, recovered from each bar's own
-token; a hard stop means the re-specified interface, which restores that property on an
-entropy-calibrated fixture, does not restore it on real microstructure. What that establishes is
-the first non-fixture confirmation of capacity eviction: on real data, at the pinned budget, a
-reconstruction-trained tokenizer does not make microstructure legible per-bar even when built to.
-The claim ends there. It does \emph{not} establish that no tokenizer can --- $\lambda$ was fitted
-on a synthetic proxy (\cref{sec:lim-matching}), the budget is one point in a space we did not
-search, and a gate failure is uninformative about how far short the interface fell. It also does
-not test the microstructure hypothesis at all: no second-stage training is authorized, so cells 1
-through 5 are never scored and no verdict is emitted. The pre-registered adjudication executes ---
-the gate raises rather than degrading, the failure is recorded with its per-dimension values, and
-the decision to re-specify, re-tune or stop is made against the recorded numbers rather than
-retrospectively.
-
-\paragraph{If the outcome is \textsc{survives}.} A positive $\Delta\IR(4-5)$ that clears the
-paired confidence interval, the minimum detectable effect, the economic floor and the deflation
-benchmark establishes that real trade-flow imbalance carries information beyond input capacity, and
-that a tokenizer built to preserve it delivers that information to a cost-aware trading decision.
-The claim ends there, and three limits bind it immediately. It is not a calibrated estimate of how
-much: \cref{sec:lim-placebo} states that $\Delta\IR(4-5)$ mixes information with an unquantified
-capacity handicap, so the measured difference is an upper bound on the information effect rather
-than an estimate of it. It is not evidence that our BSQ baseline is competitive, so the
-quantizer-axis marginals remain reported rather than claimed. And it is one exchange, one venue,
-one instrument class and one year of scored data, with no regime-transfer test --- a positive
-result here is an existence proof on this slice, not a property of markets. The mechanism of
-\cref{sec:mechanism} would remain a fixture result; a positive outcome is consistent with it and
-does not confirm it, because many differences between cells 2 and 4 could produce the same sign.
-
-\paragraph{If the outcome is \textsc{null}.} A null is the outcome the design's own arithmetic
-makes most likely, and we pre-committed it as publishable before any result existed, so it is
-reported without reframing. It means that under this pre-registered decision rule, at this budget,
-on this slice, the microstructure arm did not beat its placebo by a margin the design could
-resolve. It does \emph{not} mean microstructure carries no information: the minimum detectable
-effect is $3.518$ annualized IR against a prior of $|\text{RankIC}| = 0.027$, so the design would
-fail to detect a real effect of the size we actually expect, and \cref{sec:lim-power} states that
-the effect we can detect is larger than the effect we predict. Nor does it falsify the mechanism of
-\cref{sec:mechanism}, which is established on a fixture and is not contingent on this outcome. What
-a null does establish is narrower and still worth publishing: that the pipeline, with the interface
-defect removed and the legibility gate passed, does not convert this microstructure signal into net
-information ratio at this scale. Given that the published record in adjacent fields is measurably
-skewed toward positive findings --- \citet{franco2014publication} track a population of studies
-from design to publication and find null results systematically less likely to be written up at all
---- a pre-registered null with its power analysis stated in advance is a contribution to the record
-rather than a failed experiment. \Cref{sec:lim-power} names what would change the answer: more
-scored data, a lower-cost venue, or an effect larger than our own prior.
-
-\paragraph{If the outcome is \textsc{inconclusive}.} \textsc{inconclusive} is a distinct outcome
-from \textsc{null}, and conflating them would be the more comfortable error. A null says the effect
-was not there to the resolution we committed to. \textsc{inconclusive} says the instrument did not
-resolve the question either way --- the clauses did not separate, or they separated in a pattern
-the pre-registered rule does not map to a decision. The correct report is that the experiment did
-not answer its question, not that the answer was negative. We name in advance what we will not do:
-we will not re-run with more seeds to break the tie, because the seed count was fixed at five up
-front precisely so that this response is unavailable, and we will not promote a secondary
-diagnostic to a headline. \Cref{sec:lim-power} carries the reason an inconclusive outcome is
-foreseeable rather than surprising.
-
-\paragraph{If a guard emits \textsc{halt\_adjudicate}.} Neither guard can change an outcome; each
-can only withhold one. A halt means the verdict's own inputs cannot support a verdict --- a cell's
-book is constant-direction, or a cell's across-seed range reaches the size of the effect being
-claimed. What happens next is procedural rather than interpretive: the halting cell and the guard
-that fired are reported with their per-seed values, no primary outcome is stated, and the clause
-results are published unchanged, since the guards are computed after the clauses and do not touch
-them. A halt is not a null and must not be reported as one.
+The pre-registered response executes without discretion: stop and report, no threshold moved, no
+rescope, no re-run at a higher weight. The pre-registration permits $\lambda$ to be re-derived at
+most once, by the pinned formula, on a slice carved from the end of the training region, and binds
+the consequence in advance --- the re-derived weight counts as an additional configuration in the
+multiple-testing correction, and any ablation conducted under it is reported as
+secondary and exploratory, never as a primary result. \textbf{The primary result of this study is
+the mechanism finding.}
