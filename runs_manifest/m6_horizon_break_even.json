@@ -1,0 +1,522 @@
+{
+  "script": "scripts/m6_horizon_break_even.py",
+  "schema": "m6_horizon_break_even_v1",
+  "status": "RECOMPUTES A PRE-REGISTERED \u00a74 HEADLINE COMPONENT (prereg:170-171 names break-even cost inside the headline cost-stress curve) WITH A NON-PRE-REGISTERED INSTRUMENT \u2014 the pinned metrics.break_even_cost returns -inf on this data; this bisects the exact root BELOW the pinned grid floor. Both ship per unit. ADMISSIBILITY OF THE EXTENSION IS THE SUPERVISOR'S RULING, NOT THE BUILDER'S. Invariant 5 untouched: the headline metric is still cost-aware NET IR and no gross quantity replaces it.",
+  "REQUIRED_READING": {
+    "asymmetry_both_directions": "WEAK IN BOTH DIRECTIONS, unlike the window probe. Evidence is CELL 1 ONLY (BSQ + OHLCV-only), one arm of a 2x2 that never ran, with NO micro artifacts to test transfer. A horizon clearing real fees would be SUGGESTIVE, not proof. Finding no such horizon is ALSO only SUGGESTIVE \u2014 a null does not license 'no horizon is tradeable', because the arm the headline claim is about was never scored. Do not confuse this with the window probe's asymmetry: that one points the other way.",
+    "provenance_never_mixed": "h=15 is the HEADLINE money grid (forward blocks 1..5). h=5 and h=60 are VAL BLOCK ONLY (forward block 0), at exactly 0.2000x the headline grid. Different calendar regions and are never compared as a curve without this label.",
+    "scoping_correction": "I scoped this as 'three points'. That was WRONG and the error was mine: val passes bank IR SCALARS, not series, so gbar_A is not recoverable at h=5/60. The curve has ONE measured point and TWO exact bounds.",
+    "shipped_instrument_floor": "metrics.break_even_cost returns -inf here: every IR on the pre-registered grid (0.10/0.20/0.30%) is negative. The grid FLOOR is exactly the realistic round trip we want to compare against, so the pre-registered instrument bottoms out just where the comparison begins.",
+    "break_even_not_persisted": "CellScore.break_even is computed at eval time but write_cell_eval_artifact does not persist it \u2014 it was discarded on the rented box. This receipt reconstructs it."
+  },
+  "fee_reference": {
+    "source": "supervisor-supplied in the task prompt; NOT independently verified here",
+    "venue": "Binance USD-M perpetual futures, taker",
+    "per_side_frac": [
+      0.0004,
+      0.0005
+    ],
+    "round_trip_frac": 0.001,
+    "caveat": "A round-trip taker fee is a LOWER BOUND on real execution cost: it excludes spread paid, market impact, funding, and slippage. The true comparison threshold is therefore ABOVE 0.10%, which makes any 'c_break below fees' finding stronger and any 'c_break above fees' finding weaker than the bare comparison suggests."
+  },
+  "identity": "c_break = mean gross return per ACTIVE period (gbar_A). Proven numerically per unit against a bisected root of IR(c), and the check proven capable of failing first.",
+  "pins": {
+    "headline_cost": 0.003,
+    "flat_costs": [
+      0.001,
+      0.002,
+      0.003
+    ],
+    "primary_h": 15,
+    "eps_ir": 1e-12,
+    "val_horizons": [
+      5,
+      15,
+      60
+    ]
+  },
+  "THE_ASSUMPTION_FREE_REFRAMING": {
+    "statement": "Because c_break = gbar_A exactly, clearing a round trip of c requires GROSS EDGE PER ACTIVE PERIOD >= c. That threshold is THE SAME AT EVERY HORIZON \u2014 0.10% of gross edge per active period, whether the position is held 5 minutes or 60. What changes with h is not the bar but how much gross edge a period can contain.",
+    "required_gross_edge_per_active_period_vs_fee": 0.001,
+    "required_gross_edge_per_active_period_vs_modelled_030": 0.003,
+    "measured_and_required_horizon": [
+      {
+        "seed": 0,
+        "measured_edge_per_active_period_at_h15": 5.379257156705868e-05,
+        "shortfall_multiple_vs_fee": 18.589927398309708,
+        "required_h_minutes_POINT_EXTRAPOLATION_NOT_A_BOUND": 278.8489109746456
+      },
+      {
+        "seed": 2,
+        "measured_edge_per_active_period_at_h15": 0.0002082459364067311,
+        "shortfall_multiple_vs_fee": 4.802014470269765,
+        "required_h_minutes_POINT_EXTRAPOLATION_NOT_A_BOUND": 72.03021705404647
+      },
+      {
+        "seed": 4,
+        "measured_edge_per_active_period_at_h15": 2.3236455995917575e-05,
+        "shortfall_multiple_vs_fee": 43.03582268206866,
+        "required_h_minutes_POINT_EXTRAPOLATION_NOT_A_BOUND": 645.5373402310299
+      }
+    ],
+    "required_h_minutes_range_LOWER_BOUND": [
+      72.03021705404647,
+      645.5373402310299
+    ],
+    "how_to_read": "Under LINEAR edge scaling the measured h=15 edge would reach the 0.10% round trip only after 72-646 minutes of holding, versus the 15 actually evaluated. Linear scaling assumes a drift that never decays, so real sub-linear decay pushes this HIGHER: it is a LOWER BOUND on the required holding period, never an estimate of a horizon that works."
+  },
+  "transfer_check_inventory": {
+    "why_this_exists": "Measures the 'cell 1 only' limit instead of asserting it. Micro-arm artifacts DO exist; they are structurally unquotable, which is a different and stronger statement.",
+    "n_artifacts_total": 26,
+    "n_money_artifacts": 3,
+    "money_artifacts": [
+      "runs_cloud/results/r0/cell1_seed0_eval.json",
+      "runs_cloud/results/r1/cell1_seed2_eval.json",
+      "runs_cloud/results/r2/cell1_seed4_eval.json"
+    ],
+    "micro_arms_present_but_unquotable": [
+      "micro",
+      "micro_shuffled"
+    ],
+    "loader_verdict_by_dir": {
+      "runs_cloud/cuda_validation/run/eval": "REFUSED: VerdictInputError: no index.json in /Users/lakshaybhati/Downloads/trikaal/runs_cloud/cuda_validation/run/eval \u2014 artifacts must be indexed",
+      "runs_cloud/p2/eval": "REFUSED: VerdictInputError: no index.json in /Users/lakshaybhati/Downloads/trikaal/runs_cloud/p2/eval \u2014 artifacts must be indexed",
+      "runs_cloud/results/r0": "MONEY \u2014 accepted (this is the quotable set)",
+      "runs_cloud/results/r1": "MONEY \u2014 accepted (this is the quotable set)",
+      "runs_cloud/results/r2": "MONEY \u2014 accepted (this is the quotable set)",
+      "runs_cloud/runs/m6_toy/eval": "REFUSED: VerdictInputError: eval-artifact set rejected:"
+    },
+    "conclusion": "Every non-money artifact set is REFUSED by the production load_cell_evals (schema v1, missing index, or incomplete matrix). No transfer check to the micro arms is possible at $0 \u2014 the limit is ENFORCED by the loader, not a matter of discipline."
+  },
+  "val_headline_bridge_h15": {
+    "what_it_is": "h=15 exists on BOTH the val block and the headline grid at the same kappa*, the same flat netting and the same construction. This ratio is the only measurement of how much the two calendar regions differ \u2014 i.e. what 'do not mix' would cost.",
+    "per_seed": [
+      {
+        "seed": 0,
+        "ir_val_block_h15": -72.58349738157487,
+        "ir_headline_grid_h15": -67.0160415321492,
+        "val_over_headline": 1.0830764653080087
+      },
+      {
+        "seed": 2,
+        "ir_val_block_h15": -33.68767049266644,
+        "ir_headline_grid_h15": -28.469003180673987,
+        "val_over_headline": 1.1833105036686047
+      },
+      {
+        "seed": 4,
+        "ir_val_block_h15": -166.20999645693414,
+        "ir_headline_grid_h15": -146.49445146104912,
+        "val_over_headline": 1.1345821961122338
+      }
+    ],
+    "val_over_headline_range": [
+      1.0830764653080087,
+      1.1833105036686047
+    ],
+    "direction": "The VAL block IR is more negative than the headline grid IR in all three seeds (1.083-1.183x), so val-block statements are if any mildly PESSIMISTIC relative to the headline region.",
+    "limits": "THREE SEEDS, ONE HORIZON, ONE CELL. Suggestive only. This is NOT a transport coefficient and is NOT used to convert any h=5 or h=60 number \u2014 those stay bounds."
+  },
+  "measured_h15_headline": [
+    {
+      "seed": 0,
+      "h": 15,
+      "provenance": "HEADLINE grid (money region, forward blocks 1..5) \u2014 the pinned h=15 pass",
+      "kappa_star": 3.0,
+      "n_periods": 35064,
+      "period_activity": 0.6581679215149441,
+      "decision_activity": 0.09263682514331346,
+      "ir_net_at_headline_cost": -67.0160415321492,
+      "ir_gross_IS_THE_T_STAT_OF_c_break_NOT_A_RESULT": 1.2664597643302178,
+      "cost_stress_ir": {
+        "0.0010": -22.19571544300799,
+        "0.0020": -45.12412418770859,
+        "0.0030": -67.0160415321492
+      },
+      "shipped_PREREGISTERED_break_even_cost_on_pinned_grid": -Infinity,
+      "c_break_POINT_ESTIMATE_positions_fixed": 5.379257156705868e-05,
+      "c_break_interval": {
+        "n_active": 23078,
+        "c_break_point": 5.379257156705868e-05,
+        "se_iid": 4.246063419145445e-05,
+        "t_stat": 1.2668810203000895,
+        "ci95_low": -2.9430271448192037e-05,
+        "ci95_high": 0.0001370154145823094,
+        "lag1_autocorr_active_gross": 0.002749055783753364,
+        "note_t_equals_ir_gross": "IR_gross IS this t-statistic: the money grid is 35,064 periods and periods_per_year(15) = 35,040, so IR_gross = sqrt(n_active)*gbar/sd to ~4 decimals. The frozen m6_units_1_2_predeclaration.md block-bootstrap intervals on IR_gross (containing ZERO for seeds 0 and 4) are the SAME statement about c_break."
+      },
+      "c_break_pct_POINT_see_c_break_interval": 0.005379257156705868,
+      "c_break_over_round_trip_fee": 0.053792571567058675,
+      "clears_round_trip_fee": false,
+      "gross_edge_per_active_period_EQUALS_c_break": 5.379257156705868e-05,
+      "gross_var_per_active_period": 4.1605649206739154e-05,
+      "identity_check": {
+        "gbar_A": 5.379257156705868e-05,
+        "numeric_root": 5.3792571567058646e-05,
+        "abs_diff": 3.3881317890172014e-20,
+        "agrees": true
+      },
+      "identity_discrimination_check": {
+        "delta_applied": 0.0001,
+        "gbar_moved_by": 9.999999999999996e-05,
+        "root_moved_by": 0.00010000000000000026,
+        "moves_as_expected": true,
+        "perturbed_still_agrees": true,
+        "original_value_rejected_by_perturbed": true
+      },
+      "artifact": "runs_cloud/results/r0/cell1_seed0_eval.json"
+    },
+    {
+      "seed": 2,
+      "h": 15,
+      "provenance": "HEADLINE grid (money region, forward blocks 1..5) \u2014 the pinned h=15 pass",
+      "kappa_star": 3.0,
+      "n_periods": 35064,
+      "period_activity": 0.3450547570157426,
+      "decision_activity": 0.01927102643812566,
+      "ir_net_at_headline_cost": -28.469003180673987,
+      "ir_gross_IS_THE_T_STAT_OF_c_break_NOT_A_RESULT": 2.1715271361187183,
+      "cost_stress_ir": {
+        "0.0010": -8.242025896858747,
+        "0.0020": -18.512015136840944,
+        "0.0030": -28.469003180673987
+      },
+      "shipped_PREREGISTERED_break_even_cost_on_pinned_grid": -Infinity,
+      "c_break_POINT_ESTIMATE_positions_fixed": 0.0002082459364067311,
+      "c_break_interval": {
+        "n_active": 12099,
+        "c_break_point": 0.0002082459364067311,
+        "se_iid": 9.585727269992433e-05,
+        "t_stat": 2.172458390910338,
+        "ci95_low": 2.0365681914879407e-05,
+        "ci95_high": 0.00039612619089858276,
+        "lag1_autocorr_active_gross": -0.021064272666741466,
+        "note_t_equals_ir_gross": "IR_gross IS this t-statistic: the money grid is 35,064 periods and periods_per_year(15) = 35,040, so IR_gross = sqrt(n_active)*gbar/sd to ~4 decimals. The frozen m6_units_1_2_predeclaration.md block-bootstrap intervals on IR_gross (containing ZERO for seeds 0 and 4) are the SAME statement about c_break."
+      },
+      "c_break_pct_POINT_see_c_break_interval": 0.02082459364067311,
+      "c_break_over_round_trip_fee": 0.20824593640673109,
+      "clears_round_trip_fee": false,
+      "gross_edge_per_active_period_EQUALS_c_break": 0.0002082459364067311,
+      "gross_var_per_active_period": 0.00011116388519309972,
+      "identity_check": {
+        "gbar_A": 0.0002082459364067311,
+        "numeric_root": 0.00020824593640673115,
+        "abs_diff": 5.421010862427522e-20,
+        "agrees": true
+      },
+      "identity_discrimination_check": {
+        "delta_applied": 0.0001,
+        "gbar_moved_by": 0.00010000000000000005,
+        "root_moved_by": 9.999999999999983e-05,
+        "moves_as_expected": true,
+        "perturbed_still_agrees": true,
+        "original_value_rejected_by_perturbed": true
+      },
+      "artifact": "runs_cloud/results/r1/cell1_seed2_eval.json"
+    },
+    {
+      "seed": 4,
+      "h": 15,
+      "provenance": "HEADLINE grid (money region, forward blocks 1..5) \u2014 the pinned h=15 pass",
+      "kappa_star": 3.0,
+      "n_periods": 35064,
+      "period_activity": 0.9978610540725531,
+      "decision_activity": 0.47020149445284204,
+      "ir_net_at_headline_cost": -146.49445146104912,
+      "ir_gross_IS_THE_T_STAT_OF_c_break_NOT_A_RESULT": 1.1442791248262019,
+      "cost_stress_ir": {
+        "0.0010": -48.09731267206198,
+        "0.0020": -97.31750867103442,
+        "0.0030": -146.49445146104912
+      },
+      "shipped_PREREGISTERED_break_even_cost_on_pinned_grid": -Infinity,
+      "c_break_POINT_ESTIMATE_positions_fixed": 2.3236455995917575e-05,
+      "c_break_interval": {
+        "n_active": 34989,
+        "c_break_point": 2.3236455995917575e-05,
+        "se_iid": 2.0299971307537585e-05,
+        "t_stat": 1.1446546226047938,
+        "ci95_low": -1.6551487766856088e-05,
+        "ci95_high": 6.302439975869124e-05,
+        "lag1_autocorr_active_gross": 0.005840760103724154,
+        "note_t_equals_ir_gross": "IR_gross IS this t-statistic: the money grid is 35,064 periods and periods_per_year(15) = 35,040, so IR_gross = sqrt(n_active)*gbar/sd to ~4 decimals. The frozen m6_units_1_2_predeclaration.md block-bootstrap intervals on IR_gross (containing ZERO for seeds 0 and 4) are the SAME statement about c_break."
+      },
+      "c_break_pct_POINT_see_c_break_interval": 0.0023236455995917574,
+      "c_break_over_round_trip_fee": 0.023236455995917574,
+      "clears_round_trip_fee": false,
+      "gross_edge_per_active_period_EQUALS_c_break": 2.3236455995917575e-05,
+      "gross_var_per_active_period": 1.4418164162018684e-05,
+      "identity_check": {
+        "gbar_A": 2.3236455995917575e-05,
+        "numeric_root": 2.323645599591772e-05,
+        "abs_diff": 1.4568966692773966e-19,
+        "agrees": true
+      },
+      "identity_discrimination_check": {
+        "delta_applied": 0.0001,
+        "gbar_moved_by": 0.0001,
+        "root_moved_by": 9.999999999999983e-05,
+        "moves_as_expected": true,
+        "perturbed_still_agrees": true,
+        "original_value_rejected_by_perturbed": true
+      },
+      "artifact": "runs_cloud/results/r2/cell1_seed4_eval.json"
+    }
+  ],
+  "bounded_val_horizons": {
+    "seed0": {
+      "5": {
+        "h": 5,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -176.1646401711804,
+          "1.5": -112.82465161273146,
+          "2": -80.44310893100442,
+          "3": -43.98936852764552
+        },
+        "ir_net_at_kappa_star": -43.98936852764552,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.018075413355857016,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 65.82660570737217,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "15": {
+        "h": 15,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -197.6746332934662,
+          "1.5": -147.8871013859529,
+          "2": -112.51464942873696,
+          "3": -72.58349738157487
+        },
+        "ir_net_at_kappa_star": -72.58349738157487,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.13070151098412497,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 232.94339730476912,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "60": {
+        "h": 60,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -60.297156874677924,
+          "1.5": -58.69397057977266,
+          "2": -57.34604196283139,
+          "3": -55.435015624347514
+        },
+        "ir_net_at_kappa_star": -55.435015624347514,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.2597000186484781,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 928.6500506445944,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      }
+    },
+    "seed2": {
+      "5": {
+        "h": 5,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -93.81621735526116,
+          "1.5": -54.43565847164893,
+          "2": -41.71383278045459,
+          "3": -29.190467124137747
+        },
+        "ir_net_at_kappa_star": -29.190467124137747,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.008040639985748789,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 71.76465198458521,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "15": {
+        "h": 15,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -124.46225494745104,
+          "1.5": -87.42122156281962,
+          "2": -62.935286676593975,
+          "3": -33.68767049266644
+        },
+        "ir_net_at_kappa_star": -33.68767049266644,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.03137148754966446,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 186.55544046139246,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "60": {
+        "h": 60,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -52.10293771067401,
+          "1.5": -48.55854310801193,
+          "2": -44.83972463454058,
+          "3": -38.76181575360448
+        },
+        "ir_net_at_kappa_star": -38.76181575360448,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.14640502106167458,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 1139.815391977084,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      }
+    },
+    "seed4": {
+      "5": {
+        "h": 5,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -481.0358957460785,
+          "1.5": -358.7448386992623,
+          "2": -252.30174258117918,
+          "3": -129.54599050883778
+        },
+        "ir_net_at_kappa_star": -129.54599050883778,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.13766912049361138,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 106.93626408864942,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "15": {
+        "h": 15,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -192.651459265969,
+          "1.5": -187.33746356453167,
+          "2": -182.62911280311928,
+          "3": -166.20999645693414
+        },
+        "ir_net_at_kappa_star": -166.20999645693414,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.44084299997281523,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 251.776841238108,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      },
+      "60": {
+        "h": 60,
+        "provenance": "VAL block only (forward block 0) \u2014 NEVER the headline grid; do not mix",
+        "kappa_star": 3.0,
+        "ir_net_at_headline_cost_all_kappa": {
+          "1": -53.35548752583784,
+          "1.5": -52.61573329680459,
+          "2": -51.66471510292233,
+          "3": -49.97808199440271
+        },
+        "ir_net_at_kappa_star": -49.97808199440271,
+        "netted_at": 0.003,
+        "EXACT_sign_bound_c_break_lt": 0.003,
+        "EXACT_activity_lower_bound": 0.22187343477531088,
+        "c_break_exact": null,
+        "why_no_exact_value": "val passes bank FOUR ANNUALIZED IR SCALARS per horizon, not a series. A scalar IR at a single netting cost cannot be re-netted, so gbar_A is not recoverable. This corrects my own scoping, which promised three measured points.",
+        "inference_attempted_and_REJECTED": {
+          "verdict": "UNINFORMATIVE \u2014 carries no constraint on c_break",
+          "admissible_band_width_pct": 505.3124713221311,
+          "why": "Sweeping the admissible activity range drives the denominator to zero at the activity lower bound, so the band spans hundreds of percent \u2014 four orders of magnitude wider than the 0.001-0.10% question. Narrowing it would require inventing an activity we never measured (self-scaling rule). ENDPOINTS ARE DELIBERATELY NOT REPORTED: a cropped upper endpoint would read as a break-even estimate.",
+          "usable_statements_at_this_horizon": [
+            "c_break < 0.30% (exact, from IR<0 and monotonicity in c)",
+            "activity >= IR^2/(ppy+IR^2) (exact, from var >= 0)"
+          ]
+        }
+      }
+    }
+  },
+  "summary_h15": {
+    "n_seeds": 3,
+    "c_break_pct_by_seed_POINT_every_one_below_the_fee": {
+      "0": 0.005379257156705868,
+      "2": 0.02082459364067311,
+      "4": 0.0023236455995917574
+    },
+    "c_break_pct_min_POINT": 0.0023236455995917574,
+    "c_break_pct_max_POINT": 0.02082459364067311,
+    "c_break_pct_mean_POINT": 0.009509165465656912,
+    "round_trip_fee_pct": 0.1,
+    "n_seeds_clearing_round_trip_fee": 0,
+    "spread_ratio_max_over_min": 8.962035193461427
+  }
+}
