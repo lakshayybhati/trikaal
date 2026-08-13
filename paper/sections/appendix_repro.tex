@@ -25,7 +25,7 @@ constant & value & governs \\
 \texttt{PINNED\_KAPPAS} & $(1.0, 1.5, 2.0, 3.0)$ & the execution-filter grid \\
 \texttt{PINNED\_HEADLINE\_COST} & $0.0030$ & flat round trip, the pessimistic band end \\
 \texttt{PINNED\_MONEY\_SEQ\_LEN} & $512$ & eval surface and training context \\
-\texttt{PINNED\_BACKBONE\_PARAMS} & $21{,}301{,}248$ & the realized parameter count \\
+\texttt{PINNED\_BACKBONE\_PARAMS} & $21{,}301{,}248$ & backbone \emph{excluding} the MTP heads \\
 \texttt{PINNED\_STEPS\_STAGE1} & $26{,}003$ & tokenizer budget, matched across arms \\
 \texttt{PINNED\_STEPS\_STAGE2} & $26{,}003$ & backbone budget, matched across arms \\
 \texttt{PINNED\_MU\_ESTIMATOR} & \texttt{expectation} & conditional mean, not mode \\
@@ -132,7 +132,7 @@ PyTorch & 2.12.1 \\
 \end{center}
 
 The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
-amendment log carries $47$ distinct revision tags, each with its date, its reason, and the
+amendment log carries $48$ distinct revision tags, each with its date, its reason, and the
 direction it moves the criterion, recorded before the amendment was evaluated.
 
 \subsection*{D.5\quad Slot-to-field bindings for \S6}

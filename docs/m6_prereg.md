@@ -216,6 +216,50 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.34 (2026-08-14, ★ THE PUBLISHED PARAMETER COUNT EXCLUDES A THIRD OF THE MODEL. THE
+  HEADLINE FIGURE BECOMES THE REALIZED TOTAL, AND C-19'S DISCLOSED CONFOUND SHRINKS.)**
+  - **VERIFIED AT ENTRY-TIME FROM BOTH CHECKPOINTS, NOT FROM THE SUMMARY.** Summing every tensor
+    in the shipped `predictor.pt`: **BSQ = 31,725,568** (`runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0`)
+    and **FSQ = 31,795,200** (`runs_cloud/ckpt_cell4_seed0`). The `mtp.*` group is **10,493,952 in
+    BOTH**, and `TOTAL − MTP` reproduces **21,231,616 / 21,301,248 exactly**. The quoted figure was
+    never the model; it was the model **minus its multi-token-prediction heads**, which are trained,
+    checkpointed and shipped. MTP is **33.08%** of the BSQ total and **33.00%** of the FSQ total —
+    a third of the artifact, absent from every document.
+  - **THE CODE IS NOT AT FAULT AND THAT MATTERS FOR THE FIX.** `cells.py:134` gates
+    `model.num_backbone_params()` — backbone, excluding MTP — against
+    `PINNED_BACKBONE_PARAMS = 21,301,248` (`conformance.py:48`), and the assertion message says
+    *"backbone base params"*. **The pin is correctly named and correctly scoped.** The defect is
+    that the PAPER, CLAUDE.md and the design docs promoted a BACKBONE count to a MODEL count. So
+    the pin stays exactly as it is; what changes is what we call it.
+  - **THE RULING (supervisor, 2026-08-14): quote the REALIZED TOTAL as the model size, with the
+    backbone-excluding-MTP figure as a NAMED SECONDARY.** CLAUDE.md's own instruction is *"quote
+    the realized number"*, and 21.2M is not it. Applied across §2, §4, §7, both appendices and the
+    conformance table; the pin's description is corrected to *"backbone excluding the MTP heads"*
+    rather than *"the realized parameter count"*.
+  - **★ C-19 SURVIVES AND IMPROVES, CHECKED BEFORE IT WAS WRITTEN.** MTP is IDENTICAL across arms
+    (10,493,952 each), so the arm gap is **69,632 either way** — but as a fraction it is
+    **0.219% OF THE REALIZED MODEL**, not the 0.327% of the backbone we have been disclosing. **The
+    confound is SMALLER than disclosed**, and it is now stated with its denominator, because a
+    percentage travelling without one is the context-stripping shape.
+  - **★★ AND THE SAME OMISSION PRODUCED TWO WRONG CORRECTIONS IN THE SAME DIRECTION — this is the
+    part worth keeping.** Both figures involved were themselves corrections, and both OVERSHOT:
+    (1) `~27M` → `21,301,248`, justified as "a target must give way to a realized count" — but the
+    realized count is 31,795,200, so **|27.0 − 31.80| = 4.80M against |27.0 − 21.30| = 5.70M: the
+    figure we discarded as imprecise was CLOSER**;
+    (2) the hedge "the training budget is a small fraction of compute-optimal" was withdrawn for
+    "20.00 tokens per parameter, which is compute-optimal" — but **426,033,152 / 31,795,200 =
+    13.40**, about two-thirds of the reference ratio, so **the withdrawn hedge was again the closer
+    statement**. One root cause, two corrections, both moving the number FURTHER from the truth
+    while making it sound MORE precise. Recorded in §7 rather than quietly fixed.
+  - **WHY IT MUST CLOSE BEFORE THE HF RELEASE.** Publishing the weights makes the total checkable
+    with one line of torch. A reader who runs it must find the discrepancy **already described by
+    us**, not discover it.
+  - **OUT OF SCOPE FOR THIS ENTRY AND FLAGGED, NOT TOUCHED:** `CLAUDE.md` (invariant text and the
+    architecture section), `docs/m6_design.md`, `docs/paper_skeleton.md`, `docs/v2_and_limitations.md`
+    and the audit docs all still carry 21.2M/21.3M as the model size. They are outside the writer's
+    domain (`paper/` and `docs/m6_prereg.md`); the class is named here so the sweep is not mistaken
+    for complete.
+
 - **v1.6.33 (2026-08-14, THE PRE-REGISTERED BREAK-EVEN INSTRUMENT CANNOT ANSWER THE QUESTION IT
   WAS BUILT FOR — ITS GRID FLOOR IS EXACTLY THE FEE IT IS COMPARED AGAINST — AND THE PAPER SAID
   IN FOUR PLACES THAT A QUANTITY WAS UNMEASURED WHICH THREE COMMITTED ARTIFACTS RECORD.)**

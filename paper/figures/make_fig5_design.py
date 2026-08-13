@@ -25,8 +25,13 @@ ARTIFACTS — loaded at render time.
     docs/m6_c12_placebo_mechanism.md      the measured before/after correlation table
     src/trikaal/eval/verdict.py           ECON_FLOOR_IR (clause 4's materiality floor)
 
-The backbone parameter counts (21,301,248 at the FSQ vocabulary, 21,231,616 at the BSQ vocabulary)
-are the realized figures recorded in CLAUDE.md §7 v1.6.17; the 0.327% gap is computed here.
+The parameter counts are the REALIZED PREDICTOR totals summed from the shipped checkpoints
+    runs_cloud/ckpt_cell4_seed0/predictor.pt                  31,795,200  (FSQ)
+    runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/predictor.pt   31,725,568  (BSQ)
+and are VERIFIED against those files at render time when they are present (see _verify_params).
+The figures carried here previously — 21,301,248 / 21,231,616 — are the backbone EXCLUDING the
+10,493,952 MTP parameters, identical in both arms; they are quoted as the named secondary. The
+gap percentage is printed WITH ITS DENOMINATOR: a cropped panel must not carry a bare "0.327%".
 
 RENDERING ONLY — not part of the anchored instrument; produces no measurement.
 
@@ -56,8 +61,33 @@ fs.apply()
 
 PAR = json.loads((RM / "m6_interface_respec_design_pass.json").read_text())["g_parity_new_layout"]
 BPT_FSQ, BPT_BSQ = PAR["bpt_a"], PAR["bpt_b"]
-N_FSQ, N_BSQ = 21_301_248, 21_231_616
-PARAM_GAP = 100.0 * (N_FSQ - N_BSQ) / N_FSQ
+N_FSQ, N_BSQ = 31_795_200, 31_725_568  # realized predictor totals, summed from the checkpoints
+N_MTP = 10_493_952  # identical in BOTH arms, so the absolute gap is basis-independent
+PARAM_GAP = 100.0 * (N_FSQ - N_BSQ) / N_FSQ  # 0.219% OF THE MODEL (0.327% of the backbone alone)
+
+
+def _verify_params() -> None:
+    """Assert the hard-coded totals against the checkpoints when they are on disk.
+
+    Skipped, not faked, when the weights are absent — a renderer without them still works. When
+    they ARE present this must fail on a wrong constant, which is the only reason it exists.
+    """
+    ckpts = {
+        "FSQ": (pathlib.Path("runs_cloud/ckpt_cell4_seed0/predictor.pt"), N_FSQ),
+        "BSQ": (pathlib.Path("runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/predictor.pt"), N_BSQ),
+    }
+    if not all(f.exists() for f, _ in ckpts.values()):
+        return
+    import torch
+
+    for arm, (f, expect) in ckpts.items():
+        blob = torch.load(f, map_location="cpu", weights_only=False)
+        sd = blob["state_dict"] if "state_dict" in blob else blob  # checkpoints wrap the tensors
+        total = sum(v.numel() for v in sd.values())
+        mtp = sum(v.numel() for k, v in sd.items() if k.split(".")[0] == "mtp")
+        assert total == expect, f"{arm} realized total {total:,} != {expect:,} ({f})"
+        assert mtp == N_MTP, f"{arm} mtp {mtp:,} != {N_MTP:,} ({f})"
+
 
 # the placebo's measured effect, read out of the mechanism note rather than retyped
 _doc = (ROOT / "docs" / "m6_c12_placebo_mechanism.md").read_text()
@@ -74,6 +104,7 @@ CELLS = {(0, 0): (1, "BSQ"), (0, 1): (2, "FSQ"), (1, 0): (3, "BSQ"), (1, 1): (4,
 
 
 def main() -> None:
+    _verify_params()  # must run BEFORE anything is drawn; a wrong constant is a wrong figure
     fig = plt.figure(figsize=(fs.SINGLE_COL, 3.05))
     gs = fig.add_gridspec(
         1, 2, width_ratios=[1.02, 1.0], wspace=0.16, left=0.055, right=0.985, top=0.90, bottom=0.045
@@ -238,7 +269,8 @@ def main() -> None:
     ax.text(
         0.5,
         0.036,
-        f"{N_FSQ:,} vs {N_BSQ:,} backbone params ({PARAM_GAP:.3f}% apart)",
+        f"{N_FSQ:,} vs {N_BSQ:,} realized params "
+        f"({PARAM_GAP:.3f}% of the model apart; {N_MTP:,} of each are MTP heads)",
         ha="center",
         fontsize=6.1,
         color=fs.RULE,

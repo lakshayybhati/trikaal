@@ -83,7 +83,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $47$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $48$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever
@@ -190,8 +190,9 @@ three units at the pinned budget now exist.
 
 Pre-registration is only binding if something checks it. Every pinned quantity is a named constant
 that is hard-asserted before any cell is scored: the symbol set by hash, the $\kappa$ grid, the
-five seeds, the flat headline cost of $0.0030$, the evaluation sequence length, the realized
-backbone parameter count of $21{,}301{,}248$, the $\hat{\mu}$ estimator, the training step counts,
+five seeds, the flat headline cost of $0.0030$, the evaluation sequence length, the backbone
+parameter count of $21{,}301{,}248$ excluding the MTP heads, the $\hat{\mu}$ estimator, the
+training step counts,
 the bootstrap configuration, the causal-encoder flag, the pointwise-fine flag and the
 microstructure class weight. A run whose configuration differs from any of these does not produce a
 downgraded result; it raises and produces none.

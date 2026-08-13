@@ -184,10 +184,16 @@ Two branches follow, and the more likely one is the worse one. If the trained mo
 calibrated, activity is near zero everywhere and the headline metric is computed on a handful of
 decisions or none. If they are over-dispersed they trade, but the realized information ratio then
 partly reflects miscalibration rather than skill. We previously hedged toward the second branch on
-the grounds that the training budget was a small fraction of compute-optimal; that is no longer
-true --- the pinned budget is $20.00$ tokens per parameter, which is compute-optimal --- and a
-model trained to compute-optimal is \emph{more} likely to be calibrated, not less. We concluded
-that the near-zero activity branch was the one to plan for.
+the grounds that the training budget was a small fraction of compute-optimal; we then withdrew
+that hedge, on the ground that the pinned budget is $20.00$ tokens per parameter and a model
+trained to compute-optimal is \emph{more} likely to be calibrated, not less. We concluded that the
+near-zero activity branch was the one to plan for.
+
+\textbf{That ratio divided by a number that excludes a third of the trained model.} The
+$426{,}033{,}152$-token budget against the realized $31{,}795{,}200$ parameters is $13.40$ tokens
+per parameter, not $20.00$ --- about two-thirds of the reference ratio rather than at it. The
+withdrawn hedge was closer to right than the correction that replaced it, though the truth sits
+between them: the budget is below compute-optimal, but not by the margin first supposed.
 
 \textbf{That conclusion is wrong, and the measurement says so without ambiguity.} A calibrated
 forecast at our own prior would have $\operatorname{std}(\hat{\mu}) = 0.027 \times 0.003504 =
@@ -205,7 +211,8 @@ occurred, on the only arm we can check.
 %   0.004238 over n = 1,051,199 (partial history, 2026-08-10) SUPERSEDED BY
 %   0.003504 over n = 2,103,825 (full BTCUSDT history, docs/degeneracy_guard_activity_leg_RULING.md,
 %   2026-08-11). Both windows named in the prose. sd-out and required-IC figures from the ruling's
-%   table. Budget: 426,033,152 tokens / 21,301,248 params = 20.00 tok/param, per 591ec44.
+%   table. Budget: 426,033,152 tokens. /21,301,248 BACKBONE params = 20.00 tok/param (per 591ec44);
+%   /31,795,200 REALIZED predictor params = 13.40 tok/param. Denominator named at every use.
 %   theta = kappa * c_modeled per src/trikaal/eval/xsection.py:335; modeled c_total range 8e-4 to
 %   2.1e-3 per the harness KATs. Arithmetic over measured inputs; the harness was not run at these
 %   values.
@@ -377,13 +384,39 @@ microstructure dimensions with no mean clause and no floor, and raises a hard st
 degrading quietly. A gate that fires costs us the run; it does not cost us the honesty of the
 result.
 
-\paragraph{The arms are matched to $0.327\%$, not exactly.}
-The backbone realizes $21{,}301{,}248$ parameters at the FSQ vocabulary and $21{,}231{,}616$ at
-the BSQ vocabulary --- $69{,}632$ fewer, or $0.327\%$ --- because embedding and output-head rows
+\paragraph{The arms are matched to $0.219\%$ of the model, not exactly.}
+The predictor realizes $31{,}795{,}200$ parameters at the FSQ vocabulary and $31{,}725{,}568$ at
+the BSQ vocabulary --- $69{,}632$ fewer, which is $0.219\%$ of the realized model and $0.327\%$ of
+the backbone alone; we give the denominator because the bare percentage is the shape that travels
+without it --- because embedding and output-head rows
 scale with vocabulary size. The two quantizer arms also differ by $0.058$ bits per bar. Both gaps
 favour the FSQ arm, both are an order of magnitude smaller than any effect the design can detect,
 and both are reported rather than absorbed. We do not claim exact parameter parity; we claim
-parity to a stated tolerance, hard-checked before any cell is scored.
+parity to a stated tolerance, hard-checked before any cell is scored. The gap is also
+\emph{smaller} than we previously disclosed, because the heads it does not touch belong in the
+denominator: $0.219\%$ supersedes the $0.327\%$ carried in earlier drafts, and the absolute figure
+is unchanged.
+
+\textbf{One admission belongs with this, because the same omission produced two wrong corrections
+in the same direction.} Both of the figures above were themselves \emph{corrections}, and both
+overshot. An earlier draft described the instrument as roughly a $27$-million-parameter model; we
+replaced that with $21{,}301{,}248$ on the reasoning that a target should give way to a realized
+count. The realized count is $31{,}795{,}200$, so the figure we discarded as imprecise was nearer
+the truth than the one that replaced it. Separately, we withdrew a hedge that the training budget
+was below compute-optimal in favour of ``$20.00$ tokens per parameter, which is compute-optimal'';
+against the realized model that ratio is $13.40$, so again the withdrawn statement was the closer
+one. Both errors have a single cause --- a parameter count that silently excluded the multi-token
+heads --- and in both cases correcting moved the number further from the truth while making it
+sound more precise. We record it because the released weights make the total checkable in one
+line, and a reader who checks should find the discrepancy already described here rather than
+discover it.
+% artifact: runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/predictor.pt and
+%   runs_cloud/ckpt_cell4_seed0/predictor.pt — realized totals 31,725,568 / 31,795,200; the "mtp.*"
+%   parameter group is 10,493,952 in BOTH, so total - mtp = 21,231,616 / 21,301,248 exactly.
+%   src/trikaal/train/cells.py:134 gates model.num_backbone_params() (backbone, EXCLUDING MTP)
+%   against PINNED_BACKBONE_PARAMS = 21,301,248 (src/trikaal/eval/conformance.py:48) — the CODE
+%   names it "backbone base params" correctly; the paper had promoted it to the model count.
+%   Ratios: 426,033,152 / 21,301,248 = 20.00; / 31,795,200 = 13.40.
 % artifact: runs_manifest/m6_cuda_probe.json :: params_gate = "21,301,248 enforced by OrchestratorConfig.expect_backbone_params"
 
 \subsection{Reproducibility is bit-exact except in one place, and that place is training}

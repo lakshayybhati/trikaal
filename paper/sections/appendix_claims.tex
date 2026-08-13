@@ -7,15 +7,15 @@
 % pending must make it impossible to mistake a pin or a fixture result for a run result.
 %
 % The census figures below are counted from the source, not estimated:
-%   136 inline `% artifact:` comments across the section files and main.tex
-%   49 distinct artifact paths referenced
+%   137 inline `% artifact:` comments across the section files and main.tex
+%   50 distinct artifact paths referenced
 % Re-count with:  cat paper/sections/*.tex paper/main.tex | grep -c '^% artifact:'
 % =============================================================================================
 \section{Claims audit}
 \label{app:claims}
 
 Every quantitative claim in this paper carries an inline comment in the \LaTeX{} source naming the
-artifact it came from --- $136$ such comments across $49$ distinct artifact paths, stripped from
+artifact it came from --- $137$ such comments across $50$ distinct artifact paths, stripped from
 the submitted version and present in the released source. This appendix summarizes them by status.
 
 Four statuses are used, and the boundaries between them are the point of the table.
@@ -94,7 +94,10 @@ prior, $|\text{RankIC}|$ at $h=5$ / $h=15$ & $0.0270$ / $0.0197$ & measured & M2
 DSR trial count & $60$ & pin & conformance; $= 5\times3\times4$, but the \\
  & & & enumeration was our choice, not a finding \\
 bits-per-bar gap, FSQ vs BSQ & $0.058$ & derived & vocabulary arithmetic \\
-parameter gap & $69{,}632$ ($0.327\%$) & measured & realized counts \\
+realized predictor params, FSQ / BSQ & $31{,}795{,}200$ / $31{,}725{,}568$ & measured & both checkpoints \\
+\quad of which MTP heads (identical) & $10{,}493{,}952$ & measured & same; $33.0\%$ of the model \\
+\quad backbone excluding MTP & $21{,}301{,}248$ / $21{,}231{,}616$ & measured & same; the pinned figure \\
+parameter gap & $69{,}632$ ($0.219\%$ of model) & measured & realized counts \\
 signed-return ACF at lag 60 & $0.0067$ mean, $0.0191$ worst & measured & embargo premise \\
 absolute-return ACF at lag 60 & $0.2323$ mean, $0.3604$ worst & measured & same \\
 placebo: micro--price correlation & $0.2037 \to 0.0005$ & measured & placebo mechanism doc \\
@@ -126,7 +129,7 @@ largest single detection layer & $6$ of $19$ critical & derived & ledger tabulat
 determinism penalty & $13.175\%$ & measured & CUDA probe report \\
 false bit-exactness claims & $49$ of $49$ records & measured & the D20 entry \\
 same-seed divergence & $0.5662$ vs $0.99883$ & measured & h-sweep vs money-leg \\
-amendment log & $47$ revision tags & measured & pre-registration \\
+amendment log & $48$ revision tags & measured & pre-registration \\
 anchor causal sweep & $420$ of $420$ & measured & Gate-A manifest \\
 test suite & $727$ passing & measured & \texttt{pytest} \\
 \bottomrule
@@ -135,8 +138,8 @@ test suite & $727$ passing & measured & \texttt{pytest} \\
 
 \subsection*{E.4a\quad A header-less tag is cited on a shipped clause}
 
-Appendix~F.1 records that the amendment log carries $47$ distinct revision tags across
-$44$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
+Appendix~F.1 records that the amendment log carries $48$ distinct revision tags across
+$45$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
 references without headers of their own. One consequence belongs here rather than there, because
 it touches a field that ships.
 

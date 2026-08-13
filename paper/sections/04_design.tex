@@ -50,9 +50,16 @@ binary-spherical arm spends $10+10$ bits for $20.000$. The two differ by $0.058$
 inside a pre-registered parity band of $19.5$--$20.5$.
 % artifact: runs_manifest/m6_interface_respec_design_pass.json :: g_parity_new_layout.{bpt_a=20.05784765541185, bpt_b=20.0}; src/trikaal/constants.py :: FSQ_BPT_BAND=(19.5,20.5)
 
-The backbone realizes $21{,}301{,}248$ parameters at the finite-scalar vocabulary and
-$21{,}231{,}616$ at the binary-spherical one --- a difference of $69{,}632$ parameters, or
-$0.327\%$, arising entirely from vocabulary-dependent embedding and output-head rows. The backbone
+The predictor realizes $31{,}795{,}200$ parameters at the finite-scalar vocabulary and
+$31{,}725{,}568$ at the binary-spherical one. Of each, $10{,}493{,}952$ --- a third of the model
+--- are the multi-token-prediction heads, which are trained and shipped; the backbone excluding
+them is $21{,}301{,}248$ and $21{,}231{,}616$ respectively, and that is the figure the
+construction gate pins. We quote both, and quote the total first, because the released weights
+make the total checkable in one line and a reader who computes it should find our number. The two
+arms differ by $69{,}632$ parameters --- $0.219\%$ of the realized model, equivalently $0.327\%$
+of the backbone --- arising entirely from vocabulary-dependent embedding and output-head rows.
+The heads are identical in both arms at $10{,}493{,}952$ each, so the gap is the same absolute
+quantity on either basis. The backbone
 is otherwise identical across all five cells: eight layers, model width $512$, feed-forward width
 $1024$, eight heads, and a context of $512$ bars. It is held fixed on purpose. The tokenizer is
 the object under study; the backbone is the instrument that measures it.
