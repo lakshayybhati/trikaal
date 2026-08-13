@@ -430,9 +430,15 @@ def main(argv: list[str] | None = None) -> int:
         print("SHARD PARTITION INVALID: " + "; ".join(part_fails), file=sys.stderr)
         return 1
     mine = shard_units(units, shard_i, n_shards)
+    # flush=True like every other progress print here: this line is the operator's FIRST
+    # confirmation that a shard picked up the right units, and it is emitted immediately before
+    # the multi-hour data load. Block-buffered over ssh it arrives only after the load — exactly
+    # the window in which the operator is deciding whether the box is working, which is how a
+    # healthy run once looked dead.
     print(
         f"[shard] {shard_i}/{n_shards} → {len(mine)} of {len(units)} units: "
-        + ", ".join(f"c{c.cell_id}s{s}" for c, s in mine)
+        + ", ".join(f"c{c.cell_id}s{s}" for c, s in mine),
+        flush=True,
     )
 
     manifest_path = args.out / "money_run_manifest.json"

@@ -295,6 +295,8 @@ def score_cell(
 
     def grid_series(
         grid: np.ndarray,
+        *,
+        phase: str,
     ) -> tuple[dict[float, np.ndarray], dict[float, np.ndarray], dict[str, int], int, dict]:
         """Per-κ pooled FULL-grid calendar series for one decision grid, netted BOTH ways:
         at the flat pre-registered headline cost AND at the modeled per-decision cost (the
@@ -356,7 +358,12 @@ def score_cell(
                     progress(
                         {
                             "run": run,
-                            "phase": "val" if val_only else "grid",
+                            # ★ THE LABEL MUST DESCRIBE THE GRID BEING SCORED, NOT THE
+                            # ENCLOSING CALL. It read `val_only` — a parameter of score_cell —
+                            # so on the HEADLINE pass (val_only=False) the VAL kappa-search
+                            # emitted "grid" while actually scoring the val block, and the
+                            # money driver printed that straight to the operator console.
+                            "phase": phase,
                             "h": cfg.h,
                             "symbol": sym,
                             "symbols_done": _done,
@@ -405,7 +412,9 @@ def score_cell(
         return series, series_mod, n_dec, n_periods, mu_diag
 
     # κ* on the pooled VAL block; per-κ curve persisted; time-aligned PBO over the κ configs
-    val_series, _val_mod, _, _, _ = grid_series(global_decision_grid_ms(cfg, cfg.val_block))
+    val_series, _val_mod, _, _, _ = grid_series(
+        global_decision_grid_ms(cfg, cfg.val_block), phase="val"
+    )
     val_ir = {k: information_ratio(val_series[k], cfg.h) for k in cfg.kappas}
     finite_ir = {k: v for k, v in val_ir.items() if np.isfinite(v)}
     kappa_star = max(finite_ir, key=finite_ir.get) if finite_ir else cfg.kappas[0]
@@ -440,7 +449,9 @@ def score_cell(
         if cfg.money
         else global_decision_grid_ms(cfg, cfg.headline_block)
     )
-    hd_series, hd_mod, n_dec, _, mu_diag = grid_series(hd_grid)
+    # only reached when val_only is False (the val_only branch returns above), so this grid is
+    # always the headline one.
+    hd_series, hd_mod, n_dec, _, mu_diag = grid_series(hd_grid, phase="grid")
     if mu_diag:  # §7 v1.4.4: pin the decision-activity AT κ* (the guard's binding-filter input)
         mu_diag["activity_decisions"] = float(
             mu_diag["activity_decisions_by_kappa"][f"{kappa_star:g}"]

@@ -252,7 +252,15 @@ def test_progress_observer_is_called_with_the_ARGUMENTS_the_production_code_pass
             "eta_pass_s",
         }
     # within one pass symbols_done increases; `phase` distinguishes the val pass from the grid pass
-    assert {e["phase"] for e in seen} <= {"val", "grid"}
+    phases = {e["phase"] for e in seen}
+    assert phases <= {"val", "grid"}
+    # ★ THE SUBSET ASSERTION ALONE IS A CHECK THAT CANNOT FAIL. It passed just as happily when the
+    # label was derived from the enclosing call's `val_only` instead of from the grid being scored,
+    # so the headline pass reported its VAL kappa-search as "grid". A full (non-val_only) scoring
+    # runs BOTH grids, so BOTH labels must appear — that is the assertion the defect fails.
+    assert phases == {"val", "grid"}, (
+        f"a full scoring runs the val kappa-search AND the headline grid; got {phases}"
+    )
 
 
 @pytest.mark.slow
