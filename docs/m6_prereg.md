@@ -216,6 +216,83 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.33 (2026-08-14, THE PRE-REGISTERED BREAK-EVEN INSTRUMENT CANNOT ANSWER THE QUESTION IT
+  WAS BUILT FOR — ITS GRID FLOOR IS EXACTLY THE FEE IT IS COMPARED AGAINST — AND THE PAPER SAID
+  IN FOUR PLACES THAT A QUANTITY WAS UNMEASURED WHICH THREE COMMITTED ARTIFACTS RECORD.)**
+  - **THE ADMISSIBILITY RULING.** `runs_manifest/m6_horizon_break_even.json` recomputes a
+    pre-registered §4 headline component (break-even cost, named at prereg:170-171 inside the
+    cost-stress curve) with a **NON-PRE-REGISTERED instrument**, and its own `status` field states
+    that admissibility is the supervisor's ruling and not the builder's. **The supervisor ruled it
+    admissible by directing it into §7 Limitations (2026-08-14), and it enters the paper as a
+    limitation rather than as a result.** Invariant 5 is untouched: the headline metric is still
+    cost-aware net IR, and no gross quantity replaces it. Both values ship per unit — the
+    pre-registered `-inf` beside the bisected root.
+  - **DEFECT 1, THE FLOOR.** `harness.py:45` pins `FLAT_COSTS = (0.0010, 0.0020, 0.0030)` and
+    `metrics.break_even_cost` returns `-inf` when IR ≤ 0 across the whole grid. On all three
+    real-lake units it returns exactly that. **The grid's floor, 0.10%, is precisely the realistic
+    round trip the comparison is against**, so the pre-registered instrument bottoms out at the
+    threshold where the question begins. It cannot distinguish "break-even is just under a round
+    trip" from "break-even is forty-three times under it" — and the true answer is the second.
+    This is a limitation of our own design, found in our own instrument.
+  - **DEFECT 2, AND IT IS THE WORSE ONE.** `CellScore.break_even` **is** computed at eval time
+    (`harness.py:221`, stored at `:280`) and `verdict.write_cell_eval_artifact` **does not persist
+    it**. Verified: the string `break_even` appears nowhere in any of the three shipped money
+    artifacts. So the design computes the quantity, discards it, and falls back to a grid that
+    bottoms out at the comparison threshold. Two defects on one quantity, in the same pass.
+  - **THE MEASUREMENT, VERIFIED AT ENTRY-TIME AGAINST THE RECEIPT.** At the pinned h=15 on the
+    headline money grid, c_break = **0.00232%, 0.00538%, 0.02082%** across seeds 4, 0, 2 — **4.8x
+    to 43x short** of a 0.10% round trip. It survives sampling error: the best 95% upper bound is
+    0.0396%, **still 2.5x short**, and two of the three intervals contain zero.
+  - **THREE THINGS THE SUMMARY HANDED TO ME DID NOT CARRY, ALL FOUND BY READING THE RECEIPT.**
+    (1) **IT IS NOT A HORIZON RESULT.** The receipt's own `scoping_correction` retracts the
+    "three points" framing: there is **ONE measured point and TWO exact bounds**. At h=5 and h=60
+    the only exact statement is c_break < 0.30%, which sits **above** the 0.10% fee and therefore
+    carries no constraint on the fee question; the inference was attempted and **REJECTED as
+    UNINFORMATIVE** (admissible bands 66%-1140% wide). The file is named `m6_horizon_break_even`
+    and that name invites exactly the reading its own contents forbid.
+    (2) **THE INTERVAL EVIDENCE IS NOT INDEPENDENT OF THE IR_gross EVIDENCE — IT IS THE SAME
+    STATEMENT.** IR_gross **is** the t-statistic of c_break (35,064 periods against
+    periods_per_year(15) = 35,040), so "two of three intervals contain zero" is the same fact as
+    the frozen predeclaration's block-bootstrap IR_gross intervals containing zero for seeds 0
+    and 4. Reporting them as two corroborating findings would be double-counting one.
+    (3) **THE 0.10% THRESHOLD IS SUPERVISOR-SUPPLIED AND EXPLICITLY NOT VERIFIED IN THE RECEIPT**
+    (`fee_reference.source`). The direction saves it: a taker round trip **excludes** spread,
+    impact, funding and slippage, so the true threshold is **above** 0.10% and the finding is
+    conservative. Stated, not assumed.
+  - **THE STRONGEST FORM IS ASSUMPTION-FREE AND IS THE ONE THE PAPER USES.** c_break = mean gross
+    return per active period, **identically** — proven numerically per unit, with the check proven
+    capable of failing first (fixture-discrimination rule). So clearing a round trip of c requires
+    gross edge per active period ≥ c, and **that bar is the same at every horizon**; what changes
+    with h is how much edge a period can contain, not the bar. Under linear scaling the measured
+    h=15 edge reaches 0.10% only after **72-646 minutes** of holding — a LOWER bound, since real
+    decay is sub-linear.
+  - **THE TRANSFER LIMIT IS ENFORCED, NOT ASSERTED.** Micro-arm artifacts exist (`micro`,
+    `micro_shuffled`) but every non-money artifact set is REFUSED by the production
+    `load_cell_evals` — no `index.json`, wrong schema, or incomplete matrix. No transfer check is
+    possible at $0. That is a stronger statement than "cell 1 only" as a claim, and it is why the
+    finding is **WEAK IN BOTH DIRECTIONS**: a horizon that cleared fees would be suggestive, not
+    proof, and finding none does not license "no horizon is tradeable" — the arm the headline
+    claim is about was never scored.
+  - **★ THE CORRECTION THIS FORCED, AND IT IS THE REASON THE ENTRY IS LONG.** Verifying the above
+    surfaced a **FALSE CLAIM SHIPPED IN FOUR PLACES**: §7's subsection title *"Whether the
+    execution filter binds on real data is unmeasured"*, the identical sentence in §4 and §7 that
+    *"no evaluation artifact from a real-lake run retains a decision-activity value"*, and
+    Appendix E.3's row *"filter activity on real data — pending — no artifact records it"*. **All
+    three real-lake artifacts record it**, at `mu_diag.activity_decisions`: **0.0926, 0.0193,
+    0.4702** at κ*=3, and 0.339/0.176/0.916 at κ=1. The whole class is swept and corrected, not
+    the site that was pointed at (class rule).
+  - **AND THE MEASUREMENT REFUTES THE BRANCH WE PLANNED FOR.** §7 pre-committed that "the
+    near-zero activity branch is therefore the one to plan for", on the argument that a calibrated
+    forecast has std(μ̂) = IC·std(y) = 0.027 × 0.003504 = 9.46e-05. Measured std(μ̂) is
+    **0.005376, 0.005331, 0.010373 — 56x to 110x that value**. The models are not calibrated; they
+    are grossly over-dispersed, they trade, and they lose. That is the *other* branch, the one §7
+    argued was less likely, and it is now the measured one on cell 1. The prediction was wrong in
+    the direction we said was safer to plan for, and §7 now records that rather than the
+    prediction.
+  - **THE COMPARABILITY PROHIBITION TRAVELS WITH ALL OF IT** and the cell-1-only scope goes INSIDE
+    any caption or table note that carries a number from this entry, never beside it
+    (context-stripping rule).
+
 - **v1.6.32 (2026-08-12, ITEM E's ONCE-ONLY λ RE-DERIVATION IS SPENT AND RETURNED NOTHING.
   `clearing_lambda: null`, 0 of 18 configs. THE DISPOSITION IS FINAL.)**
   - **THE SPEND IS RECORDED BECAUSE THE ALLOWANCE WAS ONCE-ONLY.** §7 v1.5 item E permitted λ to be

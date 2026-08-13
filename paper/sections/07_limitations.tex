@@ -145,16 +145,26 @@ have added it before the run. It does not increase power. It prevents us from re
 smaller than its own inputs' wobble.
 % artifact: src/trikaal/eval/verdict.py :: power_guard; tests/eval/test_degeneracy_guard.py
 
-\subsection{Whether the execution filter binds on real data is unmeasured}
+\subsection{The execution filter binds on real data, and it is the forecasts that are wrong}
 \label{sec:lim-filter}
 
+\emph{This subsection asserted through several drafts that the question below was unmeasured. It
+is measured, in three committed artifacts, and the answer is the branch we argued was less
+likely. The prediction is kept, with what it got wrong, because a limitations section that
+silently replaces a wrong forecast with the right answer teaches a reader nothing about how much
+to trust the rest of it.}
+
 The headline metric is a cost-aware net information ratio \emph{under a forecast-magnitude
-execution filter}, $\theta = \kappa c$. Whether that filter does any per-bar work on real data is
-not known, and nothing in this project measures it: no evaluation artifact from a real-lake run
-retains a decision-activity value, so the question is genuinely open rather than answered
-elsewhere. On the calibration fixture it behaved in both extremes --- inert on the degenerate
-checkpoints at the pinned horizon, and binding at every $\kappa$ on a non-degenerate one
-(\cref{sec:metric}).
+execution filter}, $\theta = \kappa c$. On the calibration fixture that filter behaved in both
+extremes --- inert on the degenerate checkpoints at the pinned horizon, and binding at every
+$\kappa$ on a non-degenerate one (\cref{sec:metric}) --- so we treated its behaviour on real bars
+as open. The three real-lake units that were scored before the gate refused the microstructure
+arms settle it for the arm they cover. Decision activity at $\kappa^\ast = 3$ is $0.0926$,
+$0.0193$ and $0.4702$; at $\kappa = 1$ it is $0.339$, $0.176$ and $0.916$. The filter is neither
+inert nor absorbing: it removes between half and nine-tenths of the decisions it is given, and
+what remains is substantial rather than a handful.
+% artifact: runs_cloud/results/{r0/cell1_seed0,r1/cell1_seed2,r2/cell1_seed4}_eval.json ::
+%   mu_diag.activity_decisions and .activity_decisions_by_kappa. Cell 1 only (BSQ + OHLCV-only).
 
 The reason this is a limitation and not a detail is arithmetic. Binding is decided by the
 \emph{forecast} magnitude, and for a calibrated conditional mean
@@ -176,8 +186,21 @@ decisions or none. If they are over-dispersed they trade, but the realized infor
 partly reflects miscalibration rather than skill. We previously hedged toward the second branch on
 the grounds that the training budget was a small fraction of compute-optimal; that is no longer
 true --- the pinned budget is $20.00$ tokens per parameter, which is compute-optimal --- and a
-model trained to compute-optimal is \emph{more} likely to be calibrated, not less. The near-zero
-activity branch is therefore the one to plan for.
+model trained to compute-optimal is \emph{more} likely to be calibrated, not less. We concluded
+that the near-zero activity branch was the one to plan for.
+
+\textbf{That conclusion is wrong, and the measurement says so without ambiguity.} A calibrated
+forecast at our own prior would have $\operatorname{std}(\hat{\mu}) = 0.027 \times 0.003504 =
+9.46\times10^{-5}$. The measured values are $0.005376$, $0.005331$ and $0.010373$ --- \textbf{$56$
+to $110$ times} that. The trained models are not calibrated but grossly over-dispersed, which is
+precisely why the filter admits as much as it does, and it puts us in the second branch: they
+trade, and the realized information ratio reflects miscalibration at least as much as skill. The
+sign of the error matters more than its size. We reasoned from compute-optimality to calibration
+and planned for the branch that reasoning implied; the branch we deprioritized is the one that
+occurred, on the only arm we can check.
+% artifact: same three artifacts :: mu_diag.std = 0.005376390828602091 / 0.005331342352099716 /
+%   0.010373105755420041, estimator "expectation", n = 1,402,520 each. Calibrated reference from
+%   |RankIC| = 0.027 (M2 screen) and std(y_15) = 0.003504 (full BTCUSDT history).
 % artifact: measured on processed/universe_bars — BTCUSDT 15-bar forward log-return std:
 %   0.004238 over n = 1,051,199 (partial history, 2026-08-10) SUPERSEDED BY
 %   0.003504 over n = 2,103,825 (full BTCUSDT history, docs/degeneracy_guard_activity_leg_RULING.md,
@@ -195,6 +218,66 @@ the exact endpoints, so an activity of $0.999$ passes it. Whether to band that l
 decision at the time of writing, and \cref{app:repro} records it as open rather than resolved.
 % artifact: src/trikaal/eval/verdict.py :: FRAC_NEG_BAND = (0.05, 0.95) on the sign leg;
 %   _never_binds tests v <= 0.0 or v >= 1.0 on the activity leg. No amendment supersedes this.
+
+\subsection{Break-even cost falls short of fees by more than an order of magnitude, and our
+pre-registered instrument could not have told us}
+\label{sec:lim-breakeven}
+
+Two findings sit here, and the one about our own instrument is the one we would rather a reader
+got from us.
+
+\textbf{The pre-registered break-even metric bottoms out exactly where the question begins.} The
+cost-stress curve sweeps a pinned grid of $0.10\%$, $0.20\%$ and $0.30\%$ round-trip costs, and
+the break-even statistic returns $-\infty$ when net IR is non-positive across the whole grid. On
+all three scored units it returns exactly that. The grid's \emph{floor} is $0.10\%$ --- which is
+the realistic round trip any such number must be compared against --- so the instrument cannot
+distinguish a break-even just below a round trip from one forty-three times below it, and the true
+answer is the second. A second defect compounds it: the break-even value \emph{is} computed at
+evaluation time and the artifact writer does not persist it, so on the rented hardware it was
+computed and discarded. The design specifies the right quantity, throws it away, and falls back
+to a grid that cannot resolve it.
+% artifact: src/trikaal/eval/harness.py:45 FLAT_COSTS = (0.0010, 0.0020, 0.0030); :221 c_break
+%   computed, :280 stored on CellScore; src/trikaal/eval/metrics.py break_even_cost returns -inf
+%   when all IR <= 0. The string "break_even" appears in none of the three shipped money artifacts.
+
+\textbf{Recomputed below that floor, break-even falls short of fees by $4.8$ to $43$ times.} At
+the pinned $h = 15$ on the headline money grid, the round-trip cost at which net IR crosses zero
+is $0.00232\%$, $0.00538\%$ and $0.02082\%$ across the three units, against a $0.10\%$ taker round
+trip. It survives sampling error: the most favourable $95\%$ upper bound is $0.0396\%$, still
+$2.5$ times short, and two of the three intervals contain zero. Two qualifications travel with
+that and both are ours to state. The $0.10\%$ threshold is supplied rather than measured here ---
+though the direction rescues it, since a taker round trip excludes spread, impact, funding and
+slippage, so the true bar is \emph{higher} and the shortfall larger. And the interval statement is
+not independent corroboration of the gross-IR statement: gross IR \emph{is} the $t$-statistic of
+break-even on this grid, so ``two intervals contain zero'' and the pre-declared bootstrap
+intervals containing zero are one fact, not two.
+
+\textbf{The horizon reading this invites is not available, and we record that the file inviting it
+is ours.} Only $h = 15$ is measured. At $h = 5$ and $h = 60$ the sole exact statement is that
+break-even is below $0.30\%$ --- above the fee, and therefore no constraint on the fee question at
+all --- and the attempt to infer more was rejected as uninformative, with admissible bands spanning
+$66\%$ to $1{,}140\%$. What survives is stronger for being assumption-free: break-even equals mean
+gross return per active period \emph{identically}, so clearing a round trip of $c$ requires gross
+edge per active period of at least $c$, and \textbf{that bar is identical at every horizon}. What
+a longer horizon changes is how much edge a period can contain, not the bar it must clear. Under
+linear scaling --- generous, since real drift decays --- the measured edge would reach $0.10\%$
+only after $72$ to $646$ minutes of holding, against the $15$ evaluated.
+
+\textbf{This evidence is weak in both directions, and the limit is enforced rather than promised.}
+It covers cell 1 alone --- BSQ with OHLCV-only inputs, one arm of a $2\times2$ that never ran. A
+horizon clearing real fees would have been suggestive, not proof; finding none does not license
+``no horizon is tradeable'', because the arm the headline claim is about was never scored.
+Microstructure-arm artifacts exist but every non-money artifact set is refused by the production
+loader for a missing index, wrong schema or incomplete matrix, so no transfer check is possible at
+all --- which is a stronger statement than a promise not to make one.
+% artifact: runs_manifest/m6_horizon_break_even.json :: measured_h15_headline[*].{c_break_pct,
+%   c_break_interval.{ci95_low,ci95_high}, shipped_PREREGISTERED_break_even_cost_on_pinned_grid},
+%   THE_ASSUMPTION_FREE_REFRAMING.{measured_and_required_horizon, required_h_minutes_range_LOWER_BOUND},
+%   REQUIRED_READING.{asymmetry_both_directions, scoping_correction, shipped_instrument_floor,
+%   break_even_not_persisted}, fee_reference.{round_trip_frac 0.001, source "supervisor-supplied
+%   ... NOT independently verified here", caveat}, transfer_check_inventory.conclusion.
+%   NON-PRE-REGISTERED INSTRUMENT recomputing a pre-registered component; admissibility ruled by
+%   the supervisor 2026-08-14 and logged as prereg §7 v1.6.33. Cell 1 only.
 
 \subsection{One exchange, one venue, one year of scored data}
 \label{sec:lim-universe}

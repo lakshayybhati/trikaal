@@ -7,15 +7,15 @@
 % pending must make it impossible to mistake a pin or a fixture result for a run result.
 %
 % The census figures below are counted from the source, not estimated:
-%   123 inline `% artifact:` comments across the section files and main.tex
-%   44 distinct artifact paths referenced
+%   136 inline `% artifact:` comments across the section files and main.tex
+%   49 distinct artifact paths referenced
 % Re-count with:  cat paper/sections/*.tex paper/main.tex | grep -c '^% artifact:'
 % =============================================================================================
 \section{Claims audit}
 \label{app:claims}
 
 Every quantitative claim in this paper carries an inline comment in the \LaTeX{} source naming the
-artifact it came from --- $123$ such comments across $44$ distinct artifact paths, stripped from
+artifact it came from --- $136$ such comments across $49$ distinct artifact paths, stripped from
 the submitted version and present in the released source. This appendix summarizes them by status.
 
 Four statuses are used, and the boundaries between them are the point of the table.
@@ -100,15 +100,19 @@ absolute-return ACF at lag 60 & $0.2323$ mean, $0.3604$ worst & measured & same 
 placebo: micro--price correlation & $0.2037 \to 0.0005$ & measured & placebo mechanism doc \\
 placebo: micro lag-1 autocorrelation & $0.4165 \to 0.0006$ & measured & same \\
 capacity handicap in IR units & --- & \textbf{not quantified} & \cref{sec:lim-placebo} \\
-filter activity on real data & --- & \textbf{pending} & no artifact records it \\
+filter activity at $\kappa^\ast$, real data & $0.0193$--$0.4702$ & measured & three cell-1 money artifacts \\
+break-even cost, $h=15$ & $0.00232$--$0.02082\%$ & measured & horizon break-even receipt \\
+\quad on the pre-registered grid & $-\infty$ & measured & same; the grid floor \emph{is} the fee \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The last two rows are the ones a reader should carry forward. The capacity handicap is disclosed
-and unquantified --- no cell in the pre-registration brackets it. And no eval artifact in this
-project records decision activity on real bars, so whether the execution filter binds there is
-unmeasured rather than answered elsewhere.
+Two rows deserve a reader's attention. The capacity handicap is disclosed and unquantified --- no
+cell in the pre-registration brackets it. And the last three rows were carried as \textbf{pending}
+through several drafts, on the assertion that no artifact recorded them; all three are measured,
+in the three cell-1 money artifacts, and the correction is recorded at \cref{sec:lim-filter} and
+\cref{sec:lim-breakeven} rather than quietly applied. The $-\infty$ is not a missing value: it is
+what the pre-registered instrument returns, and \cref{sec:lim-breakeven} is about why.
 
 \subsection*{E.4\quad Verification (\S8)}
 
@@ -122,7 +126,7 @@ largest single detection layer & $6$ of $19$ critical & derived & ledger tabulat
 determinism penalty & $13.175\%$ & measured & CUDA probe report \\
 false bit-exactness claims & $49$ of $49$ records & measured & the D20 entry \\
 same-seed divergence & $0.5662$ vs $0.99883$ & measured & h-sweep vs money-leg \\
-amendment log & $46$ revision tags & measured & pre-registration \\
+amendment log & $47$ revision tags & measured & pre-registration \\
 anchor causal sweep & $420$ of $420$ & measured & Gate-A manifest \\
 test suite & $727$ passing & measured & \texttt{pytest} \\
 \bottomrule
@@ -131,8 +135,8 @@ test suite & $727$ passing & measured & \texttt{pytest} \\
 
 \subsection*{E.4a\quad A header-less tag is cited on a shipped clause}
 
-Appendix~F.1 records that the amendment log carries $46$ distinct revision tags across
-$43$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
+Appendix~F.1 records that the amendment log carries $47$ distinct revision tags across
+$44$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
 references without headers of their own. One consequence belongs here rather than there, because
 it touches a field that ships.
 

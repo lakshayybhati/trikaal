@@ -173,10 +173,10 @@ signature of an offset rather than of a threshold set too low.
 % artifact: docs/m6_prereg.md §7 v1.4.4 — noise cells obey mu = (h-1)*c, "a fixed, context-independent per-step value"; SIGMA 0.01 -> 0.05 recorded as a measured NON-FIX
 
 Whether the filter binds on real data is therefore an open question about the trained models, not
-about the design, and we do not assume the answer. Nothing in this repository measures it: no eval
-artifact from a real-lake run retains a decision-activity value, so the question is genuinely
-unanswered rather than answered elsewhere. What the pre-registration commits to instead is a
-refusal. The degeneracy guard reads each cell's decision-activity at $\kappa^\ast$ and its
+about the design, and the pre-registration does not assume the answer. It has since been measured
+on the one arm that was scored: decision activity at $\kappa^\ast$ is $0.0926$, $0.0193$ and
+$0.4702$ across the three cell-1 units, so the filter binds without absorbing the book
+(\cref{sec:lim-filter}). What the pre-registration commits to independently of that is a refusal. The degeneracy guard reads each cell's decision-activity at $\kappa^\ast$ and its
 fraction of negative forecasts, and returns \textsc{halt\_adjudicate} --- not a null --- for any
 cell whose book is constant-direction. We record one asymmetry in that guard rather than
 discovering it later: the sign-balance leg carries a band, halting outside $[0.05, 0.95]$, while

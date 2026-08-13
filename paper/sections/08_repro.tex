@@ -83,7 +83,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $46$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $47$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever
@@ -167,7 +167,7 @@ kernel remains \textbf{stamped per artifact}, so a reader can enumerate exactly 
 and test any result against them. The change was made before any unit was trained at the pinned
 budget, which was mechanically checkable at the time: no evaluation artifact then carried the
 pinned step count. That statement is dated rather than standing --- the run has since begun, and
-two units at the pinned budget now exist.
+three units at the pinned budget now exist.
 % artifact: src/trikaal/utils/provenance.py :: PROVENANCE_IDENTITY_KEYS (16 keys, `platform_abi`
 %   at position 12, `platform` absent from the comparison set); platform_abi() strips the exact
 %   "{system}-{release}-" prefix and returns the FULL string otherwise; run_provenance() stamps
