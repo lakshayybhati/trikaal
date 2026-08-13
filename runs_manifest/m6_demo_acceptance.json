@@ -1,0 +1,100 @@
+{
+  "script": "scripts/m6_demo_acceptance.py",
+  "schema": "m6_demo_acceptance_v1",
+  "what_it_proves": "The demo's SINGLE-DECISION assembly lands on the same float64 bits as the PRODUCTION whole-symbol batched assembly. Not circular: the two paths share only predict_mu; window selection, decision indexing, arm transform and batching are built independently on each side, and those are where a demo actually drifts.",
+  "comparison": "bit-for-bit float64 (.hex()), never allclose",
+  "batch_composition_disclosure": "NON-GATING. mu-hat is NOT invariant to how many decisions are scored in one predict_mu call: the same decision batched with others differs from the same decision scored alone by ~1e-6 relative (float32 reduction order). The gate therefore matches batch composition and stays EXACT rather than adopting a tolerance. Recorded because it is a second instance of the invariant-7 class \u2014 everything deterministic, and the answer still moves \u2014 and because mu-hat feeds a SIGN decision, so a decision sitting within this margin of zero can flip. How many do is NOT measured here.",
+  "symbol": "BTCUSDT",
+  "seeds": [
+    0,
+    2,
+    4
+  ],
+  "n_decisions": 3,
+  "mutated_negative_control": false,
+  "rows": [
+    {
+      "decision_ms": 1697850900000,
+      "seed": 0,
+      "demo_mu_hex": "-0x1.c7d07d8716400p-13",
+      "production_mu_hex": "-0x1.c7d07d8716400p-13",
+      "bit_identical": true,
+      "production_batched_mu_hex": "-0x1.c7d087ba11600p-13",
+      "batch_composition_rel_diff": 3.4142534154484044e-07
+    },
+    {
+      "decision_ms": 1697850900000,
+      "seed": 2,
+      "demo_mu_hex": "0x1.0aa98eb6778c0p-12",
+      "production_mu_hex": "0x1.0aa98eb6778c0p-12",
+      "bit_identical": true,
+      "production_batched_mu_hex": "0x1.0aa988569a980p-12",
+      "batch_composition_rel_diff": 3.647557526176879e-07
+    },
+    {
+      "decision_ms": 1697850900000,
+      "seed": 4,
+      "demo_mu_hex": "0x1.79c56ea8f3d80p-9",
+      "production_mu_hex": "0x1.79c56ea8f3d80p-9",
+      "bit_identical": true,
+      "production_batched_mu_hex": "0x1.79c56ea8f3d80p-9",
+      "batch_composition_rel_diff": 0.0
+    },
+    {
+      "decision_ms": 1699496100000,
+      "seed": 0,
+      "demo_mu_hex": "-0x1.9fc2affd00000p-12",
+      "production_mu_hex": "-0x1.9fc2affd00000p-12",
+      "bit_identical": true,
+      "production_batched_mu_hex": "-0x1.9fc2fbd799000p-12",
+      "batch_composition_rel_diff": 2.7839071322844144e-06
+    },
+    {
+      "decision_ms": 1699496100000,
+      "seed": 2,
+      "demo_mu_hex": "-0x1.008bd55fa3800p-10",
+      "production_mu_hex": "-0x1.008bd55fa3800p-10",
+      "bit_identical": true,
+      "production_batched_mu_hex": "-0x1.008bb6bd83400p-10",
+      "batch_composition_rel_diff": 1.8219996567699694e-06
+    },
+    {
+      "decision_ms": 1699496100000,
+      "seed": 4,
+      "demo_mu_hex": "-0x1.bedc04d836000p-12",
+      "production_mu_hex": "-0x1.bedc04d836000p-12",
+      "bit_identical": true,
+      "production_batched_mu_hex": "-0x1.bedc1083b0000p-12",
+      "batch_composition_rel_diff": 3.9848654809035283e-07
+    },
+    {
+      "decision_ms": 1701141300000,
+      "seed": 0,
+      "demo_mu_hex": "0x1.21f223dfa0600p-13",
+      "production_mu_hex": "0x1.21f223dfa0600p-13",
+      "bit_identical": true,
+      "production_batched_mu_hex": "0x1.21f1c6c058c00p-13",
+      "batch_composition_rel_diff": 4.9006797470747785e-06
+    },
+    {
+      "decision_ms": 1701141300000,
+      "seed": 2,
+      "demo_mu_hex": "0x1.35b4e34b96e00p-12",
+      "production_mu_hex": "0x1.35b4e34b96e00p-12",
+      "bit_identical": true,
+      "production_batched_mu_hex": "0x1.35b4d1f85fe00p-12",
+      "batch_composition_rel_diff": 8.535801659551899e-07
+    },
+    {
+      "decision_ms": 1701141300000,
+      "seed": 4,
+      "demo_mu_hex": "0x1.84a79df2eb600p-10",
+      "production_mu_hex": "0x1.84a79df2eb600p-10",
+      "bit_identical": true,
+      "production_batched_mu_hex": "0x1.84a7999e1da00p-10",
+      "batch_composition_rel_diff": 1.7004771113655214e-07
+    }
+  ],
+  "n_mismatch": 0,
+  "verdict": "PASS"
+}

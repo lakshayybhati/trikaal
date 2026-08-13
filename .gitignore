@@ -40,3 +40,7 @@ coverage.xml
 
 # Rented-box artifact pulls (checkpoints, ~1.7 GB). Evidence, never source.
 runs_cloud/
+
+# Demo build output — regenerate with scripts/m6_demo_build.py (refuses without a PASSING
+# acceptance receipt). The 72 KB page embeds real forecasts; the RECEIPTS are what we version.
+demo/index.html
