@@ -141,8 +141,16 @@ done
 # BEFORE train_matrix (:363), so the cost is five boxes' setup (~$0.50), not a training run.
 # See §2a. Do not launch a shard until the lake path is settled.
 # The repo is PRIVATE. Do NOT clone on the box and do NOT ship a token — scp a tarball.
+# ★ TWO FILES WERE MISSING FROM THIS LINE AND EACH FAILS SILENTLY:
+#   m6_lake_subset_manifest.json — the sha256-per-file ground truth `--verify-only` reads. Absent,
+#     the lake cannot be content-verified on the box at all.
+#   m6_identity_reference.json  — the instrument every unit must match. It is written by the FIRST
+#     money unit and MUST be shipped to boxes 2..N. IDENTITY_REFERENCE is a path relative to each
+#     box's own tree, so parallel launches each see no reference, each write their own, and NONE
+#     COMPARE — the gate silently inert on exactly the boxes it exists to check.
 tar czf /tmp/m6_payload.tgz --exclude='__pycache__' src/trikaal scripts pyproject.toml uv.lock \
-    runs_manifest/m6_mde_inputs.json runs_manifest/m6_spread_deciles.json
+    runs_manifest/m6_mde_inputs.json runs_manifest/m6_spread_deciles.json \
+    runs_manifest/m6_lake_subset_manifest.json
 shasum -a 256 /tmp/m6_payload.tgz            # record; verify again on the box
 scp -P $PORT /tmp/m6_payload.tgz root@$HOST:/root/
 
@@ -213,8 +221,23 @@ unpinned-extra files (`tests/run/test_lake_provisioning.py`, healthy case assert
 # ON THE OPERATOR MACHINE — the token is read here and never stored on the box.
 ssh -p $PORT root@$HOST 'pip install -q huggingface_hub'   # AFTER pinned torch; it touches neither
 
-ssh -p $PORT root@$HOST "cd /root/trikaal && HF_TOKEN='$(cat ~/.trikaal_hf_token)' \
-  python3 scripts/m6_fetch_lake.py --dest processed/universe_bars"   # pull + sha256 verify
+# ★ THE PULL IS TRANSIENT-PRONE AND A SINGLE INVOCATION EXITS 1 ON A BLIP. TWO TRIGGERS SEEN:
+#   (1) HTTP 429 on concurrent pulls (cost four boxes once — I tore them down reading a transient
+#       as a deterministic install failure);
+#   (2) ConnectionError inside HuggingFace's XET backend on `.../xet-read-token/...` (2026-08-13),
+#       which stalled a pull at 108 MB of 4.08 GiB.
+# A 429 and a xet blip are TRANSIENT AND RESUMABLE; an install failure is DETERMINISTIC. NEVER tear
+# down a box on the former. HF_HUB_DISABLE_XET=1 routes around (2); the retry loop covers both.
+# huggingface_hub resumes from cache, so a retry costs only the un-pulled remainder.
+ssh -p $PORT root@$HOST "cd /root/trikaal && export HF_TOKEN='$(cat ~/.trikaal_hf_token)' \
+  HF_HUB_DISABLE_XET=1
+  for k in 1 2 3 4 5; do
+    python3 scripts/m6_fetch_lake.py --dest processed/universe_bars && break
+    echo \"lake pull attempt \$k failed — TRANSIENT, retrying (do NOT destroy the box)\"; sleep 20
+  done"
+# ★ THE EXIT CODE OF THAT LOOP IS NOT THE PULL'S — it is `break`'s on success and `sleep`'s on
+# total failure, so it can never report a genuine failure. DO NOT GATE ON IT. The --verify-only
+# pass below is the real gate: it is the only step that reads every file's sha256.
 # ^ the token exists only in this one command's environment on the box, never on its disk
 
 # SCRUB, THEN PROVE THE SCRUB — exit 1 if any hf_ credential survives anywhere
