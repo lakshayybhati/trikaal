@@ -1554,6 +1554,18 @@ the pinned formula, on a slice carved from the end of the training region, and b
 in advance — the re-derived weight counts as an additional configuration in the multiple-testing
 correction, and any ablation conducted under it is reported as secondary and exploratory, never as a
 primary result. The primary result of this study is the mechanism finding.
+6.4
+
+A secondary, exploratory weight sweep — and what it says about the primary
+
+Everything in this subsection is secondary and exploratory by pre-registration. The protocol permitted the class weight to be re-derived at most once if the gate fired, and bound the consequence in
+advance: even a weight that cleared the gate would have returned the ablation only as a secondary,
+exploratory result carrying a doubled multiple-testing correction. Nothing cleared. The primary
+result of this study remains the mechanism finding of Section 6.3.
+The once-only allowance was spent on a sweep of the microstructure class weight across 𝜆 ∈
+{5, 8, 12}, three seeds and both gated arms — eighteen configurations, trained on a calibration slice
+carved from the end of the training region. None cleared. The criterion was the same absolute one
+the gate applies, 0.90 on all six dimensions on both arms across all three seeds, and it was not moved.
 
 23
 
@@ -1562,26 +1574,22 @@ primary result. The primary result of this study is the mechanism finding.
 conjunctive — SURVIVES only if none fails
 outcome
 
-1 paired ci
-
 one-sided 95% CI lower bound of ΔIR(4−5) > 0
 
-2 mde paired
-
-ΔIR(4−5) ≥ paired MDE (tabled 3.518 at h=15)
+1 paired ci
 
 —
 
-he ru
+e ru
+h
 t
 g
 n
-i
-t
-
-n
-
-awai
+iti
+CI lower bound of IR(4)−IR(2) > 0
+(placebo-independent)
+3 placebo validity
+awa
 —
 DEIRR
 ΔIR(4−5) ≥ 0.5 L
@@ -1589,13 +1597,17 @@ annualized
 4 economic floor
 O
 CEH
-PLA
-deflated Sharpe ratio ≥ 0.95 over 60 enumerated trials
+A
+L
+P
+deflated
+Sharpe ratio ≥ 0.95 over 60 enumerated trials
 5 dsr
-3 placebo validity
+2 mde paired
 
-CI lower bound of IR(4)−IR(2) > 0 (placebo-independent)
+ΔIR(4−5) ≥ paired MDE (tabled 3.518 at h=15)
 
+—
 —
 —
 —
@@ -1607,7 +1619,7 @@ HALT-only guards — never flip SURVIVES ↔ NULL
 
 degeneracy —
 
-—
+n
 
 power —
 
@@ -1619,6 +1631,46 @@ and are HALT-only — they can refuse to report an outcome their own inputs cann
 SURVIVES to NULL or back. The rule strings shown are the ones persisted into the verdict manifest, not a
 restatement of them. [PH: no values] — every outcome cell is empty because the run has not been executed;
 each is filled from a single named field of that manifest.
+
+cell 4, seed mean
+
+𝜆=5
+
+𝜆=8
+
+𝜆 = 12
+
+signed_count_imbalance (dim 8) 0.7140
+0.7187
+0.7219 Table note, which
+TFI (dim 7)
+0.8268
+—
+0.8574
+OHLCV reconstruction MAE
+0.12814 0.12678 0.12530
+travels with these numbers wherever they are quoted: these configurations are not
+comparable to the gate-firing run. They were trained with the last tenth of the training
+region held out; the run of Section 6.1 was not. No difference between the two sets is a
+measured quantity. The criterion above is absolute and requires no baseline, which is what
+makes the sweep readable at all.
+Three readings follow, and each strengthens the primary finding rather than competing with it.
+The knob does not reach the failing channel. Across a 2.4× increase in the class weight, the
+worst dimension moves by +0.0079 — leaving 0.1781 of the gap to the threshold still open at the
+top of the swept range. The failure is not ”one weight was too low”; it is that the dominant failing
+channel is close to insensitive to the only control the objective offers.
+The weight redistributes within the microstructure block; it does not buy capacity from
+price. As 𝜆 rises, OHLCV reconstruction does not degrade — it is flat to slightly better — while
+inside the microstructure block trade-flow imbalance gains +0.0307 and three of the four magnitude
+dimensions give ground, by −0.0045, −0.0063 and −0.0012. The fourth is unchanged within noise.
+Weighting a class harder moves capacity between the channels of that class rather than taking it from
+the price channels, which is what saturation looks like when it is measured rather than assumed.
+The placebo turns out to be an eviction experiment in its own right. The shuffled arm’s microstructure block is, by construction, independent of its own bar’s price. Comparing the two arms
+dimension by dimension, the legibility gap is 0.0655 on the two signed dimensions against 0.0179
+on the four magnitude dimensions — a factor of 3.66, averaged over all eighteen configurations. A
+channel stripped of covariance with its neighbours is systematically harder to encode. That is this
+paper’s own mechanism, reproduced inside the control arm, on a manipulation performed for an
+entirely different purpose.
 
 24
 
@@ -2055,7 +2107,7 @@ The decision surface — clauses, thresholds, horizon, cost, the 𝜅 grid, the 
 — was fixed before any of its inputs existed, and the design was frozen before the run. Amendments
 are not forbidden; unlogged amendments are. Every change is recorded with its date, its reason and,
 crucially, a direction-blind test: before looking at whether the amendment helps, we record whether
-it tightens or loosens the criterion. The log carries 45 distinct revision tags.
+it tightens or loosens the criterion. The log carries 46 distinct revision tags.
 One of those amendments was made after the run began, and it is flagged as such wherever
 it bears. Every other entry predates the existence of any evaluation unit. The exception rescoped
 a codebook-utilization gate to the quantizer the specification had scoped it to, after two units had
@@ -2649,7 +2701,7 @@ sha256:5dfd667d05b97bda…
 2.12.1
 
 The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
-amendment log carries 45 distinct revision tags, each with its date, its reason, and the direction it
+amendment log carries 46 distinct revision tags, each with its date, its reason, and the direction it
 moves the criterion, recorded before the amendment was evaluated.
 D.5
 
@@ -3043,7 +3095,7 @@ test suite
 13.175%
 49 of 49 records
 0.5662 vs 0.99883
-45 revision tags
+46 revision tags
 420 of 420
 727 passing
 
@@ -3067,7 +3119,7 @@ pytest
 
 A header-less tag is cited on a shipped clause
 
-Appendix F.1 records that the amendment log carries 45 distinct revision tags across 42 top-level
+Appendix F.1 records that the amendment log carries 46 distinct revision tags across 43 top-level
 entries, three tags — v1.0, v1.6.24 and v1.6.27 — appearing as in-body references without headers
 of their own. One consequence belongs here rather than there, because it touches a field that ships.
 42
@@ -3118,8 +3170,8 @@ document rather than by tag, because a count written to an assertion about a log
 is exactly the failure the log exists to prevent. The entry has since been written (§7 v1.6.28, dated
 2026-08-11, citing commit 2012acc), and only then did the count move to 42 in Section 8.4 and
 Appendix D.4.
-Two facts about the log that a reader checking this should have. The 45 counts distinct revision
-tags, which is what the paper claims; the log carries 42 top-level entries, because three tags — v1.0,
+Two facts about the log that a reader checking this should have. The 46 counts distinct revision
+tags, which is what the paper claims; the log carries 43 top-level entries, because three tags — v1.0,
 v1.6.24 and v1.6.27 — appear as in-body references without headers of their own. And one claim
 inside the ruling document does not survive checking: it states that the compute-optimal token figure
 was “verified from PINNED_STEPS_STAGE2 at HEAD”, but that pin supplies only the step count. The

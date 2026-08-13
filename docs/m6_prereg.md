@@ -216,6 +216,56 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.32 (2026-08-12, ITEM E's ONCE-ONLY λ RE-DERIVATION IS SPENT AND RETURNED NOTHING.
+  `clearing_lambda: null`, 0 of 18 configs. THE DISPOSITION IS FINAL.)**
+  - **THE SPEND IS RECORDED BECAUSE THE ALLOWANCE WAS ONCE-ONLY.** §7 v1.5 item E permitted λ to be
+    re-derived **at most ONCE**, by the pinned formula, on a slice carved from the END of the TRAIN
+    region. That allowance is now **used**. `runs_manifest/m6_lambda_sweep.json`: λ ∈ {5, 8, 12} ×
+    3 seeds × 2 arms = **18 configs, 0 clearing**, criterion *"0.9 on all six dims, both arms, all
+    three seeds"*, `disposition: ITEM E DISPOSITION IS FINAL — no further attempt`. The receipt
+    carries its own stopping rule: *"If no listed config clears, item E's disposition is FINAL. No
+    fourth lambda, no widening after a near-miss."* The money pin is untouched —
+    `PINNED_MICRO_POINT_WEIGHT` remains 3.0, and `run_cell` raises if a calibration λ is set on a
+    money run.
+  - **THIS IS SECONDARY/EXPLORATORY BY PRE-REGISTRATION AND IS NOT WRITTEN AS ANYTHING ELSE.**
+    Item E binds it in advance: even a *clearing* config would have returned the ablation only as
+    SECONDARY/exploratory at N 60 → 120. Nothing cleared, so no ablation returns at all. **The
+    primary remains the mechanism finding.**
+  - **★ THE COMPARABILITY PROHIBITION, WHICH TRAVELS WITH EVERY ONE OF THESE NUMBERS.** These
+    configs were trained with the last 10% of the train region held out; the λ=3 values in the
+    gate-firing run were not. The receipt carries this as a required field,
+    `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN`: *"The lambda=3.0 values 0.8223/0.7528 were trained on
+    the full train region INCLUDING this slice and measured off-slice-held-out. No delta against
+    them is a measured quantity."* **No difference between the two sets is a measurement.** The
+    criterion here is ABSOLUTE (0.9) and needs no baseline, which is why the sweep is readable at
+    all. Where any of this reaches a figure or table, the prohibition goes **in** the caption.
+  - **WHAT THE SWEEP MEASURED — three results, each re-derived from the artifact at entry-time
+    rather than transcribed, and two of the briefed figures did not survive unchanged.**
+    1. **THE KNOB DOES NOT REACH THE FAILING CHANNEL.** On cell 4, dim 8
+       (`signed_count_imbalance`), the seed mean moves **0.7140 → 0.7219, +0.0079**, across a
+       **2.4×** increase in λ. Stated without mixing bases: **0.1781 of the gap to 0.90 still
+       remains at the top of the swept range**, and the movement is 4.2% of what was required from
+       the bottom of it. *(The brief's "4.4%" divides the λ=5→12 movement by the requirement
+       measured from λ=12; the two bases differ. Both underlying numbers are right.)*
+    2. **λ REDISTRIBUTES WITHIN THE MICRO BLOCK; IT DOES NOT BUY FROM PRICE.** Cell 4 OHLCV
+       reconstruction MAE across λ = **0.12814 / 0.12678 / 0.12530** — flat to slightly *better*
+       as λ rises — while inside the micro block TFI rises **+0.0307** and the magnitude dims give
+       ground: **−0.0045, −0.0063, −0.0012** on dims 10, 11, 12. *(Correction to the brief: it is
+       THREE of the four magnitude dims that fall. Dim 9, `trade_count`, RISES +0.0025. "All four"
+       overstates it.)* The weight moves capacity **between** microstructure channels rather than
+       taking it from price. That is the saturation mechanism, measured.
+    3. **THE PLACEBO IS ITSELF AN EVICTION EXPERIMENT.** Cell 5's micro block is shuffled and so is
+       independent of its own bar's price. The cell4-minus-cell5 legibility gap is **0.0655 on the
+       two SIGNED dims against 0.0179 on the four MAGNITUDE dims — 3.66×**, averaged over all 18
+       configs. *(The brief's 0.0657 / 0.0259 / 2.5× is the **λ=5 slice only**; I reproduce it
+       exactly at that λ. Across the full sweep the separation is larger, so the sweep-wide figure
+       is the one recorded.)* A channel stripped of covariance with its neighbours is
+       systematically harder to encode — **the paper's own mechanism, reproduced inside the control
+       arm.**
+  - **DIRECTION: this amendment records a SPEND, not a change.** No threshold, pin, seed,
+    enumeration or gate value moves. The once-only allowance is consumed and the disposition it
+    was attached to is unchanged.
+
 - **v1.6.31 (2026-08-12, ★★ THE MICRO-LEGIBILITY GATE FIRED ON REAL DATA. ITEM E TAKES EFFECT.
   THE PRIMARY IS NOW THE MECHANISM FINDING. ★★ No threshold moved. No rescope. No re-run.)**
   - **THE FIRING.** `runs_manifest/m6_micro_legibility_stop.json`, git_commit `448e4fe`.

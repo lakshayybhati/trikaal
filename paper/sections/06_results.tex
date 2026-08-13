@@ -2,17 +2,13 @@
 % §6 Results — THE LEGIBILITY GATE FIRED (§7 v1.6.31). Stage 2 was never entered, so the ablation
 % has no numbers and says so. §6.1 carries the gate receipt; §6.2-6.4 record what was not reached;
 % §6.5 retains the ONE pre-written branch that fired and deletes the other four, per item E.
+% §6.6 is the once-only lambda sweep — SECONDARY/EXPLORATORY by pre-registration, 0 of 18 clearing.
 %
-% CONTEXT-STRIPPING RULE (CLAUDE.md standing rules). Every slot below is \TBD{} or \PH{}, in red,
-% and NO slot contains a plausible value. A reader who crops a paragraph out of this section must
-% not be able to mistake any of it for a measurement. When the run lands, each \TBD is replaced
-% from a single named field of the verdict manifest -- the field is named beside every slot so the
-% substitution is mechanical and cannot be improvised.
-%
-% ALL FIVE interpretation branches in §6.5 are written NOW and dated, before any result exists, so
-% that none can be tuned to an outcome. Exactly one is retained after the run; the other four are
-% DELETED, not softened. FOUR branches are selected by the manifest; the INCONCLUSIVE branch is an
-% ADJUDICATION -- no manifest can contain that word -- and its trigger is fixed in §6.5.
+% CONTEXT-STRIPPING RULE (CLAUDE.md standing rules). §6.6's comparability prohibition sits INSIDE
+% the table note, not beside it: those configs held out the last tenth of the train region and the
+% gate-firing run did not, so NO DELTA BETWEEN THE TWO SETS IS A MEASURED QUANTITY. Quoted alone,
+% the table must still carry that. Figs 9-10 remain watermarked placeholders — the analyses were
+% pre-registered and their emptiness is part of the record.
 % =============================================================================================
 \section{Results}
 \label{sec:results}
@@ -138,3 +134,62 @@ the consequence in advance --- the re-derived weight counts as an additional con
 multiple-testing correction, and any ablation conducted under it is reported as
 secondary and exploratory, never as a primary result. \textbf{The primary result of this study is
 the mechanism finding.}
+
+\subsection{A secondary, exploratory weight sweep --- and what it says about the primary}
+\label{sec:res-lambda}
+
+\emph{Everything in this subsection is \textbf{secondary and exploratory} by pre-registration. The
+protocol permitted the class weight to be re-derived at most once if the gate fired, and bound the
+consequence in advance: even a weight that cleared the gate would have returned the ablation only
+as a secondary, exploratory result carrying a doubled multiple-testing correction. Nothing cleared.
+The primary result of this study remains the mechanism finding of \cref{sec:res-interpretation}.}
+
+The once-only allowance was spent on a sweep of the microstructure class weight across
+$\lambda \in \{5, 8, 12\}$, three seeds and both gated arms --- eighteen configurations, trained on
+a calibration slice carved from the end of the training region. \textbf{None cleared.} The
+criterion was the same absolute one the gate applies, $0.90$ on all six dimensions on both arms
+across all three seeds, and it was not moved.
+
+\begin{center}\begin{minipage}{0.92\textwidth}
+\centering
+\begin{tabular}{lccc}
+\toprule
+cell 4, seed mean & $\lambda = 5$ & $\lambda = 8$ & $\lambda = 12$ \\
+\midrule
+\texttt{signed\_count\_imbalance} (dim 8) & 0.7140 & 0.7187 & 0.7219 \\
+\texttt{TFI} (dim 7) & 0.8268 & --- & 0.8574 \\
+OHLCV reconstruction MAE & 0.12814 & 0.12678 & 0.12530 \\
+\bottomrule
+\end{tabular}
+\emph{Table note, which travels with these numbers wherever they are quoted: \textbf{these
+configurations are not comparable to the gate-firing run.} They were trained with the last tenth of
+the training region held out; the run of \cref{sec:res-gate} was not. \textbf{No difference between
+the two sets is a measured quantity.} The criterion above is absolute and requires no baseline,
+which is what makes the sweep readable at all.}
+\end{minipage}\end{center}
+% artifact: runs_manifest/m6_lambda_sweep.json :: VERDICT.{clearing_lambda: null, criterion,
+%   disposition}; configs.lambda<L>_seed<S>_cell<C>.{per_dim.<dim>.sign_acc, ohlcv_recon_mae};
+%   NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN carried as a required field. 18 configs, 0 clearing.
+
+Three readings follow, and each strengthens the primary finding rather than competing with it.
+
+\textbf{The knob does not reach the failing channel.} Across a $2.4\times$ increase in the class
+weight, the worst dimension moves by $+0.0079$ --- leaving $0.1781$ of the gap to the threshold
+still open at the top of the swept range. The failure is not "one weight was too low"; it is that
+the dominant failing channel is close to insensitive to the only control the objective offers.
+
+\textbf{The weight redistributes within the microstructure block; it does not buy capacity from
+price.} As $\lambda$ rises, OHLCV reconstruction does not degrade --- it is flat to slightly better
+--- while inside the microstructure block trade-flow imbalance gains $+0.0307$ and three of the
+four magnitude dimensions give ground, by $-0.0045$, $-0.0063$ and $-0.0012$. The fourth is
+unchanged within noise. Weighting a class harder moves capacity \emph{between} the channels of that
+class rather than taking it from the price channels, which is what saturation looks like when it is
+measured rather than assumed.
+
+\textbf{The placebo turns out to be an eviction experiment in its own right.} The shuffled arm's
+microstructure block is, by construction, independent of its own bar's price. Comparing the two
+arms dimension by dimension, the legibility gap is $0.0655$ on the two signed dimensions against
+$0.0179$ on the four magnitude dimensions --- a factor of $3.66$, averaged over all eighteen
+configurations. A channel stripped of covariance with its neighbours is systematically harder to
+encode. That is this paper's own mechanism, reproduced inside the control arm, on a manipulation
+performed for an entirely different purpose.
