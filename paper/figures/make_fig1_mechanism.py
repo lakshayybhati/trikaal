@@ -56,8 +56,18 @@ def load(name, *path):
     return cur
 
 
-LEG_BEFORE = load("m6_token_control_step0.json", "id_visibility_probe", "logistic_sign_accuracy")
+# ATTRIBUTION, corrected 2026-08-12. The re-specification ALONE did not restore legibility: its own
+# gate record reads pass=false at chance on 3 of 3 seeds. 0.9047 arrives only with the lambda=3
+# micro-class weight, which was the RESPONSE to that failure. The figure must not credit the
+# re-spec with a number the re-spec did not produce, and it must not hide that 0.9047 is a MEAN
+# whose MINIMUM (0.8839) sits BELOW the 0.90 it is displayed against — it cleared a RESTATED rule
+# (mean >= 0.9 AND min >= 0.85), not the gate the real run applied.
+LEG_BEFORE = load("m6_interface_respec_design_pass.json", "gates", "gate2_legibility", "old")
+RESPEC_BY_SEED = load(
+    "m6_interface_respec_design_pass.json", "gates", "gate2_legibility", "new_by_seed"
+)
 LEG_AFTER = load("m6_lambda_search_receipt.json", "formal_cell_path_pin3_omp3", "mean")
+LEG_AFTER_MIN = load("m6_lambda_search_receipt.json", "formal_cell_path_pin3_omp3", "min")
 LAMBDA = load("m6_lambda_search_receipt.json", "pin", "PINNED_MICRO_POINT_WEIGHT")
 DVAL_BEFORE = load(
     "m6_canary_v6_stage1_manifest.json", "decision_inputs", "val_planted_minus_noise"
@@ -291,10 +301,10 @@ def panel(ax, *, after: bool):
 
     # ---- readout -----------------------------------------------------------------------
     leg = LEG_AFTER if after else LEG_BEFORE
-    ax.add_patch(Rectangle((0.01, 0.030), 0.98, 0.250, fc=accent, alpha=0.055, ec="none", zorder=0))
+    ax.add_patch(Rectangle((0.01, 0.012), 0.98, 0.288, fc=accent, alpha=0.055, ec="none", zorder=0))
     ax.text(
         0.5,
-        0.232,
+        0.262,
         "$\\mathrm{sign}(s_t)$ recoverable from bar $t$'s own token",
         ha="center",
         fontsize=6.3,
@@ -302,15 +312,27 @@ def panel(ax, *, after: bool):
         zorder=4,
     )
     ax.text(
-        0.5, 0.088, f"{leg:.4f}", ha="center", fontsize=13, weight="bold", color=accent, zorder=4
+        0.5, 0.175, f"{leg:.4f}", ha="center", fontsize=12, weight="bold", color=accent, zorder=4
     )
+    if not after:
+        sub = "chance 0.50"
+    else:
+        # The interface change ALONE, then what the class weight added. Both, or neither.
+        lo, hi = min(RESPEC_BY_SEED.values()), max(RESPEC_BY_SEED.values())
+        sub = (
+            f"interface alone: {lo:.4f}-{hi:.4f}, 3/3 FAIL\n"
+            f"+ $\\lambda$=3 class weight: mean {LEG_AFTER:.4f}, min {LEG_AFTER_MIN:.4f}\n"
+            f"(restated rule; the run's gate is {MICRO_LEGIBILITY_MIN:.2f} on every dim)"
+        )
     ax.text(
         0.5,
-        0.048,
-        "chance 0.50" if not after else f"gate {MICRO_LEGIBILITY_MIN:.2f}",
+        0.060 if not after else 0.078,
+        sub,
         ha="center",
-        fontsize=6.0,
-        color=fs.RULE,
+        va="center" if after else "baseline",
+        fontsize=6.0 if not after else 5.0,
+        linespacing=1.45,
+        color=fs.RULE if not after else fs.FAIL,
         zorder=4,
     )
 

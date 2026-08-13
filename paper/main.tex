@@ -53,9 +53,19 @@
 %   0.900 nats   runs_manifest/m6_token_control_run_manifest.json ::
 %                full_stream_receipts.exact_info_nats = 0.9002715667652758
 %   94.4%        same :: decision_inputs.final_val_minus_H0 = -0.8496; 0.8496/0.90027 = 0.9437
-%   0.5135       runs_manifest/m6_token_control_step0.json ::
-%                id_visibility_probe.{logistic_sign_accuracy = 0.5135166645050049,
-%                logistic_chance = 0.50}
+%   0.5112 / 0.4995-0.5182 / 0.9047+0.8839 — THE ATTRIBUTION, corrected 2026-08-12:
+%     runs_manifest/m6_interface_respec_design_pass.json :: gates.gate2_legibility =
+%       {old: 0.5112, old_at_discovery: 0.5135, new_by_seed: {0:0.5014,1:0.4995,2:0.5182},
+%        threshold: 0.9, pass: FALSE, protocol "3 seeds, ALL must clear"}
+%       -> THE RE-SPEC ALONE LEFT LEGIBILITY AT CHANCE, 3 OF 3.
+%     runs_manifest/m6_lambda_search_receipt.json :: formal_cell_path_pin3_omp3 =
+%       {legibility [0.9039, 0.9262, 0.8839], mean 0.9047, min 0.8839, restated_gate_pass true,
+%        constructed_via "build_cell_tokenizer (pinned path, PINNED_MICRO_POINT_WEIGHT=3.0)"}
+%       -> 0.9047 ARRIVES WITH THE lambda=3 CLASS WEIGHT, and its MIN (0.8839) is BELOW the 0.90
+%          it is quoted against: it cleared a RESTATED rule, not the run's gate.
+%     0.5135 is m6_token_control_step0.json :: id_visibility_probe.logistic_sign_accuracy, on the
+%       PLANTED token-control carrier probing the planted dim — NOT the fixture, NOT the six micro
+%       dims. The fixture-matched before-value is 0.5112, in the same gate record.
 %   0.9047 / 0.90  runs_manifest/m6_lambda_search_receipt.json ::
 %                formal_cell_path_pin3_omp3.{mean = 0.9047, min = 0.8839, restated_gate_pass}
 %   304,625,181 / 200  runs_manifest/m6_c15b_lake_surface_check.json :: bars, symbols
@@ -78,9 +88,11 @@ $0.001$--$0.014$ for the one independent dimension --- and a signal worth $1.151
 feature space is not recovered at all, while $0.900$ nats planted directly in token space is
 recovered by the identical backbone at $94.4\%$, localizing the loss to the tokenizer--backbone
 interface. We re-specify that interface so the fine subtoken is a per-bar encoding of the current
-bar, restoring per-bar legibility on the fixture from $0.5135$, against a chance rate of $0.50$, to
-$0.9047$ at unchanged bits per token, and we convert that property into a pre-registered hard stop
-on real data.
+bar. \textbf{That change alone is necessary and not sufficient}: it leaves per-bar legibility at
+chance on the fixture --- $0.4995$--$0.5182$ across three seeds against a before-value of
+$0.5112$ --- and only a microstructure class weight, fitted on that same fixture and introduced in
+response to that failure, carries it to a seed mean of $0.9047$ whose minimum is $0.8839$, at
+unchanged bits per token. We convert that property into a pre-registered hard stop on real data.
 \textbf{On $304{,}625{,}181$ one-minute bars across $200$ instruments, that gate fired.} The
 re-specified tokenizer does not make microstructure per-bar legible on real market data, and the
 failure localizes: $97.3\%$ of the shortfall falls on trade-flow imbalance and signed count
@@ -151,11 +163,15 @@ establishes that this tokenizer does not carry the signed channels, not that non
   design:} a single causal encoder produces both halves. Because that encoder is contextual, bar
   $t$'s own state is distributed across the tokens of every later bar in the window, so the window
   reconstructs while the per-bar symbol carries almost nothing: the sign of bar $t$'s
-  microstructure state is recoverable from bar $t$'s own token at $0.5135$, against a chance rate
-  of $0.50$. \textbf{Right, the re-specified design:} the fine half is produced by a pointwise
+  microstructure state is recoverable from bar $t$'s own token at $0.5112$ on the fixture, against a
+  chance rate of $0.50$ (the token-control probe on the planted carrier reads $0.5135$; both are
+  chance). \textbf{Right, the re-specified design:} the fine half is produced by a pointwise
   encoder that sees only the current bar, shaped by a per-bar bottleneck objective that weights the
-  microstructure block as a class. Recoverability rises to $0.9047$ and is enforced thereafter by a
-  gate at $0.90$. Bits per bar, the vocabulary split, the backbone and every evaluation instrument
+  microstructure block as a class. \textbf{The interface change alone does not restore
+  recoverability} --- $0.4995$--$0.5182$ across three seeds, failing its own gate on all three ---
+  and $0.9047$ is the seed mean reached only once the class weight is added, with a minimum of
+  $0.8839$ that clears a restated rule rather than the $0.90$-on-every-dimension gate the real run
+  applies. Bits per bar, the vocabulary split, the backbone and every evaluation instrument
   are identical between the two panels, so per-bar legibility is the only quantity that differs.
   What that difference buys downstream --- the same planted signal recovered on the right and not
   on the left --- is \cref{fig:extraction}; this panel is the interface, not the result.}

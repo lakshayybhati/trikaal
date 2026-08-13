@@ -8,27 +8,31 @@ Preprint — draft of August 13, 2026
 
 Abstract
 Two-stage models for financial time series learn a tokenizer under a reconstruction objective and
-then fit an autoregressive model to the resulting discrete codes. This design carries an unstated assumption: that a representation good enough to reconstruct from is good enough to forecast from.
+then fit an autoregressive model to the resulting discrete codes. This design carries an unstated
+assumption: that a representation good enough to reconstruct from is good enough to forecast from.
 We show that it fails in a specific, predictable direction. Reconstruction objectives allocate code
 capacity by variance and covariance and never by downstream value, so wherever the budget is
 tight and the competing dimensions are correlated enough to amortize one another, a low-variance
-channel that is weakly covariant with price is excluded deterministically rather than by chance. On
-an entropy-calibrated fixture, per-dimension reconstruction sorts by variance class — 0.98 for the
-high-variance return channel, 0.82–0.92 for the mutually correlated block, and 0.001–0.014 for the
-one independent dimension — and a signal worth 1.151 nats planted in feature space is not recovered at all, while 0.900 nats planted directly in token space is recovered by the identical backbone
-at 94.4%, localizing the loss to the tokenizer–backbone interface. We re-specify that interface so
-the fine subtoken is a per-bar encoding of the current bar, restoring per-bar legibility on the fixture
-from 0.5135, against a chance rate of 0.50, to 0.9047 at unchanged bits per token, and we convert
-that property into a pre-registered hard stop on real data. On 304,625,181 one-minute bars across
-200 instruments, that gate fired. The re-specified tokenizer does not make microstructure per-bar
-legible on real market data, and the failure localizes: 97.3% of the shortfall falls on trade-flow imbalance and signed count imbalance — the two signed channels — while the four magnitude channels
-essentially pass, and under a shuffled-microstructure placebo the signed channels collapse toward
-their base rates while the magnitude channels hold. The tokenizer preserves the microstructure
-that duplicates what price already carries and loses the microstructure that is independent of
-it. A firing was pre-registered as the modal prediction of the mechanism and as the event that makes
-the mechanism the primary result; the five-cell ablation it gates was therefore never run, and this paper reports no information ratio, no null and no verdict. The finding is bounded by one budget point,
-one objective and one architecture, and by a class weight fitted on a synthetic proxy: it establishes
-that this tokenizer does not carry the signed channels, not that none can.
+channel that is weakly covariant with price is excluded deterministically rather than by chance. On an
+entropy-calibrated fixture, per-dimension reconstruction sorts by variance class — 0.98 for the highvariance return channel, 0.82–0.92 for the mutually correlated block, and 0.001–0.014 for the one
+independent dimension — and a signal worth 1.151 nats planted in feature space is not recovered
+at all, while 0.900 nats planted directly in token space is recovered by the identical backbone at
+94.4%, localizing the loss to the tokenizer–backbone interface. We re-specify that interface so the
+fine subtoken is a per-bar encoding of the current bar. That change alone is necessary and not
+suﬀicient: it leaves per-bar legibility at chance on the fixture — 0.4995–0.5182 across three seeds
+against a before-value of 0.5112 — and only a microstructure class weight, fitted on that same fixture
+and introduced in response to that failure, carries it to a seed mean of 0.9047 whose minimum is
+0.8839, at unchanged bits per token. We convert that property into a pre-registered hard stop on
+real data. On 304,625,181 one-minute bars across 200 instruments, that gate fired. The respecified tokenizer does not make microstructure per-bar legible on real market data, and the failure
+localizes: 97.3% of the shortfall falls on trade-flow imbalance and signed count imbalance — the
+two signed channels — while the four magnitude channels essentially pass, and under a shuffledmicrostructure placebo the signed channels collapse toward their base rates while the magnitude
+channels hold. The tokenizer preserves the microstructure that duplicates what price already
+carries and loses the microstructure that is independent of it. A firing was pre-registered as the
+modal prediction of the mechanism and as the event that makes the mechanism the primary result;
+the five-cell ablation it gates was therefore never run, and this paper reports no information ratio, no
+null and no verdict. The finding is bounded by one budget point, one objective and one architecture,
+and by a class weight fitted on a synthetic proxy: it establishes that this tokenizer does not carry the
+signed channels, not that none can.
 
 1 Introduction
 A tokenizer is a lossy compressor, and something has to decide what it discards. In the two-stage
@@ -40,11 +44,11 @@ preserves what reconstructs well preserves what matters. Carried into forecastin
 is being asked a question it was never given: not how much of the input survives, but which parts.
 Those come apart in a specific and predictable way. Reconstruction error is an average over dimensions, weighted by how much each contributes to that average, so a dimension is worth coding
 in proportion to its variance and to the variance it can explain in others. A dimension that is lowvariance and weakly covariant with the rest is cheap to abandon: dropping it costs almost nothing
-on the objective, and the bits it would have consumed buy real reductions elsewhere. Under a tight
-enough budget the objective does not merely deprioritize such a dimension — it excludes it, and does
 1
 
-so the same way across initializations, because the exclusion follows from the statistics rather than
+on the objective, and the bits it would have consumed buy real reductions elsewhere. Under a tight
+enough budget the objective does not merely deprioritize such a dimension — it excludes it, and does
+so the same way across initializations, because the exclusion follows from the statistics rather than
 from where optimization happens to land.
 That profile is a description of microstructure. Trade-flow imbalance and its companions are small
 relative to price movement, and their relationship to contemporaneous returns is weak enough that
@@ -61,21 +65,24 @@ planted directly in token space at 94.4% while recovering none of a larger signa
 space. Model capacity is acquitted by construction, and the loss is localized to the interface between
 the two stages.
 The remedy follows from the diagnosis and is an interface property rather than a matter of scale.
-The original design produces both halves of each token from one contextual encoder, so a bar’s own
-state is smeared across the tokens of every later bar in the window — the window reconstructs while
-the per-bar symbol carries almost nothing. Making the fine half a function of the current bar alone,
-and shaping it with an objective that weights the microstructure block as a class, restores per-bar
-legibility from 0.5135, against a chance rate of 0.50, to 0.9047 — at unchanged bits per token — and
-recovers the signal that was previously lost. Because a fixture result need not transfer, that property
-is then converted into a gate that must pass on real data, on every one of the six live microstructure
-dimensions, before any second-stage expenditure is authorized.
-Whether real trade-flow imbalance survives this pipeline and reaches a cost-aware trading decision is a separate question, and the mechanism above does not answer it. We test it in a pre-registered,
-capacity-matched five-cell ablation with a shuffled-microstructure placebo, on 304,625,181 one-minute
-bars across 200 instruments. The decision rule, the thresholds, the horizon, the cost model, the seed
-count and the trial enumeration were fixed before any of their inputs existed. We state plainly what
-the arithmetic of that design implies: its minimum detectable effect is far above the only prior we
-hold for the quantity under test, so a null or inconclusive outcome is the most likely honest one, and
-it was pre-committed as publishable before any result existed.
+The original design produces both halves of each token from one contextual encoder, so a bar’s
+own state is smeared across the tokens of every later bar in the window — the window reconstructs
+while the per-bar symbol carries almost nothing. Making the fine half a function of the current bar
+alone leaves per-bar legibility at chance — 0.4995 to 0.5182 across three seeds, against a baseline of
+0.5112 — so the interface change is necessary and not sufficient. Adding an objective that weights
+the microstructure block as a class, with a weight fitted on that same fixture, carries it to a seed mean
+of 0.9047 at unchanged bits per token and recovers the signal that was previously lost. Which half of
+that pair did the work matters later, and we keep them separate from here on. Because a fixture result
+need not transfer, that property is then converted into a gate that must pass on real data, on every one
+of the six live microstructure dimensions, before any second-stage expenditure is authorized.
+Whether real trade-flow imbalance survives this pipeline and reaches a cost-aware trading decision
+is a separate question, and it is the one we set out to answer: a pre-registered, capacity-matched fivecell ablation with a shuffled-microstructure placebo, on 304,625,181 one-minute bars across 200
+instruments, with the decision rule, thresholds, horizon, cost model, seed count and trial enumeration
+all fixed before any of their inputs existed. It did not run. The gate described above fired on real
+data and stopped the study before any cell was trained through the second stage — an outcome the
+pre-registration had named as the mechanism’s own modal prediction, and had bound in advance to
+make the mechanism finding the primary result. Section 6 reports what the gate measured and what
+was therefore never reached; this paper contains no information ratio, no null and no verdict.
 Two things this paper is not. It is not a foundation model: the backbone is a fixed measurement
 instrument, held identical across every arm so that the quantizer and the input arm are the only varied
 factors, trained on one venue at one frequency, with no transfer claim of any kind. And it is not a
@@ -89,9 +96,6 @@ exactly one property — statistical independence — and show the exclusion rep
 seeds (Section 3).
 • We localize the failure by construction rather than by inference: the same backbone at the same
 budget recovers 94.4% of a signal planted in token space and none of a larger signal planted in
-feature space, which acquits model capacity and indicts the tokenizer–backbone interface (Section 3.4).
-• We introduce a per-bar tokenizer interface — a pointwise fine subtoken with a bottleneck decode leg and calibrated class weighting — that restores per-bar legibility at unchanged bits per
-
 2
 
 coarse 891 codes / 9.80 bits + fine 1,225 codes / 10.26 bits = 20.058 bits per bar, both panels
@@ -130,24 +134,33 @@ sign(st ) recoverable from bar t's own token
 
 sign(st ) recoverable from bar t's own token
 
-0.5135
-chance 0.50
+0.5112
 
 0.9047
-gate 0.90
+
+chance 0.50
+
+interface alone: 0.4995-0.5182, 3/3 FAIL
++ λ=3 class weight: mean 0.9047, min 0.8839
+(restated rule; the run's gate is 0.90 on every dim)
 
 Figure 1: One interface change decides whether a microstructure signal survives tokenization. Each bar is
 encoded to a token pair — a coarse and a fine subtoken, together 20.058 bits — which is what the autoregressive
 stage consumes. Left, the original design: a single causal encoder produces both halves. Because that encoder
 is contextual, bar 𝑡’s own state is distributed across the tokens of every later bar in the window, so the window
-reconstructs while the per-bar symbol carries almost nothing: the sign of bar 𝑡’s microstructure state is recoverable from bar 𝑡’s own token at 0.5135, against a chance rate of 0.50. Right, the re-specified design: the fine half
-is produced by a pointwise encoder that sees only the current bar, shaped by a per-bar bottleneck objective that
-weights the microstructure block as a class. Recoverability rises to 0.9047 and is enforced thereafter by a gate
-at 0.90. Bits per bar, the vocabulary split, the backbone and every evaluation instrument are identical between
-the two panels, so per-bar legibility is the only quantity that differs. What that difference buys downstream —
-the same planted signal recovered on the right and not on the left — is Figure 3; this panel is the interface, not
-the result.
+reconstructs while the per-bar symbol carries almost nothing: the sign of bar 𝑡’s microstructure state is recoverable from bar 𝑡’s own token at 0.5112 on the fixture, against a chance rate of 0.50 (the token-control probe
+on the planted carrier reads 0.5135; both are chance). Right, the re-specified design: the fine half is produced
+by a pointwise encoder that sees only the current bar, shaped by a per-bar bottleneck objective that weights the
+microstructure block as a class. The interface change alone does not restore recoverability — 0.4995–0.5182
+across three seeds, failing its own gate on all three — and 0.9047 is the seed mean reached only once the class
+weight is added, with a minimum of 0.8839 that clears a restated rule rather than the 0.90-on-every-dimension
+gate the real run applies. Bits per bar, the vocabulary split, the backbone and every evaluation instrument are
+identical between the two panels, so per-bar legibility is the only quantity that differs. What that difference buys
+downstream — the same planted signal recovered on the right and not on the left — is Figure 3; this panel is
+the interface, not the result.
 
+feature space, which acquits model capacity and indicts the tokenizer–backbone interface (Section 3.4).
+• We introduce a per-bar tokenizer interface — a pointwise fine subtoken with a bottleneck decode leg and calibrated class weighting — that restores per-bar legibility at unchanged bits per
 token, and a legibility gate that enforces the property on real data as a pre-second-stage hard stop
 (Sections 3.6 and 3.7).
 • We run a pre-registered, capacity-matched five-cell ablation with a shuffled microstructure placebo
@@ -165,16 +178,17 @@ values into a fixed token vocabulary and train a language model over the resulti
 [2023] train a decoder-only model over patched inputs; Woo et al. [2024] train across frequencies
 and domains with a unified objective. Upstream of these, Nie et al. [2023] established the patch-astoken treatment that much of the line inherits. The shared premise is that a general representation of
 temporal structure transfers.
-Shi et al. [2025] apply that premise to financial K-lines, and it is the design this paper starts from:
+
+3
+
+Shi et al. [2025] apply that premise to financial K-lines, and it is the design this paper starts from:
 a tokenizer trained to reconstruct per-bar market features, followed by an autoregressive model over
 the resulting discrete codes. We inherit the two-stage arrangement, the backbone dimensions and
 much of the training and evaluation scaffolding, and we vary one thing. Every component here is
 written from scratch; the parent’s weights are not used, and no result in this paper is a comparison
 against them.
 We should be exact about what this artifact is, because the surrounding literature invites a larger
-claim than we can support. This is not a foundation model. The backbone is a fixed, 21,301,2483
-
-parameter measurement instrument, held identical across every arm so that the quantizer and input
+claim than we can support. This is not a foundation model. The backbone is a fixed, 21,301,248parameter measurement instrument, held identical across every arm so that the quantizer and input
 arm are the only varied factors. It is trained on one venue, one instrument class and one frequency,
 and we make no transfer claim of any kind. The object under study is the tokenizer.
 2.2
@@ -217,7 +231,10 @@ We therefore use the name trade-flow imbalance throughout, in prose, configurati
 and never the order-flow name. This is not pedantry about terminology. The published effect sizes
 belong to the depth-based quantity, they are not evidence about ours, and a negative result here is
 evidence about trade-flow imbalance only. Order-book depth is explicit future work (Section 7.8).
-2.4
+
+4
+
+2.4
 
 Evaluation discipline
 
@@ -228,9 +245,7 @@ substantially raised significance bar, and that most published findings would no
 and López de Prado [2014] give the deflated Sharpe ratio, which discounts an observed Sharpe by
 the number of trials it was selected from and by the non-normality of the return series. López de
 Prado [2018] supplies the sample-hygiene machinery — purging, embargoing and combinatorially
-4
-
-purged cross-validation — that keeps overlapping labels from leaking a training window into its own
+purged cross-validation — that keeps overlapping labels from leaking a training window into its own
 evaluation.
 Our design takes all four instruments: purged walk-forward with a measured embargo, a paired
 moving-block bootstrap, a deflated Sharpe ratio against an enumerated trial count, and a cost-aware
@@ -279,48 +294,14 @@ objective rewards two things.
 Claim. Under a reconstruction objective, code capacity is allocated in order of the loss
 reduction each dimension buys. That ordering is set by a dimension’s variance, which
 bounds how much loss it can contribute, and by its covariance with dimensions already
-coded, which determines how cheaply it can be served by capacity already spent. Downstream predictive value enters nowhere. A dimension that is low-variance and weakly
+5
+
+coded, which determines how cheaply it can be served by capacity already spent. Downstream predictive value enters nowhere. A dimension that is low-variance and weakly
 covariant with the rest is therefore the last claim on the budget. Where two conditions
 hold together — a budget tight enough that not every dimension can be coded, and
 competing dimensions correlated enough that coding them is partly amortized — that
 dimension receives nothing, and does so deterministically: not occasionally, but in every
 run. Where either condition fails, the same objective still allocates by the same rule, but
-
-5
-
-Table 1: Reconstruction quality by variance class, three seeds. Point-decoder correlation between a dimension’s true value at bar 𝑡 and its reconstruction from bar 𝑡’s own fine code. Every dimension except the return
-has unit marginal variance; the signal dimension differs from the fillers only in being statistically independent.
-Filler entries give the range over the eleven filler dimensions; per-dimension values are in Appendix A.
-dimension class
-
-cross-dimensional structure
-
-return, sd 3.15
-fillers (11), sd 1.00
-signal, sd 1.00
-
-driven by the signal at lag 2
-AR(1) chain across dims, 𝜌 = 0.7993
-independent
-
-seed 0
-
-seed 1
-
-seed 2
-
-0.9818
-0.826–0.918
-0.0140
-
-0.9815
-0.824–0.919
-0.0011
-
-0.9823
-0.824–0.917
-0.0053
-
 the exclusion is no longer determined; Section 3.2 reports a fixture in which the second
 condition is absent and the allocation is an initialization lottery instead.
 The budget is tight, and the arithmetic says by how much. The canonical configuration uses perdimension levels (11, 9, 9, 7, 7, 5, 5), split into a coarse subtoken of 11 × 9 × 9 = 891 codes (9.80
@@ -364,6 +345,10 @@ differing only in being independent — is recovered at 0.001–0.014. It is not
 Calibrating the fixture to the real data is what makes this a mechanism rather than an anecdote,
 and we report the correction it forced because it changes the strength of the claim. On an earlier
 fixture whose dimensions were exchangeable i.i.d. draws — no cross-dimensional dependence at
+all — the allocation was arbitrary: across three initializations the set of dimensions clearing 0.9
+changed completely, and the dimension of interest cleared in one seed of three. That reading makes
+the phenomenon an initialization lottery, which is a substantially weaker and less actionable claim.
+Introducing the dependence structure the real data actually has replaced the lottery with deterministic
 6
 
 1.0
@@ -431,11 +416,39 @@ recovered at 0.82–0.92. The signal dimension has the same unit marginal varian
 them in exactly one property — it is statistically independent of everything — and is recovered at 0.001–0.014.
 The three seeds agree to within the marker width, so this is deterministic exclusion rather than an initialization
 lottery. Reconstruction objectives buy variance and covariance; they do not buy independence.
+Table 1: Reconstruction quality by variance class, three seeds. Point-decoder correlation between a dimension’s true value at bar 𝑡 and its reconstruction from bar 𝑡’s own fine code. Every dimension except the return
+has unit marginal variance; the signal dimension differs from the fillers only in being statistically independent.
+Filler entries give the range over the eleven filler dimensions; per-dimension values are in Appendix A.
+dimension class
 
-all — the allocation was arbitrary: across three initializations the set of dimensions clearing 0.9
-changed completely, and the dimension of interest cleared in one seed of three. That reading makes
-the phenomenon an initialization lottery, which is a substantially weaker and less actionable claim.
-Introducing the dependence structure the real data actually has replaced the lottery with deterministic
+cross-dimensional structure
+
+return, sd 3.15
+fillers (11), sd 1.00
+signal, sd 1.00
+
+driven by the signal at lag 2
+AR(1) chain across dims, 𝜌 = 0.7993
+independent
+
+seed 0
+
+seed 1
+
+seed 2
+
+0.9818
+0.826–0.918
+0.0140
+
+0.9815
+0.824–0.919
+0.0011
+
+0.9823
+0.824–0.917
+0.0053
+
 exclusion, because the correlated block then offers an amortization the independent dimension cannot
 match.
 3.3
@@ -454,17 +467,20 @@ We build a three-symbol stream of 42,000,000 bars. The signal dimension 𝑠𝑡
 and in the noise arm 𝑠𝑡 is redrawn independently, so the arms differ in exactly one respect. Because
 the states are i.i.d., past returns reveal only states at lag ≥ 2, which are orthogonal to the forward
 label: the plant is recoverable only through the microstructure channel, and not through any function
-of price history. Equation (1) is a Gaussian channel, so the information it injects is exact,
+
+7
+
+of price history. Equation (1) is a Gaussian channel, so the information it injects is exact,
 (
 )
-(2)
 𝐼 (𝑠𝑡 ; 𝑟 𝑡+2 ) = 12 ln 1 + 𝑐2 = 12 ln 10 = 1.151 nats per bar,
+
+(2)
+
 and because the tokens are a deterministic function of the features, the data-processing inequality
 makes 1.151 nats an upper bound on the validation cross-entropy improvement the autoregressive
 stage can obtain from the plant.
-7
-
-Both arms were trained under an identical budget and schedule — 20,000 steps at batch 32 and
+Both arms were trained under an identical budget and schedule — 20,000 steps at batch 32 and
 context 32, giving 20,480,000 bar-visits against a 27,300,000-bar training region, so 0.75 epochs,
 and memorization is not available as an explanation. The sub-epoch condition is asserted in the run
 receipt rather than assumed.
@@ -513,12 +529,6 @@ stream reconstructs that dimension at the window level at MAE 0.3044 against a 0
 The state is encoded, and per-bar illegible.
 A stronger form of the same defect appears when the encoder is not causal at all, and we record it
 because it is why causality is enforced. Perturbing only future bars inside a tokenization chunk and
-counting how many past bars’ tokens flip gives a leakage rate of 41.75% coarse and 28.33% fine on
-a tokenizer trained on real data; the causal-encoder control measures exactly 0.0% on both, which
-is what establishes that the probe can read zero. Causal encoding is necessary for validity, and this
-section establishes that it is not sufficient for usability: it removes the leak forward and leaves the
-smear backward.
-
 8
 
 A plant in feature space
@@ -593,6 +603,11 @@ at all 40 evaluation points. Centre: 0.9003 nats planted directly in token space
 the identical backbone at the identical budget recovers 0.8496 nats, 94.4% of what was planted, crossing the
 detection threshold at step 2,000. Right: the original feature-space plant, after the tokenizer interface is respecified (Section 3.6) — recovery returns. Model capacity was never the constraint; the interface was.
 
+counting how many past bars’ tokens flip gives a leakage rate of 41.75% coarse and 28.33% fine on
+a tokenizer trained on real data; the causal-encoder control measures exactly 0.0% on both, which
+is what establishes that the probe can read zero. Causal encoding is necessary for validity, and this
+section establishes that it is not sufficient for usability: it removes the leak forward and leaves the
+smear backward.
 3.6
 
 Intervention
@@ -617,13 +632,13 @@ dimensions as a class by a factor 𝜆, and the window reconstruction losses rec
 detached, so the fine encoder is shaped exclusively by the per-bar objective. Detachment is loadbearing, and was measured to be: with the window loss attached the per-bar weighting is inert at
 every 𝜆 — per-dimension receipts are identical from 𝜆 = 2 to 𝜆 = 106 — because the window
 objective re-creates the smearing incentive as fast as the leg removes it.
-𝜆 is calibrated, not chosen. Across 26 trials no (𝜆, 𝛽) pair cleared 0.90 on all three seeds, which
+9
+
+𝜆 is calibrated, not chosen. Across 26 trials no (𝜆, 𝛽) pair cleared 0.90 on all three seeds, which
 places the threshold inside the instrument’s seed-noise band at the achievable ceiling, while confirming that the state is carried (signal-dimension point-decoder correlation 0.77–0.96, microstructure class 0.86–0.92, return preserved above 0.96). The acceptance rule was therefore restated
 over the three calibration seeds as mean ≥ 0.90 and every seed ≥ 0.85, and 𝜆 set to the smallest
 searched value clearing it: 𝜆 = 2 gives (0.8365, 0.8594, 0.8592), mean 0.8517 — fail; 𝜆 = 3 gives
-9
-
-(0.9060, 0.9142, 0.9000), mean 0.9067, minimum 0.9000 — pass. Re-running through the pinned
+(0.9060, 0.9142, 0.9000), mean 0.9067, minimum 0.9000 — pass. Re-running through the pinned
 construction path reproduces mean 0.9047, minimum 0.8839, bit-identically to the direct construction at fixed thread count.
 We state plainly that this is an acceptance threshold restated after seeing calibration results, and
 why it is not the failure that description usually names. The restatement was forced by a measured
@@ -668,15 +683,7 @@ The gate’s first execution on real microstructure is a named checkpoint with a
 stops and reports with per-dimension receipts. It is not a threshold that may be moved. We record
 the expectation before the fact. Real trade-flow imbalance has the low-variance, weakly-covariant
 profile that Figure 2 shows being evicted, and the correction was calibrated on a synthetic plant. A
-gate failure on real data would be the real-data confirmation of the mechanism — simultaneously a blocker for the ablation and the strongest available evidence for the claim of Section 3.1. Both
-outcomes are reportable, and neither would be a surprise.
-3.8
-
-Scope of the claim
-
-Four limits, restated in Section 7. First, everything above is measured on a synthetic fixture, not
-on real microstructure; the fixture’s non-signal structure is entropy-matched to the real data and its
-10
+gate failure on real data would be the real-data confirmation of the mechanism — simultane10
 
 synthetic fixture — the intervention, stage by stage
 
@@ -784,6 +791,14 @@ six empty slots rather than placeholder bars, because bars near the gate would i
 has measured. Six numbers drop in from the gate’s own receipt, and the gate halts the run if any of them falls
 below the rule.
 
+ously a blocker for the ablation and the strongest available evidence for the claim of Section 3.1. Both
+outcomes are reportable, and neither would be a surprise.
+3.8
+
+Scope of the claim
+
+Four limits, restated in Section 7. First, everything above is measured on a synthetic fixture, not
+on real microstructure; the fixture’s non-signal structure is entropy-matched to the real data and its
 signal dimension is a controlled construction, which is what makes the recovered quantity exactly
 computable and is also what stops it being a measurement of markets. The mechanism is therefore
 not this paper’s headline claim, and is not elevated to one under any experimental outcome. Second,
@@ -802,7 +817,10 @@ unless it is built not to. This section describes the experiment that asks the s
 paper is organized around: whether real trade-flow imbalance, carried through a tokenizer built to
 preserve it, survives to a cost-aware trading decision. The design was frozen before any of its numbers
 existed, and this section describes it as frozen.
-4.1
+
+11
+
+4.1
 
 Five cells
 
@@ -810,10 +828,7 @@ The experiment is a 2×2 over the two factors that could plausibly explain a dif
 and the input arm — plus a fifth cell that isolates the one thing a 2 × 2 cannot: whether an effect
 attributed to microstructure is really microstructure. Figure 5 shows the layout; the registry that the
 runner reads is the authority.
-
-11
-
-Cells 1 and 2 receive the seven OHLC-shape, volume and amount dimensions only; cells 3 and 4
+Cells 1 and 2 receive the seven OHLC-shape, volume and amount dimensions only; cells 3 and 4
 additionally receive the six microstructure dimensions (indices 7–12: trade-flow imbalance, signed
 count imbalance, trade count, mean trade size, trade-size dispersion, large-trade share). Cells 1 and
 3 quantize with binary spherical quantization; cells 2 and 4 with finite scalar quantization. Cell 5 is
@@ -862,12 +877,12 @@ And the permutation is derived from the run seed and the symbol together, so the
 paths shuffle identically.
 Figure 5 reports what the shuffle measurably does. It destroys the contemporaneous link between
 microstructure and price shape, from mean absolute correlation 0.2037 to 0.0005, and it destroys
-microstructure’s own lag-1 autocorrelation, from 0.4165 to 0.0006. It leaves the within-block correlation at 0.2886 and the within-OHLCV correlation at 0.3105, both unchanged.
-This is where the design’s principal known weakness lives, and we state it rather than let a reader
-find it. Because cell 4’s microstructure dimensions are correlated with price at 0.20 and autocorrelated at 0.42, part of the capacity they consume is amortized against structure the code is already
 12
 
-carrying. Shuffling removes that amortization along with the information, so cell 5 pays a capacity price cell 4 does not. The consequence is a forfeit stated in the pre-registered rule string itself:
+microstructure’s own lag-1 autocorrelation, from 0.4165 to 0.0006. It leaves the within-block correlation at 0.2886 and the within-OHLCV correlation at 0.3105, both unchanged.
+This is where the design’s principal known weakness lives, and we state it rather than let a reader
+find it. Because cell 4’s microstructure dimensions are correlated with price at 0.20 and autocorrelated at 0.42, part of the capacity they consume is amortized against structure the code is already
+carrying. Shuffling removes that amortization along with the information, so cell 5 pays a capacity price cell 4 does not. The consequence is a forfeit stated in the pre-registered rule string itself:
 ΔIR(4−5) is (information) + (capacity handicap), and the paper does not claim the information effect
 alone clears any threshold. The handicap is not quantified in information-ratio units, and Section 7
 carries that as an open disclosure rather than a resolved question.
@@ -926,14 +941,14 @@ than nearer, which is the signature of an offset rather than of a threshold set 
 Whether the filter binds on real data is therefore an open question about the trained models, not
 about the design, and we do not assume the answer. Nothing in this repository measures it: no eval
 artifact from a real-lake run retains a decision-activity value, so the question is genuinely unanswered
-rather than answered elsewhere. What the pre-registration commits to instead is a refusal. The
+13
+
+rather than answered elsewhere. What the pre-registration commits to instead is a refusal. The
 degeneracy guard reads each cell’s decision-activity at 𝜅 ∗ and its fraction of negative forecasts, and
 returns HALT_ADJUDICATE — not a null — for any cell whose book is constant-direction. We record
 one asymmetry in that guard rather than discovering it later: the sign-balance leg carries a band,
 halting outside [0.05, 0.95], while the filter-binding leg tests the exact endpoints only, so an activity
-13
-
-of 0.999 passes where a fraction-negative of 0.999 halts. A near-degenerate book on the activity leg
+of 0.999 passes where a fraction-negative of 0.999 halts. A near-degenerate book on the activity leg
 would not be caught, and the project has already measured a 0.99883 reading on the sibling leg, so
 the case is not hypothetical.
 Forecasts are the conditional mean ˆ
@@ -983,14 +998,14 @@ fails and NULL otherwise.
 for this design to resolve cannot be reported as one.
 3. Placebo independence. The one-sided lower bound of IR(4) − IR(2) exceeds zero — a comparison that does not involve the placebo at all, so a placebo pathology cannot by itself produce
 a positive verdict.
-4. Economic materiality. ΔIR(4 − 5) ≥ 0.5 annualized information ratio, fixed before data. The
-rule string names the tested quantity as (information) + (capacity handicap), so the manifest
-cannot be read as claiming the information effect alone cleared it.
-5. Multiplicity. The deflated Sharpe ratio is at least 0.95 over the enumerated trial set.
 
 14
 
-Two guards sit outside the clauses, and both are HALT-only: they can refuse to report an outcome
+4. Economic materiality. ΔIR(4 − 5) ≥ 0.5 annualized information ratio, fixed before data. The
+rule string names the tested quantity as (information) + (capacity handicap), so the manifest
+cannot be read as claiming the information effect alone cleared it.
+5. Multiplicity. The deflated Sharpe ratio is at least 0.95 over the enumerated trial set.
+Two guards sit outside the clauses, and both are HALT-only: they can refuse to report an outcome
 their own inputs cannot support, and they can never turn SURVIVES into NULL or the reverse.
 The degeneracy guard fails closed if any cell–seed pair yielded non-finite forecast diagnostics, or if
 a required diagnostic is missing — a response to a defect in which the guard reported itself armed
@@ -1039,13 +1054,7 @@ floor of 0.5 and a prior, measured on this data at an earlier milestone, of |Ran
 figure to the extent that cells 4 and 5 share exposure, by an amount not knowable before the data. On
 these numbers, NULL or INCONCLUSIVE is the most likely honest outcome, and nothing in
 the design manufactures power it does not have.
-4.8
 
-Pre-registration as the integrity mechanism
-
-Everything above — the cells, the parity band, the placebo construction, the five clauses and their
-thresholds, the horizon, the cost, the 𝜅 grid, the seed count, the trial count and the null basis — is
-pinned on a conformance surface that the runner checks before it trains anything, and each pin carries
 15
 
 what shuffling the block destroys — and what it leaves
@@ -1130,6 +1139,13 @@ quantified in information-ratio units. A sixth cell holding the block constant w
 appears anywhere in the pre-registration, so it is future work rather than a committed contingency, and Section 7
 carries the handicap as an open disclosure.
 
+4.8
+
+Pre-registration as the integrity mechanism
+
+Everything above — the cells, the parity band, the placebo construction, the five clauses and their
+thresholds, the horizon, the cost, the 𝜅 grid, the seed count, the trial count and the null basis — is
+pinned on a conformance surface that the runner checks before it trains anything, and each pin carries
 a mutation test proving the gate rejects its predecessor value. Changing a pin is not a code edit that
 a reviewer must catch; it fails the run.
 The pre-registration is a dated document with an append-only amendment log. Every amendment
@@ -2791,9 +2807,11 @@ feature-space plant, information
 feature-space plant, probe correlation
 token-space plant, information
 token-space plant, recovery
-per-bar legibility, original interface
+per-bar legibility, before (fixture)
+per-bar legibility, token-control probe
 chance rate
-per-bar legibility, re-specified
+re-spec ALONE, 3 seeds
+with 𝜆 = 3 class weight
 legibility gate threshold
 bits per token, both designs
 class weight 𝜆
@@ -2806,9 +2824,11 @@ class weight 𝜆
 < 0.05 at all 40 evals
 0.900 nats
 94.4%
+0.5112
 0.5135
 0.50
-0.9047
+0.4995–0.5182
+0.9047 mean, 0.8839 min
 0.90
 20.058
 3.0
@@ -2822,7 +2842,9 @@ measured
 measured
 derived
 measured
+measured
 pin
+measured
 measured
 pin
 derived
@@ -2838,9 +2860,11 @@ filler calibration
 canary v6 receipt
 token-control receipt
 0.8496/0.90027
-id-visibility probe
+re-spec gate record, old
+planted carrier, not the fixture
 probe construction
-𝜆-search, seed mean
+re-spec gate record, pass false
+𝜆-search; restated rule
 conformance
 ∑
 log2 𝐿 𝑖
