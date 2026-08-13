@@ -178,13 +178,21 @@ weight, the worst dimension moves by $+0.0079$ --- leaving $0.1781$ of the gap t
 still open at the top of the swept range. The failure is not "one weight was too low"; it is that
 the dominant failing channel is close to insensitive to the only control the objective offers.
 
-\textbf{The weight redistributes within the microstructure block; it does not buy capacity from
-price.} As $\lambda$ rises, OHLCV reconstruction does not degrade --- it is flat to slightly better
---- while inside the microstructure block trade-flow imbalance gains $+0.0307$ and three of the
-four magnitude dimensions give ground, by $-0.0045$, $-0.0063$ and $-0.0012$. The fourth is
-unchanged within noise. Weighting a class harder moves capacity \emph{between} the channels of that
-class rather than taking it from the price channels, which is what saturation looks like when it is
-measured rather than assumed.
+\textbf{The weight does not buy capacity from price --- on either arm.} As $\lambda$ rises, OHLCV
+reconstruction on cell 4 does not degrade; it improves slightly, from $0.12814$ to $0.12530$. On
+the placebo arm it is unchanged end to end, $0.17442$ to $0.17444$, a shift of $+0.00002$ across
+the whole range (the midpoint dips to $0.17313$, so this is flatness between the endpoints rather
+than a monotone line). Weighting the microstructure class harder, by a factor of $2.4$, takes
+nothing from the price channels.
+
+\textbf{Where it goes instead depends on how much headroom the block has, which is what saturation
+predicts.} On cell 4, whose microstructure block is intact and already near the ceiling this
+tokenizer can reach, the gains are paid for internally: trade-flow imbalance rises $+0.0307$ while
+three of the four magnitude dimensions give ground, by $-0.0045$, $-0.0063$ and $-0.0012$, and the
+fourth moves $+0.0025$. On cell 5, whose shuffled block starts far lower --- trade-flow imbalance
+at $0.7387$ against cell 4's $0.8268$ --- there is room, and \emph{all six} dimensions rise, the
+two signed ones by $+0.0405$ and $+0.0248$. The internal trade-off appears exactly where there is
+no headroom and vanishes where there is. Neither arm takes anything from price.
 
 \textbf{The placebo turns out to be an eviction experiment in its own right.} The shuffled arm's
 microstructure block is, by construction, independent of its own bar's price. Comparing the two

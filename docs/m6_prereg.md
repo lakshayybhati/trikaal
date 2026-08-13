@@ -250,10 +250,20 @@ three stacked judgment calls = an unlimited re-run license):**
     2. **λ REDISTRIBUTES WITHIN THE MICRO BLOCK; IT DOES NOT BUY FROM PRICE.** Cell 4 OHLCV
        reconstruction MAE across λ = **0.12814 / 0.12678 / 0.12530** — flat to slightly *better*
        as λ rises — while inside the micro block TFI rises **+0.0307** and the magnitude dims give
-       ground: **−0.0045, −0.0063, −0.0012** on dims 10, 11, 12. *(Correction to the brief: it is
-       THREE of the four magnitude dims that fall. Dim 9, `trade_count`, RISES +0.0025. "All four"
-       overstates it.)* The weight moves capacity **between** microstructure channels rather than
-       taking it from price. That is the saturation mechanism, measured.
+       ground: **−0.0045, −0.0063, −0.0012** on dims 10, 11, 12, while dim 9 rises +0.0025.
+       *(Correction to the brief, since confirmed by the supervisor: it is THREE of the four
+       magnitude dims that fall, not four.)*
+       **AND CELL 5 IS THE CLEANER DEMONSTRATION THAT PRICE IS UNTOUCHED, verified at
+       entry-time.** Its OHLCV MAE is **0.17442 → 0.17444, +0.00002 end to end** (the λ=8 midpoint
+       dips to 0.17313, so this is endpoint flatness, not a monotone line) while its two signed
+       dims rise **MORE** than cell 4's: **+0.0405 and +0.0248**.
+       **BUT THE "REDISTRIBUTION WITHIN THE BLOCK" FRAMING DOES NOT TRANSFER TO CELL 5 — on that
+       arm ALL SIX micro dims RISE.** There is no internal trade-off there to observe. The honest
+       joint statement is sharper than either half: **the weight takes nothing from price on
+       EITHER arm**, and the internal trade-off appears only on the arm with no headroom (cell 4,
+       TFI already at 0.8268) and vanishes on the arm that has it (cell 5, TFI at 0.7387). That is
+       what saturation predicts, and it is now stated that way rather than as a blanket
+       redistribution claim.
     3. **THE PLACEBO IS ITSELF AN EVICTION EXPERIMENT.** Cell 5's micro block is shuffled and so is
        independent of its own bar's price. The cell4-minus-cell5 legibility gap is **0.0655 on the
        two SIGNED dims against 0.0179 on the four MAGNITUDE dims — 3.66×**, averaged over all 18
