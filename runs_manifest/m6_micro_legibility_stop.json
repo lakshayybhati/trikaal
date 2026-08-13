@@ -1,0 +1,138 @@
+{
+  "ALL_FILES_VERIFIED": true,
+  "artifacts_produced": 0,
+  "boxes": {
+    "cell4_seed0": "machine 19883",
+    "cell5_seed0": "r1 / machine 13450"
+  },
+  "files": {
+    "cell4_seed0/stage1_state.pt": {
+      "bytes": 54808501,
+      "matches_onbox_production_time": true,
+      "sha256": "b3f6c13fef3a3f6f3a24e50ff52cd650728b525118eb1602ba280e0f672e5e12"
+    },
+    "cell4_seed0/tokenizer.pt": {
+      "bytes": 18266149,
+      "matches_onbox_production_time": true,
+      "sha256": "8d94ac4a7a46d4c239b3fa10d6b00fb389dc889a7d814dd53fafdd6a81e5f262"
+    },
+    "cell4_seed0/unit.log": {
+      "bytes": 2115,
+      "matches_onbox_production_time": true,
+      "sha256": "d3707f8fcfc03df04e437d10b73f5d302556c14f04878b9c4eb89b586cc796c8"
+    },
+    "cell5_seed0/stage1_state.pt": {
+      "bytes": 54808501,
+      "matches_onbox_production_time": true,
+      "sha256": "cef4d7ab59772fcb3d3d1d49d22773b784d8be2cf922b354609aa8087c190efc"
+    },
+    "cell5_seed0/tokenizer.pt": {
+      "bytes": 18266149,
+      "matches_onbox_production_time": true,
+      "sha256": "d8f9df04a4764303aab05809ee773e89fdf0724d5335ff0a0df3ff041a240b70"
+    },
+    "cell5_seed0/unit.log": {
+      "bytes": 2125,
+      "matches_onbox_production_time": true,
+      "sha256": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25"
+    }
+  },
+  "git_commit": "448e4fe407fa10ef7125ec3cf15872f2e3946181",
+  "legibility_receipt": {
+    "cell4_fsq_micro_seed0": {
+      "min_acc": 0.9,
+      "pass": false,
+      "per_dim": {
+        "10": {
+          "base_rate_positive": 0.5462,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.9076
+        },
+        "11": {
+          "base_rate_positive": 0.4073,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8962
+        },
+        "12": {
+          "base_rate_positive": 0.8577,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.932
+        },
+        "7": {
+          "base_rate_positive": 0.4869,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8223
+        },
+        "8": {
+          "base_rate_positive": 0.4665,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.7528
+        },
+        "9": {
+          "base_rate_positive": 0.4725,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8975
+        }
+      },
+      "sampling": "stratified by symbol, 80/20 blocked in time WITHIN each symbol (\u00a77 v1.6.15)",
+      "unmeasured_dims": []
+    },
+    "cell5_fsq_micro_shuffled_seed0": {
+      "min_acc": 0.9,
+      "pass": false,
+      "per_dim": {
+        "10": {
+          "base_rate_positive": 0.5462,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8525
+        },
+        "11": {
+          "base_rate_positive": 0.4073,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8691
+        },
+        "12": {
+          "base_rate_positive": 0.8577,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8685
+        },
+        "7": {
+          "base_rate_positive": 0.4869,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.6135
+        },
+        "8": {
+          "base_rate_positive": 0.4665,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.5896
+        },
+        "9": {
+          "base_rate_positive": 0.4725,
+          "n": 150000,
+          "n_symbols_in_sample": 40,
+          "sign_acc": 0.8916
+        }
+      },
+      "sampling": "stratified by symbol, 80/20 blocked in time WITHIN each symbol (\u00a77 v1.6.15)",
+      "unmeasured_dims": []
+    }
+  },
+  "receipt": "m6_micro_legibility_stop",
+  "stage2_entered": false,
+  "unit_exit": {
+    "cell4_seed0": 1,
+    "cell5_seed0": 1
+  },
+  "what": "\u00a77 v1.4 MICRO LEGIBILITY GATE refused cell4_seed0 AND cell5_seed0 before Stage-2 on REAL data, UNDER the already-fired lambda=3.0 micro-weighted bottleneck fallback. Pre-registered response is STOP AND REPORT \u2014 'a re-adjudication, never a silent threshold move' (gates.py:233-235). No threshold moved, no rescope, no re-run at higher lambda."
+}

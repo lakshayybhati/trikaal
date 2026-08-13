@@ -50,6 +50,7 @@ from trikaal.train.cells import (
     CELLS,
     CellSpec,
     assert_cells_parity,
+    build_calibration_tokenizer,
     build_cell_backbone,
     build_cell_tokenizer,
 )
@@ -116,6 +117,10 @@ class OrchestratorConfig:
     # A toy shell announcing itself is safe; a money run silently inheriting toy values is what
     # this defect was. Toy drivers set money_run=False explicitly.
     money_run: bool = True
+    # §7 v1.5 item E — NON-PINNED lambda for the once-only re-derivation. None = the pinned money
+    # path. Setting it on a money_run RAISES; see run_cell. It is deliberately NOT part of
+    # tok_kwargs, so it cannot reach build_cell_tokenizer by accident.
+    calibration_micro_point_weight: float | None = None
 
     def __post_init__(self) -> None:
         """HARD-FAIL if a money run diverges from the pinned surface (§7 v1.6 C-6).
@@ -290,7 +295,22 @@ def run_cell(
 
     try:
         # ---- Stage 1: tokenizer on the fold-aligned multi-symbol draw --------------------
-        tok = build_cell_tokenizer(spec, **cfg.tok_kwargs).to(dev)
+        # §7 v1.5 item E: the lambda re-derivation path. The MONEY path is untouched — this
+        # branch is unreachable unless the run has DECLARED money_run=False, and the declaration
+        # is CHECKED here rather than trusted, because "a flag that can move a pin makes the pin
+        # decoration" (A2). PINNED_MICRO_POINT_WEIGHT is not loosened and build_cell_tokenizer is
+        # not modified; a calibration tokenizer simply cannot satisfy cell_tokenizer_failures.
+        if cfg.calibration_micro_point_weight is not None:
+            if cfg.money_run:
+                raise ValueError(
+                    "calibration_micro_point_weight is set on a MONEY RUN — the lambda pin does "
+                    "not move to let a diagnostic run. Declare money_run=False or unset it."
+                )
+            tok = build_calibration_tokenizer(
+                spec, micro_point_weight=cfg.calibration_micro_point_weight, **cfg.tok_kwargs
+            ).to(dev)
+        else:
+            tok = build_cell_tokenizer(spec, **cfg.tok_kwargs).to(dev)
         set_attention_backend(tok, mode)
 
         def tok_step():

@@ -1,0 +1,58 @@
+{
+  "NON_GATING": "disclosure only \u2014 no threshold, no clause, cannot flip any verdict.",
+  "NO_INTERPRETATION": "reports MAE per arm and the ratio; what it implies for \u03bb is not this script's call.",
+  "arms": {
+    "cell4_micro": {
+      "bars": 128000,
+      "n_ohlcv_dims": 7,
+      "n_windows": 250,
+      "non_gating": true,
+      "ohlcv_recon_mae": 0.1203599264164549,
+      "ohlcv_recon_mae_by_dim": [
+        0.16560791489063068,
+        0.14848535293157009,
+        0.100189064561669,
+        0.09813731153252978,
+        0.09840821525018413,
+        0.1169965155885608,
+        0.11469511016003989
+      ],
+      "ohlcv_recon_mae_dim0_return": 0.16560791489063068,
+      "what_it_measures": "C-12 M1: OHLCV reconstruction is like-for-like across arms because the placebo permutation leaves the OHLCV columns byte-identical. Cell 5 reconstructing OHLCV worse than Cell 4 is capacity diverted to encoding six dims of independent noise under a 3x micro weight. DISCLOSURE ONLY \u2014 never a clause, never a threshold."
+    },
+    "cell5_micro_shuffled": {
+      "bars": 128000,
+      "n_ohlcv_dims": 7,
+      "n_windows": 250,
+      "non_gating": true,
+      "ohlcv_recon_mae": 0.18208179314108947,
+      "ohlcv_recon_mae_by_dim": [
+        0.20578652141447534,
+        0.21776441030650195,
+        0.14407668963012416,
+        0.18307138201503242,
+        0.1766148802208508,
+        0.172965414560591,
+        0.1742932538400507
+      ],
+      "ohlcv_recon_mae_dim0_return": 0.20578652141447534,
+      "what_it_measures": "C-12 M1: OHLCV reconstruction is like-for-like across arms because the placebo permutation leaves the OHLCV columns byte-identical. Cell 5 reconstructing OHLCV worse than Cell 4 is capacity diverted to encoding six dims of independent noise under a 3x micro weight. DISCLOSURE ONLY \u2014 never a clause, never a threshold."
+    }
+  },
+  "comparison": {
+    "cell4_ohlcv_recon_mae": 0.1203599264164549,
+    "cell5_ohlcv_recon_mae": 0.18208179314108947,
+    "delta_cell5_minus_cell4": 0.06172187,
+    "ratio_cell5_over_cell4": 1.512811,
+    "read_with": "OHLCV columns are identical across arms, so a HIGHER MAE means that arm reconstructed the SAME targets worse \u2014 capacity diverted. Non-gating."
+  },
+  "lambda_in_force": 3.0,
+  "receipt": "m6_ohlcv_recon_ratio",
+  "sampling": {
+    "n_symbols": 10,
+    "n_windows_per_arm": 256,
+    "seq_len": 512,
+    "tail_bars_per_symbol": 20000
+  },
+  "what": "C-12 OHLCV reconstruction for the two banked \u03bb=3.0 tokenizers. OHLCV columns are BYTE-IDENTICAL across arms (block_time_permute never touches them), so this is like-for-like: worse OHLCV recon = capacity diverted to the micro channels."
+}

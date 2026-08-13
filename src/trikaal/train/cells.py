@@ -85,6 +85,33 @@ def build_cell_tokenizer(spec: CellSpec, **tok_kwargs) -> TokenizerAE:
     return TokenizerAE(quantizer=spec.quantizer, n_features=arm_n_features(spec.arm), **tok_kwargs)
 
 
+def build_calibration_tokenizer(spec: CellSpec, *, micro_point_weight: float, **tok_kwargs):
+    """§7 v1.5 item E — a tokenizer at a NON-PINNED lambda, for the ONCE-ONLY re-derivation.
+
+    ★ THIS EXISTS SO THAT `build_cell_tokenizer` DOES NOT HAVE TO CHANGE. The money path's pin is
+    the thing that guards the experiment; it does not move to let a diagnostic run. This is a
+    SEPARATE, EXPLICITLY-NAMED constructor, and the only caller is a run that has declared
+    ``money_run=False`` (enforced in ``orchestrator.run_cell``, not merely documented here).
+
+    Everything except lambda is IDENTICAL to `build_cell_tokenizer`: same quantizer, same feature
+    count for the arm, `encoder_causal=True`, `fine_pointwise=True`. Item E permits ONE axis to
+    move and this moves exactly that one — no level reallocation, no bit re-split, no change to
+    total bits.
+
+    A tokenizer built here CANNOT pass `conformance.cell_tokenizer_failures`, which compares
+    `micro_point_weight` against `PINNED_MICRO_POINT_WEIGHT` — so an artifact produced from it is
+    refused by the money surface by construction, not by anyone remembering to check."""
+    if micro_point_weight == 3.0:
+        raise ValueError(
+            "build_calibration_tokenizer is for NON-PINNED lambda only; lambda=3.0 is the pinned "
+            "money value and must be built through build_cell_tokenizer"
+        )
+    tok_kwargs["encoder_causal"] = True
+    tok_kwargs["fine_pointwise"] = True
+    tok_kwargs["micro_point_weight"] = float(micro_point_weight)
+    return TokenizerAE(quantizer=spec.quantizer, n_features=arm_n_features(spec.arm), **tok_kwargs)
+
+
 def build_cell_backbone(
     v_c: int,
     v_f: int,
