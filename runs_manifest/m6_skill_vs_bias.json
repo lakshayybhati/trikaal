@@ -1,0 +1,70 @@
+{
+  "script": "scripts/m6_skill_vs_bias.py",
+  "schema": "m6_skill_vs_bias_v1",
+  "question": "Is the positive GROSS IR evidence of predictive skill, or is it directional bias times sample drift? (a) the model as scored vs (b) constant direction at the modal sign on the same active periods.",
+  "\u2605_BENCHMARK_SUBSTITUTION_READ_FIRST": "The specified benchmark averages over A_p, the symbols THE MODEL TRADED. A_p is NOT recoverable: write_cell_eval_artifact persists only the pooled net series, and the execution filter DOES bind here (decision-activity 0.0926/0.0193/0.4702 at kappa*, moving with kappa), so traded != scored and A_p is model-dependent. This script therefore averages over V_p \u2014 every symbol with a VALID DECISION at that period \u2014 which is model-independent and lake-only. (b) is thus 'constant direction on the evaluated cross-section', NOT 'constant direction on the names this model picked'. The direction of that difference is NOT known a priori and no bound is claimed.",
+  "market_drift": {
+    "what": "cross-sectional mean forward log-return per stride-15 period over V_p",
+    "mean_per_period": 7.900476918876868e-06,
+    "mean_per_period_active_only": 8.351959122055601e-06,
+    "std_per_period": 0.003992611459059731,
+    "annualized_ir_of_always_long_market": 0.3704062519620255,
+    "mean_breadth": 39.9988592288387,
+    "n_periods": 35064
+  },
+  "pins": {
+    "h": 15,
+    "headline_cost": 0.003,
+    "bootstrap_B": 10000,
+    "bootstrap_seed": 20260704,
+    "block_length": 188,
+    "paired": true
+  },
+  "n_symbols": 40,
+  "rows": [
+    {
+      "seed": 0,
+      "modal_sign": "SHORT",
+      "frac_negative_full_grid": 0.6772794683854776,
+      "modal_share": 0.6772794683854776,
+      "decision_activity_at_kappa_star": 0.09263682514331346,
+      "n_active_periods": 23078,
+      "a_ir_gross_model": 1.2664597643302178,
+      "b_ir_gross_constant_direction": -0.760685595074642,
+      "delta_a_minus_b": 2.0271453594048596,
+      "delta_ci95_lower": -0.5529769987810773,
+      "se_boot": 1.6131741974460272,
+      "bias_only_share_of_model_ir": -0.6006393700765847
+    },
+    {
+      "seed": 2,
+      "modal_sign": "SHORT",
+      "frac_negative_full_grid": 0.655184952799247,
+      "modal_share": 0.655184952799247,
+      "decision_activity_at_kappa_star": 0.01927102643812566,
+      "n_active_periods": 12099,
+      "a_ir_gross_model": 2.1715271361187183,
+      "b_ir_gross_constant_direction": -1.2640074309445155,
+      "delta_a_minus_b": 3.435534567063234,
+      "delta_ci95_lower": 1.5574163411650146,
+      "se_boot": 1.1961716535729476,
+      "bias_only_share_of_model_ir": -0.5820822636385473
+    },
+    {
+      "seed": 4,
+      "modal_sign": "LONG",
+      "frac_negative_full_grid": 0.07344280295468157,
+      "modal_share": 0.9265571970453185,
+      "decision_activity_at_kappa_star": 0.47020149445284204,
+      "n_active_periods": 34989,
+      "a_ir_gross_model": 1.1442791248262019,
+      "b_ir_gross_constant_direction": 0.4281588648188105,
+      "delta_a_minus_b": 0.7161202600073914,
+      "delta_ci95_lower": -0.24103252367032363,
+      "se_boot": 0.5767551907633017,
+      "bias_only_share_of_model_ir": 0.3741734473080081
+    }
+  ],
+  "COST_OF_THE_EXACT_VERSION": "Computing (b) over A_p requires re-scoring per-symbol mu-hat across the money grid (1,402,520 decisions per unit). Local CPU, so $0 in money, but tokenization alone is ~29 s per (symbol, seed) x 40 symbols x 3 seeds ~= 1 hour, plus the rollouts. Not run without a ruling.",
+  "INTERPRETATION": "NONE \u2014 the builder reports; the ruling is the supervisor's."
+}
