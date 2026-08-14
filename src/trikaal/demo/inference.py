@@ -136,9 +136,17 @@ def load_unit(seed: int, *, device: str = "cpu") -> Unit:
     tok_h, pred_h = tsd["hash"], psd["hash"]
     tok = TokenizerAE(**tsd["config"])
     tok.load_state_dict(tsd["state_dict"])
+    # ★ .to(device) IS LOAD-BEARING AND WAS MISSING. torch.load(map_location=...) places the
+    # STATE DICT, not the MODULE: load_state_dict copies values into parameters that are still on
+    # CPU, so a "cuda" unit silently stayed on CPU and blew up inside the embedding lookup with a
+    # device mismatch. Never reachable on CPU, so 790 green tests could not see it — it surfaced
+    # on the FIRST GPU execution, 19 seconds into a smoke test that exists precisely because a
+    # component whose first run is on rented hardware is an untested component.
+    tok.to(device)
     tok.eval()
     model = TrikaalAR(**psd["config"])
     model.load_state_dict(psd["state_dict"])
+    model.to(device)
     model.eval()
 
     total = sum(p.numel() for p in model.parameters())

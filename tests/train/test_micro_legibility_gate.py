@@ -35,11 +35,45 @@ def _fixture():
 
 
 def test_gate_hard_stops_on_illegible_ids():
-    """An UNTRAINED tiny tokenizer's ids carry ~chance legibility — the gate must raise,
-    and the message must carry the pre-authorized-fallback pointer."""
+    """An UNTRAINED tiny tokenizer's ids carry ~chance legibility — the gate must raise.
+
+    ★ THIS DOCSTRING USED TO SAY "and the message must carry the pre-authorized-fallback pointer"
+    while the body asserted ONLY "MICRO LEGIBILITY GATE FAILED". Two defects in one line: the body
+    never checked the clause the docstring promised (the class rule's own example — a docstring
+    describing a contract its assertions do not test), and the promised clause became WRONG when
+    the fallback was spent. The message is now asserted, below, and asserted to say the OPPOSITE.
+    """
     tok, per_symbol, tokens = _fixture()
     with pytest.raises(RuntimeError, match="MICRO LEGIBILITY GATE FAILED"):
         micro_legibility_gate(tok, per_symbol, tokens, min_acc=0.9, run_name="kat")
+
+
+def test_failure_message_refuses_the_spent_fallback_instead_of_advertising_it():
+    """THE MESSAGE IS THE ONLY THING AN OPERATOR READS AT THE MOMENT THE GATE FIRES.
+
+    It used to end with "(pre-authorized fallback: micro-weighted w_feat in the bottleneck leg,
+    real-data failures only, dated §7 entry required BEFORE use)" — which invited exactly the
+    prohibited action, from the gate's own output, at the one moment someone is looking for a way
+    forward. The fallback was SPENT at §7 v1.4.1 (λ=3.0) and Item E's once-only re-derivation then
+    FAILED 18/18 (clearing_lambda = null, disposition FINAL).
+    """
+    tok, per_symbol, tokens = _fixture()
+    with pytest.raises(RuntimeError) as ei:
+        micro_legibility_gate(tok, per_symbol, tokens, min_acc=0.9, run_name="kat")
+    msg = str(ei.value)
+
+    # it must NOT read as an offer
+    assert "pre-authorized fallback" not in msg, "the spent fallback must never be advertised"
+
+    # it must name the exhaustion and the prohibitions
+    assert "NO FALLBACK REMAINS" in msg
+    assert "clearing_lambda = null" in msg
+    assert "NOT AUTHORIZED" in msg
+    for prohibited in ("re-scoping", "mean clause", "base rates", "exempting cell 5"):
+        assert prohibited in msg, f"the message must name {prohibited!r} as prohibited"
+
+    # and it must say what the firing MEANS, not merely that it happened
+    assert "IS the finding" in msg
 
 
 def test_gate_receipt_shape_on_pass():

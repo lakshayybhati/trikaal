@@ -234,10 +234,18 @@ def micro_legibility_gate(
     bottleneck leg (§7 v1.4.1), STOP and report with the per-dim receipts — that is a
     re-adjudication, never a silent threshold move.
 
-    FALLBACK HISTORY: the micro-weighted ``w_feat`` bottleneck-leg fallback originally
-    recorded here fired under §7 v1.4.1 (2026-07-20) on a trigger STRICTLY STRONGER than
-    the one written (deterministic FIXTURE-gate failure with mechanism receipts, 3/3
-    seeds, vs the original real-data failure) — see the dated prereg entry."""
+    FALLBACK HISTORY — AND THE FALLBACK IS SPENT. The micro-weighted ``w_feat`` bottleneck-leg
+    fallback originally recorded here fired under §7 v1.4.1 (2026-07-21 — the prereg entry's own
+    date; this read 2026-07-20 for weeks) on a trigger STRICTLY STRONGER than the one written
+    (deterministic FIXTURE-gate failure with mechanism receipts, 3/3 seeds, vs the original
+    real-data failure).
+
+    ★ IT IS NOT AVAILABLE AGAIN. It was consumed at v1.4.1 (λ = 3.0), and Item E's once-only λ
+    re-derivation was then authorized, executed and FAILED 18/18 (λ ∈ {5,8,12} × 3 seeds ×
+    {cell4, cell5}; ``clearing_lambda = null``, §7 v1.6.32) with its disposition recorded as
+    FINAL. Treating the spent fallback as live is explicitly NOT AUTHORIZED. The failure message
+    below used to advertise it as pre-authorized, which invited exactly the prohibited action from
+    an operator reading the gate's own output at the moment the gate fired."""
     per_dim: dict[str, dict] = {}
     ok = True
     unmeasured: list[int] = []
@@ -288,8 +296,12 @@ def micro_legibility_gate(
         )
         raise RuntimeError(
             f"{run_name}: §7 v1.4 MICRO LEGIBILITY GATE FAILED before Stage-2 ({why}) — {receipt} "
-            "(pre-authorized fallback: micro-weighted w_feat in the bottleneck leg, "
-            "real-data failures only, dated §7 entry required BEFORE use)"
+            "— NO FALLBACK REMAINS. The micro-weighted w_feat bottleneck-leg fallback was SPENT at "
+            "§7 v1.4.1 (λ=3.0), and Item E's once-only λ re-derivation FAILED 18/18 "
+            "(clearing_lambda = null, §7 v1.6.32, disposition FINAL). Widening λ, re-scoping the "
+            "0.9 criterion, adding a mean clause, re-scoring base rates, exempting cell 5, or "
+            "treating the spent fallback as live are ALL EXPLICITLY NOT AUTHORIZED. This gate "
+            "firing on real data IS the finding — it is not an obstacle to route around."
         )
     return receipt
 
