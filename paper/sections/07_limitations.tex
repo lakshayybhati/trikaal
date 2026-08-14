@@ -286,6 +286,76 @@ all --- which is a stronger statement than a promise not to make one.
 %   NON-PRE-REGISTERED INSTRUMENT recomputing a pre-registered component; admissibility ruled by
 %   the supervisor 2026-08-14 and logged as prereg §7 v1.6.33. Cell 1 only.
 
+\subsection{The positive gross edge is not directional bias, on two of three seeds}
+\label{sec:lim-skill}
+
+The break-even quantity above is positive on every unit, which is the same statement as a positive
+gross information ratio. A gross edge that is never tested against the cheapest alternative
+explanation is an assertion, so we ran that test rather than leave it to a referee.
+
+The alternative is directional bias times sample drift. Each model leans one way --- two are short
+on roughly two-thirds of decisions, one is long on nine-tenths --- and the evaluated sample drifted
+\emph{up}, at $7.900\times10^{-6}$ per fifteen-minute period, enough that simply holding long
+returns an annualized information ratio of $0.3704$. A model that merely leaned the right way in a
+drifting sample would show a positive gross edge with no timing content at all. The benchmark is
+therefore each model's own modal direction, held constant on the same active periods, with a paired
+block bootstrap.
+
+\begin{center}
+\begin{minipage}{0.95\columnwidth}
+\centering
+\begin{tabular}{lcrrrr}
+\toprule
+seed & lean & model & bias only & $\Delta$ & $\Delta$ 95\% low \\
+\midrule
+0 & short, $67.7\%$ & $+1.2665$ & $-0.7607$ & $+2.0271$ & $-0.5530$ \\
+2 & short, $65.5\%$ & $+2.1715$ & $-1.2640$ & $+3.4355$ & $\mathbf{+1.5574}$ \\
+4 & long, $92.7\%$ & $+1.1443$ & $+0.4282$ & $+0.7161$ & $-0.2410$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.4em}
+{\footnotesize\emph{Gross annualized information ratios at $h=15$ on the headline money grid, cell 1
+only. \textbf{The benchmark averages over every symbol carrying a valid decision, not over the names
+each model actually traded: those positions are not persisted, and the direction of that difference
+is unknown and unbounded.} The exact version was authorized and measured infeasible --- see below.}}
+\end{minipage}
+\end{center}
+% artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period 7.900476918876868e-06,
+%   annualized_ir_of_always_long_market 0.3704062519620255, n_periods 35064, n_symbols 40};
+%   rows[*].{modal_sign, modal_share, a_ir_gross_model, b_ir_gross_constant_direction,
+%   delta_a_minus_b, delta_ci95_lower, bias_only_share_of_model_ir}; paired block bootstrap,
+%   B = 10,000, block 188, seed 20260704. Caveat verbatim in ★_BENCHMARK_SUBSTITUTION_READ_FIRST.
+
+\textbf{On two of three seeds the bias explanation does not merely fail --- it predicts the wrong
+sign.} Seeds 0 and 2 lean short in a sample that rose. Their lean alone \emph{loses} money,
+$-0.7607$ and $-1.2640$, while the models earn $+1.2665$ and $+2.1715$. Whatever produces their
+gross edge, it is earned against their own directional tilt, and drift capture cannot be it. That
+is a harder test than the one we set out to run, and it passes.
+
+\textbf{On the third it is live, and we state it as such.} Seed 4 is long on $92.7\%$ of its
+decisions in a rising sample; holding long reproduces $37.4\%$ of its gross information ratio, and
+the $95\%$ interval on the remainder includes zero. \textbf{We cannot exclude that most of seed 4's
+gross edge is drift.}
+
+\textbf{What survives, stated at the width the evidence supports:} directional bias times sample
+drift does not explain the gross performance of two of three seeds, where that bias would have lost
+money; on the third it accounts for $37\%$ and the remainder is not distinguishable from zero; and
+\emph{one} of three seeds demonstrates timing content at $95\%$. The claim is not that these models
+have predictive skill. It is that on two of three seeds the cheapest deflationary explanation is
+refuted, and on one of three the effect clears zero against it.
+
+\textbf{The exact benchmark was authorized, priced, and found infeasible --- and our first price
+for it was wrong in a way worth recording.} Averaging over the traded names requires re-scoring
+per-symbol forecasts across the full grid. The first estimate costed tokenization at about an hour
+and left the rollouts unquantified; measured, the rollouts are the whole cost --- $494.9$\,ms per
+decision on CPU, which is $193$ hours for seed 4 alone and $579$ for all three. The cheap term was
+priced and the dominant one implicitly set to zero. Subsampling does not rescue it: a
+$1{,}000$-period window costs about six hours and widens the bootstrap standard error roughly
+sixfold, on an interval that already straddles zero. A GPU pass would cost about \$$3.57$ per seed
+at the measured marginal rate and was not run, economics spend being deferred. We report the price
+so the omission is costed rather than assumed impossible.
+
 \subsection{One exchange, one venue, one year of scored data}
 \label{sec:lim-universe}
 

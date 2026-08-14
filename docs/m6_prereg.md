@@ -216,6 +216,52 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.35 (2026-08-14, THE GROSS EDGE SURVIVES AN ADVERSARIAL BIAS TEST ON TWO OF THREE SEEDS —
+  AND THE CONCERN IS *INVERTED* THERE, NOT MERELY ABSENT. THE SKILL CLAIM NARROWS AND HOLDS.)**
+  - **WHY THE TEST EXISTS.** `c_break > 0` on every unit is the same statement as a positive gross
+    IR. The cheapest deflationary explanation is **directional bias × sample drift**, and an edge
+    never tested against it is an assertion. `runs_manifest/m6_skill_vs_bias.json` runs it: each
+    model's own **modal direction held constant on the same active periods**, paired block
+    bootstrap (B = 10,000, block 188, seed 20260704).
+  - **THE SAMPLE DRIFTED UP**, +7.900e-06 per 15-min period; always-long returns annualized IR
+    **+0.3704**. So a model that merely leaned the right way would post a positive gross edge with
+    no timing content.
+  - **★ SEEDS 0 AND 2 INVERT THE CONCERN — THIS IS THE STRONG HALF AND IT LEADS THE PROSE.** Both
+    lean **SHORT** (67.7%, 65.5%) in a sample that **rose**, so their lean **alone LOSES**
+    (−0.7607, −1.2640) while the models earn **+1.2665** and **+2.1715**. Drift capture does not
+    merely fail to explain them — **it predicts the OPPOSITE SIGN**. A harder test than the one
+    asked for, passed.
+  - **SEED 4 IS LIVE AND IS WRITTEN AS SUCH.** Long on **92.7%** in a rising sample; holding long
+    reproduces **37.4%** of its +1.1443, and the remainder (+0.7161) has a 95% lower bound of
+    **−0.2410 — INCLUDES ZERO**. **We cannot exclude that most of seed 4's gross edge is drift.**
+  - **ONLY SEED 2 CLEARS ZERO AT 95%** (Δ lower bound +1.5574). Seeds 0 and 4 do not (−0.5530,
+    −0.2410).
+  - **THE PERMITTED CLAIM, NARROWED TO THE EVIDENCE:** *directional bias times sample drift does
+    not explain the gross performance of two of three seeds, where that bias would have LOST
+    money; on the third it accounts for 37% and the remainder is not distinguishable from zero;
+    ONE of three demonstrates timing content at 95%.* **Any sentence of the form "the models have
+    real predictive skill" is too broad to ship** and none appears in the paper.
+  - **★ THE CAVEAT IS BLOCKING AND TRAVELS INSIDE THE TABLE, NOT BESIDE IT.** The benchmark
+    averages over **V_p — every symbol with a valid decision — NOT over A_p, the names each model
+    actually traded.** A_p is unrecoverable: `write_cell_eval_artifact` persists only the pooled
+    net series, and the execution filter **does** bind (activity 0.0926/0.0193/0.4702, moving with
+    κ), so traded ≠ scored. **The direction of that difference is unknown and NO bound is claimed.**
+    Placed inside the table's own `minipage` and verified on the same rendered page (31).
+  - **THE EXACT A_p VERSION LANDED WHILE THIS WAS BEING WRITTEN — AS AN INFEASIBILITY RESULT.**
+    Authorized as "$0, local CPU, hours" under the standing bound *ship V_p rather than delay*.
+    **Measured: it does not complete.** 494.9 ms/decision on CPU (best observed; threading does not
+    help — the work is compute-bound over 15 rollout steps at seq_len 512) → **193 h for seed 4
+    alone, 579 h for all three.** Subsampling does not rescue it: a 1,000-period window costs ~6 h
+    and widens the bootstrap SE ~5.9×, on an interval that already straddles zero. **GPU would cost
+    ~$3.57/seed (~$10.7 all three) at the money run's measured marginal rate — NOT RUN**, economics
+    spend deferred; reported so the omission is **costed rather than assumed impossible**. V_p ships
+    per the bound.
+  - **AND THE BUILDER'S OWN COSTING ERROR IS CARRIED, NOT DROPPED.** The first receipt priced
+    tokenization (~1 h) and left "plus the rollouts" unquantified; **the rollouts are the entire
+    cost.** The cheap term was priced and the dominant one implicitly set to zero — *the same error
+    class as the 7.80 h eval estimate that omitted 47.2% of the leg*, made again, in a receipt.
+    This is why the paper states the measured rate rather than an estimate.
+
 - **v1.6.34 (2026-08-14, ★ THE PUBLISHED PARAMETER COUNT EXCLUDES A THIRD OF THE MODEL. THE
   HEADLINE FIGURE BECOMES THE REALIZED TOTAL, AND C-19'S DISCLOSED CONFOUND SHRINKS.)**
   - **VERIFIED AT ENTRY-TIME FROM BOTH CHECKPOINTS, NOT FROM THE SUMMARY.** Summing every tensor
