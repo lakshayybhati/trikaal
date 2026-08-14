@@ -15,7 +15,7 @@ Does the microstructure-aware **FSQ** tokenizer improve **cost-aware net Informa
 
 ## 1. The five cells
 
-All cells share: Kronos_small backbone (8L / d512 / ff1024 / 8h; 21,301,248 params), matched bits-per-token (`FSQ_BPT_BAND` 19.5–20.5 ≈ BSQ k=20), the same training draw, the same ≥3 seeds, and the same eval. The **only** varied factors are {quantizer} × {input arm}.
+All cells share: Kronos_small backbone (8L / d512 / ff1024 / 8h; 21,301,248 params EXCLUDING the MTP heads — the realized total with MTP is 31,795,200 FSQ / 31,725,568 BSQ, §7 v1.6.34), matched bits-per-token (`FSQ_BPT_BAND` 19.5–20.5 ≈ BSQ k=20), the same training draw, the same ≥3 seeds, and the same eval. The **only** varied factors are {quantizer} × {input arm}.
 
 | Cell | Quantizer | Input arm | Role |
 |---|---|---|---|

@@ -197,7 +197,7 @@ silently dropped?" from a paraphrase is exactly the failure the question is desi
 | C-15 | **CONFIRMED** — and the obvious remedy makes it vacuous, not stronger |
 | C-16 | CONFIRMED — unpinned constant, lands on a secondary, frozen file |
 | C-18 | 1 CLOSED, 2 CONFIRMED — the μ-estimator leg is the C-7 shape |
-| C-19 | **CONFIRMED EXACTLY** — −69,632 params; confounds the §5 fallback, not the primary |
+| C-19 | **CONFIRMED EXACTLY** — −69,632 params = **0.219% of the full model** (the 0.327% figure was against the backbone-excluding-MTP basis, superseded §7 v1.6.34); confounds the §5 fallback, not the primary |
 | C-20 | 1 of 3 CONFIRMED (`embargo_flatness` never called); 2 not verified this pass |
 | S-1 | PROMOTED into C-1 |
 | S-2..S-4 | **BLOCKED — original text needed** |

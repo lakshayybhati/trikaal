@@ -93,3 +93,37 @@ def test_backbone_is_causal():
     assert not torch.allclose(h1[:, t + 1 :], h2[:, t + 1 :]), (
         "altering future should change future"
     )
+
+
+def test_realized_total_params_are_pinned_not_prose():
+    """§7 v1.6.34 — THE PUBLISHED MODEL SIZE IS THE REALIZED TOTAL, AND IT IS AN ASSERTION HERE.
+
+    The repo quoted 21,301,248 / 21,231,616 as the model's parameter count for months. Those are
+    the backbone EXCLUDING the MTP heads, which are 10,493,952 params — 33.03% of the shipped
+    checkpoint. Anyone loading the published weights gets the totals below, so the totals are what
+    is published, with backbone-ex-MTP as a NAMED SECONDARY.
+
+    Pinned as a test for the same reason C-19 pinned the BSQ backbone count: it appeared in prose
+    and in audits while NO artifact fixed it. A number that only lives in a sentence drifts.
+    """
+    set_determinism(0)
+    fsq = TrikaalAR(v_c=891, v_f=1225, mtp_depths=4)
+    bsq = TrikaalAR(v_c=1024, v_f=1024, mtp_depths=4)
+
+    assert fsq.num_params() == 31_795_200, "FSQ realized TOTAL (the published model size)"
+    assert bsq.num_params() == 31_725_568, "BSQ realized TOTAL (the published model size)"
+
+    # backbone-excluding-MTP — the named secondary, unchanged
+    assert fsq.num_backbone_params() == 21_301_248
+    assert bsq.num_backbone_params() == 21_231_616
+
+    # MTP is IDENTICAL across arms, which is why C-19's gap is unchanged in absolute terms
+    mtp_f = sum(p.numel() for p in fsq.mtp.parameters())
+    mtp_b = sum(p.numel() for p in bsq.mtp.parameters())
+    assert mtp_f == mtp_b == 10_493_952, "MTP does not depend on the vocab"
+
+    # C-19 RESTATED: the same 69,632 params are 0.219% of the FULL model, not 0.327%.
+    gap = fsq.num_params() - bsq.num_params()
+    assert gap == 69_632
+    assert abs(100.0 * gap / fsq.num_params() - 0.219) < 0.001, "C-19 as % of the FULL model"
+    assert abs(100.0 * gap / fsq.num_backbone_params() - 0.327) < 0.001, "the superseded basis"

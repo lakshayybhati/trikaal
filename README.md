@@ -36,7 +36,7 @@ It builds, in order:
    Four planted-lookahead variants prove the harness has teeth; the real transforms pass.
 4. **The FSQ tokenizer** (`trikaal.tokenizer`) — encoder → FSQ (`[11,9,9,7,7,5,5]`, coarse
    `{11,9,9}`→891 / fine `{7,7,5,5}`→1225) → decoder, hierarchical Huber loss, **no commitment term**.
-5. **The AR backbone + MTP** (`trikaal.model`) — exact Kronos_small (8L/512/1024/8h, **21,301,248**
+5. **The AR backbone + MTP** (`trikaal.model`) — exact Kronos_small (8L/512/1024/8h, **31,795,200** realized total; **21,301,248** backbone excluding MTP
    realized params) with hierarchical coarse→fine heads and DeepSeek-style MTP causal-chain depths.
 
 ## Pre-flight gates (§7.0)

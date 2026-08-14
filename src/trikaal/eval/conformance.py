@@ -45,7 +45,13 @@ PINNED_MONEY_SEQ_LEN = 512  # the money eval surface; ALSO the training context 
 PINNED_MICRO_LEGIBILITY_MIN = (
     0.9  # §7 v1.4 standing six-micro-dims gate — a HARD STOP, was unpinned
 )
-PINNED_BACKBONE_PARAMS = 21_301_248  # the realized count (CLAUDE.md invariant), was unpinned
+# §7 v1.6.34 — CORRECTLY NAMED AND DELIBERATELY UNCHANGED. This pins the BACKBONE EXCLUDING THE
+# MTP HEADS, which is the right quantity for a conformance check on the matched measurement
+# vehicle. It is NOT the model's size and must never be quoted as one: the REALIZED TOTAL is
+# 31,795,200 (FSQ) / 31,725,568 (BSQ), the MTP heads being 10,493,952 params — 33.03% of the
+# shipped checkpoint — and that total is what a reader gets when they load the published weights.
+# Both figures are pinned as assertions in tests/model/test_predictor.py.
+PINNED_BACKBONE_PARAMS = 21_301_248  # backbone EXCLUDING MTP; see the note above before quoting
 # §7 v1.6.15 C-18 — TWO VALUES THAT DECIDED THE RUN WHILE UNDER NO GUARD. Neither is a NEW pin:
 # the μ estimator is the v1.4.2 pre-registration and the step budget is the recipe every receipt
 # already reports. The defect was that the code did not ENFORCE what was already pre-registered —
