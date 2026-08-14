@@ -66,5 +66,24 @@
     }
   ],
   "COST_OF_THE_EXACT_VERSION": "Computing (b) over A_p requires re-scoring per-symbol mu-hat across the money grid (1,402,520 decisions per unit). Local CPU, so $0 in money, but tokenization alone is ~29 s per (symbol, seed) x 40 symbols x 3 seeds ~= 1 hour, plus the rollouts. Not run without a ruling.",
-  "INTERPRETATION": "NONE \u2014 the builder reports; the ruling is the supervisor's."
+  "INTERPRETATION": "NONE \u2014 the builder reports; the ruling is the supervisor's.",
+  "SUPERVISOR_RULING_2026_08_14": {
+    "verdict": "THE CHECK SPLITS THREE WAYS. Not 'skill' and not 'bias'.",
+    "seeds_0_and_2": "INVERT THE CONCERN, and this is the strongest result here. Short-biased in a sample that drifted UP, so their bias alone LOSES (-0.7607, -1.2640). Their positive gross IR is earned AGAINST their own directional lean: drift capture does not merely fail to explain it, it predicts the OPPOSITE SIGN. A harder test passed than the one asked for.",
+    "seed_4": "LIVE. Long 92.66% in a rising sample; holding long reproduces 37.4% of its gross IR and the remainder's 95% interval INCLUDES ZERO. WE CANNOT EXCLUDE that most of seed 4's gross IR is drift.",
+    "overall": "ONE OF THREE SEEDS DEMONSTRATES TIMING SKILL AT 95% (seed 2, CI lower +1.5574)."
+  },
+  "EXACT_A_p_VERSION_AUTHORIZED_AND_MEASURED_INFEASIBLE": {
+    "status": "AUTHORIZED by the supervisor as '$0, local CPU, hours', with the standing bound: if it does not complete cleanly, ship the V_p result rather than delay the paper. MEASURED: it does not complete. Shipping the V_p result per that bound.",
+    "measured_rate_ms_per_decision_cpu": 494.9,
+    "measurement_note": "Best observed rate, batch of 256 decisions, real seed-4 predictor, 4 torch threads. Threading does NOT help: 4 threads 734.6 ms/dec and 10 threads 729.3 ms/dec at batch 128, 8 threads WORSE at 1174.2 (contention). The work is compute-bound \u2014 15 rollout steps over batch x seq_len 512 \u2014 not overhead-bound.",
+    "tokenization_s_per_symbol_seed": 29.8,
+    "decisions_per_symbol": 35063,
+    "n_symbols": 40,
+    "cost_seed4_only_hours": 193.1,
+    "cost_all_three_seeds_hours": 579.4,
+    "\u2605_MY_EARLIER_COSTING_WAS_WRONG_AND_THIS_CORRECTS_IT": "The first receipt said the exact version was 'local CPU, $0 in money, but hours in wall-clock', costing tokenization (~1 hour) and hand-waving 'plus the rollouts'. THE ROLLOUTS ARE THE ENTIRE COST: 193 hours for seed 4 alone, 8 days. I priced the cheap term and estimated the dominant one at zero. This is the same error class as the 7.80 h eval estimate that omitted 47.2% of the leg \u2014 made again, by me, in a receipt.",
+    "why_a_subsample_does_not_rescue_it": "A contiguous 1,000-period window costs ~5.8 h but widens the bootstrap SE by roughly sqrt(35064/1000) = 5.9x. Seed 4's full-grid delta is +0.7161 with the CI already straddling zero; a 5.9x wider interval answers nothing. The statistic needs the full grid.",
+    "the_option_that_DOES_work_not_run": "GPU. At the money run's MEASURED marginal rate of 19.851 ms/decision on a 4090, seed 4's 1,402,520 decisions are ~7.7 h at ~$3.57 (4090 rate $2.5486e-06/decision); all three seeds ~$10.7. NOT RUN \u2014 economics spend is deferred and this was authorized as $0. Reported so the choice is costed rather than assumed impossible."
+  }
 }
