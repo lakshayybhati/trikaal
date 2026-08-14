@@ -76,9 +76,11 @@ from trikaal.eval.xsection import (  # noqa: E402
     primary_region_grid_ms,
     symbol_decisions,
 )
+from trikaal.model.attention_mode import MODE_SDPA, set_attention_backend  # noqa: E402
 from trikaal.run.matrix import load_symbol_arrays  # noqa: E402
 from trikaal.train.arms import select_arm  # noqa: E402
 from trikaal.train.token_stream import tokenize_features  # noqa: E402
+from trikaal.utils.seeding import set_determinism  # noqa: E402
 
 SEED = 4
 ARTIFACT = REPO / "runs_cloud/results/r2/cell1_seed4_eval.json"
@@ -184,7 +186,16 @@ def main() -> int:
         f"(frac_neg {frac_neg:.4f})  device {args.device}  lake {args.lake}"
     )
 
+    # ★ THE MONEY RUN'S DETERMINISM POSTURE, REPRODUCED — the control arm compares against a
+    # series produced weeks ago on a 4090 under sdpa_deterministic + deterministic_algorithms +
+    # CUBLAS_WORKSPACE_CONFIG=:4096:8. Invariant 7 is honest that deterministic attention is
+    # NECESSARY, NOT SUFFICIENT, so this does not guarantee bit-exactness across boxes; it removes
+    # the sources we CAN remove, and the control arm is what actually decides whether the
+    # reproduction is close enough to read a benchmark off.
+    set_determinism(SEED, deterministic_algorithms=True)
     unit = load_unit(SEED, device=args.device)
+    n_attn = set_attention_backend(unit.model, MODE_SDPA)
+    print(f"[det]  attention={MODE_SDPA} on {n_attn} modules; deterministic_algorithms=True")
     print(
         f"[unit] identity verified; {unit.n_params_realized:,} params ({unit.n_params_mtp:,} MTP)"
     )
