@@ -1,0 +1,50 @@
+{
+  "script": "scripts/m6_skill_vs_bias_exact.py",
+  "schema": "m6_skill_vs_bias_exact_v1",
+  "seed": 4,
+  "benchmark": "EXACT A_p \u2014 constant direction at the modal sign on the names THE MODEL TRADED",
+  "modal_sign": "LONG",
+  "frac_negative_full_grid": 0.07344280295468157,
+  "a_ir_gross_model": 1.1446252585124777,
+  "b_ir_gross_constant_direction_Ap": 0.1474227707914885,
+  "delta_a_minus_b": 0.9972024877209892,
+  "delta_ci95_lower": 0.045448119782374716,
+  "se_boot": 0.5875946654652116,
+  "bias_only_share_of_model_ir": 0.12879566451562927,
+  "control_arm": {
+    "n_active_recomputed": 34989,
+    "n_active_banked": 34989,
+    "active_set_identical": true,
+    "max_abs_diff_gross": 0.00025873020400202923,
+    "corr_gross": 0.999999857150472,
+    "ir_recomputed": 1.1446252585124777,
+    "ir_banked": 1.1442791248262019
+  },
+  "pins": {
+    "h": 15,
+    "kappa_star": 3.0,
+    "headline_cost": 0.003,
+    "bootstrap_B": 10000,
+    "bootstrap_seed": 20260704,
+    "block_length": 188,
+    "lake_root": "processed/universe_bars",
+    "n_symbols": 40,
+    "n_periods": 35064
+  },
+  "PRE_DECLARED_READING": {
+    "declared_by": "supervisor, BEFORE the run",
+    "excludes_zero_positive": "seed 4 also demonstrates timing skill; the claim broadens to 3 of 3 and is DEFENDED rather than asserted",
+    "straddles_zero": "unchanged from V_p; publish 'cannot exclude' on the EXACT benchmark, and the V_p-vs-A_p caveat DROPS",
+    "negative": "seed 4 UNDERPERFORMS holding long on the names it traded; goes in the abstract's own limitation sentence, not a footnote"
+  },
+  "INTERPRETATION": "NONE \u2014 the builder reports; the ruling is the supervisor's.",
+  "OUTCOME_AGAINST_THE_PRE_DECLARED_READING": {
+    "branch_taken": "delta EXCLUDES ZERO POSITIVE",
+    "pre_declared_consequence": "seed 4 also demonstrates timing skill; the claim broadens to 3 of 3 and is DEFENDED rather than asserted",
+    "\u2605_IT_IS_MARGINAL_AND_THAT_MUST_TRAVEL_WITH_IT": "The 95% lower bound is +0.0454 against a point estimate of +0.9972 and se_boot 0.5876. It clears zero by 0.05 IR units \u2014 this is 'excludes zero', NOT 'comfortably positive', and quoting the +0.9972 without the bound would misrepresent it.",
+    "what_the_exact_benchmark_changed": "A_p LOWERED the benchmark versus V_p: +0.1474 vs +0.4282. Seed 4 traded LOWER-drift names than the evaluated cross-section average, so the bias-only explanation shrank from 37.4% of the model's gross IR to 12.9%, and the remainder moved from straddling zero (CI lower -0.2410) to excluding it (+0.0454). The supervisor pre-declared BOTH directions as possible; this is the one that favours the model.",
+    "the_V_p_caveat_now_DROPS_for_seed_4": "The benchmark is the specified one. The V_p-vs-A_p substitution disclosure no longer applies to seed 4. It STILL APPLIES to seeds 0 and 2, which were not re-run by ruling.",
+    "control_arm_note": "PASSED on a DIFFERENT torch (2.5.1+cu124 on the box vs 2.12.1+cu130 for the money run) and a different physical 4090, weeks later: period-active set IDENTICAL (34,989), IR within 0.000346, max|diff| on the gross series 2.587e-04, corr 0.99999986. The pipeline reproduces the scored pipeline; that is what makes the benchmark readable.",
+    "spend": "box 47715433, RTX 4090 @ $0.3322/h, 13.5 h uptime, ~$4.48 of the $8 cap"
+  }
+}
