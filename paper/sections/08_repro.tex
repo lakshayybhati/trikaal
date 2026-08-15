@@ -17,6 +17,21 @@ whole. Three things are bit-exact from one configuration file, a pinned seed and
 inputs: the data pipeline, the frozen normalization statistics, and prediction replay. Any recorded
 prediction can be reconstructed from the recorded inputs.
 
+\textbf{That claim is scoped to one environment, and we can now say what happens outside it.}
+Re-scoring a banked predictor on a different \texttt{torch} build and a different physical GPU,
+weeks later, reproduces the scored series \emph{closely but not bit-exactly}: the set of active
+periods is identical at $34{,}989$, the gross series agrees to a maximum absolute difference of
+$2.59\times10^{-4}$ with a correlation of $0.99999986$, and the information ratio moves by
+$3.5\times10^{-4}$. A different build is a different provenance identity by construction --- the
+\texttt{torch} version and the platform ABI are both identity keys --- so this does not contradict
+the bit-exactness claim, which was never asserted across identities. It bounds what the claim does
+not cover, which had until now been untested: replay across environments is reproducible to about
+four decimal places, not to the bit.
+% artifact: runs_manifest/m6_skill_vs_bias_exact.json :: control_arm.{n_active_recomputed 34989,
+%   n_active_banked 34989, active_set_identical true, max_abs_diff_gross 2.5873020400202923e-04,
+%   corr_gross 0.999999857150472, ir_recomputed 1.1446252585124777, ir_banked 1.1442791248262019}.
+%   torch 2.5.1+cu124 on the rented box vs 2.12.1+cu130 for the money run; different physical 4090.
+
 GPU training is not bit-exact by default, and the honest version of that sentence took us a
 correction to write. The production path now sets deterministic algorithms explicitly, at a
 measured throughput cost of $13.175\%$, and every run records the mode it ran in.
@@ -83,7 +98,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $49$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $50$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever

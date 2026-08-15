@@ -304,21 +304,28 @@ block bootstrap.
 \begin{center}
 \begin{minipage}{0.95\columnwidth}
 \centering
-\begin{tabular}{lcrrrr}
+\begin{tabular}{lclrrrr}
 \toprule
-seed & lean & model & bias only & $\Delta$ & $\Delta$ 95\% low \\
+seed & lean & benchmark & model & bias only & $\Delta$ & $\Delta$ 95\% low \\
 \midrule
-0 & short, $67.7\%$ & $+1.2665$ & $-0.7607$ & $+2.0271$ & $-0.5530$ \\
-2 & short, $65.5\%$ & $+2.1715$ & $-1.2640$ & $+3.4355$ & $\mathbf{+1.5574}$ \\
-4 & long, $92.7\%$ & $+1.1443$ & $+0.4282$ & $+0.7161$ & $-0.2410$ \\
+0 & short, $67.7\%$ & evaluated set & $+1.2665$ & $-0.7607$ & $+2.0271$ & $-0.5530$ \\
+2 & short, $65.5\%$ & evaluated set & $+2.1715$ & $-1.2640$ & $+3.4355$ & $\mathbf{+1.5574}$ \\
+4 & long, $92.7\%$ & \textbf{names traded} & $+1.1446$ & $+0.1474$ & $+0.9972$ & $\mathbf{+0.0454}$ \\
+\addlinespace
+\multicolumn{3}{l}{\emph{(seed 4, superseded, evaluated set)}} & $+1.1443$ & $+0.4282$ & $+0.7161$ & $-0.2410$ \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.4em}
 {\footnotesize\emph{Gross annualized information ratios at $h=15$ on the headline money grid, cell 1
-only. \textbf{The benchmark averages over every symbol carrying a valid decision, not over the names
-each model actually traded: those positions are not persisted, and the direction of that difference
-is unknown and unbounded.} The exact version was authorized and measured infeasible --- see below.}}
+only. \textbf{Seed 4 uses the specified benchmark --- the names the model actually traded --- so no
+substitution caveat applies to it. Seeds 0 and 2 use the evaluated cross-section instead, because
+their traded names are not persisted and they were not re-run; for those two rows the benchmark is
+``constant direction on the evaluated set'', not ``on the names this model picked'', and the
+direction of that difference is unknown and unbounded.} \textbf{Seed 4's $\Delta$ is $t = 1.70$: the
+pre-registered percentile interval clears zero at $+0.0454$, a symmetric normal interval would not
+($-0.1545$).} Seed 4's model row is the value recomputed during the exact run, $3.5\times10^{-4}$
+from the banked one.}}
 \end{minipage}
 \end{center}
 % artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period 7.900476918876868e-06,
@@ -326,6 +333,14 @@ is unknown and unbounded.} The exact version was authorized and measured infeasi
 %   rows[*].{modal_sign, modal_share, a_ir_gross_model, b_ir_gross_constant_direction,
 %   delta_a_minus_b, delta_ci95_lower, bias_only_share_of_model_ir}; paired block bootstrap,
 %   B = 10,000, block 188, seed 20260704. Caveat verbatim in ★_BENCHMARK_SUBSTITUTION_READ_FIRST.
+% artifact: runs_manifest/m6_skill_vs_bias_exact.json (SEED 4, the SPECIFIED A_p benchmark) ::
+%   a_ir_gross_model 1.1446252585124777, b_ir_gross_constant_direction_Ap 0.1474227707914885,
+%   delta_a_minus_b 0.9972024877209892, delta_ci95_lower 0.045448119782374716,
+%   se_boot 0.5875946654652116, bias_only_share_of_model_ir 0.12879566451562927.
+%   t = 0.9972.../0.5876... = 1.697; symmetric normal lower = delta - 1.96*se = -0.1545.
+%   Both outcome branches pre-declared: .PRE_DECLARED_READING (declared_by "supervisor, BEFORE the
+%   run"), outcome .OUTCOME_AGAINST_THE_PRE_DECLARED_READING.branch_taken "delta EXCLUDES ZERO
+%   POSITIVE". Spend: box 47715433, RTX 4090 @ $0.3322/h, 13.5 h, ~$4.48 of an $8 cap.
 
 \textbf{On two of three seeds the bias explanation does not merely fail --- it predicts the wrong
 sign.} Seeds 0 and 2 lean short in a sample that rose. Their lean alone \emph{loses} money,
@@ -333,17 +348,30 @@ $-0.7607$ and $-1.2640$, while the models earn $+1.2665$ and $+2.1715$. Whatever
 gross edge, it is earned against their own directional tilt, and drift capture cannot be it. That
 is a harder test than the one we set out to run, and it passes.
 
-\textbf{On the third it is live, and we state it as such.} Seed 4 is long on $92.7\%$ of its
-decisions in a rising sample; holding long reproduces $37.4\%$ of its gross information ratio, and
-the $95\%$ interval on the remainder includes zero. \textbf{We cannot exclude that most of seed 4's
-gross edge is drift.}
+\textbf{The third was the live one, and re-running it on the specified benchmark closed it ---
+marginally, which is the first thing to say about it.} Against the names seed 4 actually traded,
+rather than the evaluated cross-section, holding long returns $+0.1474$ instead of $+0.4282$:
+seed 4 traded \emph{lower}-drift names than the average symbol, so the substituted benchmark had
+been flattering the deflationary explanation, not the model. The bias-only share falls from
+$37.4\%$ to $12.9\%$ and the remainder moves from straddling zero to excluding it, $+0.9972$ with
+a $95\%$ lower bound of $+0.0454$.
+
+\textbf{That margin is thin and we report the statistic that argues against us before the one that
+argues for us.} The $\Delta$ is $t = 1.70$. Our pre-registered interval is a percentile bootstrap
+and it clears zero at $+0.0454$; a symmetric normal interval at the same standard error would not,
+reaching $-0.1545$. The result is ``excludes zero'' on the pre-registered instrument and would not
+survive a different, equally defensible one. Both directions of this outcome were written down
+before the run, so the reading was not chosen after the number: the pre-declaration specified what
+we would conclude if the interval excluded zero, if it straddled it, and if it came back negative.
 
 \textbf{What survives, stated at the width the evidence supports:} directional bias times sample
-drift does not explain the gross performance of two of three seeds, where that bias would have lost
-money; on the third it accounts for $37\%$ and the remainder is not distinguishable from zero; and
-\emph{one} of three seeds demonstrates timing content at $95\%$. The claim is not that these models
-have predictive skill. It is that on two of three seeds the cheapest deflationary explanation is
-refuted, and on one of three the effect clears zero against it.
+drift does not explain the gross performance of \emph{any} of the three seeds. For two, the bias
+alone \emph{loses} money while the models earn, so the explanation predicts the wrong sign. For the
+third, on its own traded names, the bias reproduces $12.9\%$ and the remainder excludes zero by
+$0.05$ information-ratio units. The claim is not that these models have predictive skill in any
+economically useful sense --- \cref{sec:lim-breakeven} shows the gross edge is an order of magnitude
+short of fees. It is the narrower one that the cheapest deflationary explanation of that edge is
+refuted on all three, decisively on two and marginally on one.
 
 \textbf{The exact benchmark was authorized, priced, and found infeasible --- and our first price
 for it was wrong in a way worth recording.} Averaging over the traded names requires re-scoring
@@ -352,9 +380,12 @@ and left the rollouts unquantified; measured, the rollouts are the whole cost --
 decision on CPU, which is $193$ hours for seed 4 alone and $579$ for all three. The cheap term was
 priced and the dominant one implicitly set to zero. Subsampling does not rescue it: a
 $1{,}000$-period window costs about six hours and widens the bootstrap standard error roughly
-sixfold, on an interval that already straddles zero. A GPU pass would cost about \$$3.57$ per seed
-at the measured marginal rate and was not run, economics spend being deferred. We report the price
-so the omission is costed rather than assumed impossible.
+sixfold, on an interval that already straddles zero. \textbf{The GPU path was then taken for the
+one seed whose answer was open}: seed 4 was re-scored on a rented RTX 4090 for roughly \$$4.48$,
+which is why its row above carries the specified benchmark and the other two do not. Seeds 0 and 2
+were not re-run, by ruling, because their inversion is structural --- a short-biased model in a
+rising sample cannot have its positive edge explained by drift on any benchmark --- so the
+substitution caveat stands for them and is stated in the table rather than resolved.
 
 \subsection{One exchange, one venue, one year of scored data}
 \label{sec:lim-universe}
@@ -493,7 +524,9 @@ discover it.
 \label{sec:lim-determinism}
 
 The data pipeline, the frozen normalization statistics and prediction replay are bit-exact from
-one configuration file, a pinned seed and content-hashed inputs. GPU training is not, unless the
+one configuration file, a pinned seed and content-hashed inputs --- within one provenance identity;
+across a different \texttt{torch} build and a different physical GPU, replay reproduces to about
+four decimal places rather than to the bit, which \cref{sec:repro-bitexact} measures. GPU training is not, unless the
 deterministic-attention fallback is enabled, and the two are not the same claim: deterministic
 attention is necessary for bit-exact training and is not sufficient, because reduction order
 elsewhere in the backward pass is unconstrained. We record the mode for every run.

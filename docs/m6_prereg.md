@@ -216,6 +216,48 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.36 (2026-08-15, ★ SEED 4 RE-RUN ON THE SPECIFIED BENCHMARK: THE CLAIM BROADENS TO 3 OF 3
+  AND THE MARGIN IS 0.05 IR UNITS. BOTH FACTS TRAVEL TOGETHER OR NEITHER SHIPS.)**
+  - **VERIFIED AT ENTRY-TIME AGAINST `runs_manifest/m6_skill_vs_bias_exact.json`.** On the names
+    seed 4 ACTUALLY TRADED: benchmark **+0.1474** (was +0.4282 on the evaluated set), bias-only
+    share **37.4% → 12.9%**, Δ **+0.9972**, 95% lower bound **+0.0454**. The V_p benchmark had been
+    **flattering the deflationary explanation, not the model** — seed 4 traded LOWER-drift names
+    than the average symbol. Both outcome branches were pre-declared by the supervisor BEFORE the
+    run (`.PRE_DECLARED_READING` names the consequence for excludes-zero, straddles-zero AND
+    negative), so the reading was not chosen after the number.
+  - **★ THE MARGIN IS THE FIRST THING STATED, NOT THE LAST — REPORTING RULE.** Δ is **t = 1.70**
+    (0.9972 / 0.5876). The pre-registered **percentile** interval clears zero at +0.0454; a
+    **symmetric normal** interval at the same SE would **NOT** (−0.1545). **BOTH ARE IN THE PAPER,
+    the adverse one first.** A referee computes t in ten seconds; a paper that already reported it
+    is in a different position from one that did not. "Excludes zero" is TRUE and "comfortably
+    positive" is FALSE, and quoting +0.9972 without the bound would misrepresent it.
+  - **THE PERMITTED CLAIM, BROADENED AND STILL BOUNDED:** *directional bias times sample drift does
+    not explain the gross performance of ANY of the three seeds — for two the bias alone LOSES
+    money while the models earn (wrong sign), and for the third the exact benchmark reproduces
+    12.9% with the remainder excluding zero.* It remains **NOT** a claim of economically useful
+    skill: §7's break-even subsection puts the gross edge an order of magnitude short of fees, and
+    the paper says so in the same breath.
+  - **THE SUBSTITUTION CAVEAT NOW SPLITS, AND THE TABLE CARRIES THE SPLIT INSIDE ITSELF.** It
+    **DROPS for seed 4** (that row is the specified benchmark) and **STANDS for seeds 0 and 2**,
+    not re-run by ruling because their inversion is **structural**: a short-biased model in a
+    rising sample cannot have its positive edge explained by drift on ANY benchmark. Verified
+    rendered on the same page (31) as the numbers, per the context-stripping rule.
+  - **A CORRECTION TO MY OWN PRIOR ENTRY.** §7 v1.6.35 and the §7 prose shipped *"a GPU pass would
+    cost about $3.57 per seed ... and was not run"*. **It was then run**, for the one seed whose
+    answer was open, at **~$4.48** (box 47715433, RTX 4090 @ $0.3322/h, 13.5 h, of an $8 cap). The
+    CPU-infeasibility finding (193 h / 579 h) **stands and is the reason** the GPU path was taken.
+    Corrected in place rather than left standing.
+  - **AND A REPRODUCIBILITY RESULT THAT QUALIFIES AN INVARIANT-7 CLAIM RATHER THAN MERELY
+    SUPPORTING IT.** The exact run's control arm re-scored a banked predictor on a **different
+    torch build (2.5.1+cu124 vs 2.12.1+cu130) and a different physical 4090, weeks later**: active
+    set **IDENTICAL (34,989)**, gross series max|diff| **2.59e-04**, corr **0.99999986**, IR within
+    **3.5e-04**. **This is a CLOSE reproduction, NOT a bit-exact one.** It does not contradict the
+    bit-exactness claim — a different build is a different provenance identity by construction,
+    since torch version and platform ABI are both identity keys — but it **bounds what that claim
+    never covered and had never been tested**: cross-environment replay reproduces to about four
+    decimal places, not to the bit. Written into §8.1 and cross-referenced from §7's determinism
+    subsection, in that shape, rather than quoted as evidence of bit-exactness.
+
 - **v1.6.35 (2026-08-14, THE GROSS EDGE SURVIVES AN ADVERSARIAL BIAS TEST ON TWO OF THREE SEEDS —
   AND THE CONCERN IS *INVERTED* THERE, NOT MERELY ABSENT. THE SKILL CLAIM NARROWS AND HOLDS.)**
   - **WHY THE TEST EXISTS.** `c_break > 0` on every unit is the same statement as a positive gross
