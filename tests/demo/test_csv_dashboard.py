@@ -608,3 +608,90 @@ def test_the_run_lock_is_released_on_every_refusal_path(text, label):
     assert job.done is True
     assert not dash._RUN_LOCK.locked(), "the run lock leaked; the next forecast would hang"
     assert job.stages and job.stages[-1]["state"] == "fail"
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# THE TWO GUARDS AGAINST A RUN THAT CANNOT FAIL VISIBLY
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+def test_the_watchdog_fails_a_stalled_stage_instead_of_hanging():
+    """★ WATCHED FIRING. A stage that starts and never finishes must become a FAILED stage with
+    its real elapsed time, not a green line the operator stares at for 40 minutes."""
+    import threading
+    import time as _t
+
+    job = dash.Job(id="stall", filename="x.csv", h=15, started=_t.monotonic())
+    dash._emit(job, "MTP ANCHORS", "seed 4", "run")
+    threading.Thread(target=dash._watchdog, args=(job, 2.0), daemon=True).start()
+    t0 = _t.time()
+    while not job.done and _t.time() - t0 < 15:
+        _t.sleep(0.2)
+    assert job.done, "the watchdog never fired; a stalled stage would hang forever"
+    assert job.stages[-1]["state"] == "fail"
+    assert "MTP ANCHORS" in job.error and "budget" in job.error
+
+
+def test_the_watchdog_does_NOT_fire_on_a_healthy_run():
+    """NEGATIVE CONTROL. Without this the guard could be a stopwatch that fails every real run."""
+    import threading
+    import time as _t
+
+    job = dash.Job(id="ok", filename="x.csv", h=15, started=_t.monotonic())
+    dash._emit(job, "TOKENIZING", "seed 0", "run")
+    threading.Thread(target=dash._watchdog, args=(job, 2.0), daemon=True).start()
+    _t.sleep(0.5)
+    dash._emit(job, "TOKENIZING", "seed 0: done", "ok")
+    with dash._LOCK:
+        job.done = True
+    _t.sleep(3.0)
+    assert job.error is None, "the watchdog failed a job that completed inside its budget"
+
+
+def test_a_failed_verdict_is_sticky_against_a_late_worker():
+    """An orphaned worker that finishes later must not overwrite the failure the operator saw."""
+    import time as _t
+
+    job = dash.Job(id="s", filename="x.csv", h=15, started=_t.monotonic())
+    dash._emit(job, "SAMPLING TRAJECTORIES", "seed 4", "run")
+    dash._fail(job, "TIMED OUT", "budget exceeded")
+    n_before, err_before = len(job.stages), job.error
+    dash._emit(job, "SAMPLING TRAJECTORIES", "seed 4: finished after all", "ok")
+    dash._fail(job, "SOMETHING ELSE", "a different error")
+    assert job.stages[-1]["state"] == "fail"
+    assert len(job.stages) == n_before and job.error == err_before
+
+
+def test_the_client_can_tell_a_dead_server_from_a_slow_stage():
+    """★ THE DEFECT THAT PRODUCED THE REPORTED SYMPTOM, PINNED.
+
+    The poll loop had NO try/catch. A dead server made `fetch` reject, the loop threw, and the
+    overlay froze on the last stages it had drawn with `S.busy` stuck true — which looks EXACTLY
+    like a stage that is still running. The operator could not tell the two apart, and neither
+    could we. Three distinct states must now be reachable and named in the client:
+    """
+    js = dash._APP_JS
+    assert "catch (e)" in js, "the poll loop must not be able to die silently"
+    assert "SERVER NOT RESPONDING" in js, "an unreachable server must say so"
+    assert "STOPPED RESPONDING" in js, "a give-up path must exist and name the cause"
+    assert "no new stage for" in js, "alive-but-slow must be distinguishable from unreachable"
+    assert "ABANDONED BY YOU" in js and "abandon" in js, "the UI must have an escape hatch"
+    # ...and the give-up path must be BOUNDED, or it is the same infinite wait wearing a hat
+    assert "fails >= 25" in js
+    # the loop's fetch must be inside the try, not before it
+    body = js.split("while (true){", 1)[1]
+    fetch_at = body.index("fetch('/stages")
+    try_at = body.index("try {")
+    assert try_at < fetch_at, "the stage fetch must be inside the try block"
+
+
+def test_the_run_lock_wait_is_bounded():
+    """An orphaned worker holds the model lock forever; later runs must refuse, not queue."""
+    src = DASH_PATH.read_text()
+    assert "_RUN_LOCK.acquire(timeout=" in src, "an unbounded acquire re-creates the silent hang"
+    assert "_RUN_LOCK.acquire()" not in src
+
+
+def test_stage_completions_are_logged_unbuffered():
+    """Instrumentation for the NEXT occurrence: if the process dies, the log still names the last
+    stage it reached. Buffered output would be lost exactly when it is needed."""
+    src = DASH_PATH.read_text()
+    assert "flush=True" in src, "a buffered trail is no trail when the process is killed"

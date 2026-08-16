@@ -112,6 +112,18 @@ VOL_WARMUP_ROWS = 1440
 # figure and the export both cite it.
 TRAINED_HORIZONS = (1, 5, 15, 60)
 
+# ★ ONE MC SEED FOR THE WHOLE DEMO, NAMED, NOT INHERITED — AND THIS WAS A REAL DEFECT.
+# The dashboard used to call ``predict_mu(estimator="mc_mean", mc_samples=32)`` WITHOUT passing
+# ``mc_seed``, so that scalar came from production's ``MC_DEFAULT_SEED``, while the percentile
+# bands drawn beside it came from ``mc_paths``' own default of 20260704. The number that widened
+# the seed band and the fan the user was looking at were therefore TWO DIFFERENT ROLLOUTS of the
+# same model — measured +0.0158% against +0.0403% on the same BTCUSDT bars. Neither is "wrong"
+# (the estimator is unbiased at any seed); what was wrong is that they disagreed by construction
+# and nothing could notice. This is the shared-input lesson in its other form: PIN THE SOURCE
+# EXPLICITLY RATHER THAN INHERITING A LIBRARY DEFAULT, because a default is exactly what two
+# call sites silently disagree about.
+MC_SEED = 20260704
+
 # ★ WHAT THE UI MAY OFFER. h=1 IS DELIBERATELY ABSENT AND MUST NOT BE RESTORED FROM
 # TRAINED_HORIZONS. mu-hat is defined over [t+1, t+h] — the entry is at C_{t+1} — so the rollout
 # EXCLUDES k=1 (`if k >= 2` in predict._rollout_greedy / _rollout_mc_mean). At h=1 there are no
@@ -428,27 +440,9 @@ def forecast_from_csv(
                 estimator="expectation",
             )[0]
         )
-        mc = float(
-            predict_mu(
-                u.model,
-                u.tok,
-                b_c,
-                b_f,
-                out.ts,
-                out.sigma,
-                dec,
-                h=h,
-                seq_len=SEQ_LEN,
-                device=device,
-                estimator="mc_mean",
-                mc_samples=mc_samples,
-            )[0]
-        )
-        mu_samples.append(mc)
         progress(
             "FORECASTING",
-            f"seed {seed}: expectation {(math.exp(mu) - 1.0) * 100.0:+.4f}%, "
-            f"mc_mean@{mc_samples} {(math.exp(mc) - 1.0) * 100.0:+.4f}%",
+            f"seed {seed}: expectation {(math.exp(mu) - 1.0) * 100.0:+.4f}%",
             "ok",
         )
         progress("SAMPLING TRAJECTORIES", f"seed {seed}", "run")
@@ -464,9 +458,18 @@ def forecast_from_csv(
             n_samples=n_mc_paths,
             device=device,
         )
+        # ★ THE mc_mean VALUE IS NOW DERIVED FROM THESE PATHS, NOT ROLLED OUT A SECOND TIME.
+        # It is the SAME rollout: `mc_paths` mirrors `_rollout_mc_mean` step for step and the
+        # generator stream is prefix-identical, so the first `mc_samples` endpoints ARE the
+        # samples production would have drawn. Taking the prefix (rather than switching the band
+        # to 48) is what keeps every displayed number exactly where it was.
+        mc = mc_mean_from_paths(paths, float(out.sigma[i]), mc_samples)
+        mu_samples.append(mc)
         progress(
             "SAMPLING TRAJECTORIES",
-            f"seed {seed}: {paths.shape[0]} paths x {paths.shape[1]} steps",
+            f"seed {seed}: {paths.shape[0]} paths x {paths.shape[1]} steps; "
+            f"mc_mean@{mc_samples} {(math.exp(mc) - 1.0) * 100.0:+.4f}% derived from the first "
+            f"{mc_samples} (bit-identical to production, gated)",
             "ok",
         )
         progress("COMPUTING QUANTILE BANDS", f"seed {seed}", "run")
@@ -477,8 +480,14 @@ def forecast_from_csv(
             "ok",
         )
         progress("MTP ANCHORS", f"seed {seed}", "run")
+        # ★ ha == h IS THE CALL THAT ALREADY PRODUCED `mu` — same estimator, same h, same context,
+        # same everything — so it is reused rather than rolled out again. Not an approximation:
+        # identical arguments to a deterministic function. Pinned by
+        # `test_the_anchor_at_the_selected_horizon_IS_the_headline_mu`.
         anchors[seed] = {
-            int(ha): float(
+            int(ha): mu
+            if int(ha) == h
+            else float(
                 predict_mu(
                     u.model,
                     u.tok,
@@ -645,6 +654,7 @@ def forecast_csv_export(f: CsvForecast) -> str:
 
 __all__ = [
     "DISPLAY_DP",
+    "MC_SEED",
     "MIN_ROWS",
     "PAPER_HORIZON",
     "SELECTABLE_HORIZONS",
@@ -657,6 +667,7 @@ __all__ = [
     "Progress",
     "forecast_csv_export",
     "forecast_from_csv",
+    "mc_mean_from_paths",
     "parse_csv",
     "plain_english",
 ]
@@ -693,7 +704,7 @@ def mc_paths(
     *,
     h: int,
     n_samples: int = 64,
-    seed: int = 20260704,
+    seed: int = MC_SEED,
     device: str = "cpu",
 ) -> np.ndarray:
     """``[n_samples, h]`` cumulative raw log-return paths from sampled AR chains.
@@ -759,6 +770,39 @@ def mc_paths(
                 if k < h:
                     out = model.step(pc, pf, ts_dec + k * _BAR_MS, caches, SEQ_LEN - 1 + k)
     return out_paths
+
+
+def mc_mean_from_paths(paths: np.ndarray, sig_t: float, n: int) -> float:
+    """``predict_mu(estimator="mc_mean", mc_samples=n)``, DERIVED from an existing rollout.
+
+    ★ WHY THIS EXISTS. The dashboard used to roll the same Monte-Carlo chain TWICE per seed: once
+    inside production's ``_rollout_mc_mean`` for a single scalar, and again in ``mc_paths`` to keep
+    the per-step values. The second rollout is a superset of the first, so the scalar is a pure
+    function of the paths — measured at 63.7 s per seed of duplicated work at n=48.
+
+    ★ THE PREFIX IS THE POINT. ``paths`` may contain MORE samples than ``n``. Both rollouts drive
+    one ``torch.Generator`` seeded identically and consume exactly ``2*h`` draws per sample, so
+    sample *i* is the same sample in a 32-run and in a 48-run — the streams are prefix-identical.
+    Taking ``paths[:n]`` therefore reproduces production at ITS sample count, which is what lets
+    the bands widen to 48 samples while every displayed number stays exactly where it was.
+    That prefix property is an assumption this function rests on, so it is gated in its own right
+    (``test_a_longer_rollout_contains_the_shorter_one_as_a_prefix``).
+
+    ★ PRODUCTION'S REDUCTION ORDER IS REPRODUCED EXACTLY, NOT APPROXIMATED. ``_rollout_mc_mean``
+    accumulates the UNSCALED float32 ``cum`` in float64, divides by n, and applies sigma ONCE at
+    the very end; ``mc_paths`` scales EVERY step by sigma so callers get raw log-returns.
+    Mathematically identical, numerically ONE ULP apart (measured 1.94e-16). Undoing the scale in
+    float32 and re-applying it last makes it exact — and "exact" is the acceptance criterion here,
+    not "close", because a tolerance would hide a genuinely different rollout.
+    """
+    if paths.shape[0] < n:
+        raise ValueError(
+            f"need at least {n} sampled paths to derive mc_mean@{n}, got {paths.shape[0]}"
+        )
+    acc = 0.0
+    for v in paths[:n, -1]:
+        acc = acc + float(np.float32(v / sig_t))
+    return (acc / n) * sig_t
 
 
 def path_quantiles(paths: np.ndarray, qs=(10, 25, 50, 75, 90)) -> dict:

@@ -464,6 +464,14 @@ class Job:
 
 BG_IMAGE = REPO / "assets" / "trikaal-bg-image.png"
 
+# ★ THE PER-STAGE BUDGET, AND WHERE THE NUMBER COMES FROM. Not invented: the slowest stage ever
+# MEASURED on this pipeline is FORECASTING at 82.9 s on the operator's machine (SAMPLING was 70 s
+# before the prefill cache, 7.6 s after). 600 s is ~7x the slowest observation, so a breach means
+# something is wrong rather than something is slow. A run that cannot fail visibly is the same
+# defect class as a check that cannot fail — it was reported as a 40-minute wait with a frozen
+# green stage list and no way to tell a hung compute from a dead server.
+STAGE_TIMEOUT_S = 600.0
+
 _UNITS: dict = {}
 _JOBS: dict[str, Job] = {}
 _LOCK = threading.Lock()
@@ -480,11 +488,50 @@ def _emit(job: Job, stage: str, detail: str, state: str) -> None:
         "t": round(time.monotonic() - job.started, 2),
     }
     with _LOCK:
+        # ★ A FINISHED JOB IS FINISHED. If the watchdog has already failed this run, an orphaned
+        # worker thread must not keep rewriting the stage list the operator is reading.
+        if job.done:
+            return
         last = job.stages[-1] if job.stages else None
         if last is not None and last["stage"] == stage and last["state"] == "run":
             job.stages[-1] = entry
         else:
             job.stages.append(entry)
+    # ★ FLUSHED TRAIL ON STDOUT. If the process dies mid-run, the log still names the last stage
+    # it reached — which is the difference between "attributable" and "mysterious". Buffered
+    # output would have been lost exactly when it mattered.
+    if state != "run":
+        print(f"[{entry['t']:8.2f}s] {state.upper():4} {stage}: {detail}", flush=True)
+
+
+def _watchdog(job: Job, budget: float) -> None:
+    """Fail a job whose current stage has outlived its budget, instead of hanging forever.
+
+    ★ IT MARKS, IT DOES NOT KILL. Python cannot terminate a worker thread mid-``torch`` call, so
+    the honest thing is to stop LYING to the operator — the run is declared failed with the stage
+    name and its real elapsed time, and the orphaned worker is fenced off by ``_emit``/``_fail``
+    refusing to touch a finished job. A stalled run that reports nothing is indistinguishable from
+    a stalled server, and that ambiguity is what cost 40 minutes.
+    """
+    while True:
+        time.sleep(2.0)
+        with _LOCK:
+            if job.done:
+                return
+            last = job.stages[-1] if job.stages else None
+            running = last is not None and last["state"] == "run"
+            stage = last["stage"] if last else "(no stage yet)"
+            since = (time.monotonic() - job.started) - (last["t"] if last else 0.0)
+        if not running or since < budget:
+            continue
+        _fail(
+            job,
+            "TIMED OUT",
+            f"stage {stage!r} has been running for {since:.0f}s, past the {budget:.0f}s budget "
+            "(the slowest stage ever measured on this pipeline is 83s). The run is abandoned. "
+            "The worker thread may still be running; restart the server before trying again.",
+        )
+        return
 
 
 def _execute(job: Job, text: str, device: str) -> None:
@@ -498,7 +545,13 @@ def _execute(job: Job, text: str, device: str) -> None:
             _emit(
                 job, "QUEUED", "another forecast holds the model; this one starts after it", "run"
             )
-            _RUN_LOCK.acquire()
+            # ★ BOUNDED. An orphaned worker holds this lock forever, and an unbounded acquire
+            # would make every later run queue silently behind a run that is never coming back.
+            if not _RUN_LOCK.acquire(timeout=STAGE_TIMEOUT_S):
+                raise RuntimeError(
+                    f"waited {STAGE_TIMEOUT_S:.0f}s for the previous forecast to release the "
+                    "model and it never did. Restart the server."
+                )
             _emit(job, "QUEUED", "the model is free; starting now", "ok")
         try:
             # ★ IDENTITY BEFORE INPUT. The instrument is verified before the file is even read:
@@ -543,6 +596,8 @@ def _execute(job: Job, text: str, device: str) -> None:
                 "ok",
             )
             with _LOCK:
+                if job.error is not None:
+                    return  # the watchdog already failed this run; its verdict stands
                 job.result = {
                     "id": job.id,
                     "file": job.filename,
@@ -568,7 +623,11 @@ def _execute(job: Job, text: str, device: str) -> None:
 
 
 def _fail(job: Job, kind: str, msg: str) -> None:
+    """Mark a job failed. STICKY: the first failure wins, so a worker that eventually returns
+    cannot quietly overwrite the watchdog's verdict with a success."""
     with _LOCK:
+        if job.error is not None:
+            return
         if job.stages and job.stages[-1]["state"] == "run":
             job.stages[-1] = {**job.stages[-1], "state": "fail", "detail": kind}
         else:
@@ -956,6 +1015,7 @@ function showStages(r){
   $('loadtitle').textContent = 'Stage trace · ' + r.file;
   $('loadsub').textContent = r.elapsed ? r.elapsed + 's total' : '';
   $('closeload').style.display = 'inline-flex';
+  $('abandon').style.display = 'none';
   renderStages(r.stages);
   $('overlay').classList.add('on');
 }
@@ -966,6 +1026,7 @@ async function run(){
   $('loadtitle').textContent = 'Forecasting · ' + S.file.name;
   $('loadsub').textContent = '';
   $('closeload').style.display = 'none';
+  $('abandon').style.display = 'inline-flex';
   $('stages').innerHTML = '';
   $('overlay').classList.add('on');
 
@@ -980,22 +1041,74 @@ async function run(){
     S.busy = false; $('sendbtn').disabled = false; $('overlay').classList.remove('on');
     alert('could not start the run: ' + e); return;
   }
+  // ★ THE POLL LOOP HAD NO try/catch, AND THAT IS THE BUG THE OPERATOR HIT. If the server died
+  // or any fetch rejected, this loop threw, `run()` rejected, and the overlay stayed frozen on
+  // whatever stages it had last drawn — with S.busy stuck true, so the composer never came back.
+  // The page then showed "MTP ANCHORS ... running" forever, which is INDISTINGUISHABLE from a
+  // genuine compute hang. That ambiguity is why 40 minutes went by with nothing to attribute it
+  // to. Three states are now told apart and named on screen: progressing, alive-but-slow, and
+  // unreachable.
+  let fails = 0, lastSig = '', sameSince = Date.now(), stages = [];
+  const filename = S.file ? S.file.name : 'upload.csv';
+  S.abandon = false;
+
+  const finish = (out, stgs) => {
+    const rec = out.error
+      ? {id: job, file: filename, h: S.h, clock, error: out.error, stages: stgs}
+      : Object.assign({}, out.result, {clock, stages: stgs});
+    S.runs.push(rec);
+    if (!out.error) S.sel = S.runs.length - 1;
+    S.busy = false;
+    $('overlay').classList.remove('on');
+    $('loadsub').style.color = '';
+    setFile(null);
+    thread(); canvas(); panel();
+  };
+
   while (true){
     await new Promise(r => setTimeout(r, 400));
-    const st = await (await fetch('/stages?job=' + encodeURIComponent(job))).json();
+    if (S.abandon){
+      finish({error: 'ABANDONED BY YOU. The server may still be working on this run; whatever '
+        + 'it produces will be discarded.'}, stages);
+      break;
+    }
+    let st;
+    try {
+      const r = await fetch('/stages?job=' + encodeURIComponent(job), {cache: 'no-store'});
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      st = await r.json();
+      if (st.error) throw new Error(st.error);
+      fails = 0;
+    } catch (e) {
+      fails++;
+      $('loadsub').style.color = '#fca5a5';
+      $('loadsub').textContent = 'SERVER NOT RESPONDING - ' + fails + ' failed poll'
+        + (fails === 1 ? '' : 's') + ' (' + e.message + ')';
+      if (fails >= 25){
+        finish({error: 'THE SERVER STOPPED RESPONDING after ' + fails + ' consecutive failed '
+          + 'polls (' + e.message + '). The run is lost. This is a DEAD SERVER, not a slow '
+          + 'forecast - check the terminal it was started from: the log names the last stage '
+          + 'it reached.'}, stages);
+        break;
+      }
+      continue;
+    }
+    stages = st.stages;
+    $('loadsub').style.color = '';
     renderStages(st.stages, st.elapsed);
-    $('loadsub').textContent = st.elapsed.toFixed(1) + 's elapsed';
+
+    // alive, but is it MOVING? A stage that has not changed is not the same thing as a server
+    // that has gone away, and the operator must be able to see which one they are looking at.
+    const sig = JSON.stringify(st.stages.map(x => x.stage + x.state + x.detail));
+    if (sig !== lastSig){ lastSig = sig; sameSince = Date.now(); }
+    const stuck = (Date.now() - sameSince) / 1000;
+    $('loadsub').textContent = st.elapsed.toFixed(1) + 's elapsed'
+      + (stuck > 120 ? ' - server IS responding, but no new stage for ' + stuck.toFixed(0) + 's'
+                     : '');
+
     if (st.done){
       const out = await (await fetch('/result?job=' + encodeURIComponent(job))).json();
-      const rec = out.error
-        ? {id: job, file: S.file.name, h: S.h, clock, error: out.error, stages: st.stages}
-        : Object.assign({}, out.result, {clock, stages: st.stages});
-      S.runs.push(rec);
-      if (!out.error) S.sel = S.runs.length - 1;
-      S.busy = false;
-      $('overlay').classList.remove('on');
-      setFile(null);
-      thread(); canvas(); panel();
+      finish(out, st.stages);
       break;
     }
   }
@@ -1051,6 +1164,7 @@ function boot(){
     if (e.key === 'Escape' && !S.busy) $('overlay').classList.remove('on');
   });
   $('closeload').onclick = () => $('overlay').classList.remove('on');
+  $('abandon').onclick = () => { S.abandon = true; };
   document.querySelectorAll('nav.rail button').forEach(b => b.onclick = () => {
     const k = b.dataset.k;
     if (k === 'new'){ S.panel = null; $('composer').scrollIntoView({behavior:'smooth'}); }
@@ -1174,7 +1288,8 @@ def _shell(n_seeds: int, params: int, mtp: int) -> str:
         '<div class="overlay" id="overlay"><div class="glass load scr">'
         '<div class="hd"><div><h2 id="loadtitle"></h2>'
         '<span class="k" id="loadsub" style="letter-spacing:0.12em"></span></div>'
-        '<button class="chip" id="closeload" style="display:none">CLOSE</button></div>'
+        '<button class="chip" id="closeload" style="display:none">CLOSE</button>'
+        '<button class="chip" id="abandon">ABANDON RUN</button></div>'
         '<div class="stages" id="stages"></div>'
         '<p class="note">Every line above is a real event in the pipeline, emitted by the code '
         "that does the work and carrying the value it actually computed &#8212; there is no "
@@ -1193,6 +1308,7 @@ def _shell(n_seeds: int, params: int, mtp: int) -> str:
 class Handler(http.server.BaseHTTPRequestHandler):
     server_version = "trikaal-local"
     device = "cpu"
+    stage_timeout = STAGE_TIMEOUT_S
 
     def log_message(self, *a):
         pass
@@ -1337,6 +1453,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         with _LOCK:
             _JOBS[job.id] = job
         threading.Thread(target=_execute, args=(job, text, self.device), daemon=True).start()
+        threading.Thread(target=_watchdog, args=(job, self.stage_timeout), daemon=True).start()
         self._json({"job": job.id})
 
 
@@ -1344,6 +1461,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--device", default="cpu")
+    ap.add_argument("--stage-timeout", type=float, default=STAGE_TIMEOUT_S)
     args = ap.parse_args()
 
     seeds = available_seeds()
@@ -1353,6 +1471,7 @@ def main() -> int:
     for s in seeds:
         _UNITS[s] = load_unit(s, device=args.device)
     Handler.device = args.device
+    Handler.stage_timeout = args.stage_timeout
     print(f"[units] {seeds} loaded; identity verified at load AND re-verified on every forecast")
     print(f"[serve] http://127.0.0.1:{args.port} — LOOPBACK ONLY, nothing leaves this machine")
     print(f"[input] OHLCV CSV, >= {MIN_ROWS:,} rows; horizons {SELECTABLE_HORIZONS}")

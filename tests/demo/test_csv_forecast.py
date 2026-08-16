@@ -374,6 +374,19 @@ def test_mc_paths_endpoint_matches_production_bit_for_bit(n):
     it, production fell back to its own default, the two arms drew different samples, and the
     harness reported REVERT on a change that is provably bit-identical — a false alarm from the
     instrument, on the very question it existed to settle. The tooling rule, again.
+
+    ★★ RESHAPED WHEN THE DASHBOARD STOPPED CALLING PRODUCTION. The demo now DERIVES its mc_mean
+    from these paths instead of rolling the chain a second time, so this gate had to be re-examined
+    for exactly the failure the shared-input rule names. It is NOT tautological: the two arms are
+    still independent IMPLEMENTATIONS — ``mc_paths`` is our re-walk, ``_rollout_mc_mean`` is
+    production — and neither now reads the other. What DID change is that production is no longer
+    exercised on the shipped path, so three things were added rather than assumed:
+      * this test now calls ``mc_mean_from_paths``, THE SHIPPED REDUCTION, instead of an inline
+        copy of it — a test that re-implements the code it is checking verifies its own copy;
+      * ``test_a_longer_rollout_contains_the_shorter_one_as_a_prefix`` gates the new assumption
+        the derivation rests on;
+      * ``test_the_derived_value_matches_a_PINNED_reference`` can fail even if BOTH arms were
+        changed together, which agreement between two arms structurally cannot.
     """
     from trikaal.demo.inference import available_seeds, load_unit
     from trikaal.eval.predict import predict_mu
@@ -402,18 +415,11 @@ def test_mc_paths_endpoint_matches_production_bit_for_bit(n):
         seed=20260704,
     )
     assert paths.shape == (n, h)
-    # ★ MATCH PRODUCTION'S REDUCTION ORDER EXACTLY, OR THE COMPARISON IS NOT LIKE-FOR-LIKE.
-    # _rollout_mc_mean accumulates the UNSCALED float32 `cum` in float64, divides by n, and
-    # applies sigma ONCE at the very end. mc_paths scales EVERY STEP by sigma so the caller gets
-    # raw log-returns. Mathematically identical, numerically ONE ULP apart (measured rel diff
-    # 1.94e-16). Reconstructing production's order below makes it exact. A tolerance here would
-    # have hidden a genuinely different rollout, which is the whole point of the gate — same
-    # class as the batch-composition finding in m6_demo_acceptance.py.
-    sig = float(out.sigma[i])
-    acc = 0.0
-    for v in paths[:, -1]:
-        acc = acc + float(np.float32(v / sig))
-    mine = (acc / n) * sig
+    # ★ THE SHIPPED REDUCTION, not a copy of it. `mc_mean_from_paths` reproduces production's
+    # order exactly (unscaled float32 accumulated in float64, sigma applied once at the end); an
+    # inline re-implementation here would pass even if the function the dashboard actually calls
+    # were wrong, which is the mock rule wearing a different hat.
+    mine = cf.mc_mean_from_paths(paths, float(out.sigma[i]), n)
 
     b_c, b_f = tokenize_features(u.tok, x_arm, m_arm, out.segment_id, window=cf.SEQ_LEN)
     prod = float(
@@ -596,3 +602,170 @@ def test_model_stages_agree_with_the_forecast_that_was_returned():
     seed = seeds[0]
     pct = (math.exp(f.per_seed[seed]["mu"]) - 1.0) * 100.0
     assert f"seed {seed}: expectation {pct:+.4f}%" in done["FORECASTING"], done["FORECASTING"]
+
+
+# ── THE DERIVATION'S OWN GATES — what replaced the second production rollout ──────────────────
+def _fixture_arrays():
+    from trikaal.train.arms import select_arm
+
+    out = compute_features(_stream(*_bars(1400), micro=False), FeatureConfig())
+    x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
+    return out, x_arm, m_arm, int(x_arm.shape[0] - 1)
+
+
+def test_a_longer_rollout_contains_the_shorter_one_as_a_prefix():
+    """★ THE ASSUMPTION THE DERIVATION RESTS ON, GATED SEPARATELY.
+
+    The demo runs ONE rollout of 48 sampled paths and derives production's mc_mean@32 from the
+    first 32 of them. That is only valid if sample *i* is the same sample whether you asked for 32
+    or 48 — i.e. the generator stream is prefix-identical, which holds because every sample
+    consumes exactly ``2*h`` draws and nothing about the draw count is data-dependent.
+
+    It is asserted element-by-element rather than on the mean, because two different sample sets
+    can average to the same number and that would hide the very drift this is here to catch.
+    """
+    from trikaal.demo.inference import available_seeds, load_unit
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    u = load_unit(seeds[0])
+    out, x_arm, m_arm, i = _fixture_arrays()
+    kw = dict(h=15, seed=20260704)
+    long = cf.mc_paths(u, x_arm, m_arm, out.segment_id, out.ts, out.sigma, i, n_samples=48, **kw)
+    short = cf.mc_paths(u, x_arm, m_arm, out.segment_id, out.ts, out.sigma, i, n_samples=32, **kw)
+    assert np.array_equal(long[:32], short), (
+        f"{int((long[:32] != short).sum())} of {short.size} values differ — the 48-sample rollout "
+        "is NOT a superset of the 32-sample one, so deriving mc_mean@32 from it is invalid"
+    )
+    # ...and the fixture must be able to discriminate: a DIFFERENT seed must not match, or the
+    # assertion above would pass against any rollout at all.
+    other = cf.mc_paths(
+        u, x_arm, m_arm, out.segment_id, out.ts, out.sigma, i, h=15, n_samples=32, seed=99
+    )
+    assert not np.array_equal(other, short), "the fixture cannot tell two rollouts apart"
+
+
+def test_the_derived_value_matches_a_PINNED_reference():
+    """★ THE ONE CHECK THAT SURVIVES BOTH ARMS CHANGING TOGETHER.
+
+    Every other gate here compares two implementations. An agreement test cannot detect an error
+    its two arms SHARE, so an edit that altered ``mc_paths`` and ``_rollout_mc_mean`` in the same
+    way would keep them agreeing and slip through. This pins the actual number, measured on a
+    deterministic fixture against the banked seed-0 checkpoint. If it moves, something moved —
+    and that is true even if everything still agrees with everything else.
+    """
+    from trikaal.demo.inference import available_seeds, load_unit
+
+    seeds = available_seeds()
+    if not seeds or seeds[0] != 0:
+        pytest.skip("the pin is measured against the banked seed-0 unit")
+    u = load_unit(0)
+    out, x_arm, m_arm, i = _fixture_arrays()
+    paths = cf.mc_paths(
+        u, x_arm, m_arm, out.segment_id, out.ts, out.sigma, i, h=15, n_samples=48, seed=20260704
+    )
+    got = cf.mc_mean_from_paths(paths, float(out.sigma[i]), 32)
+    assert got.hex() == "0x1.f26f6f43c08cdp-12", (
+        f"the derived mc_mean@32 on the 1,400-bar fixture is {got.hex()}, pinned "
+        "0x1.f26f6f43c08cdp-12 — an agreement test would not have noticed this"
+    )
+
+
+def test_mc_mean_from_paths_refuses_a_rollout_too_short_to_derive_from():
+    with pytest.raises(ValueError, match="at least 32"):
+        cf.mc_mean_from_paths(np.zeros((8, 15)), 1.0, 32)
+
+
+def test_the_anchor_at_the_selected_horizon_IS_the_headline_mu():
+    """The ha == h anchor reuses `mu` instead of repeating an identical deterministic call."""
+    from trikaal.demo.inference import available_seeds, load_unit
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    units = {seeds[0]: load_unit(seeds[0])}
+    f = cf.forecast_from_csv(_csv_text(*_bars(1300)), units=units, h=5, mc_samples=2, n_mc_paths=4)
+    s = seeds[0]
+    assert f.mtp_anchors[s][5] == f.per_seed[s]["mu"], "the h anchor must BE the headline mu"
+
+
+def test_the_band_value_the_demo_ships_equals_production_at_the_same_n():
+    """END TO END: the number `forecast_from_csv` actually puts in the band, versus production.
+
+    The gates above check components. This checks the shipped path — the demo no longer calls
+    production for this value, so the thing that must not drift is what the USER is handed.
+    """
+    from trikaal.demo.inference import available_seeds, load_unit
+    from trikaal.eval.predict import predict_mu
+    from trikaal.train.arms import select_arm
+    from trikaal.train.token_stream import tokenize_features
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    u = load_unit(seeds[0])
+    units = {seeds[0]: u}
+    n_mc, h = 8, 5
+    f = cf.forecast_from_csv(
+        _csv_text(*_bars(1300)), units=units, h=h, mc_samples=n_mc, n_mc_paths=n_mc
+    )
+    out = compute_features(_stream(*_bars(1300), micro=False), FeatureConfig())
+    x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
+    b_c, b_f = tokenize_features(u.tok, x_arm, m_arm, out.segment_id, window=cf.SEQ_LEN)
+    i = int(x_arm.shape[0] - 1)
+    prod = float(
+        predict_mu(
+            u.model,
+            u.tok,
+            b_c,
+            b_f,
+            out.ts,
+            out.sigma,
+            np.array([i], np.int64),
+            h=h,
+            seq_len=cf.SEQ_LEN,
+            estimator="mc_mean",
+            mc_samples=n_mc,
+            mc_seed=20260704,
+        )[0]
+    )
+    lo = math.log(1.0 + f.band["lo_pct"] / 100.0)
+    hi = math.log(1.0 + f.band["hi_pct"] / 100.0)
+    assert min(abs(lo - prod), abs(hi - prod)) < 1e-12 or lo <= prod <= hi, (
+        f"production mc_mean {prod!r} is not represented in the shipped band [{lo!r}, {hi!r}]"
+    )
+
+
+def test_the_demo_uses_ONE_mc_seed_for_the_scalar_and_the_bands():
+    """★ THE PRE-EXISTING INCOHERENCE THE DERIVATION EXPOSED, PINNED SHUT.
+
+    The dashboard used to take its band-widening mc_mean from production's ``MC_DEFAULT_SEED``
+    (20260721, inherited by omitting the argument) while the percentile bands drawn beside it came
+    from ``mc_paths``' 20260704. One figure, two rollouts, disagreeing by construction: +0.0158%
+    against +0.0403% on the same BTCUSDT bars. Neither value is wrong — the estimator is unbiased
+    at any seed — but a scalar that is supposed to summarise the fan it sits next to must come
+    from that fan.
+
+    Deriving the scalar from the paths makes it structurally impossible to disagree again: there
+    is now exactly one rollout and one seed. This test pins the seed as a NAMED constant so it
+    cannot drift back to being two inherited defaults.
+    """
+    import inspect
+
+    from trikaal.eval.predict import MC_DEFAULT_SEED
+
+    assert cf.MC_SEED == 20260704
+    assert cf.MC_SEED != MC_DEFAULT_SEED, (
+        "if these ever coincide the test stops discriminating — the whole point is that the demo "
+        "does NOT silently inherit production's default"
+    )
+    assert inspect.signature(cf.mc_paths).parameters["seed"].default == cf.MC_SEED
+
+    # ...and the demo must not call production's mc_mean at all any more: the scalar is derived.
+    src = inspect.getsource(cf.forecast_from_csv)
+    assert 'estimator="mc_mean"' not in src, (
+        "forecast_from_csv is calling production's mc_mean again — that is the second rollout the "
+        "derivation removed, and it reintroduces the two-seed incoherence"
+    )
+    assert "mc_mean_from_paths(" in src

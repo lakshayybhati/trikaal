@@ -140,7 +140,41 @@ forecasts are unchanged to the digit; and the rendered SVG is **byte-identical**
 The gate is parametrized over n because n=8 is thin for a caching change — a cache leaking state
 between samples corrupts sample 2 onward, and the production configuration is 32.
 
-### Why it is 1.9× and not 3–5×
+### The derived mc_mean — 328 s → 18 s end to end, and one number moved
+
+The dashboard called production a second time per seed purely to widen the seed band. That value
+is derivable bit-for-bit from `mc_paths`' endpoints, so it is now derived and the second rollout is
+gone. Same 5,999-bar BTCUSDT file, three seeds, h=15:
+
+| stage, per seed | original | after prefill cache | after derivation |
+|---|---|---|---|
+| `FORECASTING` | 40.9 / 38.8 / 47.1 s | 42.8 / 50.3 / 52.5 s | **1.29 / 1.24 / 1.22 s** |
+| `SAMPLING TRAJECTORIES` | 60.3 / 61.2 / 70.3 s | 3.8 / 4.2 / 5.3 s | **3.40 / 3.43 / 3.41 s** |
+| `MTP ANCHORS` | 2.9 / 2.9 / 3.1 s | 2.9 / 2.9 / 3.1 s | **1.19 / 1.21 / 1.18 s** |
+| **end to end** | **328.1 s** | 151.6–185.2 s | **17.8–18.4 s** |
+
+**≈18× overall.** `MTP ANCHORS` halved because the `ha == h` anchor is byte-for-byte the call that
+already produced `mu` and is now reused rather than repeated.
+
+**The variant shipped is the prefix one**: one rollout of 48 paths, bands from all 48, and
+production's mc_mean@**32** derived from the first 32. The generator stream is prefix-identical
+(every sample consumes exactly `2h` draws), asserted element-by-element, so `mc_paths(48)[:32]`
+*is* `mc_paths(32)`. Expectation values are unchanged to the digit; the rendered SVG is
+byte-identical.
+
+★ **ONE DISPLAYED NUMBER DID MOVE, AND IT IS NOT THE OPTIMISATION'S FAULT.** `mc_mean@32` went
+from +0.0158% to +0.0403% on seed 0. The cause is a **pre-existing defect the derivation
+exposed**: the old code called `predict_mu(estimator="mc_mean", mc_samples=32)` *without*
+`mc_seed`, inheriting production's `MC_DEFAULT_SEED = 20260721`, while the percentile bands drawn
+beside it came from `mc_paths`' own `20260704`. **The scalar and the fan it summarised were two
+different rollouts of the same model, and nothing could notice.** There was therefore no variant
+in which nothing moved — the only choice was which stream wins, and the bands win, because a
+number that summarises a picture must come from that picture. The seed is now a single named
+constant, `MC_SEED`, not two inherited defaults. This is the shared-input lesson in its other
+form: *pin the source explicitly, because a default is exactly what two call sites silently
+disagree about.*
+
+### Why the pre-derivation step was 1.9× and not 3–5×
 
 The optimisation was applied **only to `mc_paths`**. `predict_mu(estimator="mc_mean")` is production
 and does the same wasteful prefill, and it is now the dominant cost (~43–53 s per seed of ~55 s).
@@ -202,6 +236,44 @@ OOD banner (red box, thicker stroke, loud at half size) · `25-446x OVER-DISPERS
 not the wiggle" · the ~0.55z quantization note · edge size and net-negative after fees · three seeds
 never averaged · no P&L · not investment advice. The page-level panel repeats them at 12.5 px in the
 `0.86` text ramp, and a test asserts that block contains **no** `--t4` / `0.22` opacity.
+
+## 5b. THE 40-MINUTE HANG — WHAT IT WAS NOT, AND WHAT IS NOW ATTRIBUTABLE
+
+A run completed every stage through `COMPUTING QUANTILE BANDS seed 4` at 385.54 s, then
+`MTP ANCHORS seed 4` started and never finished — against 8.7 s and 5.4 s for the same stage on
+seeds 0 and 2. The operator waited 40 minutes.
+
+**The MTP ANCHORS computation cannot be data- or seed-dependently slow, and that is not an
+opinion.** The stage is two `predict_mu(estimator="expectation")` calls; `_rollout_greedy` is
+`for k in range(1, h+1)` over a fixed `h ∈ {5,15}` with no `while`, no early exit and no
+data-dependent branch. The weights differ between seeds; **the operation count does not.** Measured
+directly on the real 5,999-bar file, nine runs, three per seed: **2.33–2.64 s, seed 4
+indistinguishable from seeds 0 and 2**, peak RSS 0.83 GB. It does not reproduce, and the code says
+it never should.
+
+**What DOES produce that exact symptom, certainly, is a client defect that was present the whole
+time.** The poll loop had no `try`/`catch`. If the server died or any fetch rejected, the loop
+threw, `run()` rejected, and the overlay stayed frozen on the last stages it had drawn with
+`S.busy` stuck true — so the composer never came back. **A dead server and a stuck stage looked
+identical**, which is precisely why 40 minutes passed with nothing to attribute it to. Root cause
+of *that particular run* is therefore **not established** — but the ambiguity that made it
+unattributable is closed:
+
+* **Server-side watchdog.** A stage running past `STAGE_TIMEOUT_S` (600 s, ≈7× the slowest stage
+  ever measured, 82.9 s) fails the run with the stage name and its real elapsed time. It marks
+  rather than kills — Python cannot terminate a thread mid-`torch` — so the verdict is **sticky**
+  and `_emit`/`_fail` refuse to touch a finished job, fencing off any orphaned worker. Watched
+  firing on a real stall, watched *not* firing on a healthy run.
+* **Bounded queue wait.** `_RUN_LOCK.acquire(timeout=…)`: an orphaned worker holds the model
+  forever, and an unbounded acquire would silently queue every later run behind it.
+* **Client tells three states apart, by name, on screen.** *progressing* / *server IS responding
+  but no new stage for N s* / *SERVER NOT RESPONDING — N failed polls*, giving up after 25 with
+  "This is a DEAD SERVER, not a slow forecast." Plus an **ABANDON RUN** button, so the UI can
+  never be permanently stuck. Verified end to end by killing the server mid-run with `kill -9`.
+* **Flushed stdout trail.** Every completed stage is printed with `flush=True`, so a process that
+  dies still leaves the last stage it reached in the terminal. Buffered output would have been
+  lost exactly when it was needed — and *was*: an empty log misled me into thinking a restart had
+  failed when it had not.
 
 ## 6. TWO BUGS THE TESTS COULD NOT SEE
 
