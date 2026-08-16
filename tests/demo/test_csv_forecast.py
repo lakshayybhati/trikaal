@@ -287,3 +287,96 @@ def test_sigma_is_converged_at_the_floor_and_the_fixture_can_discriminate():
         f"sigma at the {cf.MIN_ROWS}-row floor is {at_floor / ref:.4f}x the fully-warm value; "
         "the floor would distort the reported magnitude"
     )
+
+
+@pytest.mark.slow
+def test_mc_paths_endpoint_matches_production_bit_for_bit():
+    """★ THE GATE ON THE RE-IMPLEMENTED ROLLOUT.
+
+    ``mc_paths`` re-walks ``predict._rollout_mc_mean``'s loop to KEEP the per-step values that
+    production averages away. A re-implementation is a drift risk, so the mean of its endpoints
+    must equal ``predict_mu(estimator='mc_mean')`` exactly at the same seed and sample count. If
+    these diverge, the figure is drawing a different rollout from the scored one.
+    """
+    from trikaal.demo.inference import available_seeds, load_unit
+    from trikaal.eval.predict import predict_mu
+    from trikaal.train.arms import select_arm
+    from trikaal.train.token_stream import tokenize_features
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    u = load_unit(seeds[0])
+    b = _bars(1400)
+    out = compute_features(_stream(*b, micro=False), FeatureConfig())
+    x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
+    i, h, n = x_arm.shape[0] - 1, 15, 8
+
+    paths = cf.mc_paths(
+        u,
+        x_arm,
+        m_arm,
+        out.segment_id,
+        out.ts,
+        out.sigma,
+        i,
+        h=h,
+        n_samples=n,
+        seed=20260704,
+    )
+    assert paths.shape == (n, h)
+    # ★ MATCH PRODUCTION'S REDUCTION ORDER EXACTLY, OR THE COMPARISON IS NOT LIKE-FOR-LIKE.
+    # _rollout_mc_mean accumulates the UNSCALED float32 `cum` in float64, divides by n, and
+    # applies sigma ONCE at the very end. mc_paths scales EVERY STEP by sigma so the caller gets
+    # raw log-returns. Mathematically identical, numerically ONE ULP apart (measured rel diff
+    # 1.94e-16). Reconstructing production's order below makes it exact. A tolerance here would
+    # have hidden a genuinely different rollout, which is the whole point of the gate — same
+    # class as the batch-composition finding in m6_demo_acceptance.py.
+    sig = float(out.sigma[i])
+    acc = 0.0
+    for v in paths[:, -1]:
+        acc = acc + float(np.float32(v / sig))
+    mine = (acc / n) * sig
+
+    b_c, b_f = tokenize_features(u.tok, x_arm, m_arm, out.segment_id, window=cf.SEQ_LEN)
+    prod = float(
+        predict_mu(
+            u.model,
+            u.tok,
+            b_c,
+            b_f,
+            out.ts,
+            out.sigma,
+            np.array([i], np.int64),
+            h=h,
+            seq_len=cf.SEQ_LEN,
+            estimator="mc_mean",
+            mc_samples=n,
+            mc_seed=20260704,
+        )[0]
+    )
+    assert mine.hex() == prod.hex(), "mc_paths is not the production rollout"
+
+
+def test_quantiles_are_ordered_and_the_median_is_labelled_as_such():
+    paths = np.array([[0.0, 0.1], [0.0, 0.2], [0.0, 0.3], [0.0, 0.4]])
+    q = cf.path_quantiles(paths)
+    assert set(q) == {10, 25, 50, 75, 90}
+    for k in range(2):
+        assert q[10][k] <= q[25][k] <= q[50][k] <= q[75][k] <= q[90][k]
+    doc = cf.path_quantiles.__doc__
+    assert "never a confidence interval" in doc.lower()
+    assert "over-disp" in doc.lower(), "the mis-scaling must be stated where the fan is made"
+
+
+def test_no_individual_trajectory_is_exposed_for_plotting():
+    """The design decision, pinned: bands and a median, never a single strand.
+
+    An individual sampled path's per-step shape is substantially codebook granularity — the return
+    channel is the worst-reconstructed of the seven OHLCV dims. Exposing strands for plotting would
+    render that artifact as market structure.
+    """
+    fields = set(cf.CsvForecast.__dataclass_fields__)
+    for banned in ("paths", "trajectories", "samples", "strands"):
+        assert banned not in fields, f"CsvForecast exposes {banned!r} — strands must not be plotted"
+    assert "quantiles" in fields

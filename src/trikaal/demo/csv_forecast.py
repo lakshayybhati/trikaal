@@ -263,6 +263,12 @@ class CsvForecast:
     inferred_bar_ms: int
     warnings: list[str]
     n_rows: int
+    # seed -> {percentile: [h] cumulative log-return path}. SAMPLE percentiles of the model's own
+    # sampled trajectories — never a confidence interval, and deliberately NOT individual paths.
+    quantiles: dict = field(default_factory=dict)
+    n_mc_samples: int = 0
+    # seed -> {h_anchor: mu}. The four TRAINED MTP horizons; between them is interpolation.
+    mtp_anchors: dict = field(default_factory=dict)
 
 
 def forecast_from_csv(
@@ -272,6 +278,7 @@ def forecast_from_csv(
     h: int = PAPER_HORIZON,
     device: str = "cpu",
     mc_samples: int = 32,
+    n_mc_paths: int = 48,
 ) -> CsvForecast:
     """The whole path: CSV → production features → tokenizer → AR → per-seed mu-hat + MC band."""
     if h not in TRAINED_HORIZONS:
@@ -287,6 +294,8 @@ def forecast_from_csv(
     dec = np.array([i], np.int64)
     per_seed = {}
     mu_samples = []
+    quantiles: dict = {}
+    anchors: dict = {}
     for seed in sorted(units):
         u = units[seed]
         b_c, b_f = tokenize_features(
@@ -324,6 +333,38 @@ def forecast_from_csv(
             )[0]
         )
         mu_samples.append(mc)
+        paths = mc_paths(
+            u,
+            x_arm,
+            m_arm,
+            out.segment_id,
+            out.ts,
+            out.sigma,
+            i,
+            h=h,
+            n_samples=n_mc_paths,
+            device=device,
+        )
+        quantiles[seed] = path_quantiles(paths)
+        anchors[seed] = {
+            int(ha): float(
+                predict_mu(
+                    u.model,
+                    u.tok,
+                    b_c,
+                    b_f,
+                    out.ts,
+                    out.sigma,
+                    dec,
+                    h=int(ha),
+                    seq_len=SEQ_LEN,
+                    device=device,
+                    estimator="expectation",
+                )[0]
+            )
+            for ha in TRAINED_HORIZONS
+            if int(ha) <= h
+        }
         last = float(bars.close[i])
         per_seed[seed] = {
             "mu": mu,
@@ -354,6 +395,9 @@ def forecast_from_csv(
         inferred_bar_ms=bars.inferred_bar_ms,
         warnings=bars.warnings,
         n_rows=int(bars.ts_ms.shape[0]),
+        quantiles=quantiles,
+        n_mc_samples=n_mc_paths,
+        mtp_anchors=anchors,
     )
 
 
@@ -388,6 +432,33 @@ def forecast_csv_export(f: CsvForecast) -> str:
     w.writerow(["NOT_A_RECOMMENDATION", "forecast only; no position, profit or P&L is computed"])
     for i, wn in enumerate(f.warnings):
         w.writerow([f"warning_{i + 1}", wn])
+
+    # ── PER-STEP QUANTILES: the same numbers the chart draws, so the two cannot disagree ──────
+    if f.quantiles:
+        w.writerow([])
+        w.writerow(["# per-step SAMPLE percentiles of the model's own sampled trajectories."])
+        w.writerow(["# NOT confidence intervals. mu-hat is measured 25-446x OVER-DISPERSED"])
+        w.writerow(["# relative to the returns it forecasts, so this fan is far WIDER than"])
+        w.writerow(["# reality. Individual trajectories are deliberately NOT exported: the"])
+        w.writerow(["# return channel is the worst-reconstructed of the 7 OHLCV dims, so a"])
+        w.writerow(["# single path's per-step shape is substantially codebook granularity."])
+        qs = sorted(next(iter(f.quantiles.values())))
+        w.writerow(["seed", "step_minutes"] + [f"p{q}_pct" for q in qs])
+        for seed in sorted(f.quantiles):
+            qd = f.quantiles[seed]
+            for k in range(f.h):
+                row = [seed, k + 1]
+                row += [f"{(math.exp(qd[q][k]) - 1.0) * 100.0:.6f}" for q in qs]
+                w.writerow(row)
+    if f.mtp_anchors:
+        w.writerow([])
+        w.writerow(["# MTP anchors — horizons the heads were actually TRAINED for."])
+        w.writerow(["# Values between anchors on the chart are INTERPOLATION."])
+        w.writerow(["seed", "trained_horizon_minutes", "forecast_pct"])
+        for seed in sorted(f.mtp_anchors):
+            for ha in sorted(f.mtp_anchors[seed]):
+                mu = f.mtp_anchors[seed][ha]
+                w.writerow([seed, ha, f"{(math.exp(mu) - 1.0) * 100.0:.6f}"])
     return buf.getvalue()
 
 
@@ -405,3 +476,94 @@ __all__ = [
     "parse_csv",
     "plain_english",
 ]
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# PROBABILISTIC PATHS — the MC rollout, keeping what production throws away
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# ``predict._rollout_mc_mean`` samples full autoregressive chains and then AVERAGES them to one
+# scalar. The per-step cumulative values it discards are genuine sampled trajectories. This keeps
+# them. It is a re-implementation of that loop and therefore a drift risk, so it is gated: the
+# MEAN of these paths' endpoints must equal ``predict_mu(estimator="mc_mean")`` BIT-FOR-BIT at the
+# same seed and sample count (``test_mc_paths_endpoint_matches_production``). If the two ever
+# diverge, this function is showing a different rollout from the scored one.
+#
+# ★ READ THE BAND, NOT THE WIGGLE. Each per-step value is ``decode_tokens(...)[:, 0, 0]`` — a
+# SAMPLED TOKEN PUT THROUGH THE TOKENIZER DECODER. The return channel is the WORST-reconstructed
+# of the seven OHLCV dims (rank 7/7, 6/7, 6/7 by seed) and the codebook cannot resolve it finer
+# than ~0.55 z against a per-step decode sd of 1.11 z. An individual strand's texture is therefore
+# substantially codebook granularity rendered as market structure — which is why this module
+# exposes QUANTILES and a MEDIAN and deliberately does NOT expose individual trajectories for
+# plotting. Quantization affects every sample alike, so the band's WIDTH and the MEDIAN survive it;
+# a single strand's shape does not.
+
+
+def mc_paths(
+    unit: Unit,
+    x_arm: np.ndarray,
+    m_arm: np.ndarray,
+    segment_id: np.ndarray,
+    ts: np.ndarray,
+    sigma: np.ndarray,
+    decision: int,
+    *,
+    h: int,
+    n_samples: int = 64,
+    seed: int = 20260704,
+    device: str = "cpu",
+) -> np.ndarray:
+    """``[n_samples, h]`` cumulative raw log-return paths from sampled AR chains.
+
+    Mirrors ``predict._rollout_mc_mean`` step for step, including the k=1 exclusion (mu-hat covers
+    [t+1, t+h], so the entry bar contributes nothing) and the final ``* sigma_t`` vol rescale.
+    """
+    import torch
+    import torch.nn.functional as F
+
+    from trikaal.data.config import BAR_MS as _BAR_MS
+    from trikaal.eval.predict import _fill_context
+
+    model, tok = unit.model, unit.tok
+    dev = torch.device(device)
+    model.eval()
+    tok.eval()
+
+    b_c, b_f = tokenize_features(tok, x_arm, m_arm, segment_id, window=SEQ_LEN, device=device)
+    d = np.array([decision], np.int64)
+    offs = np.arange(-SEQ_LEN + 1, 1)
+    idx = d[:, None] + offs[None, :]
+    cc = torch.from_numpy(b_c[idx].astype(np.int64)).to(dev)
+    cf = torch.from_numpy(b_f[idx].astype(np.int64)).to(dev)
+    cts = torch.from_numpy(ts[idx].astype(np.int64)).to(dev)
+    ts_dec = cts[:, -1:]
+    sig_t = float(sigma[decision])
+
+    gen = torch.Generator(device="cpu").manual_seed(seed)
+    out_paths = np.zeros((n_samples, h), dtype=np.float64)
+    with torch.no_grad():
+        for s in range(n_samples):
+            _caches, out = _fill_context(model, cc, cf, cts, SEQ_LEN)
+            caches = _caches
+            cum = torch.zeros(1, dtype=torch.float32, device=dev)
+            for k in range(1, h + 1):
+                pc_p = F.softmax(out.logits_c.float(), dim=-1).reshape(1, -1).cpu()
+                pc = torch.multinomial(pc_p, 1, generator=gen).reshape(1, 1).to(dev)
+                logits_f = model.fine_logits(out.h_final, pc)
+                pf_p = F.softmax(logits_f.float(), dim=-1).reshape(1, -1).cpu()
+                pf = torch.multinomial(pf_p, 1, generator=gen).reshape(1, 1).to(dev)
+                if k >= 2:
+                    cum = cum + tok.decode_tokens(pc, pf)[:, 0, 0]
+                out_paths[s, k - 1] = float(cum.item()) * sig_t
+                if k < h:
+                    out = model.step(pc, pf, ts_dec + k * _BAR_MS, caches, SEQ_LEN - 1 + k)
+    return out_paths
+
+
+def path_quantiles(paths: np.ndarray, qs=(10, 25, 50, 75, 90)) -> dict:
+    """SAMPLE PERCENTILES of the sampled paths — never a confidence interval.
+
+    These describe the spread of the MODEL'S OWN samples. Our measured mu-hat over-dispersion is
+    25-446x relative to the returns being forecast, so this fan is far WIDER than reality. It is
+    the model's uncertainty, and that uncertainty is badly mis-scaled.
+    """
+    return {int(q): np.percentile(paths, q, axis=0) for q in qs}

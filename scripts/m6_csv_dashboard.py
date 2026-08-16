@@ -67,8 +67,8 @@ _SVG_CSS = (
 
 def _svg(f) -> str:
     """History solid, forecast dotted. Every qualifier is a text node inside this viewBox."""
-    w, hgt = 980, 560
-    pl, pr, pt, pb = 66, 24, 96, 132
+    w, hgt = 1020, 620
+    pl, pr, pt, pb = 66, 24, 96, 164
     pw, ph = w - pl - pr, hgt - pt - pb
 
     close = np.asarray(f.context_close, float)
@@ -102,19 +102,46 @@ def _svg(f) -> str:
         parts.append(
             f'<text class="ax" x="{pl - 8}" y="{yy(v) + 3:.1f}" text-anchor="end">{v:.4f}</text>'
         )
-    parts.append(
-        f'<polygon points="{x0:.1f},{yy(1.0):.1f} {xf:.1f},{yy(bhi):.1f} '
-        f'{xf:.1f},{yy(blo):.1f}" fill="#64748b" fill-opacity="0.14"/>'
-    )
+    # ── SAMPLE-PERCENTILE BANDS + MEDIAN PATH, per seed. Never individual trajectories. ──────
+    import math as _m
+
+    for s in sorted(f.per_seed):
+        c = SEED_COLOURS.get(s, "#7c3aed")
+        qd = f.quantiles.get(s)
+        if not qd:
+            continue
+        for lo_q, hi_q, op in ((10, 90, 0.09), (25, 75, 0.14)):
+            up = [yy(_m.exp(qd[hi_q][k])) for k in range(f.h)]
+            dn = [yy(_m.exp(qd[lo_q][k])) for k in range(f.h)]
+            pts = " ".join(f"{xx(n - 1 + k + 1):.1f},{up[k]:.1f}" for k in range(f.h))
+            pts += " " + " ".join(
+                f"{xx(n - 1 + k + 1):.1f},{dn[k]:.1f}" for k in range(f.h - 1, -1, -1)
+            )
+            parts.append(
+                f'<polygon points="{x0:.1f},{yy(1.0):.1f} {pts}" '
+                f'fill="{c}" fill-opacity="{op}" stroke="none"/>'
+            )
     parts.append(f'<polyline class="hs" points="{hist_pts}"/>')
     for k, s in enumerate(sorted(f.per_seed)):
         c = SEED_COLOURS.get(s, "#7c3aed")
+        qd = f.quantiles.get(s)
+        if qd:
+            med = " ".join(
+                f"{xx(n - 1 + j + 1):.1f},{yy(_m.exp(qd[50][j])):.1f}" for j in range(f.h)
+            )
+            parts.append(
+                f'<polyline points="{x0:.1f},{yy(1.0):.1f} {med}" fill="none" '
+                f'stroke="{c}" stroke-width="2.2"/>'
+            )
         y = yy(f.per_seed[s]["price"] / anchor)
-        parts.append(
-            f'<line x1="{x0:.1f}" y1="{yy(1.0):.1f}" x2="{xf:.1f}" y2="{y:.1f}" '
-            f'stroke="{c}" stroke-width="2" stroke-dasharray="6 4"/>'
-            f'<circle cx="{xf:.1f}" cy="{y:.1f}" r="5" fill="{c}"/>'
-        )
+        parts.append(f'<circle cx="{xf:.1f}" cy="{y:.1f}" r="4.5" fill="{c}"/>')
+        # MTP anchors — horizons actually trained; between them is interpolation
+        for ha, mu in sorted(f.mtp_anchors.get(s, {}).items()):
+            if 1 <= ha <= f.h:
+                parts.append(
+                    f'<rect x="{xx(n - 1 + ha) - 3:.1f}" y="{yy(_m.exp(mu)) - 3:.1f}" '
+                    f'width="6" height="6" fill="none" stroke="{c}" stroke-width="1.4"/>'
+                )
         lx = pl + k * 230
         parts.append(
             f'<circle cx="{lx + 5}" cy="{hgt - 112}" r="4.5" fill="{c}"/>'
@@ -134,20 +161,28 @@ def _svg(f) -> str:
     body_fill = "#7f1d1d" if ood else "#475569"
     tail = "  <- NOT 60s: OUT OF DISTRIBUTION" if ood else "  (matches training)"
     warn_lines = [
-        "TRAINED ON CRYPTO 1-MINUTE BARS. ANYTHING ELSE IS EXTRAPOLATION.",
-        f"Inferred bar interval: {f.inferred_bar_ms / 1000:g}s{tail}",
-        "Forecast only. No profit, position or P&L is computed. Not investment advice.",
+        "READ THE BAND, NOT THE WIGGLE. THIS IS NOT A PREDICTION OF THE PRICE.",
+        "Bands are SAMPLE PERCENTILES of the model's own sampled paths, NOT confidence "
+        "intervals. Our own measurement: mu-hat is 25-446x OVER-DISPERSED vs the returns "
+        "it forecasts, so this fan is far WIDER than reality.",
+        "Lines are the MEDIAN of "
+        f"{f.n_mc_samples} sampled trajectories per seed - not 'the prediction'. Squares = the "
+        "4 TRAINED MTP horizons; between them is interpolation.",
+        "Measured edge ~0.005-0.02% per trade and NET NEGATIVE after realistic fees. "
+        "Per-step shape is quantized at ~0.55z on the worst-reconstructed channel.",
+        f"TRAINED ON CRYPTO 1-MINUTE BARS. Inferred interval {f.inferred_bar_ms / 1000:g}s{tail}."
+        "  No profit, position or P&L is computed. Not investment advice.",
     ]
-    wy = hgt - 96
+    wy = hgt - 128
     parts.append(
-        f'<rect x="{pl}" y="{wy}" width="{pw}" height="54" rx="5" '
+        f'<rect x="{pl}" y="{wy}" width="{pw}" height="86" rx="5" '
         f'fill="{box_fill}" stroke="{box_stroke}"/>'
     )
     for i, txt in enumerate(warn_lines):
         weight = "700 11px" if i == 0 else "10.5px"
         fill = head_fill if i == 0 else body_fill
         parts.append(
-            f'<text x="{pl + 10}" y="{wy + 17 + i * 15}" '
+            f'<text x="{pl + 10}" y="{wy + 16 + i * 14}" '
             f'style="font:{weight} system-ui,sans-serif;fill:{fill}">'
             f"{html.escape(txt)}</text>"
         )
@@ -159,7 +194,7 @@ def _svg(f) -> str:
         "&#183; cell 1 (BSQ, OHLCV-only &#8212; the BASELINE arm)</text>",
         f'<text class="sb" x="{pl}" y="50">Your CSV, {f.n_rows:,} rows. '
         f"Last bar {html.escape(stamp)}. Solid = your data; dotted = forecast; "
-        "shaded = the seeds&#8217; disagreement.</text>",
+        "shaded = sample percentiles (10-90, 25-75).</text>",
         f'<text class="sb" x="{pl}" y="68">Three seeds, never averaged. The band is the '
         "SPREAD BETWEEN MODELS, not a calibrated confidence interval.</text>",
     ]
