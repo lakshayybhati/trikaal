@@ -64,6 +64,20 @@
       "normal_p_value": 0.08967917782796886,
       "note": "Does NOT clear (-0.1545). The percentile counterpart at this level would be the 2.5th quantile, which the pinned harness does not emit and which is NOT computed here."
     },
-    "HOW_TO_STATE_IT": "t = 1.70, below the conventional two-sided 1.96. At the PRE-REGISTERED one-sided alpha=0.05 the result clears zero on both the percentile bound (+0.0454) and its normal approximation (+0.0307). Under a two-sided 95% test \u2014 which is NOT what was pre-registered \u2014 it would not (-0.1545). The effect is real on the instrument declared in advance and is NOT comfortably large; both halves of that sentence must travel together."
+    "HOW_TO_STATE_IT": "t = 1.70, below the conventional two-sided 1.96. At the PRE-REGISTERED one-sided alpha=0.05 the result clears zero on both the percentile bound (+0.0454) and its normal approximation (+0.0307). Under a two-sided 95% test \u2014 which is NOT what was pre-registered \u2014 it would not (-0.1545). The effect is real on the instrument declared in advance and is NOT comfortably large; both halves of that sentence must travel together.",
+    "\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3": {
+      "what_was_wrong": "Commit 76e46a3's message explained an earlier scratch value of 0.1794 by saying it 'used 1-erf(t/sqrt2) instead of 1-Phi(t) and was wrong by 2x'. THAT DIAGNOSIS IS WRONG. 1-erf(t/sqrt2) IS the two-sided p-value and evaluates to 0.089674 \u2014 correct. The actual error was computing 2*(1-erf(t/sqrt2)), i.e. DOUBLING an already-two-sided quantity.",
+      "verification": {
+        "t": 1.697122,
+        "erf(t/sqrt2)": 0.910326,
+        "1-erf(t/sqrt2)": 0.089674,
+        "2*(1-Phi(t))": 0.089674,
+        "identity": "1 - erf(t/sqrt2) == 2*(1-Phi(t)) \u2014 the two-sided p, two ways",
+        "the_scratch_bug": "2*(1-erf(t/sqrt2)) = 0.179347"
+      },
+      "the_value_shipped_was_always_right": "two_sided p = 0.0897 in this receipt is and was correct. Only the EXPLANATION beside it in the commit message was wrong.",
+      "why_this_is_recorded_rather_than_shrugged_off": "A wrong root cause in the record is the class this project polices: it is more durable than a wrong number because nothing recomputes it. Left standing, it would teach a future reader that 1-erf(t/sqrt2) is not the two-sided p \u2014 which is false \u2014 and that belief would propagate into the next calculation. Commit messages are immutable once pushed, so the correction lives here, in the artifact a reader actually consults.",
+      "credit": "caught by the supervisor on review; the builder's self-correction was itself wrong."
+    }
   }
 }
