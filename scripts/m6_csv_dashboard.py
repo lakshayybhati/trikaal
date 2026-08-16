@@ -609,7 +609,13 @@ _APP_CSS = """
      design's Google Fonts link out: the page must not fetch, and now also must not re-publish. */
   --d:'Clash Display','Clash Display Medium','Helvetica Neue',Helvetica,Arial,sans-serif;
   --f:'Helvetica Neue',Helvetica,Arial,sans-serif;
-  --m:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+  /* ★ THE UI LABEL FACE IS HELVETICA, NOT MONOSPACE — and the variable is named --l, not
+     --m, because a variable called "mono" holding a proportional face is the prose-vs-
+     artifact drift this project keeps paying for. THE FIGURE'S MONO IS A DIFFERENT
+     CONSTANT (_MONO_CSS) AND MUST STAY MONOSPACE: the disclosure wrap's fit is a PROOF
+     that depends on a fixed 0.62em advance, and a proportional face turns that proof back
+     into the guess that clipped the over-dispersion caveat off the raster. */
+  --l:'Helvetica Neue',Helvetica,Arial,sans-serif;
   --sh:0 30px 80px rgba(0,0,0,0.6);
 }
 @supports (color: oklch(0.8 0.14 150)){ :root{ --ac: oklch(0.8 0.14 150); } }
@@ -656,7 +662,7 @@ header{position:relative;z-index:6;height:76px;display:flex;align-items:center;
 .mark i:before,.mark i:after{content:'';position:absolute;background:#000}
 .mark i:before{top:5px;left:0;width:12px;height:2px}
 .mark i:after{left:5px;top:0;width:2px;height:12px}
-.mono{font-family:var(--m)}
+.mono{font-family:var(--l)}
 .lbl{font-family:var(--d);font-size:16px;font-weight:500;letter-spacing:0.14em;
   text-transform:uppercase;color:rgba(255,255,255,0.94)}
 .sep{width:1px;height:14px;background:rgba(255,255,255,0.18)}
@@ -664,7 +670,7 @@ header{position:relative;z-index:6;height:76px;display:flex;align-items:center;
 .pill{display:flex;align-items:center;gap:9px;height:38px;padding:0 18px;border-radius:999px;
   border:1px solid rgba(255,255,255,0.12);background:rgba(10,10,10,0.6);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  font-family:var(--m);font-size:11px;letter-spacing:0.1em;color:rgba(255,255,255,0.7);
+  font-family:var(--l);font-size:11px;letter-spacing:0.1em;color:rgba(255,255,255,0.7);
   white-space:nowrap}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--ac);
   box-shadow:0 0 10px var(--ac);flex:0 0 auto}
@@ -677,7 +683,7 @@ nav.rail{position:sticky;top:16px;align-self:center;display:flex;flex-direction:
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex:0 0 auto}
 nav.rail button{width:38px;height:38px;border:0;border-radius:12px;background:transparent;
   display:grid;place-items:center;cursor:pointer;transition:background 160ms ease;
-  font-family:var(--m);font-size:14px;color:var(--t2)}
+  font-family:var(--l);font-size:14px;color:var(--t2)}
 nav.rail button:hover{background:rgba(255,255,255,0.1);color:#fff}
 nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 
@@ -687,7 +693,7 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .right{flex:1 1 auto;min-width:0;justify-content:flex-start}
 .glass{border-radius:26px;border:1px solid var(--line);background:var(--pane);
   backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);box-shadow:var(--sh)}
-.k{font-family:var(--m);font-size:10px;letter-spacing:0.2em;color:var(--t3);
+.k{font-family:var(--l);font-size:10px;letter-spacing:0.2em;color:var(--t3);
   text-transform:uppercase}
 
 .thread{display:flex;flex-direction:column;gap:10px;max-height:52vh;overflow-y:auto;
@@ -702,10 +708,10 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .msg.bad{align-self:flex-start;width:100%;border:1.5px solid #ef4444;
   background:rgba(43,15,16,0.9)}
 .mhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:12px}
-.mhead .who{font-family:var(--m);font-size:10px;letter-spacing:0.18em}
-.mhead .st{font-family:var(--m);font-size:10px;letter-spacing:0.1em;color:var(--t4)}
+.mhead .who{font-family:var(--l);font-size:10px;letter-spacing:0.18em}
+.mhead .st{font-family:var(--l);font-size:10px;letter-spacing:0.1em;color:var(--t4)}
 .msg p{margin:0;font-size:14px;line-height:1.6;color:var(--t1)}
-.msg pre{margin:0;font-family:var(--m);font-size:12px;line-height:1.65;color:#fecaca;
+.msg pre{margin:0;font-family:var(--l);font-size:12px;line-height:1.65;color:#fecaca;
   white-space:pre-wrap;word-break:break-word}
 
 .composer{position:relative;min-height:150px;padding:20px 24px 16px;display:flex;
@@ -717,7 +723,7 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
   color:var(--t2);letter-spacing:0}
 .chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .chip{height:30px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);
-  background:rgba(255,255,255,0.03);cursor:pointer;font-family:var(--m);font-size:10px;
+  background:rgba(255,255,255,0.03);cursor:pointer;font-family:var(--l);font-size:10px;
   letter-spacing:0.1em;color:var(--t2);transition:all 160ms ease}
 .chip:hover{color:#fff;border-color:rgba(255,255,255,0.28)}
 .chip.on{color:#000;background:var(--ac);border-color:var(--ac)}
@@ -725,9 +731,9 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
   border:1px solid rgba(255,255,255,0.12);background:rgba(14,14,14,0.78);
   font-size:12px;color:rgba(255,255,255,0.72)}
 .file span.tag{width:auto;padding:0 6px;height:18px;border-radius:5px;
-  background:rgba(255,255,255,0.14);display:grid;place-items:center;font-family:var(--m);
+  background:rgba(255,255,255,0.14);display:grid;place-items:center;font-family:var(--l);
   font-size:9px;color:rgba(255,255,255,0.7)}
-.file button{border:0;background:transparent;cursor:pointer;font-family:var(--m);font-size:13px;
+.file button{border:0;background:transparent;cursor:pointer;font-family:var(--l);font-size:13px;
   color:var(--t3);padding:0}
 .file button:hover{color:#fff}
 /* the reference puts the action at the far bottom-right of the screen, not beside the composer */
@@ -740,7 +746,7 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .foot{display:flex;align-items:flex-end;gap:10px}
 
 .disc{padding:18px 20px}
-.disc h3{margin:0 0 12px;font-family:var(--m);font-size:10px;letter-spacing:0.2em;
+.disc h3{margin:0 0 12px;font-family:var(--l);font-size:10px;letter-spacing:0.2em;
   color:var(--t3);text-transform:uppercase}
 .disc ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
 .disc li{font-size:12.5px;line-height:1.5;color:var(--t1);padding-left:14px;position:relative}
@@ -752,12 +758,12 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .empty{padding:56px 24px;text-align:center;color:var(--t2);font-size:13px}
 .dl{display:inline-flex;align-items:center;gap:8px;margin-top:12px;height:32px;padding:0 14px;
   border-radius:10px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.04);
-  font-family:var(--m);font-size:10.5px;letter-spacing:0.1em;color:var(--t1);
+  font-family:var(--l);font-size:10.5px;letter-spacing:0.1em;color:var(--t1);
   text-decoration:none}
 .dl:hover{border-color:rgba(255,255,255,0.34)}
 .stagebtn{margin-top:10px;height:26px;padding:0 10px;border-radius:8px;
   border:1px solid rgba(255,255,255,0.12);background:transparent;cursor:pointer;
-  font-family:var(--m);font-size:9.5px;letter-spacing:0.12em;color:var(--t3)}
+  font-family:var(--l);font-size:9.5px;letter-spacing:0.12em;color:var(--t3)}
 .stagebtn:hover{color:#fff}
 
 .overlay{position:fixed;inset:0;z-index:40;display:none;place-items:center;
@@ -776,26 +782,28 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .row.run i{background:#fff;animation:blink 1.4s ease-in-out infinite}
 .row.warn i{background:#f59e0b}
 .row.fail i{background:#ef4444}
-.row .n{font-family:var(--m);font-size:10.5px;letter-spacing:0.14em;color:rgba(255,255,255,0.7);
+.row .n{font-family:var(--l);font-size:10.5px;letter-spacing:0.14em;color:rgba(255,255,255,0.7);
   text-transform:uppercase}
-.row .v{font-family:var(--m);font-size:11px;color:var(--t2);display:block;margin-top:3px;
-  letter-spacing:0;text-transform:none;word-break:break-word}
+/* the measured values are the substance of this screen; Helvetica sits lighter than the
+   monospace it replaced, so they get back the presence the face change cost them */
+.row .v{font-family:var(--l);font-size:11.5px;color:rgba(255,255,255,0.62);display:block;
+  margin-top:3px;letter-spacing:0;text-transform:none;word-break:break-word}
 .row.warn .v{color:#fbbf24}
 .row.fail .v{color:#fca5a5}
-.row .tm{font-family:var(--m);font-size:10px;color:var(--t4)}
+.row .tm{font-family:var(--l);font-size:10px;color:var(--t4)}
 .note{margin-top:16px;font-size:12px;line-height:1.55;color:var(--t2)}
 
 .panel{padding:18px 20px;font-size:13px;line-height:1.6;color:var(--t1)}
-.panel h3{margin:0 0 10px;font-family:var(--m);font-size:10px;letter-spacing:0.2em;
+.panel h3{margin:0 0 10px;font-family:var(--l);font-size:10px;letter-spacing:0.2em;
   color:var(--t3);text-transform:uppercase}
 .panel p{margin:0 0 10px}
 .panel .hist{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
 .panel .hist button{text-align:left;border:1px solid rgba(255,255,255,0.1);border-radius:12px;
   background:rgba(255,255,255,0.03);padding:9px 12px;cursor:pointer;color:var(--t1);
-  font-family:var(--m);font-size:11px}
+  font-family:var(--l);font-size:11px}
 .panel .hist button:hover{border-color:rgba(255,255,255,0.3)}
 .clear{height:30px;padding:0 12px;border-radius:9px;border:1px solid rgba(239,68,68,0.5);
-  background:transparent;color:#fca5a5;font-family:var(--m);font-size:10px;letter-spacing:0.1em;
+  background:transparent;color:#fca5a5;font-family:var(--l);font-size:10px;letter-spacing:0.1em;
   cursor:pointer}
 .clear:hover{background:rgba(239,68,68,0.14)}
 
