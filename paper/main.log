@@ -546,6 +546,15 @@ Package cleveref Info: always capitalise cross-reference names on input line 78
 Package cleveref Info: no abbreviation of names on input line 7852.
 )
 Package hyperref Info: Option `colorlinks' set `true' on input line 36.
+) (tabularx.sty
+Package: tabularx 2020/01/15 v2.11c `tabularx' package (DPC)
+\TX@col@width=\dimen191
+\TX@old@table=\dimen192
+\TX@old@col=\dimen193
+\TX@target=\dimen194
+\TX@delta=\dimen195
+\TX@cols=\count320
+\TX@ftn=\toks31
 )
 (TeXGyreTermesX.fontspec)
 Requested font "[TeXGyreTermesX-Regular.otf]/OT" at 9.99997pt
@@ -626,63 +635,63 @@ language=dflt;-ss05;+tnum;+lnum;+smcp;+pcap;mapping=tex-text;"
 ;language=dflt;-ss05;+tnum;+lnum;+smcp;+pcap;mapping=tex-text;"
 
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 10.0pt on input line 25.
+(Font)              scaled to size 10.0pt on input line 36.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-Regular.otf
  (main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/ntxmi/m/it on input line 25.
+LaTeX Font Info:    Checking defaults for OML/ntxmi/m/it on input line 36.
 LaTeX Font Info:    Trying to load font information for OML+ntxmi on input line
- 25.
+ 36.
  (omlntxmi.fd
 File: omlntxmi.fd 2015/08/25 Fontinst v1.933 font definitions for OML/ntxmi.
 )
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
-LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 2
-5.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 36.
+LaTeX Font Info:    Trying to load font information for TS1+cmr on input line 3
+6.
  (ts1cmr.fd
 File: ts1cmr.fd 2019/12/16 v2.5j Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for U/ntxexa/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for U/ntxexa/m/n on input line 36.
 LaTeX Font Info:    Trying to load font information for U+ntxexa on input line 
-25.
+36.
  (untxexa.fd
 File: untxexa.fd 2012/04/16 Fontinst v1.933 font definitions for U/ntxexa.
 )
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for LMS/ntxsy/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for LMS/ntxsy/m/n on input line 36.
 LaTeX Font Info:    Trying to load font information for LMS+ntxsy on input line
- 25.
+ 36.
 
 (lmsntxsy.fd
 File: lmsntxsy.fd 2016/07/02 Fontinst v1.933 font definitions for LMS/ntxsy.
 )
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for LMX/ntxexx/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for LMX/ntxexx/m/n on input line 36.
 LaTeX Font Info:    Trying to load font information for LMX+ntxexx on input lin
-e 25.
+e 36.
  (lmxntxexx.fd
 File: lmxntxexx.fd 2016/07/03 Fontinst v1.933 font definitions for LMX/ntxexx.
 )
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
-LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 36.
+LaTeX Font Info:    ... okay on input line 36.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: xetex
@@ -718,11 +727,11 @@ LaTeX Font Info:    ... okay on input line 25.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Info: Redefining \microtypecontext on input line 25.
-Package microtype Info: Applying patch `item' on input line 25.
-Package microtype Info: Applying patch `toc' on input line 25.
-Package microtype Info: Applying patch `eqnum' on input line 25.
-Package microtype Info: Applying patch `footnote' on input line 25.
+LaTeX Info: Redefining \microtypecontext on input line 36.
+Package microtype Info: Applying patch `item' on input line 36.
+Package microtype Info: Applying patch `toc' on input line 36.
+Package microtype Info: Applying patch `eqnum' on input line 36.
+Package microtype Info: Applying patch `footnote' on input line 36.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: No adjustment of tracking.
@@ -735,7 +744,7 @@ Package microtype Info: Loading generic protrusion settings for font family
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring ON on input line 25.
+Package hyperref Info: Link coloring ON on input line 36.
 (nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
  (refcount.sty
@@ -743,29 +752,24 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ) (gettitlestring.sty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count320
+\c@section@level=\count321
 )
-LaTeX Info: Redefining \ref on input line 25.
-LaTeX Info: Redefining \pageref on input line 25.
-LaTeX Info: Redefining \nameref on input line 25.
+LaTeX Info: Redefining \ref on input line 36.
+LaTeX Info: Redefining \pageref on input line 36.
+LaTeX Info: Redefining \nameref on input line 36.
  (main.out) (main.out)
 \@outlinefile=\write3
 \openout3 = `main.out'.
 
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 14.4pt on input line 26.
+(Font)              scaled to size 14.4pt on input line 37.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 14.4pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 14.4pt on input line 26.
+(Font)              scaled to size 14.4pt on input line 37.
 Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 14.4pt
- -> TeXGyreTermesX-Bold.otf
-LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 10.0pt on input line 26.
-Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
-num;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-Bold.otf
 Requested font "[lmmono10-regular]:" at 10.0pt
  -> lmmono10-regular
@@ -773,17 +777,18 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             `lmtt' (encoding: TU).
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
-LaTeX Font Info:    Font shape `TU/lmtt/bx/n' in size <10> not available
-(Font)              Font shape `TU/lmtt/b/n' tried instead on input line 26.
-Requested font "[lmmonolt10-bold]:" at 10.0pt
- -> lmmonolt10-bold
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 9.0pt on input line 26.
+(Font)              scaled to size 9.0pt on input line 37.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 9.0pt
  -> TeXGyreTermesX-Regular.otf
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
+(Font)              scaled to size 10.0pt on input line 79.
+Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
+num;+lnum;mapping=tex-text;" at 10.0pt
+ -> TeXGyreTermesX-Bold.otf
 LaTeX Font Info:    Trying to load font information for OT1+minntx on input lin
-e 38.
+e 87.
 
 (ot1minntx.fd
 File: ot1minntx.fd 2022/01/20 v1.0 font definition file for OT1/minntx
@@ -816,7 +821,7 @@ Requested font "ntxexx" at 7.3pt
  -> ntxexx
 Requested font "ntxexx" at 5.5pt
  -> ntxexx
-LaTeX Font Info:    Trying to load font information for U+msa on input line 38.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 87.
 
  (umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -830,7 +835,7 @@ Requested font "msam7" at 7.3pt
  -> msam7
 Requested font "msam5" at 5.5pt
  -> msam5
-LaTeX Font Info:    Trying to load font information for U+msb on input line 38.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 87.
 
  (umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -845,7 +850,7 @@ Requested font "msbm7" at 7.3pt
 Requested font "msbm5" at 5.5pt
  -> msbm5
 LaTeX Font Info:    Trying to load font information for U+ntxmia on input line 
-38.
+87.
  (untxmia.fd
 File: untxmia.fd 2018/04/14 Fontinst v1.933 font definitions for U/ntxmia.
 )
@@ -856,7 +861,7 @@ Requested font "ntxmia" at 7.3pt
 Requested font "ntxmia" at 5.5pt
  -> ntxmia
 LaTeX Font Info:    Trying to load font information for U+ntxsym on input line 
-38.
+87.
 
 (untxsym.fd
 File: untxsym.fd 2015/03/20 Fontinst v1.933 font definitions for U/ntxsym.
@@ -868,7 +873,7 @@ Requested font "ntxsym" at 7.3pt
 Requested font "ntxsym" at 5.5pt
  -> ntxsym
 LaTeX Font Info:    Trying to load font information for U+ntxsyc on input line 
-38.
+87.
  (untxsyc.fd
 File: untxsyc.fd 2012/04/12 Fontinst v1.933 font definitions for U/ntxsyc.
 )
@@ -885,42 +890,34 @@ Requested font "ntxexa" at 7.3pt
 Requested font "ntxexa" at 5.5pt
  -> ntxexa
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 9.0pt on input line 49.
+(Font)              scaled to size 9.0pt on input line 93.
 Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 9.0pt
  -> TeXGyreTermesX-Bold.otf
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
+(Font)              scaled to size 9.0pt on input line 101.
+Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
++tnum;+lnum;mapping=tex-text;" at 9.0pt
+ -> TeXGyreTermesX-Italic.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 7.3pt on input line 51.
-Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
-;+tnum;+lnum;mapping=tex-text;" at 7.3pt
- -> TeXGyreTermesX-Regular.otf
-LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 5.5pt on input line 51.
-Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
-;+tnum;+lnum;mapping=tex-text;" at 5.5pt
- -> TeXGyreTermesX-Regular.otf
-LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 12.0pt on input line 57.
+(Font)              scaled to size 12.0pt on input line 155.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 12.0pt on input line 57.
+(Font)              scaled to size 12.0pt on input line 155.
 Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Bold.otf
-File: figures/fig1_mechanism.pdf Graphic file (type pdf)
-<use figures/fig1_mechanism.pdf>
+ (sections/01_intro_body
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
-(Font)              scaled to size 9.0pt on input line 78.
-Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
-+tnum;+lnum;mapping=tex-text;" at 9.0pt
- -> TeXGyreTermesX-Italic.otf
-LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
-(Font)              scaled to size 10.0pt on input line 84.
+(Font)              scaled to size 10.0pt on input line 14.
 Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
 +tnum;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-Italic.otf
+ [1
+
+]
 Requested font "ntx-Regular-tlf-ot1" at 10.0pt
  -> ntx-Regular-tlf-ot1
 Requested font "ntxmi" at 10.0pt
@@ -941,21 +938,16 @@ Requested font "ntxsyc" at 10.0pt
  -> ntxsyc
 Requested font "ntxexa" at 10.0pt
  -> ntxexa
-
-Overfull \hbox (1.63503pt too wide) in paragraph at lines 98--103
+)
+File: figures/fig1_mechanism.pdf Graphic file (type pdf)
+<use figures/fig1_mechanism.pdf>
+ [2]
+Overfull \hbox (1.63503pt too wide) in paragraph at lines 201--206
 []\TU/TeXGyreTermesX(0)/m/n/10 We run a pre-registered, capacity-matched five-c
 ell ablation with a shuffled microstructure placebo
  []
 
-[1
-
-]
-Overfull \hbox (7.81953pt too wide) in paragraph at lines 110--111
-\TU/TeXGyreTermesX(0)/b/n/10 [§2 — four clusters: K-line foundation models; dis
-crete tokenization (VQ/FSQ/BSQ); microstruc-
- []
-
-(sections/03_mechanism [2]
+(sections/02_related [3] [4]) (sections/03_mechanism [5]
 File: figures/fig2_eviction_by_variance_class.pdf Graphic file (type pdf)
 <use figures/fig2_eviction_by_variance_class.pdf>
 Requested font "ntx-Bold-tlf-ot1" at 9.0pt
@@ -966,42 +958,259 @@ Requested font "ntx-Bold-tlf-ot1" at 5.5pt
  -> ntx-Bold-tlf-ot1
 Requested font "ntx-Bold-tlf-ot1" at 10.0pt
  -> ntx-Bold-tlf-ot1
- [3] [4]
+ [6]
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
+(Font)              scaled to size 7.3pt on input line 186.
+Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
+;+tnum;+lnum;mapping=tex-text;" at 7.3pt
+ -> TeXGyreTermesX-Regular.otf
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
+(Font)              scaled to size 5.5pt on input line 186.
+Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
+;+tnum;+lnum;mapping=tex-text;" at 5.5pt
+ -> TeXGyreTermesX-Regular.otf
+ [7]
 File: figures/fig3_extraction.pdf Graphic file (type pdf)
 <use figures/fig3_extraction.pdf>
- [5] [6]
+ [8] [9]
 File: figures/fig4_legibility.pdf Graphic file (type pdf)
 <use figures/fig4_legibility.pdf>
-) [7]
+
+[10]) (sections/04_design [11] [12] [13]
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/sc' will be
+(Font)              scaled to size 10.0pt on input line 187.
+Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
+;+tnum;+lnum;+smcp;+pcap;mapping=tex-text;" at 10.0pt
+ -> TeXGyreTermesX-Regular.otf
+ [14] [15]) (sections/04_figures
 File: figures/fig5_design.pdf Graphic file (type pdf)
 <use figures/fig5_design.pdf>
- [8] [9]
+
+[16]
 File: figures/fig6_validation.pdf Graphic file (type pdf)
 <use figures/fig6_validation.pdf>
- [10]
+) [17] (sections/05_data [18
+
+
+] [19]
+Overfull \hbox (6.94173pt too wide) in paragraph at lines 174--182
+\TU/TeXGyreTermesX(0)/m/n/10 The reduced lake is Hive-partitioned Parquet under
+ \TU/lmtt/m/n/10 (symbol, frequency, month)\TU/TeXGyreTermesX(0)/m/n/10 , queri
+ed through
+ []
+
+
+Overfull \hbox (1.37178pt too wide) in paragraph at lines 183--187
+[]\TU/TeXGyreTermesX(0)/m/n/10 Every dataset is content-hashed and the universe
+ carries a single Merkle root over the lake, \TU/lmtt/m/n/10 sha256:
+ []
+
+) (sections/05_figures
 File: figures/fig7_coverage.pdf Graphic file (type pdf)
 <use figures/fig7_coverage.pdf>
- [11
-
+) [20] [21] (sections/06_results [22
 
 ]
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
+(Font)              scaled to size 10.0pt on input line 147.
+Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
+s05;+tnum;+lnum;mapping=tex-text;" at 10.0pt
+ -> TeXGyreTermesX-BoldItalic.otf
+ [23])
+(sections/06_figures
 File: figures/fig8_verdict.pdf Graphic file (type pdf)
 <use figures/fig8_verdict.pdf>
- [12
-
-]
+ [24] [25]
 File: figures/fig9_cost_stress.pdf Graphic file (type pdf)
 <use figures/fig9_cost_stress.pdf>
- [13]
+ [26]
 File: figures/fig10_seed_stability.pdf Graphic file (type pdf)
 <use figures/fig10_seed_stability.pdf>
-
-[14] (main.bbl) (sections/appendix_mechanism [15
-
+ [27]) (sections/07_limitations [28
 
 
-]) [16] [17] (main.aux)
+
+]
+[29] [30]
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
+(Font)              scaled to size 8.0pt on input line 320.
+Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
+;+tnum;+lnum;mapping=tex-text;" at 8.0pt
+ -> TeXGyreTermesX-Regular.otf
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
+(Font)              scaled to size 8.0pt on input line 329.
+Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
++tnum;+lnum;mapping=tex-text;" at 8.0pt
+ -> TeXGyreTermesX-Italic.otf
+Requested font "ntx-Regular-tlf-ot1" at 8.0pt
+ -> ntx-Regular-tlf-ot1
+Requested font "ntx-Regular-tlf-ot1" at 6.2pt
+ -> ntx-Regular-tlf-ot1
+Requested font "ntxmi7" at 8.0pt
+ -> ntxmi7
+Requested font "ntxmi5" at 6.2pt
+ -> ntxmi5
+Requested font "ntxsy7" at 8.0pt
+ -> ntxsy7
+Requested font "ntxsy5" at 6.2pt
+ -> ntxsy5
+Requested font "ntxexx" at 8.0pt
+ -> ntxexx
+Requested font "ntxexx" at 6.2pt
+ -> ntxexx
+Requested font "ntx-Bold-tlf-ot1" at 8.0pt
+ -> ntx-Bold-tlf-ot1
+Requested font "ntx-Bold-tlf-ot1" at 6.2pt
+ -> ntx-Bold-tlf-ot1
+Requested font "msam10" at 8.0pt
+ -> msam10
+Requested font "msam7" at 6.2pt
+ -> msam7
+Requested font "msbm10" at 8.0pt
+ -> msbm10
+Requested font "msbm7" at 6.2pt
+ -> msbm7
+Requested font "ntxmia" at 8.0pt
+ -> ntxmia
+Requested font "ntxmia" at 6.2pt
+ -> ntxmia
+Requested font "ntxsym" at 8.0pt
+ -> ntxsym
+Requested font "ntxsym" at 6.2pt
+ -> ntxsym
+Requested font "ntxsyc" at 8.0pt
+ -> ntxsyc
+Requested font "ntxsyc" at 6.2pt
+ -> ntxsyc
+Requested font "ntxexa" at 8.0pt
+ -> ntxexa
+Requested font "ntxexa" at 6.2pt
+ -> ntxexa
+LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
+(Font)              scaled to size 8.0pt on input line 329.
+Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
+s05;+tnum;+lnum;mapping=tex-text;" at 8.0pt
+ -> TeXGyreTermesX-BoldItalic.otf
+ [31]
+Overfull \hbox (8.21841pt too wide) in paragraph at lines 358--364
+[]\TU/TeXGyreTermesX(0)/b/n/10 The third was the live one, and re-running it on
+ the specified benchmark closed it — marginally,
+ []
+
+[32] [33]) (sections/08_repro [34] [35] [36] [37]) (main.bbl [38])
+(sections/appendix_mechanism
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[39] [40]) (sections/appendix_repro
+Requested font "[lmmono9-regular]:" at 9.0pt
+ -> lmmono9-regular
+
+Underfull \hbox (badness 6978) in paragraph at lines 63--63
+[]|\TU/TeXGyreTermesX(0)/m/n/9 clause 5 deflated-Sharpe
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--63
+[]|\TU/TeXGyreTermesX(0)/m/n/9 dispersion basis is the
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 63--63
+[]|\TU/TeXGyreTermesX(0)/m/n/9 degeneracy guard, sign-
+ []
+
+[41] [42] [43] [44]) (sections/appendix_claims
+Underfull \hbox (badness 1354) in paragraph at lines 53--53
+[]|\TU/TeXGyreTermesX(0)/m/n/9 interface re-spec re-
+ []
+
+
+Underfull \hbox (badness 1424) in paragraph at lines 53--53
+[]|\TU/TeXGyreTermesX(0)/m/n/9 same, dim 9, three
+ []
+
+
+Underfull \hbox (badness 2269) in paragraph at lines 53--53
+[]|\TU/TeXGyreTermesX(0)/m/n/9 re-spec gate record,
+ []
+
+
+Underfull \hbox (badness 2753) in paragraph at lines 53--53
+[]|\TU/TeXGyreTermesX(0)/m/n/9 planted carrier, \TU/TeXGyreTermesX(0)/m/it/9 no
+t
+ []
+
+
+Underfull \hbox (badness 2269) in paragraph at lines 53--53
+[]|\TU/TeXGyreTermesX(0)/m/n/9 re-spec gate record,
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 53--53
+[]|$\OML/ntxmi/m/it/9 ^^U$\TU/TeXGyreTermesX(0)/m/n/9 -search; restated
+ []
+
+[45]
+Underfull \hbox (badness 1859) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 MDE inputs re-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 M2 univariate
+ []
+
+
+Underfull \hbox (badness 1275) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 conformance; $\U/ntxmia/m/it/9 =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 embargo
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 placebo mecha-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 three cell-1
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 horizon break-
+ []
+
+
+Underfull \hbox (badness 3919) in paragraph at lines 113--113
+[]|\TU/TeXGyreTermesX(0)/m/n/9 same; the grid
+ []
+
+[46]) (sections/appendix_audit [47]
+Overfull \hbox (6.00842pt too wide) in paragraph at lines 24--32
+\TU/TeXGyreTermesX(0)/m/n/10 The ruling named itself amendment v1.6.28 while th
+at tag was absent from the log: \TU/lmtt/m/n/10 grep -c v1.6.28
+ []
+
+
+Underfull \hbox (badness 4699) in paragraph at lines 63--66
+[]|\TU/TeXGyreTermesX(0)/m/n/10 Section [][]7[][], ten subsections ordered by r
+eferee
+ []
+
+
+Underfull \hbox (badness 5302) in paragraph at lines 73--76
+[]|\TU/TeXGyreTermesX(0)/b/n/10 Title and abstract are now LOCKED. \TU/TeXGyreT
+ermesX(0)/m/n/10 The
+ []
+
+[48] [49]) [50] (main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 053000BA639DADBB2D79848D96B55724;3849.
+(rerunfilecheck)             Checksum: 2223F862F078BA442F225BBBE8C4D38C;17498.
  )
-Output written on main.xdv (17 pages, 408984 bytes).
+Output written on main.xdv (50 pages, 1756832 bytes).

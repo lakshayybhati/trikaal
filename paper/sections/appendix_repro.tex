@@ -16,7 +16,8 @@ downgraded result. The values are reproduced from the constants themselves, not 
 \subsection*{D.1\quad Experiment pins}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabularx}{\linewidth}{llX}
 \toprule
 constant & value & governs \\
 \midrule
@@ -36,13 +37,14 @@ constant & value & governs \\
 \texttt{PINNED\_CODEBOOK\_MIN\_UTILIZATION} & $0.95$ & FSQ-scoped collapse check; the BSQ
  cells report and do not gate \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \subsection*{D.2\quad Decision thresholds and the deflation recipe}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabularx}{\linewidth}{llX}
 \toprule
 constant & value & governs \\
 \midrule
@@ -58,7 +60,7 @@ de-annualization horizon & $15$ & the unit $SR_0$ is compared against \\
 \texttt{BOOT\_POWER} & $0.80$ & the MDE's power term \\
 \texttt{FRAC\_NEG\_BAND} & $[0.05, 0.95]$ & degeneracy guard, sign-balance leg \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 Two conventions, stated so a reader is not left to infer them. \texttt{DSR\_N\_TRIALS} is a
@@ -89,7 +91,8 @@ the criterion and the second loosens it; the net is indeterminate before the run
 \subsection*{D.3\quad Evaluation geometry}
 
 \begin{center}
-\begin{tabular}{ll}
+\small
+\begin{tabularx}{\linewidth}{lX}
 \toprule
 quantity & value \\
 \midrule
@@ -104,7 +107,7 @@ label look-forward & $60$ bars \\
 serial-correlation margin & $60$ bars \\
 leading embargo & $120$ bars \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \subsection*{D.4\quad Content addressing and environment}
@@ -113,7 +116,8 @@ The Gate-A anchor is a fixed evaluation of a frozen checkpoint through the full 
 twice from unpiped commands before and after any change to the evaluation instrument.
 
 \begin{center}
-\begin{tabular}{ll}
+\small
+\begin{tabularx}{\linewidth}{lX}
 \toprule
 artifact & value \\
 \midrule
@@ -128,7 +132,7 @@ Python & 3.11.7 \\
 NumPy & 2.4.6 \\
 PyTorch & 2.12.1 \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 The environment is pinned by a lockfile and load-bearing results are re-verified under it. The
@@ -149,7 +153,8 @@ error rather than silently fixing it, because D.5's own claim --- that no slot h
 defensible source --- is worth less if the table naming the sources was not itself checked.
 
 \begin{center}
-\begin{tabular}{llp{0.22\textwidth}}
+\small
+\begin{tabularx}{\linewidth}{llX}
 \toprule
 \S6 slot & field & artifact \\
 \midrule
@@ -182,11 +187,11 @@ claimed effect (Fig 10) & \texttt{power\_guard.checks.<name>.} & \\
  & \quad\texttt{worst\_within\_cell\_ir\_range\}} & \\
 abstract verdict slot & \texttt{verdict.emitted} & \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 Two notes a reader needs. The manifest key for the minimum detectable effect is
-\texttt{clauses.2\_mde\_paired.mde\_paired}; \texttt{mde\_paired\_scoring\_only} is the
+\texttt{clauses.\allowbreak 2\_mde\_paired.\allowbreak mde\_paired}; \texttt{mde\_paired\_\allowbreak scoring\_only} is the
 \emph{attribute} on the bootstrap object that supplies it and appears under no key. And the
 outcome words a manifest can carry are \textsc{survives}, \textsc{null} and
 \textsc{halt\_adjudicate} only --- \textsc{inconclusive} is an adjudication reached against the
@@ -200,7 +205,8 @@ A manifest missing any field below is refused rather than reported, and a paper 
 that lacks one is quoting an artifact the harness would not have accepted.
 
 \begin{center}
-\begin{tabular}{ll}
+\small
+\begin{tabularx}{\linewidth}{lX}
 \toprule
 required field & why it is required \\
 \midrule
@@ -216,7 +222,7 @@ required field & why it is required \\
 external-validation disclosure & the BSQ sentence of \cref{sec:lim-baseline}, verbatim \\
 \texttt{conformance.*} & every pin in D.1 and D.2, re-asserted at scoring time \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 Two of these are worth naming as design choices rather than bookkeeping. \texttt{armed} is a

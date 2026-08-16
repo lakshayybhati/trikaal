@@ -28,7 +28,8 @@ exist until the pre-registered run completes.
 \subsection*{E.1\quad The mechanism (\S3)}
 
 \begin{center}
-\begin{tabular}{llll}
+\small
+\begin{tabularx}{\linewidth}{lllX}
 \toprule
 quantity & value & status & source \\
 \midrule
@@ -49,7 +50,7 @@ legibility gate threshold & $0.90$ & pin & conformance \\
 bits per token, both designs & $20.058$ & derived & $\sum \log_2 L_i$ \\
 class weight $\lambda$ & $3.0$ & pin & fitted on the fixture, then pinned \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 Two entries deserve a reader's attention. The $1.151$ nats is a closed-form quantity computed from
@@ -60,7 +61,8 @@ fixture}; \cref{sec:lim-matching} states the transfer risk and names the gate th
 \subsection*{E.2\quad The data (\S5)}
 
 \begin{center}
-\begin{tabular}{llll}
+\small
+\begin{tabularx}{\linewidth}{lllX}
 \toprule
 quantity & value & status & source \\
 \midrule
@@ -78,13 +80,14 @@ z-score half-lives & $1{,}440$ / $5{,}760$ & pin & feature config \\
 clip range & $[-5, +5]$ & pin & feature config \\
 feature dimensions, total / live & $16$ / $13$ & measured & constants, mask census \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \subsection*{E.3\quad The design (\S4)}
 
 \begin{center}
-\begin{tabular}{llll}
+\small
+\begin{tabularx}{\linewidth}{lllX}
 \toprule
 quantity & value & status & source \\
 \midrule
@@ -107,7 +110,7 @@ filter activity at $\kappa^\ast$, real data & $0.0193$--$0.4702$ & measured & th
 break-even cost, $h=15$ & $0.00232$--$0.02082\%$ & measured & horizon break-even receipt \\
 \quad on the pre-registered grid & $-\infty$ & measured & same; the grid floor \emph{is} the fee \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 Two rows deserve a reader's attention. The capacity handicap is disclosed and unquantified --- no
@@ -120,7 +123,8 @@ what the pre-registered instrument returns, and \cref{sec:lim-breakeven} is abou
 \subsection*{E.4\quad Verification (\S8)}
 
 \begin{center}
-\begin{tabular}{llll}
+\small
+\begin{tabularx}{\linewidth}{lllX}
 \toprule
 quantity & value & status & source \\
 \midrule
@@ -139,7 +143,7 @@ amendment log & $51$ revision tags & measured & pre-registration \\
 anchor causal sweep & $420$ of $420$ & measured & Gate-A manifest \\
 test suite & $727$ passing & measured & \texttt{pytest} \\
 \bottomrule
-\end{tabular}
+\end{tabularx}
 \end{center}
 
 \subsection*{E.4a\quad A header-less tag is cited on a shipped clause}
@@ -151,7 +155,7 @@ it touches a field that ships.
 
 \textbf{The verdict manifest cites one of those header-less tags on its headline clause.} The
 \texttt{rule} string of \texttt{4\_economic\_floor} --- a field written into every emitted
-manifest --- ends ``see \texttt{placebo\_capacity\_disclosure} and \S7 v1.6.27''.
+manifest --- ends ``see \texttt{placebo\_\allowbreak capacity\_\allowbreak disclosure} and \S7 v1.6.27''.
 
 \textbf{The pointer resolves, and the distinction matters: header-less is not absent.} The tag
 marks a full correction in the body of the log, recorded there as the clause it replaced being
@@ -172,10 +176,20 @@ ruling in Appendix~D.2. Ruled by the supervisor, 2026-08-11.
 
 \subsection*{E.5\quad Everything in \S6}
 
-Every quantity in \cref{sec:results} is \textbf{pending}. Each is bound to a single named field of
-the verdict manifest, tabulated in Appendix~D.5 and named beside the slot in the
-source, so that filling it is a mechanical substitution rather than a judgement. The three figures in that section are drawn on placeholder
-data that is implausible by construction --- absent, symmetric about zero, or at magnitudes two
-orders above anything the design can produce --- so that a cropped panel cannot be mistaken for a
-result. \Cref{sec:res-interpretation} carries all five interpretation branches, written and dated
-before the run; exactly one survives it.
+\emph{This entry described \S6 before the run. It is corrected rather than replaced, because what
+it got wrong is a fact about the paper's history.} It read ``every quantity in \S6 is
+\textbf{pending}'' and that is no longer true: the gate receipt of \cref{sec:res-gate} ---
+twelve sign accuracies, their base rates and the two gate outcomes --- is \textbf{measured}, as is
+the $\lambda$ sweep of \cref{sec:res-lambda}. What remains pending is everything the ablation
+would have produced, which is the rest of the section: no verdict, no cell comparison, no
+secondary diagnostic. Those bindings are tabulated in Appendix~D.5 and named beside each slot in
+the source, so filling them would be mechanical substitution rather than judgement.
+
+Two further sentences here have been overtaken and are corrected in place. Of the three figures in
+that section, \emph{two} --- \cref{fig:cost,fig:seeds} --- are drawn on placeholder data that is
+implausible by construction, one coincident curve at magnitudes two orders above anything the
+design can produce and five cells centred on zero, so that a cropped panel cannot be mistaken for
+a result; they remain watermarked. The third, \cref{fig:verdict}, is a schematic of the decision
+surface carrying no values at all. And \cref{sec:res-interpretation} no longer carries all five
+interpretation branches: the outcome selected one, and the other four were deleted rather than
+softened, exactly as pre-committed.
