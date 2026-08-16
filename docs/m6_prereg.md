@@ -216,6 +216,52 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.37 (2026-08-15, ★ WITHDRAWN: THE "PERCENTILE CLEARS, NORMAL DOES NOT" DISAGREEMENT
+  DOES NOT EXIST. IT COMPARED A ONE-SIDED BOUND AGAINST A TWO-SIDED ONE.)**
+  - **WHAT WAS PUBLISHED AND IS NOW WITHDRAWN.** §7 v1.6.36 and the paper stated that *"the
+    pre-registered percentile interval clears zero at +0.0454; a symmetric normal interval would
+    not (−0.1545)"*, and presented that disagreement as the measure of the effect's strength.
+    **There is no disagreement.**
+  - **VERIFIED FROM SOURCE, NOT FROM THE CORRECTION.** `src/trikaal/eval/paired_bootstrap.py:36`
+    reads `BOOT_ALPHA = 0.05  # §3a: one-sided level (the CI lower bound is the α-quantile)`. **The
+    pre-registered bound is ONE-SIDED at α = 0.05.** At that level the percentile bound (+0.0454)
+    and its normal counterpart (**+0.0307**, = Δ − 1.6449·se) **BOTH CLEAR AND AGREE**. The
+    −0.1545 is a **two-sided 95%** bound — a STRICTER test than the one pre-registered — and
+    comparing it to a one-sided quantity **manufactured a conflict that does not exist**.
+  - **WHAT SHIPS NOW, EVERY BOUND WITH ITS LEVEL BESIDE IT.** Δ = **+0.9972**, se_boot **0.5876**,
+    **t = 1.6971**. Pre-registered **one-sided α=.05**: percentile **+0.0454** / normal **+0.0307**
+    — **CLEARS**. **Two-sided 95%**: lower **−0.1545**, **p = 0.0897** — **DOES NOT**. The honest
+    sentence, and the one in the paper: *the effect is real on the instrument declared in advance,
+    and it is not comfortably large.*
+  - **THE RULE THIS INSTANTIATES: A BOUND WITHOUT ITS LEVEL IS THE DETACHABLE-QUALIFIER FAILURE,
+    IN NUMERIC FORM.** The context-stripping rule has so far been about captions and figures; this
+    is the same defect inside a statistic. "+0.0454 clears zero" and "−0.1545 does not" are both
+    true and describe **the same effect at two different levels**; quoted without their levels they
+    read as a contradiction, and one of them will be the one that travels. Every bound in §7 and
+    Appendix E now names its level and its sidedness.
+  - **★ MY SHARE OF THIS, STATED PLAINLY.** The instruction to publish the comparison came from the
+    supervisor and was wrong, but **I published it with the source open in the same session** —
+    `BOOT_ALPHA` is documented as one-sided on the line that defines it, and I had already read
+    that file's neighbours to verify the bootstrap pins. I verified the NUMBERS (t and −0.1545 both
+    reproduce exactly) and did not verify the **LEVEL THEY WERE COMPUTED AT**, which is the one
+    thing that made them incomparable. *Checking that a number is correct is not checking that it
+    is the right number.* That is a distinct failure mode from the ones already in CLAUDE.md and it
+    is why the level now travels with every bound.
+  - **UNCHANGED FROM v1.6.36 AND RE-CONFIRMED:** 3 of 3 seeds; the bias explanation predicting the
+    WRONG SIGN for seeds 0 and 2; the V_p substitution caveat dropping for seed 4 ONLY; the exact
+    benchmark having flattered the deflationary explanation rather than the model; and the
+    ~$4.48 spend correction.
+  - **THE CROSS-ENVIRONMENT REPRODUCTION NOW HAS ITS OWN RECEIPT**
+    (`runs_manifest/m6_cross_environment_reproduction.json`), harvested out of the bias test's
+    control arm because reproducibility evidence buried inside a bias test is invisible where it
+    matters. §8.1 cites it and states its limits. **THE RECEIPT NUMBERS THREE; THE PAPER STATES
+    FOUR.** Numbered: (1) not bit-exactness — the 2.587e-04 residual is the float32
+    reduction-order effect invariant 7 already concedes deterministic attention does not remove;
+    (2) nothing about TRAINING reproducibility, where the same-seed basin-hopping finding lives;
+    (3) one arm, one seed. **The fourth is readable from the receipt's own `environments` block and
+    is not in its numbered list: BOTH sides ran `attention_mode: sdpa_deterministic` with
+    `deterministic_algorithms: true`, so the result establishes NOTHING about the default path.**
+
 - **v1.6.36 (2026-08-15, ★ SEED 4 RE-RUN ON THE SPECIFIED BENCHMARK: THE CLAIM BROADENS TO 3 OF 3
   AND THE MARGIN IS 0.05 IR UNITS. BOTH FACTS TRAVEL TOGETHER OR NEITHER SHIPS.)**
   - **VERIFIED AT ENTRY-TIME AGAINST `runs_manifest/m6_skill_vs_bias_exact.json`.** On the names

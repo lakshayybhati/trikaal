@@ -27,6 +27,24 @@ $3.5\times10^{-4}$. A different build is a different provenance identity by cons
 the bit-exactness claim, which was never asserted across identities. It bounds what the claim does
 not cover, which had until now been untested: replay across environments is reproducible to about
 four decimal places, not to the bit.
+
+Four limits belong with it, and we state them rather than let the agreement figure travel alone.
+It is \emph{not} bit-exactness --- the residual $2.59\times10^{-4}$ is the float32
+reduction-order effect that deterministic attention is already conceded not to remove. It says
+nothing about \emph{training} reproducibility, which is where the same-seed divergence of
+\cref{sec:lim-determinism} lives and which this does not touch. It covers one arm and one seed, so
+it is not a general claim about the pipeline. And both environments ran with deterministic
+attention and deterministic algorithms forced, so it establishes nothing about the default path.
+What it does establish is the half that had been argued rather than shown: the scored inference
+path survives a change of \texttt{torch} version and of physical machine, weeks apart, with a
+bit-identical set of active decisions.
+% artifact: runs_manifest/m6_cross_environment_reproduction.json (the dedicated receipt; harvested
+%   from the control arm below because a reproducibility result buried in a bias test is invisible
+%   where it matters) :: agreement.*, environments.{original_money_run,reproduction}.
+%   THE FOUR LIMITS: three are numbered in ★_WHAT_IT_DOES_AND_DOES_NOT_ESTABLISH — (1) not
+%   bit-exactness, (2) says nothing about TRAINING, (3) one arm / one seed. The fourth is readable
+%   from .environments: BOTH sides ran attention_mode "sdpa_deterministic" and
+%   deterministic_algorithms true, so nothing is established about the DEFAULT path.
 % artifact: runs_manifest/m6_skill_vs_bias_exact.json :: control_arm.{n_active_recomputed 34989,
 %   n_active_banked 34989, active_set_identical true, max_abs_diff_gross 2.5873020400202923e-04,
 %   corr_gross 0.999999857150472, ir_recomputed 1.1446252585124777, ir_banked 1.1442791248262019}.
@@ -98,7 +116,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $50$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $51$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever

@@ -322,9 +322,10 @@ only. \textbf{Seed 4 uses the specified benchmark --- the names the model actual
 substitution caveat applies to it. Seeds 0 and 2 use the evaluated cross-section instead, because
 their traded names are not persisted and they were not re-run; for those two rows the benchmark is
 ``constant direction on the evaluated set'', not ``on the names this model picked'', and the
-direction of that difference is unknown and unbounded.} \textbf{Seed 4's $\Delta$ is $t = 1.70$: the
-pre-registered percentile interval clears zero at $+0.0454$, a symmetric normal interval would not
-($-0.1545$).} Seed 4's model row is the value recomputed during the exact run, $3.5\times10^{-4}$
+direction of that difference is unknown and unbounded.} \textbf{Seed 4's $\Delta$ is $t = 1.70$. The bound
+shown is the pre-registered one-sided $\alpha = 0.05$ percentile bound; its normal counterpart at
+the same level is $+0.0307$. A two-sided $95\%$ bound, a stricter test than the one pre-registered,
+is $-0.1545$ with $p = 0.0897$.} Seed 4's model row is the value recomputed during the exact run, $3.5\times10^{-4}$
 from the banked one.}}
 \end{minipage}
 \end{center}
@@ -337,7 +338,12 @@ from the banked one.}}
 %   a_ir_gross_model 1.1446252585124777, b_ir_gross_constant_direction_Ap 0.1474227707914885,
 %   delta_a_minus_b 0.9972024877209892, delta_ci95_lower 0.045448119782374716,
 %   se_boot 0.5875946654652116, bias_only_share_of_model_ir 0.12879566451562927.
-%   t = 0.9972.../0.5876... = 1.697; symmetric normal lower = delta - 1.96*se = -0.1545.
+%   t = 0.9972.../0.5876... = 1.6971. THE PRE-REGISTERED BOUND IS ONE-SIDED at alpha = 0.05 --
+%   src/trikaal/eval/paired_bootstrap.py:36 `BOOT_ALPHA = 0.05  # §3a: one-sided level (the CI
+%   lower bound is the alpha-quantile)`. One-sided a=.05: percentile +0.0454, normal
+%   delta - 1.6449*se = +0.0307 (they AGREE). Two-sided 95%: delta - 1.9600*se = -0.1545,
+%   p = 2(1-Phi(t)) = 0.0897. An EARLIER DRAFT compared the one-sided percentile bound against a
+%   TWO-SIDED normal bound and reported a disagreement; there is none at a common level.
 %   Both outcome branches pre-declared: .PRE_DECLARED_READING (declared_by "supervisor, BEFORE the
 %   run"), outcome .OUTCOME_AGAINST_THE_PRE_DECLARED_READING.branch_taken "delta EXCLUDES ZERO
 %   POSITIVE". Spend: box 47715433, RTX 4090 @ $0.3322/h, 13.5 h, ~$4.48 of an $8 cap.
@@ -356,13 +362,17 @@ been flattering the deflationary explanation, not the model. The bias-only share
 $37.4\%$ to $12.9\%$ and the remainder moves from straddling zero to excluding it, $+0.9972$ with
 a $95\%$ lower bound of $+0.0454$.
 
-\textbf{That margin is thin and we report the statistic that argues against us before the one that
-argues for us.} The $\Delta$ is $t = 1.70$. Our pre-registered interval is a percentile bootstrap
-and it clears zero at $+0.0454$; a symmetric normal interval at the same standard error would not,
-reaching $-0.1545$. The result is ``excludes zero'' on the pre-registered instrument and would not
-survive a different, equally defensible one. Both directions of this outcome were written down
-before the run, so the reading was not chosen after the number: the pre-declaration specified what
-we would conclude if the interval excluded zero, if it straddled it, and if it came back negative.
+\textbf{That margin is thin, and every bound below is quoted with the level it was computed at,
+because a bound without its level is a number that can be argued with either way.} The effect is
+$\Delta = +0.9972$ with a bootstrap standard error of $0.5876$, so $t = 1.6971$. The
+pre-registered instrument is a one-sided bound at $\alpha = 0.05$; at that level the percentile
+bound is $+0.0454$ and its normal counterpart is $+0.0307$, and the two agree. A two-sided $95\%$
+bound is a stricter test than the one we registered, and at that level the effect does not clear:
+the lower bound is $-0.1545$ and $p = 0.0897$. \textbf{The honest sentence is that the effect is
+real on the instrument declared in advance, and that it is not comfortably large.} Both directions
+of the outcome were written down before the run, so the reading was not chosen after the number:
+the pre-declaration specified what we would conclude if the interval excluded zero, if it straddled
+it, and if it came back negative.
 
 \textbf{What survives, stated at the width the evidence supports:} directional bias times sample
 drift does not explain the gross performance of \emph{any} of the three seeds. For two, the bias
