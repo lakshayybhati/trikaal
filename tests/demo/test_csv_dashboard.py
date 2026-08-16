@@ -695,3 +695,83 @@ def test_stage_completions_are_logged_unbuffered():
     stage it reached. Buffered output would be lost exactly when it is needed."""
     src = DASH_PATH.read_text()
     assert "flush=True" in src, "a buffered trail is no trail when the process is killed"
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# "WHAT THE THREE MODELS ARE" — the panel that corrects the misreading
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+def test_the_seeds_panel_corrects_the_extreme_scenarios_misreading():
+    """★ THE MISREADING IS THE POINT. Asked what the three numbers were, the operator guessed
+    EXTREME SCENARIOS with a weighted average in the middle. They are not: they are three
+    independent training runs differing only in their random starting point, and there is no
+    fourth better number between them. Correcting that is worth more than any summary figure,
+    so the denial is explicit rather than left to be inferred.
+    """
+    page = dash._shell(3, 1, 1)
+    panel = page.split("What the three models are", 1)[1].split("</ul>", 1)[0]
+    assert "only" in panel and "random starting point" in panel
+    assert "not a best case, a worst case and a middle case" in panel
+    assert "no fourth, better number hiding between them" in panel
+    assert "the disagreement is the result" in panel
+    assert "It is the finding" in panel
+
+
+@pytest.mark.parametrize(
+    "claim,source_key",
+    [
+        ("short 67.7%", "m6_skill_vs_bias.json"),
+        ("short 65.5%", "m6_skill_vs_bias.json"),
+        ("long 92.7%", "m6_skill_vs_bias.json"),
+        ("26.25%", "m6_demo_seed_sign_disagreement.json"),
+        ("39.12%", "m6_demo_seed_sign_disagreement.json"),
+        ("118.03", "m6_skill_vs_bias.json"),
+    ],
+)
+def test_every_number_on_the_seeds_panel_is_on_the_page_with_its_source(claim, source_key):
+    page = dash._shell(3, 1, 1)
+    assert claim in page, f"{claim} is cited in the panel content but not rendered"
+    assert source_key in page, f"{claim} is shown without naming {source_key}"
+
+
+def test_the_panel_numbers_match_the_receipts_they_cite():
+    """★ RECOMPUTED FROM THE ARTIFACTS, NOT COPIED FROM THE INSTRUCTION.
+
+    The 39.12% independence baseline in particular appears in NO receipt field — it is derived
+    from the disagreement receipt's own per-seed marginals, and a figure put in front of a reader
+    has to be checked against the thing it claims to come from rather than the message that
+    supplied it.
+    """
+    import json
+
+    bias = json.loads((REPO / "runs_manifest" / "m6_skill_vs_bias.json").read_text())
+    by_seed = {r["seed"]: r for r in bias["rows"]}
+    assert by_seed[0]["modal_sign"] == "SHORT" and round(by_seed[0]["modal_share"] * 100, 1) == 67.7
+    assert by_seed[2]["modal_sign"] == "SHORT" and round(by_seed[2]["modal_share"] * 100, 1) == 65.5
+    assert by_seed[4]["modal_sign"] == "LONG" and round(by_seed[4]["modal_share"] * 100, 1) == 92.7
+
+    dis = json.loads((REPO / "runs_manifest" / "m6_demo_seed_sign_disagreement.json").read_text())
+    assert round(dis["pairwise_sign_agreement"]["0&4"] * 100, 2) == 26.25
+    m = dis["per_seed_marginal_p_mu_positive"]
+    p0, p4 = m["0"], m["4"]
+    baseline = p0 * p4 + (1 - p0) * (1 - p4)
+    assert round(baseline * 100, 2) == 39.12, (
+        "the independence baseline must be recomputed, not quoted"
+    )
+    assert dis["n_decisions"] == 80
+
+
+def test_the_raw_disagreement_rate_is_NOT_quoted_alone():
+    """The disagreement receipt's own READ_THIS_FIRST forbids it: 86.2% of decisions disagree,
+    but independence ALONE predicts a high rate, so the bare number misleads. The panel makes the
+    comparison against the baseline instead, which is the claim the receipt actually supports."""
+    page = dash._shell(3, 1, 1)
+    assert "86.2" not in page and "0.8625" not in page
+
+
+def test_the_figure_says_whose_most_likely_scenario_it_is():
+    """ "Most likely" with no owner reads as a single prediction. Each dashed line is the most
+    likely path FOR THAT MODEL, and the three models disagree."""
+    body = " ".join(dash.disclosure_lines(_fixture_forecast()))
+    assert "most likely scenario FOR THAT MODEL" in body
+    assert "not a single prediction" in body
+    assert "random starting point" in body

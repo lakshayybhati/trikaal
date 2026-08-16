@@ -165,9 +165,11 @@ def disclosure_lines(f) -> list[str]:
         "Bands are SAMPLE PERCENTILES of the model's own sampled paths, NOT confidence intervals. "
         "Our own measurement: mu-hat is 25-446x OVER-DISPERSED versus the returns it forecasts, "
         "so this fan is far WIDER than reality.",
-        f"Lines are the MEDIAN of {f.n_mc_samples} sampled trajectories per seed, not 'the "
-        f"prediction'. Squares mark the {n_anchor} trained MTP horizons IN RANGE (of 3 usable: "
-        "5/15/60 - h=1 is structurally zero and is not offered); between them is interpolation.",
+        f"Each dashed line is the MEDIAN of {f.n_mc_samples} sampled trajectories - the most "
+        "likely scenario FOR THAT MODEL, not a single prediction, and the three models are three "
+        "separate training runs that differ only in their random starting point. Squares mark "
+        f"the {n_anchor} trained MTP horizons IN RANGE (of 3 usable: 5/15/60 - h=1 is "
+        "structurally zero and is not offered); between them is interpolation.",
         "Measured edge ~0.005-0.02% per trade and NET NEGATIVE after a realistic ~0.10% round "
         "trip. Per-step shape is quantized at ~0.55z on the WORST-reconstructed channel.",
         f"TRAINED ON CRYPTO 1-MINUTE BARS. Inferred interval {f.inferred_bar_ms / 1000:g}s{tail}. "
@@ -422,7 +424,7 @@ def _svg(f) -> str:
         f'<text x="{pl}" y="61" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
         f"Your CSV, {f.n_rows:,} rows. Last bar {html.escape(stamp)}.</text>"
         f'<text x="{pl}" y="81" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
-        "Solid = your data; dashed = each seed&#8217;s median path; "
+        "Solid = your data; dashed = each model&#8217;s OWN most-likely path; "
         "shaded = sample percentiles (10-90, 25-75).</text>"
         f'<text x="{pl}" y="101" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
         "Three seeds, never averaged. y-axis = price &#247; last close. "
@@ -1283,6 +1285,31 @@ def _shell(n_seeds: int, params: int, mtp: int) -> str:
         "extrapolation, and only the interval can be detected.</li>"
         "<li><b>Not investment advice.</b></li>"
         "</ul></div>"
+        '<div class="glass disc">'
+        "<h3>What the three models are</h3><ul>"
+        "<li><b>Three separate training runs of the same thing.</b> Same data, same design, same "
+        "settings, same number of steps. The <b>only</b> difference is the random starting point "
+        "each one began from.</li>"
+        "<li><b>They are not a best case, a worst case and a middle case</b> — and they are not a "
+        "range around some true answer. There is no fourth, better number hiding between them. "
+        "They are three independent attempts at the same job, and you are seeing all three "
+        "because we will not pick one for you.</li>"
+        "<li><b>Ours came out with different habits.</b> On the full evaluation, seed 0 leaned "
+        "<b>short 67.7%</b> of the time, seed 2 <b>short 65.5%</b>, and seed 4 leaned "
+        "<b>long 92.7%</b> &#8212; opposite directions, from identical training. Their headline "
+        "risk-adjusted results span <b>118.03</b>.</li>"
+        "<li><b>They do not even agree with each other by chance.</b> On an 80-decision sample, "
+        "seeds 0 and 4 pointed the same way <b>26.25%</b> of the time &#8212; <i>below</i> the "
+        "<b>39.12%</b> you would get from two unrelated coin flips with those same habits. "
+        "(80 decisions, 2 symbols: suggestive, not a measurement of the ablation.)</li>"
+        "<li><b>So when they disagree, the disagreement is the result.</b> It is not noise around "
+        "a real answer that we are declining to show you. It is the finding.</li>"
+        "</ul>"
+        '<p style="margin:12px 0 0;font-size:11px;color:var(--t3);font-family:var(--l)">'
+        "Sources: runs_manifest/m6_skill_vs_bias.json (directional habits, full grid) and "
+        "runs_manifest/m6_demo_seed_sign_disagreement.json (agreement vs the independence "
+        "baseline).</p>"
+        "</div>"
         '<div class="glass panel" id="panel" style="display:none"></div>'
         "</div></div>"
         '<div class="overlay" id="overlay"><div class="glass load scr">'

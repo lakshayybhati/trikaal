@@ -548,6 +548,12 @@ def forecast_from_csv(
 
 
 DISPLAY_DP = 3  # the precision the sentence and the legend actually render
+_WORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
+
+# Kept equal to ``render.ROUND_TRIP_FEE_PCT`` by ``test_the_round_trip_cost_is_one_number``: two
+# copies of a headline economic constant drifting apart is exactly the class of defect this
+# project keeps paying for.
+ROUND_TRIP_PCT = 0.10
 
 
 def plain_english(f: CsvForecast) -> str:
@@ -592,15 +598,71 @@ def plain_english(f: CsvForecast) -> str:
             "Treat this as no independent signal."
         )
 
-    pos = [s > 0 for s in shown if s != 0.0]
     n_flat = sum(1 for s in shown if s == 0.0)
     if n_flat:
         return (
-            f"{lead} — {n_flat} of 3 round to zero (no direction), so there is no unanimous "
-            "call here."
+            f"{lead} — {n_flat} of {len(shown)} round to zero (no direction), so there is no "
+            "unanimous call here."
         )
-    verdict = "they agree on direction" if len(set(pos)) == 1 else "THEY DISAGREE ON DIRECTION"
-    return f"{lead} — {verdict}."
+
+    # ── THE COLLECTIVE STATE, IN WORDS. ★ THERE IS DELIBERATELY NO MEAN, MEDIAN OR WEIGHTED
+    # AVERAGE ACROSS SEEDS HERE, AND THERE MUST NOT BE. A single blended number is the most
+    # quotable thing this page could produce, and it would be quoted alone — at which point it
+    # reads as one confident small call, when the actual finding is that three versions of the
+    # same model disagree about direction. Averaging them DELETES the result. That is the
+    # context-stripping rule aimed at the number most likely to travel without its context.
+    n = len(shown)
+    n_up = sum(1 for s in shown if s > 0)
+    n_down = n - n_up
+    if n_up == n:
+        state = f"ALL {_WORD.get(n, str(n)).upper()} POINT UP"
+    elif n_down == n:
+        state = f"ALL {_WORD.get(n, str(n)).upper()} POINT DOWN"
+    else:
+        up, down = (n_up, "up"), (n_down, "down")
+        big, small = (up, down) if n_up >= n_down else (down, up)
+        few = _WORD.get(small[0], str(small[0])).upper()
+        verb = "POINT" if small[0] > 1 else "POINTS"
+        state = (
+            f"{_WORD.get(big[0], str(big[0])).upper()} OF {_WORD.get(n, str(n)).upper()} "
+            f"POINT {big[1].upper()}, {few} {verb} {small[1].upper()}"
+        )
+
+    if n_up == n or n_down == n:
+        verdict = (
+            f"{state}, between {min(pcts):+.{DISPLAY_DP}f}% and {max(pcts):+.{DISPLAY_DP}f}%. "
+            "That is the closest this model comes to a directional call."
+        )
+    else:
+        verdict = (
+            f"{state}. THE MODELS DISAGREE ON DIRECTION, which is the usual outcome for this "
+            "model and means there is no directional call here."
+        )
+
+    # ★ THE COMPARISON THAT MAKES IT LAND: how far apart the models are, against how big the move
+    # they are forecasting is. For these models the first is routinely larger than the second,
+    # and a reader who sees that once understands what they are looking at faster than any
+    # amount of prose about seed variance.
+    spread = max(pcts) - min(pcts)
+    biggest = max(abs(x) for x in pcts)
+    ratio = spread / biggest if biggest > 0 else float("inf")
+    gap = (
+        f"They disagree by {spread:.{DISPLAY_DP}f} percentage points, {ratio:.1f}x the largest of "
+        f"the {_WORD.get(n, str(n))}"
+        + (
+            ": the gap between the models is wider than the move they are forecasting."
+            if ratio >= 1.0
+            else "."
+        )
+    )
+    fee = (
+        f" All {_WORD.get(n, str(n))} are smaller than the ~{ROUND_TRIP_PCT:.2f}% a round trip "
+        "costs."
+        if biggest < ROUND_TRIP_PCT
+        else f" The largest is {biggest:.{DISPLAY_DP}f}%, against the ~{ROUND_TRIP_PCT:.2f}% a "
+        "round trip costs."
+    )
+    return f"{lead} — {verdict} {gap}{fee}"
 
 
 def forecast_csv_export(f: CsvForecast) -> str:
@@ -657,6 +719,7 @@ __all__ = [
     "MC_SEED",
     "MIN_ROWS",
     "PAPER_HORIZON",
+    "ROUND_TRIP_PCT",
     "SELECTABLE_HORIZONS",
     "SEQ_LEN",
     "TRAINED_HORIZONS",

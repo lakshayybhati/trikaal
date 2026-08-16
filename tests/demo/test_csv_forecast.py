@@ -518,8 +518,66 @@ def test_identical_forecasts_are_named_degenerate_not_consensus():
 
 def test_the_guard_still_lets_GENUINE_verdicts_through():
     """FIXTURE DISCRIMINATION: a guard that refuses everything is not a guard."""
-    assert "they agree on direction" in cf.plain_english(_fc((0.30, 0.12, 0.44)))
-    assert "THEY DISAGREE ON DIRECTION" in cf.plain_english(_fc((0.35, -0.22, -0.37)))
+    assert "ALL THREE POINT UP" in cf.plain_english(_fc((0.30, 0.12, 0.44)))
+    assert "THE MODELS DISAGREE ON DIRECTION" in cf.plain_english(_fc((0.35, -0.22, -0.37)))
+
+
+def test_the_read_states_the_COLLECTIVE_state_and_never_averages_the_seeds():
+    """★ NO MEAN, MEDIAN OR WEIGHTED AVERAGE ACROSS SEEDS — EVER, AND THIS IS WHY.
+
+    A blended number is the most quotable thing this page can produce, so it is the thing that
+    WILL travel alone. On these models it would read as one confident small call, when the actual
+    finding is that three versions of the same model disagree about direction. Averaging deletes
+    the result. That is the context-stripping rule aimed at the most quotable number on the page.
+
+    The guard is structural rather than stylistic: the sentence is built from a COUNT of
+    directions and the min/max, and no arithmetic mean of the seeds exists anywhere in the
+    function for a later edit to surface.
+    """
+    import inspect
+
+    src = inspect.getsource(cf.plain_english)
+    for banned in ("mean(", "np.mean", "statistics.mean", "median(", "np.median", "sum(pcts)"):
+        assert banned not in src, f"plain_english computes {banned} across seeds — it must not"
+
+    split = cf.plain_english(_fc((-0.100, -0.048, 0.129)))
+    assert "TWO OF THREE POINT DOWN, ONE POINTS UP" in split
+    assert "THE MODELS DISAGREE ON DIRECTION" in split
+    assert "usual outcome" in split
+
+    agree = cf.plain_english(_fc((0.011, 0.019, 0.017)))
+    assert "ALL THREE POINT UP" in agree
+    assert "between +0.011% and +0.019%" in agree, "the RANGE, not a blended point estimate"
+    assert "closest this model comes to a directional call" in agree
+
+
+def test_the_read_compares_the_seed_spread_to_the_move_being_forecast():
+    """The one comparison that makes it land: how far apart the models are, versus how big the
+    thing they are forecasting is. Computed from the three values, not asserted in prose."""
+    line = cf.plain_english(_fc((-0.100, -0.048, 0.129)))
+    # spread = 0.129 - (-0.100) = 0.229 pp; largest |value| = 0.129 -> 1.8x
+    assert "0.229 percentage points" in line
+    assert "1.8x the largest" in line
+    assert "wider than the move they are forecasting" in line
+
+    # ...and when the spread is SMALLER than the largest value, it must not claim otherwise
+    tight = cf.plain_english(_fc((0.300, 0.320, 0.340)))
+    assert "wider than the move" not in tight, "the comparison must follow the numbers"
+
+
+def test_the_fee_comparison_follows_the_numbers_in_both_directions():
+    under = cf.plain_english(_fc((0.011, -0.004, 0.017)))
+    assert f"smaller than the ~{cf.ROUND_TRIP_PCT:.2f}% a round trip costs" in under
+    over = cf.plain_english(_fc((-0.310, -0.140, -0.220)))
+    assert "The largest is 0.310%" in over and "smaller than the ~0.10%" not in over
+
+
+def test_the_round_trip_cost_is_one_number():
+    """Two copies of a headline economic constant drifting apart is a defect class we have paid
+    for; the CSV read and the demo figure must quote the same round trip."""
+    from trikaal.demo import render
+
+    assert cf.ROUND_TRIP_PCT == render.ROUND_TRIP_FEE_PCT == 0.10
 
 
 # ── THE PROGRESS TRACE — the loading screen's lines are the pipeline's, not the UI's ──────────
