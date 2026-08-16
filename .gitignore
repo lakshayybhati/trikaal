@@ -44,3 +44,5 @@ runs_cloud/
 # Demo build output — regenerate with scripts/m6_demo_build.py (refuses without a PASSING
 # acceptance receipt). The 72 KB page embeds real forecasts; the RECEIPTS are what we version.
 demo/index.html
+
+# CSV dashboard is a server, not a build — nothing to version but the code and its tests.
