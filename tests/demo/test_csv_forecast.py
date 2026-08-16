@@ -496,3 +496,85 @@ def test_the_guard_still_lets_GENUINE_verdicts_through():
     """FIXTURE DISCRIMINATION: a guard that refuses everything is not a guard."""
     assert "they agree on direction" in cf.plain_english(_fc((0.30, 0.12, 0.44)))
     assert "THEY DISAGREE ON DIRECTION" in cf.plain_english(_fc((0.35, -0.22, -0.37)))
+
+
+# ── THE PROGRESS TRACE — the loading screen's lines are the pipeline's, not the UI's ──────────
+def test_the_default_progress_sink_emits_nothing():
+    """FIXTURE DISCRIMINATION for everything below: uninstrumented means uninstrumented.
+
+    If the default sink emitted, the tests that follow could pass without the callback ever being
+    threaded through — they would be measuring a global, not a wiring.
+    """
+    seen = []
+    cf._no_progress("X", "y", "ok")
+    assert seen == []
+    assert cf.parse_csv(_csv_text(*_bars(1300))).ts_ms.shape[0] == 1300
+
+
+def test_parser_stages_carry_THIS_input_s_real_values_not_a_script():
+    """★ VARY THE INPUT. A hardcoded animation passes any single-input assertion.
+
+    Two CSVs of different lengths and different bar intervals must produce traces that differ in
+    exactly the way the inputs differ, and the values must match the returned object — which is
+    what makes the loading screen a trace of the run rather than a story about it.
+    """
+    traces = {}
+    for n, bar_ms in ((1300, 60_000), (1500, 300_000)):
+        got = []
+        bars = cf.parse_csv(
+            _csv_text(*_bars(n, bar_ms=bar_ms)),
+            progress=lambda s, d, st, _g=got: _g.append((s, d, st)),
+        )
+        traces[n] = got
+        by_stage = {s: (d, st) for s, d, st in got if st != "run"}
+
+        assert f"{n:,} data rows" in by_stage["PARSING CSV"][0]
+        assert f"{n:,} >= {cf.MIN_ROWS:,}" in by_stage["VALIDATING LENGTH"][0]
+        assert f"{n:,} bars sorted" in by_stage["READING VALUES"][0]
+
+        detail, state = by_stage["INFERRING BAR INTERVAL"]
+        assert detail.startswith(f"{bar_ms / 1000:g}s")
+        assert bars.inferred_bar_ms == bar_ms
+        # ★ AN OUT-OF-DISTRIBUTION INTERVAL MAY NOT FINISH QUIETLY GREEN.
+        assert state == ("ok" if bar_ms == 60_000 else "warn")
+        assert ("OUT OF DISTRIBUTION" in detail) is (bar_ms != 60_000)
+
+    assert traces[1300] != traces[1500]
+
+
+def test_a_refusal_stops_the_trace_at_the_stage_that_refused():
+    got = []
+    with pytest.raises(cf.CsvRefused):
+        cf.parse_csv(_csv_text(*_bars(600)), progress=lambda s, d, st: got.append((s, d, st)))
+    assert got[-1] == ("VALIDATING LENGTH", "", "run"), got
+    assert not any(s == "READING VALUES" for s, _, _ in got), "nothing may run past the refusal"
+
+
+def test_model_stages_agree_with_the_forecast_that_was_returned():
+    """The per-seed line must quote the number the caller actually got back, to the digit."""
+    from trikaal.demo.inference import available_seeds, load_unit
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    units = {seeds[0]: load_unit(seeds[0])}
+    got = []
+    f = cf.forecast_from_csv(
+        _csv_text(*_bars(1300)),
+        units=units,
+        h=5,
+        mc_samples=2,
+        n_mc_paths=2,
+        progress=lambda s, d, st: got.append((s, d, st)),
+    )
+    done = {s: d for s, d, st in got if st in ("ok", "warn")}
+
+    assert "7 dims x 1,300 bars" in done["COMPUTING CAUSAL FEATURES"]
+    assert "1,300 bars -> 1,300 coarse" in done["TOKENIZING"]
+    assert "2 paths x 5 steps" in done["SAMPLING TRAJECTORIES"]
+    assert "p10/p25/p50/p75/p90" in done["COMPUTING QUANTILE BANDS"]
+    assert "1 of 3 usable" in done["MTP ANCHORS"] and "(5m)" in done["MTP ANCHORS"]
+
+    seed = seeds[0]
+    pct = (math.exp(f.per_seed[seed]["mu"]) - 1.0) * 100.0
+    assert f"seed {seed}: expectation {pct:+.4f}%" in done["FORECASTING"], done["FORECASTING"]

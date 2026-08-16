@@ -87,6 +87,7 @@ from __future__ import annotations
 import csv as _csv
 import io
 import math
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 import numpy as np
@@ -125,6 +126,30 @@ TRAINED_HORIZONS = (1, 5, 15, 60)
 # thinner than the design assumed and the figure must not imply four.
 SELECTABLE_HORIZONS = (5, 15, 60)
 PAPER_HORIZON = 15
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# PROGRESS — the stage lines the dashboard's loading screen shows, emitted BY THE PIPELINE ITSELF
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# ★ WHY THIS LIVES IN THE PRODUCTION FUNCTION AND NOT IN THE UI. A loading screen that lists
+# stages the UI *believes* are happening is an animation, and an animation cannot go wrong in a
+# way anyone notices — it would keep showing "COMPUTING CAUSAL FEATURES" long after that call had
+# been moved, removed or reordered. The lines are therefore emitted from the exact statements that
+# do the work, carrying values read off the real objects (row counts, array shapes, recomputed
+# hashes, per-seed mu-hat), so the screen is a TRACE, not a story about one. It is the same reason
+# ``mc_paths`` is gated bit-for-bit against production rather than trusted to mirror it.
+#
+# ``state`` is "run" when a stage STARTS (itself a real event), "ok" when it finishes with its
+# value, and "warn" for a stage that COMPLETED but whose measured value is out of distribution —
+# the inferred bar interval is the one that matters, and it must not be able to finish quietly
+# green. The caller renders "fail" from the refusal it catches. The callback is invoked directly
+# and is NOT wrapped in a try/except: a progress sink that swallows its own exceptions is a check
+# that cannot fail, and this project has paid for that shape four times.
+Progress = Callable[[str, str, str], None]
+
+
+def _no_progress(stage: str, detail: str, state: str) -> None:
+    """Default sink: the pipeline is uninstrumented unless a caller asks for the trace."""
+
 
 _ALIASES = {
     "timestamp": {"timestamp", "time", "date", "datetime", "open_time", "ts", "bar_open_ms"},
@@ -178,8 +203,9 @@ def _to_ms(v: str) -> int:
     raise CsvRefused(f"could not parse timestamp {v!r}")
 
 
-def parse_csv(text: str) -> CsvBars:
+def parse_csv(text: str, *, progress: Progress = _no_progress) -> CsvBars:
     """Parse an OHLCV CSV. Every refusal names the reason and the fix — never a traceback."""
+    progress("PARSING CSV", "", "run")
     rdr = _csv.reader(io.StringIO(text))
     rows = [r for r in rdr if r and any(c.strip() for c in r)]
     if not rows:
@@ -199,6 +225,13 @@ def parse_csv(text: str) -> CsvBars:
             "(volume and amount are used if present)."
         )
     body = rows[1:]
+    progress(
+        "PARSING CSV",
+        f"{len(body):,} data rows, columns mapped: {', '.join(sorted(col))}",
+        "ok",
+    )
+
+    progress("VALIDATING LENGTH", "", "run")
     if len(body) < MIN_ROWS:
         raise CsvRefused(
             f"only {len(body):,} data rows — this needs at least {MIN_ROWS:,}. "
@@ -209,6 +242,13 @@ def parse_csv(text: str) -> CsvBars:
             "forecast would be computed entirely on warm-up values, which is why it is refused "
             "rather than returned with a caveat."
         )
+
+    progress(
+        "VALIDATING LENGTH",
+        f"{len(body):,} >= {MIN_ROWS:,} ({WARMUP_ROWS} warm-up + {SEQ_LEN} context)",
+        "ok",
+    )
+    progress("READING VALUES", "", "run")
 
     def grab(key, default=None):
         if key not in col:
@@ -230,16 +270,31 @@ def parse_csv(text: str) -> CsvBars:
 
     order = np.argsort(ts, kind="stable")
     ts, o, h, low_, c, v, amt = (a[order] for a in (ts, o, h, low_, c, v, amt))
+    n_before = int(ts.shape[0])
     if not np.all(np.diff(ts) > 0):
         keep = np.r_[True, np.diff(ts) > 0]
         ts, o, h, low_, c, v, amt = (a[keep] for a in (ts, o, h, low_, c, v, amt))
+    dropped = n_before - int(ts.shape[0])
 
     bad = ~(np.isfinite(o) & np.isfinite(h) & np.isfinite(low_) & np.isfinite(c))
     if bad.any():
         raise CsvRefused(f"{int(bad.sum()):,} row(s) have non-numeric or missing OHLC values")
+    progress(
+        "READING VALUES",
+        f"{int(ts.shape[0]):,} bars sorted by timestamp, "
+        + (f"{dropped:,} duplicate/out-of-order dropped" if dropped else "no duplicates"),
+        "ok",
+    )
 
+    progress("INFERRING BAR INTERVAL", "", "run")
     d = np.diff(ts)
     inferred = int(np.median(d)) if d.size else 0
+    progress(
+        "INFERRING BAR INTERVAL",
+        f"{inferred / 1000:g}s "
+        + ("- matches training" if inferred == BAR_MS else "- NOT 60s: OUT OF DISTRIBUTION"),
+        "ok" if inferred == BAR_MS else "warn",
+    )
     warns: list[str] = []
     if inferred != BAR_MS:
         warns.append(
@@ -312,6 +367,7 @@ def forecast_from_csv(
     device: str = "cpu",
     mc_samples: int = 32,
     n_mc_paths: int = 48,
+    progress: Progress = _no_progress,
 ) -> CsvForecast:
     """The whole path: CSV → production features → tokenizer → AR → per-seed mu-hat + MC band."""
     if h == 1:
@@ -327,9 +383,16 @@ def forecast_from_csv(
             f"{SELECTABLE_HORIZONS} can produce a forecast (h=1 is structurally zero); "
             f"h={PAPER_HORIZON} is the only horizon the paper evaluates."
         )
-    bars = parse_csv(text)
+    bars = parse_csv(text, progress=progress)
+
+    progress("COMPUTING CAUSAL FEATURES", "", "run")
     out = compute_features(_raw_stream(bars), FeatureConfig())
     x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
+    progress(
+        "COMPUTING CAUSAL FEATURES",
+        f"{x_arm.shape[1]} dims x {x_arm.shape[0]:,} bars, streaming EWMA over bars <= t",
+        "ok",
+    )
 
     i = int(x_arm.shape[0] - 1)  # forecast FROM the last bar
     dec = np.array([i], np.int64)
@@ -339,9 +402,17 @@ def forecast_from_csv(
     anchors: dict = {}
     for seed in sorted(units):
         u = units[seed]
+        progress("TOKENIZING", f"seed {seed}", "run")
         b_c, b_f = tokenize_features(
             u.tok, x_arm, m_arm, out.segment_id, window=SEQ_LEN, device=device
         )
+        progress(
+            "TOKENIZING",
+            f"seed {seed}: {b_c.shape[0]:,} bars -> {b_c.shape[0]:,} coarse + "
+            f"{b_f.shape[0]:,} fine ids",
+            "ok",
+        )
+        progress("FORECASTING", f"seed {seed}", "run")
         mu = float(
             predict_mu(
                 u.model,
@@ -374,6 +445,13 @@ def forecast_from_csv(
             )[0]
         )
         mu_samples.append(mc)
+        progress(
+            "FORECASTING",
+            f"seed {seed}: expectation {(math.exp(mu) - 1.0) * 100.0:+.4f}%, "
+            f"mc_mean@{mc_samples} {(math.exp(mc) - 1.0) * 100.0:+.4f}%",
+            "ok",
+        )
+        progress("SAMPLING TRAJECTORIES", f"seed {seed}", "run")
         paths = mc_paths(
             u,
             x_arm,
@@ -386,7 +464,19 @@ def forecast_from_csv(
             n_samples=n_mc_paths,
             device=device,
         )
+        progress(
+            "SAMPLING TRAJECTORIES",
+            f"seed {seed}: {paths.shape[0]} paths x {paths.shape[1]} steps",
+            "ok",
+        )
+        progress("COMPUTING QUANTILE BANDS", f"seed {seed}", "run")
         quantiles[seed] = path_quantiles(paths)
+        progress(
+            "COMPUTING QUANTILE BANDS",
+            f"seed {seed}: " + "/".join(f"p{q}" for q in sorted(quantiles[seed])),
+            "ok",
+        )
+        progress("MTP ANCHORS", f"seed {seed}", "run")
         anchors[seed] = {
             int(ha): float(
                 predict_mu(
@@ -406,6 +496,12 @@ def forecast_from_csv(
             for ha in SELECTABLE_HORIZONS
             if int(ha) <= h
         }
+        progress(
+            "MTP ANCHORS",
+            f"seed {seed}: {len(anchors[seed])} of 3 usable trained horizons in range "
+            f"({', '.join(str(a) + 'm' for a in sorted(anchors[seed]))})",
+            "ok",
+        )
         last = float(bars.close[i])
         per_seed[seed] = {
             "mu": mu,
@@ -558,6 +654,7 @@ __all__ = [
     "CsvBars",
     "CsvForecast",
     "CsvRefused",
+    "Progress",
     "forecast_csv_export",
     "forecast_from_csv",
     "parse_csv",

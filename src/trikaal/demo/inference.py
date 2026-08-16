@@ -162,6 +162,39 @@ def load_unit(seed: int, *, device: str = "cpu") -> Unit:
     )
 
 
+def reverify_identity(unit: Unit) -> dict:
+    """Re-check a LOADED unit's identity from the live modules — verification AT USE, not at load.
+
+    ``load_unit`` hashes the state dict it read off disk, *before* constructing the modules. This
+    hashes what is about to run: ``module.state_dict()`` and the module's OWN ``get_config()``, so
+    a weight or a behaviour flag mutated in memory after loading changes the answer. That is the
+    difference between checking that the right file was opened and checking that the right model is
+    serving, and it is exactly the distinction the execution rule keeps costing us: a gate that
+    confirms a symbol EXISTS is not a gate that has FIRED.
+
+    Cheap enough to run on every forecast — measured 0.06 s for both modules of one seed — which is
+    what makes it a per-run stage in the dashboard rather than a startup ritual nobody re-reads.
+
+    Returns the full three-way comparison for display; the caller decides what to do with ``ok``.
+    """
+    man = json.loads((UNIT_DIRS[unit.seed] / "run_manifest.json").read_text())
+    out: dict = {"seed": unit.seed, "ok": True, "checks": {}}
+    for name, module, stored, want in (
+        ("tokenizer", unit.tok, unit.tokenizer_hash, man["artifacts"]["tokenizer_hash"]),
+        ("predictor", unit.model, unit.predictor_hash, man["artifacts"]["predictor_hash"]),
+    ):
+        recomputed = artifact_hash(module.state_dict(), module.get_config())
+        ok = recomputed == stored == want
+        out["checks"][name] = {
+            "recomputed": recomputed,
+            "stored": stored,
+            "manifest": want,
+            "ok": ok,
+        }
+        out["ok"] = out["ok"] and ok
+    return out
+
+
 @dataclass(frozen=True)
 class SeedForecast:
     """One seed's forecast. NOTE WHAT IS ABSENT: no return, no position, no P&L."""

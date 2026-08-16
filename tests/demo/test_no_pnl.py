@@ -19,7 +19,9 @@ from pathlib import Path
 import pytest
 
 import trikaal.demo
-from trikaal.demo import inference, render
+from trikaal.demo import csv_forecast, inference, render
+
+REPO = Path(__file__).resolve().parents[2]
 
 # Identifiers that would mean a P&L had been computed. Deliberately narrow: these are names, not
 # substrings of prose, and the scan below reads the AST so that the module's own DOCSTRINGS —
@@ -41,7 +43,15 @@ BANNED_NAMES = {
     "net_trade_returns",
 }
 
-DEMO_MODULES = [trikaal.demo, inference, render]
+# ★ ``csv_forecast`` AND THE DASHBOARD WERE NOT COVERED, AND BOTH SAID THEY WERE.
+# ``csv_forecast``'s docstring read "tests/demo/test_no_pnl.py covers this module and fails if one
+# appears"; the dashboard's read "parses this package's AST". Neither was in this list, and the
+# dashboard is a SCRIPT that was never in the package at all. That is the class rule with the
+# instance already found: the guard existed, the prose asserting it existed, and the two had drifted
+# apart with nothing able to notice. The scan now covers every file that renders a forecast to a
+# human, and the script is scanned BY PATH because importing it starts a server.
+DEMO_MODULES = [trikaal.demo, inference, render, csv_forecast]
+SCANNED_SCRIPTS = [REPO / "scripts" / "m6_csv_dashboard.py", REPO / "scripts" / "m6_demo_build.py"]
 
 
 def _defined_and_called_names(src: str) -> set[str]:
@@ -73,6 +83,15 @@ def test_demo_package_computes_no_pnl(mod) -> None:
         "equity quantity. Our own measurement says these models lose money after fees; a demo that "
         "can render a P&L is the context-stripping rule at its worst."
     )
+
+
+@pytest.mark.parametrize("path", SCANNED_SCRIPTS, ids=lambda p: p.name)
+def test_forecast_scripts_compute_no_pnl(path) -> None:
+    """The scripts a user actually runs are in scope too — a rule that stops at the package edge
+    stops exactly where the rendering happens."""
+    assert path.exists(), f"{path} is listed for scanning but does not exist"
+    hits = _defined_and_called_names(path.read_text()) & BANNED_NAMES
+    assert not hits, f"{path.name} references {sorted(hits)}"
 
 
 def test_the_banned_scan_can_actually_fail() -> None:
