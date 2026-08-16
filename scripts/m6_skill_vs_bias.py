@@ -85,6 +85,7 @@ from trikaal.eval.xsection import (  # noqa: E402
     symbol_decisions,
 )
 from trikaal.run.matrix import load_symbol_arrays  # noqa: E402
+from trikaal.utils.paths import display_path  # noqa: E402
 
 ARTIFACTS = {
     0: REPO / "runs_cloud/results/r0/cell1_seed0_eval.json",
@@ -256,7 +257,7 @@ def main() -> int:
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(out, indent=2) + "\n")
-    print(f"WROTE {args.out.relative_to(REPO)}")
+    print(f"WROTE {display_path(args.out, REPO)}")
     return 0
 
 

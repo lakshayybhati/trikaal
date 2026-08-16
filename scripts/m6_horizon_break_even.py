@@ -144,6 +144,7 @@ from trikaal.eval.metrics import (  # noqa: E402
     information_ratio,
     periods_per_year,
 )
+from trikaal.utils.paths import display_path  # noqa: E402
 
 PRIMARY_H = 15
 VAL_HORIZONS = (5, 15, 60)
@@ -728,7 +729,7 @@ def main() -> int:
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(doc, indent=2, default=str) + "\n")
-    print(f"WROTE {args.out.relative_to(REPO) if args.out.is_relative_to(REPO) else args.out}")
+    print(f"WROTE {display_path(args.out, REPO)}")
     return 0
 
 

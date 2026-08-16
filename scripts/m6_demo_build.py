@@ -30,6 +30,7 @@ from trikaal.demo.inference import (  # noqa: E402
     prepare_symbol,
 )
 from trikaal.demo.render import render_svg  # noqa: E402
+from trikaal.utils.paths import display_path  # noqa: E402
 
 sys.path.insert(0, str(REPO / "scripts"))
 from m6_demo_acceptance import pick_decisions  # noqa: E402
@@ -175,7 +176,7 @@ proven <strong>bit-for-bit identical</strong> to the scored production path
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(page)
     kb = len(page.encode()) / 1024
-    print(f"WROTE {args.out.relative_to(REPO)}  ({len(figures)} figures, {kb:.0f} KB)")
+    print(f"WROTE {display_path(args.out, REPO)}  ({len(figures)} figures, {kb:.0f} KB)")
     return 0
 
 
