@@ -248,3 +248,42 @@ def test_csv_path_reproduces_the_direct_feature_path_bit_for_bit():
         "the CSV boundary changed the forecast — the dashboard is not showing the scored model"
     )
     assert math.isfinite(got.per_seed[seeds[0]]["pct"])
+
+
+def test_sigma_is_converged_at_the_floor_and_the_fixture_can_discriminate():
+    """★ THE SIGMA DECISION, PINNED. The 1,232 floor is safe for the MAGNITUDE, not just the sign.
+
+    predict_mu ends with ``cum * sig_t``, so sigma scales the reported percentage linearly. The
+    floor is only defensible if sigma is converged there — asserted, not argued.
+
+    ★ FIXTURE DISCRIMINATION IS THE WHOLE TEST. A CONSTANT-volatility series makes an EWMA
+    converge to the same value at every truncation, so it reports 0.0% error for free — my first
+    measurement did exactly that and was worthless. This uses a 10x regime shift and FIRST proves
+    the series actually moves sigma, so a genuine warm-up error could not hide.
+    """
+    rng = np.random.default_rng(11)
+    tt = 6000
+    ms = 1_700_000_000_000 + np.arange(tt) * 60_000
+    vol = np.where(np.arange(tt) > tt - 800, 0.01, 0.001)  # calm -> 10x storm
+    c = 100 * np.exp(np.cumsum(rng.normal(0, 1, tt) * vol))
+    o = np.r_[c[0], c[:-1]]
+    hi = np.maximum(o, c) * 1.0003
+    lo = np.minimum(o, c) * 0.9997
+    v = np.abs(rng.lognormal(3, 1, tt))
+    cfg = FeatureConfig()
+
+    def sigma_at_end(n: int) -> float:
+        sl = slice(tt - n, tt)
+        st = _stream(ms[sl], o[sl], hi[sl], lo[sl], c[sl], v[sl], (v * c)[sl], micro=False)
+        return float(compute_features(st, cfg).sigma[-1])
+
+    full = compute_features(_stream(ms, o, hi, lo, c, v, v * c, micro=False), cfg).sigma
+    # the fixture MUST move sigma, or the convergence check below is vacuous
+    assert full.max() / full.min() > 3.0, "fixture does not exercise sigma — cannot discriminate"
+
+    ref = float(full[-1])
+    at_floor = sigma_at_end(cf.MIN_ROWS)
+    assert abs(at_floor / ref - 1.0) < 0.01, (
+        f"sigma at the {cf.MIN_ROWS}-row floor is {at_floor / ref:.4f}x the fully-warm value; "
+        "the floor would distort the reported magnitude"
+    )

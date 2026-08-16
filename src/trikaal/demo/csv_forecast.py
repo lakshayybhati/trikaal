@@ -24,9 +24,35 @@ return a number. A clean context needs 720 + 512 = 1,232 rows (~20.5 h of 1-minu
 Below that this module REFUSES with the arithmetic in the message, rather than returning a
 confident-looking forecast computed on warm-up.
 
-(The volatility estimator additionally warms for 1,440 bars. It emits finite sigma from row 0, so
-it does not mask, but sigma below ~1,440 rows is estimated on a short window — reported as a
-warning rather than a refusal, because it degrades rather than invalidates.)
+★ WHY THE FLOOR IS 1,232 AND NOT 1,952 — THE SIGMA QUESTION, DECIDED EXPLICITLY.
+VOL_WARMUP_ROWS is 1,440, above MIN_ROWS, so a CSV between them clears the floor while the
+volatility flag still reads "warm". That is deliberate, and the reasoning is here rather than
+inherited:
+
+  1. MECHANICALLY, sigma CANNOT CHANGE THE SIGN. predict_mu ends with ``cum * sig_t`` — sigma is a
+     strictly positive multiplicative scale applied last. Direction comes entirely from the token
+     rollout. But this page reports a MAGNITUDE, and a magnitude is exactly what a scale distorts,
+     so that argument alone does not settle it.
+
+  2. MEASURED, IT IS NOT DISTORTED AT ALL. sigma at the final bar, truncated to 1,232 rows versus
+     a 5,000-row fully-warm reference, agrees to a ratio of 1.0000 — 0.0% error on the displayed
+     percentage — under constant vol, a 10x calm->storm shift, a 10x storm->calm shift, and a 5x
+     slow drift.
+
+  3. WHY: the sigma EWMA uses vol_lambda = 0.97, i.e. HALF-LIFE 22.8 BARS and effective memory
+     ~33 bars. At 1,232 rows it has FORTY TIMES its own memory of burn-in. ``VOL_WARMUP_ROWS`` is
+     ``max(n_warm_vol=30, half_life_fast=1440)`` — it inherits the Z-SCORE fast half-life, not
+     sigma's. It is a conservative TRAINING-EXCLUSION flag, not a convergence threshold.
+
+  ★ MY FIRST VERSION WARNED "the scale is usable but noisier than the model saw in training".
+  THAT WAS AN UNMEASURED CLAIM AND MY OWN MEASUREMENT CONTRADICTS IT. The warning now states what
+  is true — a conservative flag, measured error 0.0% — rather than implying a degradation that
+  does not exist. A false caveat is not a safe caveat; it teaches a reader to discount a number
+  that is fine, and the next person to inherit it has no way to tell.
+
+  (The FIRST measurement of this was itself degenerate and I caught it: a constant-volatility
+  fixture makes an EWMA converge to the same value at every truncation, so it reported 0.0% for
+  free. The regime-shift fixtures above are what can actually discriminate.)
 
 ★ OUT OF DISTRIBUTION IS THE HEART OF THIS, NOT A FOOTER. The bar interval is INFERRED from the
 timestamps and anything other than 60 s is extrapolation. We cannot detect "this is a stock, not a
@@ -189,8 +215,10 @@ def parse_csv(text: str) -> CsvBars:
         )
     if len(ts) < VOL_WARMUP_ROWS:
         warns.append(
-            f"volatility is estimated on {len(ts):,} bars, below its {VOL_WARMUP_ROWS:,}-bar "
-            "warm-up — the scale is usable but noisier than the model saw in training."
+            f"FYI, not a problem: {len(ts):,} bars is below the {VOL_WARMUP_ROWS:,}-bar "
+            "volatility warm-up FLAG, but that flag inherits the z-score half-life, not "
+            "sigma's. Sigma's EWMA has a 22.8-bar half-life and is fully converged here — "
+            "measured error on the forecast magnitude at this length is 0.0%."
         )
     return CsvBars(ts, o, h, low_, c, v, amt, inferred, warns)
 
