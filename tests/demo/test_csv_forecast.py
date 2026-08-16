@@ -439,3 +439,60 @@ def test_no_individual_trajectory_is_exposed_for_plotting():
     for banned in ("paths", "trajectories", "samples", "strands"):
         assert banned not in fields, f"CsvForecast exposes {banned!r} — strands must not be plotted"
     assert "quantiles" in fields
+
+
+def _fc(pcts, h=15):
+    return cf.CsvForecast(
+        h=h,
+        decision_ts_ms=0,
+        last_close=100.0,
+        per_seed={
+            s: {"mu": v / 100.0, "pct": v, "price": 100.0}
+            for s, v in zip((0, 2, 4), pcts, strict=True)
+        },
+        band={"lo_pct": 0.0, "hi_pct": 0.0, "lo_price": 100.0, "hi_price": 100.0},
+        context_ts=np.array([0]),
+        context_close=np.array([100.0]),
+        inferred_bar_ms=60_000,
+        warnings=[],
+        n_rows=1300,
+    )
+
+
+def test_agreement_clause_refuses_on_a_COLLAPSED_input():
+    """★ THE DEGENERACY RULE, IN THE DEMO. A collapsed input must not score perfect agreement.
+
+    At h=1 all three mu-hats are structurally zero and the first version emitted "they agree on
+    direction" — the most confident sentence this dashboard can produce, about three models the
+    project spent weeks showing DISAGREE. This is the C-1 pathology on a user-facing surface.
+    """
+    line = cf.plain_english(_fc((0.0, 0.0, 0.0)))
+    assert "agree on direction" not in line, "a collapsed triple must never claim agreement"
+    assert "NO DIRECTIONAL SIGNAL" in line
+    assert "not agreement" in line
+
+
+def test_agreement_clause_does_not_claim_INVISIBLE_disagreement():
+    """The mirror defect: sign differences the reader cannot see must not be reported as conflict."""
+    line = cf.plain_english(_fc((0.0001, -0.0002, 0.00005)))
+    assert "DISAGREE" not in line, "three displayed zeros must not be called a disagreement"
+    assert "NO DIRECTIONAL SIGNAL" in line
+
+
+def test_exact_zero_is_not_counted_as_a_direction():
+    """`p > 0` folded 0.0 into the bearish bucket, so (-0.20,-0.10,0.0) claimed unanimity."""
+    line = cf.plain_english(_fc((-0.20, -0.10, 0.0)))
+    assert "agree on direction" not in line
+    assert "round to zero" in line and "no unanimous call" in line
+
+
+def test_identical_forecasts_are_named_degenerate_not_consensus():
+    line = cf.plain_english(_fc((0.05, 0.05, 0.05)))
+    assert "IDENTICAL" in line and "degenerate" in line
+    assert "agree on direction" not in line
+
+
+def test_the_guard_still_lets_GENUINE_verdicts_through():
+    """FIXTURE DISCRIMINATION: a guard that refuses everything is not a guard."""
+    assert "they agree on direction" in cf.plain_english(_fc((0.30, 0.12, 0.44)))
+    assert "THEY DISAGREE ON DIRECTION" in cf.plain_english(_fc((0.35, -0.22, -0.37)))
