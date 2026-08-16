@@ -22,9 +22,19 @@ uploaded."* Three mechanisms make it true, and the third is the one that survive
    A future edit that adds a CDN font, an analytics beacon or a remote image is **blocked by the
    browser**, not shipped quietly.
 
-**Verified over HTTP, not by inspection:** the served page contains zero absolute URIs of any kind,
-and every network request the browser made during a full run went to `127.0.0.1:8765` — `GET /`,
-`POST /run`, `GET /stages`, `GET /result`, `GET /export.csv`. Nothing else.
+**Verified over HTTP, not by inspection:** the page contains **zero FETCHABLE URIs**, and every
+network request the browser made during a full run went to `127.0.0.1:8765` — `GET /`, `POST /run`,
+`GET /stages`, `GET /result`, `GET /export.csv`. Nothing else.
+
+★ **State it as "zero fetchable URIs", never as "zero absolute URIs".** The only absolute URI in the
+rendered output is the SVG namespace, `xmlns="http://www.w3.org/2000/svg"` (`render.py:151`,
+`m6_csv_dashboard.py:423`) — an XML *identifier*, never resolved over the network. The shell as
+served happens to contain none at all, which is what an early report measured and then generalised
+into "zero absolute URIs of any kind"; that sentence is false the moment a figure is on the page,
+and the next person to `grep http://` would conclude we had shipped a false privacy claim. The
+network finding and the privacy guarantee are unaffected — only the wording was wrong. This is why
+`external_references()` scans by *fetching attribute* rather than for the string `http`, and why it
+carries an explicit assertion that an `xmlns` must NOT be flagged.
 
 **The reference design was not copied wholesale for exactly this reason.** It loads Poppins and
 JetBrains Mono from `fonts.googleapis.com`. That request tells Google the user opened the tool, on
@@ -81,10 +91,43 @@ The cost is the Monte-Carlo rollout: `mc_paths` calls `_fill_context` once per s
 times. Row count is nearly irrelevant; sample count is everything.
 
 **This reframes the loading screen from decoration to necessity** — five minutes of a blank page
-reads as a hung tool. It is also a real, unrequested optimisation target: the context is *identical*
-across samples within a seed, so the caches could be built once and copied. That is a change to a
-function gated bit-for-bit against production (`test_mc_paths_endpoint_matches_production`), so it
-is **not** made unilaterally. Flagged for a ruling, not actioned.
+reads as a hung tool.
+
+### The prefill cache — AUTHORIZED, LANDED, BIT-IDENTICAL
+
+`mc_paths` rebuilt an identical 512-step KV cache once per sampled path. It now builds it once and
+hands each sample a **shallow dict copy**: `AttentionBlock.step` grows the cache with
+`cache["k"] = torch.cat(...)`, which *rebinds* the dict entry and never writes the old tensor in
+place (`attention.py:124-127`), so each sample needs its own dict, not its own tensors.
+
+| | before | after | |
+|---|---|---|---|
+| `SAMPLING TRAJECTORIES`, per seed | 60.3 / 61.2 / 70.3 s | **3.8 / 4.2 / 5.3 s** | **≈14×** |
+| end to end, same input | 328.1 s | **151.6 – 185.2 s** | **1.8–2.2×** |
+
+**Acceptance was bit-identity, and it was met on every axis measured**: 0 of *n×h* path values moved
+against the pre-optimisation implementation at n=8, 32 and 48; the endpoint mean equals unchanged
+production `predict_mu(estimator="mc_mean")` bit-for-bit at n=8 and n=32; all three seeds' displayed
+forecasts are unchanged to the digit; and the rendered SVG is **byte-identical** (21,191 bytes).
+The gate is parametrized over n because n=8 is thin for a caching change — a cache leaking state
+between samples corrupts sample 2 onward, and the production configuration is 32.
+
+### Why it is 1.9× and not 3–5×
+
+The optimisation was applied **only to `mc_paths`**. `predict_mu(estimator="mc_mean")` is production
+and does the same wasteful prefill, and it is now the dominant cost (~43–53 s per seed of ~55 s).
+It was left alone deliberately: the acceptance gate compares `mc_paths` *against* production, so
+changing production too would make both arms share the change and the gate would be **blind to it**
+— the shared-input rule.
+
+**There is a clean way to get the rest, and it is offered rather than taken.** The dashboard calls
+production a second time per seed purely to widen the seed band, and that value is **derivable
+bit-for-bit from `mc_paths`' endpoints** — which is precisely what the gate already asserts.
+Measured at n=48: derived `0x1.305adcf6fa6c6p-10`, production `0x1.305adcf6fa6c6p-10`, identical,
+with the production call costing **63.7 s per seed of duplicated rollout**. Deriving it would take
+a run to roughly 25–30 s total (**≈6–11×**). The catch is that the sample counts must match — the
+band would move from `mc_mean@32` to `mc_mean@48`, i.e. **a displayed number changes** — which is
+outside the authorisation given, so it is written down here instead of done.
 
 ## 5. THE FIGURE — THREE DEFECTS FOUND BY RENDERING THE OLD ONE AND LOOKING AT IT
 
@@ -97,8 +140,16 @@ None was visible from the code, and 818 tests could not see any of them.
    210-character line at 10.5 px ran to x≈1178 in a 1020-wide viewBox and ended mid-word at
    *"…vs the returns it forecast"*. The single caveat the supervisor named as must-survive was **cut
    in half by the image whose job is to carry it.** Now wrapped in a **monospace** face at a
-   character budget computed from the box width — monospace advance is exactly 0.6em, so the fit is
-   arithmetic rather than eyeballed, and each line is asserted at *its own rendered font size*.
+   character budget computed from the box width, so the fit is arithmetic rather than eyeballed,
+   and each line is asserted at *its own rendered font size*.
+
+   ★ **The budget is 0.62em, not 0.6, and the render-and-look pass is what found the difference.**
+   Measuring the rendered figure in a browser — `getBBox()` on all 33 text nodes — put the widest
+   line at **983.2px inside a 984px box**: the 0.6 arithmetic was exactly right and sitting exactly
+   on the limit. But the stack ends in generic `monospace`, which resolves to DejaVu Sans Mono
+   (0.6023em) on Linux, taking that line to ~987px and clipping it by 3px on a machine none of us
+   had rendered on. *A bound that holds only on the author's font is not a bound.* At 0.62 the
+   measured headroom is **49.3px**, same line count, same figure height.
 3. **THE FORECAST WAS 2.8% OF THE PLOT WIDTH.** 512 context bars against 15 forecast steps on one
    linear axis. The x-axis is now split — context compressed into 62%, forecast expanded into 38% —
    with the break drawn, labelled `◀ 512 BARS OF CONTEXT, COMPRESSED | NEXT 15 MIN, EXPANDED ▶`,

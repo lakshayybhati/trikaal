@@ -105,10 +105,19 @@ OOD_BD = "#ef4444"
 OOD_HEAD = "#ffe0e0"
 OOD_BODY = "#fca5a5"
 
-# ★ THE WRAP IS ARITHMETIC, NOT AESTHETIC. Every monospace face advances exactly 0.6em per
-# character, so a character budget computed from the box width is a PROOF that the line fits —
+# ★ THE WRAP IS ARITHMETIC, NOT AESTHETIC. A monospace face advances a FIXED fraction of the em
+# per character, so a character budget computed from the box width is a proof that the line fits —
 # unlike a proportional face, where it is a guess that was wrong by 180px in the shipped figure.
-MONO_ADVANCE = 0.6
+#
+# ★ 0.62, NOT 0.6, AND THE DIFFERENCE IS THE WHOLE GUARANTEE. "Monospace advances 0.6em" is true
+# of SF Mono and Menlo and it is what this started at. Measuring the RENDERED figure in a browser
+# — getBBox() on all 33 text nodes — showed the widest line at 983.2px inside a 984px box: 0.8px
+# of headroom, i.e. the arithmetic was exactly right and exactly at the limit. But the stack ends
+# in generic ``monospace``, which on Linux resolves to DejaVu Sans Mono at 0.6023em; that line
+# becomes ~987px and clips by 3px on a machine none of us rendered on. A bound that holds only on
+# the author's font is not a bound. 0.62 covers every face in the stack with room, and costs at
+# most one extra wrapped line.
+MONO_ADVANCE = 0.62
 DISC_PX = 11.5
 DISC_HEAD_PX = 12.5
 DISC_LINE_H = 16.0

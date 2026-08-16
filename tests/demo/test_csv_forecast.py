@@ -349,13 +349,31 @@ def test_sigma_is_converged_at_the_floor_and_the_fixture_can_discriminate():
 
 
 @pytest.mark.slow
-def test_mc_paths_endpoint_matches_production_bit_for_bit():
-    """★ THE GATE ON THE RE-IMPLEMENTED ROLLOUT.
+@pytest.mark.parametrize("n", [8, 32])
+def test_mc_paths_endpoint_matches_production_bit_for_bit(n):
+    """★ THE GATE ON THE RE-IMPLEMENTED ROLLOUT — AND THE ACCEPTANCE TEST FOR ITS OPTIMISATION.
 
     ``mc_paths`` re-walks ``predict._rollout_mc_mean``'s loop to KEEP the per-step values that
     production averages away. A re-implementation is a drift risk, so the mean of its endpoints
     must equal ``predict_mu(estimator='mc_mean')`` exactly at the same seed and sample count. If
     these diverge, the figure is drawing a different rollout from the scored one.
+
+    ★ IT ALSO GATES THE CONTEXT-PREFILL CACHE. ``mc_paths`` used to rebuild an identical 512-step
+    KV cache once per sampled path; it now builds it once and hands each sample a shallow dict
+    copy. Memoizing a deterministic pure computation MUST be bit-identical, so this test — against
+    UNCHANGED production — is the whole acceptance criterion, and the answer is bit-identity or
+    revert. No tolerance is added and no argument is made about whether a difference is acceptable.
+
+    ★ n IS PARAMETRIZED BECAUSE n=8 IS THIN FOR A CACHING CHANGE. A cache that leaked state
+    between samples would corrupt sample 2 onward; eight samples can show that, but the production
+    configuration is 32, and a gate should be run at the size the thing actually runs at. Both
+    values were also checked element-by-element against the pre-optimisation implementation
+    (0 of n*h values moved at n=8, 32 and 48).
+
+    ``mc_seed`` is passed EXPLICITLY. An ad-hoc harness written to check this optimisation omitted
+    it, production fell back to its own default, the two arms drew different samples, and the
+    harness reported REVERT on a change that is provably bit-identical — a false alarm from the
+    instrument, on the very question it existed to settle. The tooling rule, again.
     """
     from trikaal.demo.inference import available_seeds, load_unit
     from trikaal.eval.predict import predict_mu
@@ -369,7 +387,7 @@ def test_mc_paths_endpoint_matches_production_bit_for_bit():
     b = _bars(1400)
     out = compute_features(_stream(*b, micro=False), FeatureConfig())
     x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
-    i, h, n = x_arm.shape[0] - 1, 15, 8
+    i, h = x_arm.shape[0] - 1, 15
 
     paths = cf.mc_paths(
         u,

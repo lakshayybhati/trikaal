@@ -725,9 +725,27 @@ def mc_paths(
     gen = torch.Generator(device="cpu").manual_seed(seed)
     out_paths = np.zeros((n_samples, h), dtype=np.float64)
     with torch.no_grad():
+        # ★ THE CONTEXT PREFILL IS IDENTICAL FOR EVERY SAMPLE, SO IT IS COMPUTED ONCE.
+        # ``_fill_context`` issues SEQ_LEN single-token ``model.step`` calls over context that is
+        # fixed across the whole loop — 512 forward passes per sample, repeated n_samples times,
+        # to rebuild byte-for-byte the same KV cache. It dominated the dashboard's wall clock.
+        #
+        # A SHALLOW DICT COPY IS SUFFICIENT AND IS THE WHOLE TRICK. ``AttentionBlock.step`` grows
+        # the cache with ``cache["k"] = torch.cat([cache["k"], k], dim=2)`` — that REBINDS the dict
+        # entry to a NEW tensor and never writes the old one in place (attention.py:124-127). So
+        # each sample needs its own dict, not its own tensors, and the base tensors survive
+        # untouched. ``base_out`` is read-only until the first ``model.step`` reassigns it.
+        #
+        # ★ MEMOIZING A DETERMINISTIC PURE COMPUTATION MUST BE BIT-IDENTICAL, AND THAT IS THE
+        # ACCEPTANCE CRITERION, NOT A HOPE:
+        # ``test_mc_paths_endpoint_matches_production_bit_for_bit``
+        # compares this against the UNCHANGED production ``predict_mu(estimator="mc_mean")``. If a
+        # single bit moves, the optimisation changed the model and it reverts — no tolerance is
+        # added and no argument is made about whether the difference is acceptable.
+        base_caches, base_out = _fill_context(model, cc, cf, cts, SEQ_LEN)
         for s in range(n_samples):
-            _caches, out = _fill_context(model, cc, cf, cts, SEQ_LEN)
-            caches = _caches
+            caches = [{"k": c["k"], "v": c["v"]} for c in base_caches]
+            out = base_out
             cum = torch.zeros(1, dtype=torch.float32, device=dev)
             for k in range(1, h + 1):
                 pc_p = F.softmax(out.logits_c.float(), dim=-1).reshape(1, -1).cpu()
