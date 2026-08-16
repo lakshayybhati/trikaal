@@ -38,8 +38,36 @@ carries an explicit assertion that an `xmlns` must NOT be flagged.
 
 **The reference design was not copied wholesale for exactly this reason.** It loads Poppins and
 JetBrains Mono from `fonts.googleapis.com`. That request tells Google the user opened the tool, on
-every load, which would make the rendered sentence false. The page uses a system font stack; the
-design survives it.
+every load, which would make the rendered sentence false.
+
+### Fonts: Clash Display and Helvetica, referenced but not shipped
+
+The operator asked for **Clash Display** and **Helvetica**. Helvetica is a system face. Clash
+Display is not — and it turns out there are **two** separate obligations here, not one:
+
+1. **Nothing is fetched.** No `@font-face src`, no CDN. Asserted.
+2. **Nothing is redistributed.** Self-hosting the woff2 from 127.0.0.1 is what the supervisor
+   sanctioned, and it would have been the obvious build — but the Fontshare EULA §02 forbids
+   *"uploading them in a public server"*, and **this repository is public**. So the font files are
+   deliberately **not committed**. The CSS names the family (`'Clash Display'`, installed at
+   `~/Library/Fonts`), the browser resolves it locally with no request and nothing copied, and
+   anywhere it is absent the stack falls through to Helvetica. A test scans the whole tree and
+   fails if any `.woff/.woff2/.otf/.ttf/.eot` ever appears — watched failing against a real
+   Clash Display woff2 before being trusted.
+
+The hero image (`assets/trikaal-bg-image.png`) is the operator's own asset, committed, and served
+from our own handler at `/bg.png`.
+
+### The empty state is bare, and one flag reveals the figure and its disclosures together
+
+The landing screen shows only the hero, the header, the rail and the composer — no chart frame, no
+"what this is not" panel. That is defensible because **there is no forecast yet, so there is nothing
+to qualify**; the moment one exists, `data-state="result"` reveals `.right`, and the hero fades to
+5%. What makes it safe rather than merely tidy is that the chart and the disclosure panel are
+**siblings inside `.right`, revealed by a single selector**, and exactly one line of JS sets the
+flag — in `canvas()`, the function that draws the figure. To show a forecast without its
+qualifiers you would have to move one of them out of `.right`, which the test refuses (also watched
+failing). Every in-raster disclosure is unchanged regardless, since those live inside the SVG.
 
 ## 2. HISTORY STORES RESULTS, NEVER INPUTS
 

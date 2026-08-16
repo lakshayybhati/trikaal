@@ -161,10 +161,69 @@ def test_csp_forbids_every_external_origin():
     assert "http://" not in csp and "https://" not in csp
 
 
-def test_no_font_is_fetched_and_the_stacks_are_system_only():
+def test_no_font_is_fetched_and_none_is_redistributed():
+    """★ TWO SEPARATE OBLIGATIONS, AND THE SECOND ONE IS A LICENCE, NOT A PREFERENCE.
+
+    (1) NOTHING IS FETCHED. No @font-face src, no CDN, no Poppins/JetBrains link — the reason the
+        reference design's Google Fonts line was refused in the first place.
+    (2) NOTHING IS REDISTRIBUTED. Clash Display is referenced BY FAMILY NAME and resolves from the
+        operator's own installed copy. The Fontshare EULA §02 forbids "uploading them in a public
+        server", and this repository is public, so committing the woff2 would breach it even
+        though self-hosting from 127.0.0.1 is otherwise exactly what the supervisor sanctioned.
+        Wherever the font is absent the stack falls through to Helvetica.
+    """
     for stack in (dash._SANS_CSS, dash._MONO_CSS):
         assert "googleapis" not in stack and "//" not in stack
-    assert "Poppins" not in dash._APP_CSS and "JetBrains" not in dash._APP_CSS
+    css = dash._APP_CSS
+    assert "Poppins" not in css and "JetBrains" not in css
+    assert "@font-face" not in css, "no font may be embedded or served; family names only"
+    assert "Clash Display" in css and "Helvetica" in css
+    shipped = [
+        p.name
+        for p in REPO.rglob("*")
+        if p.suffix.lower() in {".woff", ".woff2", ".otf", ".ttf", ".eot"}
+        and ".venv" not in p.parts
+        and ".git" not in p.parts
+    ]
+    assert not shipped, (
+        f"font files in the repository: {shipped}. The Fontshare EULA forbids redistribution, "
+        "and this repository is public — reference the family name instead."
+    )
+
+
+def test_the_hero_image_is_ours_and_served_from_our_own_handler():
+    page = dash._shell(3, 1, 1)
+    assert 'src="/bg.png"' in page, "the hero must be a same-origin path, never a remote URL"
+    assert external_references(page) == []
+    assert dash.BG_IMAGE.exists(), f"{dash.BG_IMAGE} is referenced by the page but not committed"
+
+
+def test_the_empty_state_is_bare_and_ONE_FLAG_reveals_figure_and_disclosures_TOGETHER():
+    """★ THE STRUCTURAL GUARANTEE BEHIND HIDING THE DISCLOSURES ON THE LANDING SCREEN.
+
+    The operator asked for a clean empty state, and that is defensible: there is no forecast yet,
+    so there is nothing to qualify. What is NOT defensible is a build where a later edit reveals a
+    forecast while its qualifiers stay hidden. So the chart and the "what this is not" panel are
+    siblings inside `.right`, and a SINGLE selector controls the pair. To show one without the
+    other you would have to move it out of `.right`, which this test refuses.
+    """
+    page = dash._shell(3, 1, 1)
+    assert 'data-state="empty"' in page, "the page must start with nothing revealed"
+    assert 'body[data-state="empty"] .right{display:none}' in dash._APP_CSS
+
+    right = page.split('<div class="col right">', 1)[1]
+    # everything up to the close of the right column
+    assert 'id="canvas"' in right, "the figure must live inside .right"
+    disc = right.split('<div class="glass panel"', 1)[0]
+    assert 'class="glass disc"' in disc, "the disclosure panel must live inside .right too"
+    assert "NET NEGATIVE" in disc and "over-dispersed" in disc
+
+    # ...and only ONE place in the JS may set the flag, so it cannot be flipped from a path that
+    # does not draw a figure.
+    js = dash._APP_JS
+    assert js.count("dataset.state") == 1, (
+        f"exactly one assignment may control the revealed state; found {js.count('dataset.state')}"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────

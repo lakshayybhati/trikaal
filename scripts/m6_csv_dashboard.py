@@ -462,6 +462,8 @@ class Job:
     export: str = ""
 
 
+BG_IMAGE = REPO / "assets" / "trikaal-bg-image.png"
+
 _UNITS: dict = {}
 _JOBS: dict[str, Job] = {}
 _LOCK = threading.Lock()
@@ -598,7 +600,15 @@ _APP_CSS = """
   --t1:rgba(255,255,255,0.86); --t2:rgba(255,255,255,0.5);
   --t3:rgba(255,255,255,0.3); --t4:rgba(255,255,255,0.22);
   --ac:#4fe1a1;
-  --f:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  /* ★ CLASH DISPLAY IS REFERENCED BY FAMILY NAME AND IS NOT SHIPPED. The Fontshare EULA §02
+     forbids "uploading them in a public server", and this repository is public — so the woff2
+     files are deliberately NOT committed. The font renders from the operator's own installed
+     copy (~/Library/Fonts, family "Clash Display"), which is a local lookup with no network
+     request and nothing distributed. Anywhere it is absent the stack falls through to Helvetica,
+     which is what the body text uses anyway. This is the same reasoning that kept the reference
+     design's Google Fonts link out: the page must not fetch, and now also must not re-publish. */
+  --d:'Clash Display','Clash Display Medium','Helvetica Neue',Helvetica,Arial,sans-serif;
+  --f:'Helvetica Neue',Helvetica,Arial,sans-serif;
   --m:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
   --sh:0 30px 80px rgba(0,0,0,0.6);
 }
@@ -615,18 +625,28 @@ body{min-height:100vh;overflow-x:hidden}
 .rise{animation:rise 260ms ease both}
 .blink{animation:blink 1.4s ease-in-out infinite}
 
-.bgfield{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-    radial-gradient(70% 55% at 78% 18%, rgba(60,72,92,0.30) 0%, rgba(0,0,0,0) 62%),
-    radial-gradient(90% 70% at 12% 92%, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.5) 42%,
-      rgba(0,0,0,0) 72%),
-    linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(0,0,0,0) 26%);}
-.bgfield:after{content:'';position:absolute;inset:0;
-  background-image:linear-gradient(rgba(255,255,255,0.022) 1px, rgba(0,0,0,0) 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, rgba(0,0,0,0) 1px);
-  background-size:56px 56px;
-  -webkit-mask-image:radial-gradient(80% 60% at 70% 30%, #000 0%, rgba(0,0,0,0) 75%);
-  mask-image:radial-gradient(80% 60% at 70% 30%, #000 0%, rgba(0,0,0,0) 75%);}
+/* ── THE HERO IMAGE, AND ITS ONE JOB: GET OUT OF THE WAY WHEN THERE IS A RESULT ──────────────
+   Served from our own handler at /bg.png, never from anywhere else. It carries the empty state
+   and then fades to a trace, because a full-bleed art plate behind a forecast chart is exactly
+   the "trading product" register the disclosures exist to resist. */
+.bgwrap{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bgwrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  object-position:62% 50%;opacity:0.95;transition:opacity 900ms cubic-bezier(.4,0,.2,1)}
+body[data-state="result"] .bgwrap img{opacity:0.05}
+.bgwrap:after{content:'';position:absolute;inset:0;background:
+  radial-gradient(120% 90% at 8% 92%, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.58) 38%,
+    rgba(0,0,0,0) 68%),
+  linear-gradient(180deg, rgba(0,0,0,0.74) 0%, rgba(0,0,0,0) 24%, rgba(0,0,0,0) 60%,
+    rgba(0,0,0,0.7) 100%);}
+
+/* ★ ONE FLAG REVEALS THE FIGURE AND THE DISCLOSURES TOGETHER, AND THAT IS DELIBERATE.
+   The empty state is bare on purpose — there is no forecast yet, so there is nothing to qualify.
+   The moment there IS one, `data-state="result"` shows `.right`, which contains the chart AND
+   the "what this is not" panel. They are siblings under a single selector, so no edit can reveal
+   a forecast while leaving its qualifiers hidden: to break that you would have to move one of
+   them out of `.right`, which `tests/demo/test_csv_dashboard.py` refuses. */
+body[data-state="empty"] .right{display:none}
+body[data-state="empty"] .thread{display:none}
 
 header{position:relative;z-index:6;height:76px;display:flex;align-items:center;
   justify-content:space-between;padding:0 26px 0 24px;gap:16px}
@@ -637,12 +657,12 @@ header{position:relative;z-index:6;height:76px;display:flex;align-items:center;
 .mark i:before{top:5px;left:0;width:12px;height:2px}
 .mark i:after{left:5px;top:0;width:2px;height:12px}
 .mono{font-family:var(--m)}
-.lbl{font-family:var(--m);font-size:12px;letter-spacing:0.16em;text-transform:uppercase;
-  color:rgba(255,255,255,0.92)}
+.lbl{font-family:var(--d);font-size:16px;font-weight:500;letter-spacing:0.14em;
+  text-transform:uppercase;color:rgba(255,255,255,0.94)}
 .sep{width:1px;height:14px;background:rgba(255,255,255,0.18)}
 .sub{font-size:13px;color:var(--t2)}
-.pill{display:flex;align-items:center;gap:9px;height:36px;padding:0 14px;border-radius:12px;
-  border:1px solid rgba(255,255,255,0.1);background:rgba(10,10,10,0.6);
+.pill{display:flex;align-items:center;gap:9px;height:38px;padding:0 18px;border-radius:999px;
+  border:1px solid rgba(255,255,255,0.12);background:rgba(10,10,10,0.6);
   backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
   font-family:var(--m);font-size:11px;letter-spacing:0.1em;color:rgba(255,255,255,0.7);
   white-space:nowrap}
@@ -653,7 +673,7 @@ header{position:relative;z-index:6;height:76px;display:flex;align-items:center;
   align-items:stretch;min-height:calc(100vh - 92px)}
 nav.rail{position:sticky;top:16px;align-self:center;display:flex;flex-direction:column;gap:6px;
   padding:8px;
-  border-radius:18px;border:1px solid rgba(255,255,255,0.08);background:rgba(8,8,8,0.55);
+  border-radius:999px;border:1px solid rgba(255,255,255,0.08);background:rgba(8,8,8,0.55);
   backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);flex:0 0 auto}
 nav.rail button{width:38px;height:38px;border:0;border-radius:12px;background:transparent;
   display:grid;place-items:center;cursor:pointer;transition:background 160ms ease;
@@ -691,12 +711,12 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .composer{position:relative;min-height:150px;padding:20px 24px 16px;display:flex;
   flex-direction:column;justify-content:space-between;transition:border-color 160ms ease}
 .composer.drag{border-color:var(--ac)}
-.drop{margin:12px 0 0;font-size:26px;font-weight:500;line-height:1.16;letter-spacing:-0.015em;
-  color:#fff}
-.drop small{display:block;margin-top:6px;font-size:12px;font-weight:400;color:var(--t2);
-  letter-spacing:0}
+.drop{margin:12px 0 0;font-family:var(--d);font-size:34px;font-weight:500;line-height:1.1;
+  letter-spacing:-0.01em;color:#fff}
+.drop small{display:block;margin-top:9px;font-family:var(--f);font-size:12.5px;font-weight:400;
+  color:var(--t2);letter-spacing:0}
 .chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.chip{height:28px;padding:0 11px;border-radius:9px;border:1px solid rgba(255,255,255,0.1);
+.chip{height:30px;padding:0 13px;border-radius:999px;border:1px solid rgba(255,255,255,0.1);
   background:rgba(255,255,255,0.03);cursor:pointer;font-family:var(--m);font-size:10px;
   letter-spacing:0.1em;color:var(--t2);transition:all 160ms ease}
 .chip:hover{color:#fff;border-color:rgba(255,255,255,0.28)}
@@ -710,11 +730,13 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .file button{border:0;background:transparent;cursor:pointer;font-family:var(--m);font-size:13px;
   color:var(--t3);padding:0}
 .file button:hover{color:#fff}
-.send{width:58px;height:58px;border-radius:50%;border:0;background:rgba(255,255,255,0.9);
+/* the reference puts the action at the far bottom-right of the screen, not beside the composer */
+.send{position:fixed;right:30px;bottom:30px;z-index:9;
+  width:58px;height:58px;border-radius:50%;border:0;background:rgba(255,255,255,0.9);
   cursor:pointer;display:grid;place-items:center;box-shadow:0 18px 44px rgba(0,0,0,0.55);
-  transition:transform 200ms ease,background 200ms ease;flex:0 0 auto}
+  transition:transform 200ms ease,background 200ms ease,opacity 200ms ease;flex:0 0 auto}
 .send:hover:not(:disabled){transform:translateY(-2px);background:#fff}
-.send:disabled{opacity:0.32;cursor:not-allowed}
+.send:disabled{opacity:0.28;cursor:not-allowed}
 .foot{display:flex;align-items:flex-end;gap:10px}
 
 .disc{padding:18px 20px}
@@ -725,7 +747,7 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .disc li:before{content:'';position:absolute;left:0;top:7px;width:5px;height:5px;
   border-radius:1px;background:rgba(255,255,255,0.42)}
 .disc b{color:#fff;font-weight:600}
-.canvas{padding:16px}
+.canvas{padding:14px}
 .canvas svg{width:100%;height:auto;display:block;border-radius:12px}
 .empty{padding:56px 24px;text-align:center;color:var(--t2);font-size:13px}
 .dl{display:inline-flex;align-items:center;gap:8px;margin-top:12px;height:32px;padding:0 14px;
@@ -744,7 +766,7 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
 .load{width:min(760px,92vw);max-height:86vh;overflow-y:auto;padding:26px 28px}
 .load .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;
   gap:16px}
-.load h2{margin:0;font-size:22px;font-weight:500;letter-spacing:-0.01em}
+.load h2{margin:0;font-family:var(--d);font-size:26px;font-weight:500;letter-spacing:-0.01em}
 .stages{display:flex;flex-direction:column;gap:2px}
 .row{display:grid;grid-template-columns:12px 1fr auto;gap:12px;align-items:baseline;
   padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);animation:rise 240ms ease both}
@@ -914,10 +936,10 @@ function thread(){
 function canvas(){
   const c = $('canvas');
   const r = S.runs[S.sel];
-  if (!r || r.error){
-    c.innerHTML = '<div class="empty">No forecast yet. Drop a CSV below and hit send.</div>';
-    return;
-  }
+  // ★ ONE PLACE SETS THE STATE, AND IT IS THE PLACE THAT DRAWS THE FIGURE. `.right` holds the
+  // chart AND the disclosures, so they can only ever appear together.
+  document.body.dataset.state = (r && !r.error) ? 'result' : 'empty';
+  if (!r || r.error){ c.innerHTML = ''; return; }
   c.innerHTML = r.svg + '<a class="dl" href="/export.csv?job=' + encodeURIComponent(r.id)
     + '" download>DOWNLOAD FORECAST CSV</a>';
 }
@@ -1076,8 +1098,11 @@ def _shell(n_seeds: int, params: int, mtp: int) -> str:
         '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         "<title>Trikaal &#183; CSV forecast</title>"
-        f"<style>{_APP_CSS}</style></head><body>"
-        '<div class="bgfield"></div>'
+        f"<style>{_APP_CSS}</style></head>"
+        # ★ data-state STARTS AT "empty". Everything that qualifies a forecast lives behind
+        # data-state="result", and so does the forecast. See the CSS note above `.right`.
+        '<body data-state="empty">'
+        '<div class="bgwrap"><img src="/bg.png" alt=""></div>'
         "<header>"
         '<div style="display:flex;align-items:center;gap:18px;min-width:0">'
         '<div class="mark"><i></i></div>'
@@ -1112,12 +1137,11 @@ def _shell(n_seeds: int, params: int, mtp: int) -> str:
         '<button class="chip" id="pick">BROWSE&#8230;</button>'
         "</div>"
         '<input type="file" id="fileinput" accept=".csv,text/csv" style="display:none">'
-        "</div>"
+        "</div></div></div>"
         '<button class="send" id="sendbtn" title="Forecast" disabled>'
         '<svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">'
         '<path d="M11 18V4M11 4L5 10M11 4l6 6" stroke="#0a0a0a" stroke-width="2.2" '
         'stroke-linecap="round" stroke-linejoin="round"/></svg></button>'
-        "</div></div>"
         '<div class="col right">'
         '<div class="glass canvas" id="canvas"></div>'
         '<div class="glass disc">'
@@ -1211,6 +1235,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 return
             with _LOCK:
                 self._json({"error": job.error, "result": job.result})
+            return
+        if path == "/bg.png":
+            # ★ SERVED FROM OUR OWN HANDLER, off a committed asset. The reference design pulls its
+            # hero from a CDN; this one cannot, for the same reason the fonts cannot.
+            data = BG_IMAGE.read_bytes() if BG_IMAGE.exists() else b""
+            self._head(200 if data else 404, "image/png", len(data))
+            self.wfile.write(data)
             return
         if path == "/export.csv":
             job = self._job()
