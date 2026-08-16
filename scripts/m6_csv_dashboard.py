@@ -67,6 +67,7 @@ from trikaal.demo.csv_forecast import (  # noqa: E402
     CsvRefused,
     forecast_csv_export,
     forecast_from_csv,
+    headline,
     plain_english,
 )
 from trikaal.demo.inference import (  # noqa: E402
@@ -170,6 +171,10 @@ def disclosure_lines(f) -> list[str]:
         "separate training runs that differ only in their random starting point. Squares mark "
         f"the {n_anchor} trained MTP horizons IN RANGE (of 3 usable: 5/15/60 - h=1 is "
         "structurally zero and is not offered); between them is interpolation.",
+        f"THE BOLD LINE IS A POINTWISE MEDIAN of all {f.n_pooled} pooled paths - the middle of "
+        "them at each step SEPARATELY. It is NOT one of the sampled trajectories and no single "
+        "run of the model produces it. The three models are still drawn separately and are NEVER "
+        "averaged into one number.",
         "Measured edge ~0.005-0.02% per trade and NET NEGATIVE after a realistic ~0.10% round "
         "trip. Per-step shape is quantized at ~0.55z on the WORST-reconstructed channel.",
         f"TRAINED ON CRYPTO 1-MINUTE BARS. Inferred interval {f.inferred_bar_ms / 1000:g}s{tail}. "
@@ -282,16 +287,31 @@ def _svg(f) -> str:
             pts = " ".join(f"{xf(k + 1):.1f},{yy(med[s][k]):.1f}" for k in range(f.h))
             p.append(
                 f'<polyline points="{x_split:.1f},{yy(1.0):.1f} {pts}" fill="none" '
-                f'stroke="{c}" stroke-width="2.4" stroke-dasharray="5 4"/>'
+                f'stroke="{c}" stroke-width="1.7" stroke-opacity="0.8" stroke-dasharray="5 4"/>'
             )
         y = yy(f.per_seed[s]["price"] / anchor)
-        p.append(f'<circle cx="{xf(f.h):.1f}" cy="{y:.1f}" r="5" fill="{c}"/>')
+        p.append(f'<circle cx="{xf(f.h):.1f}" cy="{y:.1f}" r="4" fill="{c}"/>')
         for ha, mu in sorted(f.mtp_anchors.get(s, {}).items()):
             if 1 <= ha <= f.h:
                 p.append(
                     f'<rect x="{xf(ha) - 4:.1f}" y="{yy(_m.exp(mu)) - 4:.1f}" width="8" '
                     f'height="8" fill="none" stroke="{c}" stroke-width="1.8"/>'
                 )
+
+    # ── THE POOLED MEDIAN, BOLD, ON TOP. Drawn last so it dominates the per-seed medians, which
+    # stay but become subordinate. It is a POINTWISE locus — the middle of all N paths at each
+    # step separately — and therefore NOT a sampled trajectory; the disclosure says so, because a
+    # bold smooth line through a chart is exactly what a reader mistakes for "the prediction".
+    if f.pooled:
+        pm = " ".join(f"{xf(j + 1):.1f},{yy(_m.exp(f.pooled[50][j])):.1f}" for j in range(f.h))
+        p.append(
+            f'<polyline points="{x_split:.1f},{yy(1.0):.1f} {pm}" fill="none" stroke="#ffffff" '
+            f'stroke-width="3.6" stroke-dasharray="9 4" stroke-linecap="round"/>'
+        )
+        p.append(
+            f'<circle cx="{xf(f.h):.1f}" cy="{yy(_m.exp(f.pooled[50][f.h - 1])):.1f}" r="6" '
+            f'fill="#ffffff" stroke="{FIG_BG}" stroke-width="1.5"/>'
+        )
 
     # ── the break, drawn and named. A split axis is honest only when it is announced.
     p.append(
@@ -312,9 +332,20 @@ def _svg(f) -> str:
     )
 
     # ── legend, in its OWN band. It used to be drawn under the disclosure box and never seen.
+    if f.pooled:
+        hy = inset_y + 20
+        p.append(
+            f'<line x1="{pl}" y1="{hy - 4}" x2="{pl + 14}" y2="{hy - 4}" stroke="#ffffff" '
+            f'stroke-width="3.6" stroke-dasharray="9 4"/>'
+            f'<text x="{pl + 22}" y="{hy}" style="font:600 13px {_SANS_CSS};fill:#ffffff">'
+            "pooled median</text>"
+            f'<text x="{pl + 132}" y="{hy}" style="font:13px {_MONO_CSS};fill:{FIG_SUB}">'
+            f"{(_m.exp(f.pooled[50][f.h - 1]) - 1) * 100:+.3f}%</text>"
+        )
+
     for k, s in enumerate(sorted(f.per_seed)):
         c = SEED_COLOURS.get(s, "#7c7f8a")
-        ly = inset_y + 20 + k * 26
+        ly = inset_y + 46 + k * 24
         p.append(
             f'<circle cx="{pl + 6}" cy="{ly - 4}" r="5" fill="{c}"/>'
             f'<text x="{pl + 20}" y="{ly}" style="font:600 13px {_SANS_CSS};fill:{c}">'
@@ -382,10 +413,18 @@ def _svg(f) -> str:
             )
             p.append(
                 f'<polyline points="{ix(0):.1f},{iy(0.0):.1f} {mid}" fill="none" stroke="{c}" '
-                f'stroke-width="2" stroke-dasharray="5 4"/>'
+                f'stroke-width="1.5" stroke-opacity="0.8" stroke-dasharray="5 4"/>'
             )
         p.append(
             f'<circle cx="{ix(f.h):.1f}" cy="{iy(f.per_seed[s]["pct"]):.1f}" r="4" fill="{c}"/>'
+        )
+    if f.pooled:
+        pm = " ".join(
+            f"{ix(j + 1):.1f},{iy((_m.exp(f.pooled[50][j]) - 1) * 100):.1f}" for j in range(f.h)
+        )
+        p.append(
+            f'<polyline points="{ix(0):.1f},{iy(0.0):.1f} {pm}" fill="none" stroke="#ffffff" '
+            f'stroke-width="2.8" stroke-dasharray="9 4" stroke-linecap="round"/>'
         )
     p.append(
         f'<text x="{ix(0):.1f}" y="{inset_y + inset_h - 8:.1f}" '
@@ -424,10 +463,10 @@ def _svg(f) -> str:
         f'<text x="{pl}" y="61" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
         f"Your CSV, {f.n_rows:,} rows. Last bar {html.escape(stamp)}.</text>"
         f'<text x="{pl}" y="81" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
-        "Solid = your data; dashed = each model&#8217;s OWN most-likely path; "
-        "shaded = sample percentiles (10-90, 25-75).</text>"
+        f"Solid = your data. BOLD WHITE = pointwise median of all {f.n_pooled} pooled paths; "
+        "thin colours = each model&#8217;s own median.</text>"
         f'<text x="{pl}" y="101" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
-        "Three seeds, never averaged. y-axis = price &#247; last close. "
+        "Shaded = 10-90 / 25-75 percentiles. y-axis = price &#247; last close. "
         "THE X-AXIS IS SPLIT AT &#8220;NOW&#8221; &#8212; the two sides are NOT one scale.</text>"
     )
     return (
@@ -609,6 +648,7 @@ def _execute(job: Job, text: str, device: str) -> None:
                     "stamp": datetime.fromtimestamp(f.decision_ts_ms / 1000, tz=UTC).strftime(
                         "%Y-%m-%d %H:%M UTC"
                     ),
+                    "headline": _headline_payload(f),
                     "read": plain_english(f),
                     "warnings": list(f.warnings),
                     "svg": svg,
@@ -622,6 +662,27 @@ def _execute(job: Job, text: str, device: str) -> None:
         _fail(job, "REFUSED", str(e))
     except Exception as e:  # a browser must never receive a raw traceback
         _fail(job, "FAILED", f"{type(e).__name__}: {e}")
+
+
+def _headline_payload(f) -> dict:
+    """The one number and its three inseparable companions, as one object.
+
+    ★ THEY TRAVEL TOGETHER OR NOT AT ALL. This is now the most quotable thing on the page, so the
+    context-stripping rule binds hardest: the value is emitted in the SAME dict as its spread, its
+    fee ratio and the agreement state, and the client renders them in one block. A central number
+    on its own is the failure mode this construction exists to avoid.
+    """
+    hd = headline(f)
+    return {
+        "ok": hd.ok,
+        "value": hd.value,
+        "spread": hd.spread,
+        "fee": hd.fee,
+        "agreement": hd.agreement,
+        "note": hd.note,
+        "n_paths": hd.n_paths,
+        "agree": hd.agreement.startswith("all "),
+    }
 
 
 def _fail(job: Job, kind: str, msg: str) -> None:
@@ -815,6 +876,19 @@ nav.rail button.on{background:rgba(255,255,255,0.14);color:#fff}
   border-radius:1px;background:rgba(255,255,255,0.42)}
 .disc b{color:#fff;font-weight:600}
 .canvas{padding:14px}
+.hero{padding:20px 22px 18px;margin:0 0 14px;border-radius:18px;
+  border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.035)}
+.hero.bad{border-color:rgba(245,158,11,0.55);background:rgba(245,158,11,0.07)}
+.hero .big{font-family:var(--d);font-size:52px;font-weight:600;line-height:1.05;
+  letter-spacing:-0.02em;margin:8px 0 0;color:#fff}
+.hero.bad .big{font-size:30px;color:#fbbf24}
+.hero .fee{margin-top:8px;font-size:15px;color:var(--t1)}
+.hero .sub2{margin-top:8px;font-family:var(--l);font-size:12px;color:var(--t2)}
+.hero .agree{margin-top:12px;display:inline-block;padding:5px 12px;border-radius:999px;
+  font-family:var(--l);font-size:11px;letter-spacing:0.06em;border:1px solid var(--line);
+  color:var(--t1)}
+.hero .agree.split{border-color:rgba(245,158,11,0.6);color:#fbbf24}
+.hero .note2{margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--t1)}
 .canvas svg{width:100%;height:auto;display:block;border-radius:12px}
 .empty{padding:56px 24px;text-align:center;color:var(--t2);font-size:13px}
 .dl{display:inline-flex;align-items:center;gap:8px;margin-top:12px;height:32px;padding:0 14px;
@@ -1009,7 +1083,22 @@ function canvas(){
   // chart AND the disclosures, so they can only ever appear together.
   document.body.dataset.state = (r && !r.error) ? 'result' : 'empty';
   if (!r || r.error){ c.innerHTML = ''; return; }
-  c.innerHTML = r.svg + '<a class="dl" href="/export.csv?job=' + encodeURIComponent(r.id)
+  const hd = r.headline;
+  let head = '';
+  if (hd){
+    // ★ ONE BLOCK. The number, the spread, the fee ratio and the agreement state are rendered
+    // together and cannot be cropped apart — a screenshot of the headline carries all four.
+    head = '<div class="hero' + (hd.ok ? '' : ' bad') + '">'
+      + '<div class="k">Pooled median over all ' + hd.n_paths + ' sampled paths, at '
+      + r.h + ' minutes</div>'
+      + '<div class="big">' + esc(hd.value) + '</div>'
+      + (hd.fee ? '<div class="fee">' + esc(hd.fee) + '</div>' : '')
+      + '<div class="sub2">' + esc(hd.spread) + '</div>'
+      + '<div class="agree' + (hd.agree ? '' : ' split') + '">' + esc(hd.agreement) + '</div>'
+      + (hd.note ? '<div class="note2">' + esc(hd.note) + '</div>' : '')
+      + '</div>';
+  }
+  c.innerHTML = head + r.svg + '<a class="dl" href="/export.csv?job=' + encodeURIComponent(r.id)
     + '" download>DOWNLOAD FORECAST CSV</a>';
 }
 

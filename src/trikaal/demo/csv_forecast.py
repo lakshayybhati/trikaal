@@ -369,6 +369,17 @@ class CsvForecast:
     n_mc_samples: int = 0
     # seed -> {h_anchor: mu}. The four TRAINED MTP horizons; between them is interpolation.
     mtp_anchors: dict = field(default_factory=dict)
+    # ★ THE POOLED PREDICTIVE DISTRIBUTION — all n_seeds x n_mc_paths trajectories together.
+    # {percentile: [h] cumulative log-return path}, taken POINTWISE at each step.
+    #
+    # THIS IS NOT THE CROSS-SEED AVERAGE THE PROJECT REFUSES. A mean of the three seed scalars
+    # would blend three separate models into one confident number and delete the disagreement.
+    # This is the MEDIAN OF THE MODEL'S OWN PREDICTIVE DISTRIBUTION MARGINALISED OVER THE
+    # ENSEMBLE: every sampled path from every seed goes into one sample, and the quantiles of
+    # THAT are read. It carries which-model and which-path uncertainty in one statistic and it
+    # has a name. The per-seed paths are still drawn separately and are never collapsed.
+    pooled: dict = field(default_factory=dict)
+    n_pooled: int = 0
 
 
 def forecast_from_csv(
@@ -412,6 +423,7 @@ def forecast_from_csv(
     mu_samples = []
     quantiles: dict = {}
     anchors: dict = {}
+    all_paths: list = []
     for seed in sorted(units):
         u = units[seed]
         progress("TOKENIZING", f"seed {seed}", "run")
@@ -473,6 +485,7 @@ def forecast_from_csv(
             "ok",
         )
         progress("COMPUTING QUANTILE BANDS", f"seed {seed}", "run")
+        all_paths.append(paths)
         quantiles[seed] = path_quantiles(paths)
         progress(
             "COMPUTING QUANTILE BANDS",
@@ -518,6 +531,23 @@ def forecast_from_csv(
             "price": last * math.exp(mu),
         }
 
+    # ── POOL EVERY TRAJECTORY FROM EVERY SEED INTO ONE SAMPLE, then read its quantiles
+    # POINTWISE at each step. Pointwise matters and is labelled on the figure: the resulting path
+    # is a locus of per-step medians, NOT one of the sampled trajectories, and no single run of
+    # the model looks like it.
+    pooled: dict = {}
+    n_pooled = 0
+    if all_paths:
+        stacked = np.concatenate(all_paths, axis=0)
+        n_pooled = int(stacked.shape[0])
+        pooled = path_quantiles(stacked)
+        progress(
+            "POOLING TRAJECTORIES",
+            f"{n_pooled} paths ({len(all_paths)} seeds x {all_paths[0].shape[0]}) -> pointwise "
+            "p10/p25/p50/p75/p90 of the ensemble's predictive distribution",
+            "ok",
+        )
+
     # The band is the SPREAD ACROSS SEEDS AND THEIR MC MEANS — an honest envelope of what these
     # three models disagree about. It is NOT a calibrated predictive interval and is labelled so.
     allmu = [v["mu"] for v in per_seed.values()] + mu_samples
@@ -544,6 +574,8 @@ def forecast_from_csv(
         quantiles=quantiles,
         n_mc_samples=n_mc_paths,
         mtp_anchors=anchors,
+        pooled=pooled,
+        n_pooled=n_pooled,
     )
 
 
@@ -554,6 +586,145 @@ _WORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}
 # copies of a headline economic constant drifting apart is exactly the class of defect this
 # project keeps paying for.
 ROUND_TRIP_PCT = 0.10
+
+
+@dataclass(frozen=True)
+class Headline:
+    """The one number and the three things that may never be separated from it."""
+
+    ok: bool  # False when the pooled sample is degenerate; `note` then says how
+    pct: float
+    lo_pct: float
+    hi_pct: float
+    n_paths: int
+    value: str  # the number as rendered, or the named degenerate state
+    spread: str
+    fee: str
+    agreement: str
+    note: str = ""
+
+
+def _direction_counts(f: CsvForecast) -> tuple[int, int, int]:
+    """(n, n_up, n_down) over the DISPLAYED per-seed values — one implementation, two callers.
+
+    Shared with ``plain_english`` deliberately: two copies of "how many point up" would be two
+    chances to disagree with each other on the same page, which is the class of defect the pooled
+    seed constant was just fixed for.
+    """
+    shown = [round(f.per_seed[s]["pct"], DISPLAY_DP) for s in sorted(f.per_seed)]
+    return len(shown), sum(1 for x in shown if x > 0), sum(1 for x in shown if x < 0)
+
+
+def headline(f: CsvForecast) -> Headline:
+    """The POOLED MEDIAN at the horizon, with its spread, its fee ratio and the agreement state.
+
+    ★ WHY THIS STATISTIC AND NOT A MEAN OF THE THREE SEEDS. A mean of three scalars blends three
+    separate models into one confident number and deletes the disagreement that IS this project's
+    finding. This is the median of the ensemble's own predictive distribution — every sampled path
+    from every seed pooled into one sample — so which-model and which-path uncertainty are carried
+    by one named statistic rather than averaged away.
+
+    ★ THE THREE COMPANIONS ARE NOT DECORATION AND ARE RETURNED TOGETHER. This is now the most
+    quotable object on the page, so the context-stripping rule binds hardest here: a central
+    number without its SPREAD is the failure mode; the FEE RATIO is the single most informative
+    fact about a number this size and belongs in the same breath, not in a footer; and the
+    AGREEMENT STATE must sit BESIDE it, because a pooled median is perfectly capable of looking
+    decisive while the three models it pools point in different directions.
+
+    ★ IT CARRIES ITS OWN DEGENERACY GUARD. The agreement sentence already has one, but this is a
+    DIFFERENT STATISTIC ON DIFFERENT INPUTS — 144 trajectories rather than 3 scalars — and a
+    collapsed pooled sample would print a confident zero for free. Guarded before the value is
+    read, per the degeneracy rule.
+    """
+    n, n_up, n_down = _direction_counts(f)
+    if n_up == n and n > 0:
+        agreement = f"all {_WORD.get(n, str(n))} models point the same way"
+    elif n_down == n and n > 0:
+        agreement = f"all {_WORD.get(n, str(n))} models point the same way"
+    else:
+        agreement = "THE THREE MODELS DISAGREE ON DIRECTION"
+
+    if not f.pooled or f.n_pooled == 0:
+        return Headline(
+            False,
+            0.0,
+            0.0,
+            0.0,
+            0,
+            "NO POOLED FORECAST",
+            "",
+            "",
+            agreement,
+            note="no sampled trajectories were produced, so there is no pooled distribution.",
+        )
+
+    k = f.h - 1
+    end = {q: (math.exp(f.pooled[q][k]) - 1.0) * 100.0 for q in sorted(f.pooled)}
+    pct, lo, hi = end[50], end[10], end[90]
+
+    # ── DEGENERACY, BEFORE THE VALUE IS READ ─────────────────────────────────────────────────
+    if hi == lo:
+        return Headline(
+            False,
+            pct,
+            lo,
+            hi,
+            f.n_pooled,
+            "DEGENERATE",
+            f"all {f.n_pooled} pooled paths land on the same value",
+            "",
+            agreement,
+            note=(
+                f"every one of the {f.n_pooled} sampled paths ended identically, which is a "
+                "collapsed sample rather than a confident forecast."
+            ),
+        )
+    if round(pct, DISPLAY_DP) == 0.0:
+        return Headline(
+            False,
+            pct,
+            lo,
+            hi,
+            f.n_pooled,
+            "NO DIRECTIONAL SIGNAL",
+            f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
+            f"{hi:+.{DISPLAY_DP}f}%",
+            "",
+            agreement,
+            note=(
+                f"the pooled median rounds to zero at {DISPLAY_DP} decimal places, so there is no "
+                "direction to report — this is an absent signal, not a neutral call."
+            ),
+        )
+
+    # ★ "ABOUT 1x SMALLER" IS NOT A SENTENCE, AND IT SHIPPED FOR ONE RUN. A pooled median of
+    # +0.096% against a 0.10% fee gives ratio 1.04, which the first version rendered as
+    # "about 1x SMALLER than the ~0.10%" — a comparison that says nothing while sounding like it
+    # says something. Near parity has to be NAMED as parity; found by reading the real output
+    # rather than the branch.
+    ratio = ROUND_TRIP_PCT / abs(pct)
+
+    def _x(v: float) -> str:
+        return f"{v:.0f}x" if v >= 10 else f"{v:.1f}x"
+
+    if 0.8 <= ratio <= 1.25:
+        fee = f"about THE SAME SIZE as the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
+    elif ratio > 1.25:
+        fee = f"about {_x(ratio)} SMALLER than the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
+    else:
+        fee = f"about {_x(1.0 / ratio)} LARGER than the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
+    return Headline(
+        True,
+        pct,
+        lo,
+        hi,
+        f.n_pooled,
+        f"{pct:+.{DISPLAY_DP}f}%",
+        f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
+        f"{hi:+.{DISPLAY_DP}f}%",
+        fee,
+        agreement,
+    )
 
 
 def plain_english(f: CsvForecast) -> str:
@@ -727,9 +898,11 @@ __all__ = [
     "CsvBars",
     "CsvForecast",
     "CsvRefused",
+    "Headline",
     "Progress",
     "forecast_csv_export",
     "forecast_from_csv",
+    "headline",
     "mc_mean_from_paths",
     "parse_csv",
     "plain_english",

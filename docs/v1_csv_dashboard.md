@@ -275,6 +275,55 @@ unattributable is closed:
   lost exactly when it was needed — and *was*: an empty log misled me into thinking a restart had
   failed when it had not.
 
+## 5c. THE HEADLINE — THE POOLED MEDIAN, AND WHY IT IS NOT THE AVERAGE WE REFUSED
+
+The operator asked for one headline number. The construction shipped is the **pointwise median of
+all 144 sampled trajectories** (48 × 3 seeds) pooled into one sample — the median of the ensemble's
+own predictive distribution, marginalised over which model *and* which path. It is not a mean of
+the three seed scalars, and the difference is not academic:
+
+**On the real BTCUSDT file (5,999 rows, h=15):**
+
+| | at h=15 |
+|---|---|
+| seed 0 own median path | **+0.0353%** |
+| seed 2 own median path | **−0.0122%** |
+| seed 4 own median path | **−0.0223%** |
+| **pooled median (n=144)** | **−0.0006%** (p10 −0.047%, p90 +0.049%) |
+| *the mean-of-seeds we refused, for comparison only* | *+0.0083%* |
+
+Three things fall out of that, and all three argue for the construction:
+
+1. **The pooled median lands essentially at zero** — between per-seed medians that disagree on
+   sign. Pooling three models that point different ways yields approximately nothing, which is the
+   finding rather than a failure of the statistic.
+2. **The p10–p90 width is 0.0963 pp — 159× the median itself.** The headline's own two numbers
+   carry "the spread is larger than the edge" without a word of prose.
+3. ★ **The refused mean and the shipped median disagree on SIGN** (+0.0083% vs −0.0006%). The
+   objection to the average was substantive, not stylistic: on real data the two summaries point in
+   opposite directions.
+
+**Four things render as one block** and cannot be cropped apart — value, fee ratio, spread,
+agreement state:
+
+> POOLED MEDIAN OVER ALL 144 SAMPLED PATHS, AT 15 MINUTES
+> **+0.072%**
+> about 1.4× SMALLER than the ~0.10% it costs to trade it
+> p10 to p90 of the same 144 paths: −0.213% to +0.400%
+> ⟨ THE THREE MODELS DISAGREE ON DIRECTION ⟩
+
+The figure gains the same line, bold white and dashed at stroke-width 3.6 against the per-seed
+medians at 1.7, and the disclosure block states that it is a **pointwise** locus: *"the middle of
+them at each step SEPARATELY. It is NOT one of the sampled trajectories and no single run of the
+model produces it."* Everything that was there before is unchanged — per-seed medians, bands, both
+explainer panels.
+
+★ **`"about 1x SMALLER"` shipped for exactly one run.** A pooled median of +0.096% against a 0.10%
+fee gives ratio 1.04, which rendered as *"about 1x SMALLER than the ~0.10%"* — a comparison that
+says nothing while sounding like it says something. Near parity is now named as parity (`THE SAME
+SIZE`), and the whole magnitude range from 190× smaller to 21× larger is pinned by test. It was
+found by reading the real output, not by reading the branch.
+
 ## 6. TWO BUGS THE TESTS COULD NOT SEE
 
 * **The filename parse.** A real browser sends `Content-Type: text/csv` after

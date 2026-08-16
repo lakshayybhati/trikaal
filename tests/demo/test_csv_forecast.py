@@ -827,3 +827,227 @@ def test_the_demo_uses_ONE_mc_seed_for_the_scalar_and_the_bands():
         "derivation removed, and it reintroduces the two-seed incoherence"
     )
     assert "mc_mean_from_paths(" in src
+
+
+# ── THE POOLED HEADLINE — one number, and the three things that may never leave its side ─────
+def _pooled_fc(paths_by_seed, h=15):
+    """Build a CsvForecast whose pooled quantiles come from REAL arrays, not hand-written."""
+    per_seed, quantiles, all_p = {}, {}, []
+    for s, arr in paths_by_seed.items():
+        a = np.asarray(arr, float)
+        all_p.append(a)
+        quantiles[s] = cf.path_quantiles(a)
+        end = float(np.percentile(a[:, -1], 50))
+        per_seed[s] = {"mu": end, "pct": (math.exp(end) - 1) * 100, "price": 100.0}
+    stacked = np.concatenate(all_p, axis=0)
+    return cf.CsvForecast(
+        h=h,
+        decision_ts_ms=0,
+        last_close=100.0,
+        per_seed=per_seed,
+        band={},
+        context_ts=np.zeros(1, np.int64),
+        context_close=np.ones(1),
+        inferred_bar_ms=60_000,
+        warnings=[],
+        n_rows=1300,
+        quantiles=quantiles,
+        n_mc_samples=a.shape[0],
+        pooled=cf.path_quantiles(stacked),
+        n_pooled=int(stacked.shape[0]),
+    )
+
+
+def _ramp(n, end, h=15, spread=0.0):
+    rng = np.random.default_rng(0)
+    base = np.linspace(0, end, h)[None, :].repeat(n, 0)
+    return base + rng.normal(0, spread, (n, h)) if spread else base
+
+
+def test_the_headline_is_the_POOLED_MEDIAN_not_a_mean_of_the_seed_scalars():
+    """★ THE DISTINCTION THE WHOLE CONSTRUCTION RESTS ON.
+
+    A mean of three seed scalars blends three models into one confident number and deletes the
+    disagreement. The headline is instead a quantile of the POOLED SAMPLE — every path from every
+    seed in one bag — which carries which-model and which-path uncertainty in one named statistic.
+
+    The fixture makes them differ on purpose: two seeds cluster low and one sits far above, so the
+    pooled MEDIAN lands among the many while the MEAN is dragged toward the outlier. If the code
+    ever silently switched to a mean, this separates them.
+    """
+    f = _pooled_fc({0: _ramp(48, 0.0001), 2: _ramp(48, 0.0002), 4: _ramp(48, 0.0090)})
+    hd = cf.headline(f)
+    k = f.h - 1
+    seed_mean = sum(f.per_seed[s]["pct"] for s in f.per_seed) / len(f.per_seed)
+    assert hd.ok
+    assert abs(hd.pct - seed_mean) > 1e-6, (
+        f"the headline {hd.pct} equals the mean of the seed scalars {seed_mean} — on this "
+        "fixture they must differ, or the test cannot tell a pooled median from an average"
+    )
+    # it is the median of the pooled sample at the final step
+    assert hd.pct == pytest.approx((math.exp(f.pooled[50][k]) - 1) * 100)
+
+
+def test_the_headline_carries_its_spread_fee_and_agreement_and_they_are_not_optional():
+    f = _pooled_fc(
+        {
+            0: _ramp(48, 0.0004, spread=2e-4),
+            2: _ramp(48, 0.0003, spread=2e-4),
+            4: _ramp(48, 0.0005, spread=2e-4),
+        }
+    )
+    hd = cf.headline(f)
+    assert hd.ok
+    assert "p10 to p90" in hd.spread and "144 paths" in hd.spread
+    assert hd.lo_pct < hd.pct < hd.hi_pct
+    assert "SMALLER than the ~0.10%" in hd.fee or "LARGER than the ~0.10%" in hd.fee
+    assert hd.agreement  # never empty
+    for field_ in ("value", "spread", "fee", "agreement"):
+        assert getattr(hd, field_), f"{field_} must always be populated on an ok headline"
+
+
+def test_the_fee_ratio_follows_the_number_in_both_directions():
+    # ★ THESE FIXTURES NEED SPREAD. The first version used identical ramps, every pooled path
+    # ended on the same value, and the DEGENERACY GUARD fired — correctly. The guard was right and
+    # the fixture was wrong, which is the better way round, but a fixture that cannot reach the
+    # branch it is testing tests nothing.
+    small = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(16, 0.00008, spread=2e-5),
+                2: _ramp(16, 0.00009, spread=2e-5),
+                4: _ramp(16, 0.00007, spread=2e-5),
+            }
+        )
+    )
+    assert small.ok, small.note
+    assert "SMALLER" in small.fee, small.fee
+    big = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(16, 0.005, spread=2e-4),
+                2: _ramp(16, 0.0051, spread=2e-4),
+                4: _ramp(16, 0.0049, spread=2e-4),
+            }
+        )
+    )
+    assert big.ok, big.note
+    assert "LARGER" in big.fee, f"a ~0.5% median is not smaller than a 0.10% fee: {big.fee}"
+
+
+def test_the_headline_says_so_when_the_models_disagree_on_direction():
+    split = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(8, 0.002, spread=1e-4),
+                2: _ramp(8, -0.003, spread=1e-4),
+                4: _ramp(8, 0.001, spread=1e-4),
+            }
+        )
+    )
+    assert split.agreement == "THE THREE MODELS DISAGREE ON DIRECTION"
+    agree = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(8, 0.002, spread=1e-4),
+                2: _ramp(8, 0.003, spread=1e-4),
+                4: _ramp(8, 0.001, spread=1e-4),
+            }
+        )
+    )
+    assert "point the same way" in agree.agreement
+
+
+def test_the_headline_has_its_OWN_degeneracy_guard():
+    """★ A DIFFERENT STATISTIC ON DIFFERENT INPUTS NEEDS ITS OWN GUARD. The agreement sentence
+    guards 3 scalars; this guards 144 trajectories, and a collapsed pooled sample would otherwise
+    print a confident zero for free."""
+    collapsed = cf.headline(
+        _pooled_fc({0: _ramp(8, 0.002), 2: _ramp(8, 0.002), 4: _ramp(8, 0.002)})
+    )
+    assert collapsed.ok is False and collapsed.value == "DEGENERATE"
+    assert "collapsed sample" in collapsed.note
+
+    zero = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(8, 1e-9, spread=1e-8),
+                2: _ramp(8, -1e-9, spread=1e-8),
+                4: _ramp(8, 0.0, spread=1e-8),
+            }
+        )
+    )
+    assert zero.ok is False and zero.value == "NO DIRECTIONAL SIGNAL"
+    assert "absent signal, not a neutral call" in zero.note
+
+    none = cf.headline(
+        cf.CsvForecast(
+            h=15,
+            decision_ts_ms=0,
+            last_close=1.0,
+            per_seed={0: {"mu": 0.0, "pct": 0.0, "price": 1.0}},
+            band={},
+            context_ts=np.zeros(1, np.int64),
+            context_close=np.ones(1),
+            inferred_bar_ms=60_000,
+            warnings=[],
+            n_rows=1300,
+        )
+    )
+    assert none.ok is False and none.value == "NO POOLED FORECAST"
+
+
+def test_the_guard_still_lets_a_GENUINE_headline_through():
+    """FIXTURE DISCRIMINATION: a guard that refuses everything is not a guard."""
+    ok = cf.headline(
+        _pooled_fc(
+            {
+                0: _ramp(48, 0.0004, spread=1e-4),
+                2: _ramp(48, 0.0005, spread=1e-4),
+                4: _ramp(48, 0.0006, spread=1e-4),
+            }
+        )
+    )
+    assert ok.ok is True and ok.value.endswith("%") and ok.value not in ("+0.000%", "-0.000%")
+
+
+def test_the_per_seed_medians_survive_the_pooling():
+    """He asked for the headline IN ADDITION TO the detail. The per-seed quantiles must remain."""
+    f = _pooled_fc({0: _ramp(48, 0.0004), 2: _ramp(48, 0.0005), 4: _ramp(48, 0.0006)})
+    assert set(f.quantiles) == {0, 2, 4}
+    for s in f.quantiles:
+        assert set(f.quantiles[s]) == {10, 25, 50, 75, 90}
+    assert f.n_pooled == 144
+
+
+def test_the_fee_clause_names_PARITY_instead_of_saying_one_times_smaller():
+    """★ "about 1x SMALLER" IS NOT A SENTENCE, and it shipped for one run.
+
+    A pooled median of +0.096% against a 0.10% fee gives ratio 1.04, which the first version
+    rendered as "about 1x SMALLER" — a comparison that says nothing while sounding like it says
+    something. It was found by reading the real output, not by reading the branch. Near parity is
+    now named as parity, and the whole magnitude range is pinned so no band silently degenerates.
+    """
+
+    def fee_for(end):
+        sp = abs(end) * 0.2 + 1e-7
+        return cf.headline(
+            _pooled_fc(
+                {
+                    0: _ramp(16, end, spread=sp),
+                    2: _ramp(16, end * 1.05, spread=sp),
+                    4: _ramp(16, end * 0.95, spread=sp),
+                }
+            )
+        ).fee
+
+    assert "190x SMALLER" in fee_for(0.000005)
+    assert "12x SMALLER" in fee_for(0.00008)
+    assert "2.4x SMALLER" in fee_for(0.0004)
+    assert "THE SAME SIZE" in fee_for(0.00096)
+    assert "1.6x LARGER" in fee_for(0.0015)
+    assert "21x LARGER" in fee_for(0.02)
+    # ...and no rendering may ever say "1x" or "0x", in either direction
+    for end in (0.000005, 0.00008, 0.0004, 0.00096, 0.0015, 0.005, 0.02, -0.0009, -0.0011):
+        f = fee_for(end)
+        assert " 1x " not in f and " 0x " not in f and "0.0x" not in f, f
