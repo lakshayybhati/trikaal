@@ -46,5 +46,24 @@
     "the_V_p_caveat_now_DROPS_for_seed_4": "The benchmark is the specified one. The V_p-vs-A_p substitution disclosure no longer applies to seed 4. It STILL APPLIES to seeds 0 and 2, which were not re-run by ruling.",
     "control_arm_note": "PASSED on a DIFFERENT torch (2.5.1+cu124 on the box vs 2.12.1+cu130 for the money run) and a different physical 4090, weeks later: period-active set IDENTICAL (34,989), IR within 0.000346, max|diff| on the gross series 2.587e-04, corr 0.99999986. The pipeline reproduces the scored pipeline; that is what makes the benchmark readable.",
     "spend": "box 47715433, RTX 4090 @ $0.3322/h, 13.5 h uptime, ~$4.48 of the $8 cap"
+  },
+  "ROBUSTNESS_OF_THE_INTERVAL": {
+    "why_this_is_here": "A referee recomputes t in ten seconds. Everything they could compute is stated here first, with each construction's LEVEL named, so nothing can be discovered that we did not already publish.",
+    "t_stat": 1.697092479441559,
+    "conventional_two_sided_threshold": 1.96,
+    "\u2605_LIKE_FOR_LIKE_AT_THE_PINNED_LEVEL": "The pinned instrument is ONE-SIDED at alpha=0.05 \u2014 paired_bootstrap.py:137 computes ci_lower = np.quantile(deltas, 0.05), the 5th percentile, and BOOT_ALPHA is documented as 'one-sided level'. Its normal counterpart therefore uses z=1.6449, NOT 1.96. At that matched level the two constructions AGREE and BOTH clear zero: percentile +0.0454, normal +0.0307. The supervisor's -0.1545 is a TWO-SIDED 95% bound, i.e. a stricter test than the one pre-registered; it is reported below because a reader may apply it, not because it is the pinned test.",
+    "one_sided_alpha_0_05": {
+      "percentile_lower_PINNED": 0.045448119782374716,
+      "normal_approx_lower": 0.030695271053199025,
+      "both_clear_zero": true,
+      "normal_p_value": 0.04483958891398443
+    },
+    "two_sided_95_STRICTER_THAN_PREREGISTERED": {
+      "normal_approx_lower": -0.15446189409868694,
+      "clears_zero": false,
+      "normal_p_value": 0.08967917782796886,
+      "note": "Does NOT clear (-0.1545). The percentile counterpart at this level would be the 2.5th quantile, which the pinned harness does not emit and which is NOT computed here."
+    },
+    "HOW_TO_STATE_IT": "t = 1.70, below the conventional two-sided 1.96. At the PRE-REGISTERED one-sided alpha=0.05 the result clears zero on both the percentile bound (+0.0454) and its normal approximation (+0.0307). Under a two-sided 95% test \u2014 which is NOT what was pre-registered \u2014 it would not (-0.1545). The effect is real on the instrument declared in advance and is NOT comfortably large; both halves of that sentence must travel together."
   }
 }

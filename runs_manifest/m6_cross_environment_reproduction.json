@@ -1,0 +1,34 @@
+{
+  "receipt": "runs_manifest/m6_cross_environment_reproduction.json",
+  "schema": "m6_cross_environment_reproduction_v1",
+  "\u2605_WHY_THIS_HAS_ITS_OWN_FILE": "This evidence was produced as a GATE INSIDE a bias test (m6_skill_vs_bias_exact.py) and would have been invisible to anyone looking for reproducibility evidence, which is where it actually matters most. Invariant 7 asserts a reproducibility deliverable that the project has otherwise ARGUED rather than DEMONSTRATED across environments \u2014 and 49/49 run records once asserted bit-exactness on a premise that was false. This is the demonstration, harvested into the place a reader would look.",
+  "what_was_reproduced": "Seed 4's cell-1 GROSS period series over the full pinned money grid (35,064 stride-15 periods, 40 symbols, 1,402,520 decisions), rebuilt from the checkpoint through the production path: tokenization -> mu-hat -> position filter -> equal-weight pooling.",
+  "environments": {
+    "original_money_run": {
+      "torch": "2.12.1+cu130",
+      "gpu": "NVIDIA GeForce RTX 4090",
+      "attention_mode": "sdpa_deterministic",
+      "deterministic_algorithms": true,
+      "artifact": "runs_cloud/results/r2/cell1_seed4_eval.json"
+    },
+    "reproduction": {
+      "torch": "2.5.1+cu124",
+      "gpu": "NVIDIA GeForce RTX 4090 (different physical machine, vast 47715433)",
+      "attention_mode": "sdpa_deterministic",
+      "deterministic_algorithms": true,
+      "separation": "weeks later, different host, different CUDA minor, different torch minor"
+    }
+  },
+  "agreement": {
+    "period_active_set_recomputed": 34989,
+    "period_active_set_banked": 34989,
+    "active_set_IDENTICAL": true,
+    "ir_recomputed": 1.1446252585124777,
+    "ir_banked": 1.1442791248262019,
+    "ir_abs_diff": 0.00034613368627578467,
+    "gross_series_max_abs_diff": 0.00025873020400202923,
+    "gross_series_correlation": 0.999999857150472
+  },
+  "\u2605_WHAT_IT_DOES_AND_DOES_NOT_ESTABLISH": "ESTABLISHES: the scored INFERENCE path reproduces across torch versions and physical hardware to 3.5e-04 in IR with a bit-identical period-active set \u2014 strong evidence for the prediction-replay half of invariant 7, obtained for free. DOES NOT ESTABLISH: (1) BIT-EXACTNESS \u2014 it is agreement to a tolerance, not equality, and the residual 2.587e-04 is exactly the float32 reduction-order effect invariant 7 already concedes deterministic attention does not remove; (2) anything about TRAINING reproducibility, which is where the same-seed basin-hopping finding lives and which this does not touch; (3) generality beyond cell 1 seed 4 \u2014 one arm, one seed.",
+  "provenance": "harvested from the control arm of scripts/m6_skill_vs_bias_exact.py, GPU run 2026-08-15"
+}
