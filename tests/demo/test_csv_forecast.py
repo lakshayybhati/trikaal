@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import math
+import re
 
 import numpy as np
 import pytest
@@ -139,9 +140,67 @@ def test_refuses_missing_columns_and_names_them():
         cf.parse_csv("timestamp,open,high,low\n1,2,3,4\n")
 
 
-def test_refuses_untrained_horizon():
-    with pytest.raises(cf.CsvRefused, match="never trained"):
+def test_refuses_unoffered_horizon():
+    with pytest.raises(cf.CsvRefused, match="not offered"):
         cf.forecast_from_csv("", units={}, h=7)
+
+
+def test_h1_is_NOT_offered_and_is_refused_at_the_api():
+    """★ h=1 STRUCTURALLY CANNOT PRODUCE A FORECAST, SO IT IS NOT AN OPTION.
+
+    mu-hat covers [t+1, t+h] with the entry at C_{t+1}, so the rollout excludes k=1. At h=1 there
+    is nothing to accumulate and every seed returns EXACTLY 0.000000%. A user who picks "1 min"
+    and sees a flat zero concludes the tool is broken or the model is neutral at one minute —
+    neither is true, and no label fixes an option that cannot work.
+
+    This test exists so nobody restores h=1 from TRAINED_HORIZONS, which legitimately contains it.
+    """
+    assert 1 in cf.TRAINED_HORIZONS, "the MTP heads WERE trained for h=1 — that fact stays"
+    assert 1 not in cf.SELECTABLE_HORIZONS, "h=1 must never be offered"
+    assert cf.SELECTABLE_HORIZONS == (5, 15, 60)
+    with pytest.raises(cf.CsvRefused, match=re.escape("EXACTLY 0.000000")):
+        cf.forecast_from_csv("", units={}, h=1)
+
+
+def test_the_h1_zero_is_real_and_this_fixture_proves_the_mechanism():
+    """FIXTURE DISCRIMINATION for the claim above: show k=1 is excluded, not merely asserted.
+
+    Runs the real rollout at h=1 and h=2 on the same bars. h=1 must be EXACTLY zero; h=2 must not
+    be — otherwise "the rollout excludes k=1" would be an unverified story about the code.
+    """
+    from trikaal.demo.inference import available_seeds, load_unit
+    from trikaal.eval.predict import predict_mu
+    from trikaal.train.arms import select_arm
+    from trikaal.train.token_stream import tokenize_features
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    u = load_unit(seeds[0])
+    b = _bars(1300)
+    out = compute_features(_stream(*b, micro=False), FeatureConfig())
+    x_arm, m_arm = select_arm(np.asarray(out.x, np.float32), out.m, ARM_OHLCV)
+    b_c, b_f = tokenize_features(u.tok, x_arm, m_arm, out.segment_id, window=cf.SEQ_LEN)
+    dec = np.array([x_arm.shape[0] - 1], np.int64)
+
+    def mu_at(h):
+        return float(
+            predict_mu(
+                u.model,
+                u.tok,
+                b_c,
+                b_f,
+                out.ts,
+                out.sigma,
+                dec,
+                h=h,
+                seq_len=cf.SEQ_LEN,
+                estimator="expectation",
+            )[0]
+        )
+
+    assert mu_at(1) == 0.0, "h=1 must be exactly zero — that is why it is not offered"
+    assert mu_at(2) != 0.0, "h=2 must be non-zero, or the fixture cannot discriminate"
 
 
 def test_flags_non_60s_bars_as_out_of_distribution():

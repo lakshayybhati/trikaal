@@ -41,7 +41,7 @@ import numpy as np  # noqa: E402
 from trikaal.demo.csv_forecast import (  # noqa: E402
     MIN_ROWS,
     PAPER_HORIZON,
-    TRAINED_HORIZONS,
+    SELECTABLE_HORIZONS,
     CsvRefused,
     forecast_csv_export,
     forecast_from_csv,
@@ -167,7 +167,9 @@ def _svg(f) -> str:
         "it forecasts, so this fan is far WIDER than reality.",
         "Lines are the MEDIAN of "
         f"{f.n_mc_samples} sampled trajectories per seed - not 'the prediction'. Squares = the "
-        "4 TRAINED MTP horizons; between them is interpolation.",
+        f"{len(f.mtp_anchors.get(next(iter(f.mtp_anchors), 0), {}))} trained MTP horizons IN "
+        "RANGE (of 3 usable: 5/15/60 - h=1 is structurally zero and is not offered); between "
+        "them is interpolation.",
         "Measured edge ~0.005-0.02% per trade and NET NEGATIVE after realistic fees. "
         "Per-step shape is quantized at ~0.55z on the worst-reconstructed channel.",
         f"TRAINED ON CRYPTO 1-MINUTE BARS. Inferred interval {f.inferred_bar_ms / 1000:g}s{tail}."
@@ -230,7 +232,7 @@ _PAGE_CSS = (
 
 def _page(body: str, n_seeds: int) -> str:
     opts = []
-    for h in TRAINED_HORIZONS:
+    for h in SELECTABLE_HORIZONS:
         sel = " selected" if h == PAPER_HORIZON else ""
         note = (
             " (the only horizon the paper evaluates)"
@@ -346,7 +348,7 @@ def main() -> int:
         _UNITS[s] = load_unit(s, device=args.device)
     print(f"[units] {seeds} loaded; identity verified against each run manifest")
     print(f"[serve] http://127.0.0.1:{args.port} — LOOPBACK ONLY, nothing leaves this machine")
-    print(f"[input] OHLCV CSV, >= {MIN_ROWS:,} rows; horizons {TRAINED_HORIZONS}")
+    print(f"[input] OHLCV CSV, >= {MIN_ROWS:,} rows; horizons {SELECTABLE_HORIZONS}")
     with socketserver.TCPServer(("127.0.0.1", args.port), Handler) as srv:
         try:
             srv.serve_forever()

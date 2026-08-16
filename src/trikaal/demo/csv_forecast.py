@@ -59,6 +59,25 @@ timestamps and anything other than 60 s is extrapolation. We cannot detect "this
 crypto perp" at all, so the blanket statement has to carry it and it is rendered INTO the figure:
 TRAINED ON CRYPTO 1-MINUTE BARS; ANYTHING ELSE IS EXTRAPOLATION.
 
+★ WHY THE FIGURE SHOWS BANDS AND A MEDIAN RATHER THAN INDIVIDUAL SAMPLED TRAJECTORIES — AND WHY
+RE-MEASURING ON BTC DOES NOT OVERTURN IT. Each per-step value is a sampled token put through the
+tokenizer decoder, and the RETURN channel is the worst-reconstructed of the seven OHLCV dims
+(rank 7/7, 6/7, 6/7 by seed). On the banked basis — ONE window of 512 bars from 1INCHUSDT — its
+MAE is 0.5501 z against a per-step decode sd of 1.1102 z, an artifact fraction of 0.50. On an
+8x512 BTCUSDT basis the same quantity is 0.109 z, a fraction of 0.10. FIVE TIMES SMALLER.
+
+★★ THE 0.50 IS THE BINDING CASE PRECISELY BECAUSE IT IS THE WORSE ONE. THIS DASHBOARD ACCEPTS
+ANY CSV THE USER UPLOADS. Thin, illiquid, alt-class inputs are squarely in scope — 1INCHUSDT is
+not an unlucky sample, it is a REPRESENTATIVE user input. A figure that is honest on BTC and
+misleading on a thin alt is not honest; it is honest on the sample we happened to test. The
+design must survive the WORST admissible input, not the best, and bands survive it: quantization
+shifts every sample alike so the band's WIDTH and the MEDIAN hold, while an individual strand's
+texture is codebook granularity rendered as market structure.
+
+DO NOT "FIX" THIS BY RE-MEASURING ON A LIQUID SYMBOL AND RESTORING STRANDS. The BTC number is not
+a correction of the alt number; they are two points on a range whose upper end is what an open
+upload box guarantees you will eventually be handed.
+
 ★ NO P&L. No profit, position, equity curve, cumulative return or Sharpe is computed here or
 anywhere downstream — ``tests/demo/test_no_pnl.py`` covers this module and fails if one appears.
 """
@@ -88,9 +107,23 @@ WARMUP_ROWS = 720
 MIN_ROWS = WARMUP_ROWS + SEQ_LEN  # 1232
 VOL_WARMUP_ROWS = 1440
 
-# The MTP horizons the model was trained for. NOT a free-text box: h outside this set was never
-# trained. h=15 is the ONLY one the paper evaluates; the rest are trained but unscored.
+# The MTP horizons the model was TRAINED for — a fact about the checkpoint, kept because the
+# figure and the export both cite it.
 TRAINED_HORIZONS = (1, 5, 15, 60)
+
+# ★ WHAT THE UI MAY OFFER. h=1 IS DELIBERATELY ABSENT AND MUST NOT BE RESTORED FROM
+# TRAINED_HORIZONS. mu-hat is defined over [t+1, t+h] — the entry is at C_{t+1} — so the rollout
+# EXCLUDES k=1 (`if k >= 2` in predict._rollout_greedy / _rollout_mc_mean). At h=1 there are no
+# steps left to accumulate and the forecast is EXACTLY 0.000000% for every seed, by construction.
+# A user who picks "1 min" and sees a flat zero concludes either that the tool is broken or that
+# the model is genuinely neutral at one minute. NEITHER IS TRUE, and neither a label nor a caveat
+# fixes an option that structurally cannot produce a forecast — so it is not offered, and
+# `forecast_from_csv` refuses it at the API too.
+#
+# CONSEQUENCE, STATED ON THE FIGURE: the "four trained anchors" are really THREE usable points
+# {5, 15, 60}, and at the paper horizon h=15 only TWO are in range, {5, 15}. The anchor feature is
+# thinner than the design assumed and the figure must not imply four.
+SELECTABLE_HORIZONS = (5, 15, 60)
 PAPER_HORIZON = 15
 
 _ALIASES = {
@@ -281,10 +314,18 @@ def forecast_from_csv(
     n_mc_paths: int = 48,
 ) -> CsvForecast:
     """The whole path: CSV → production features → tokenizer → AR → per-seed mu-hat + MC band."""
-    if h not in TRAINED_HORIZONS:
+    if h == 1:
         raise CsvRefused(
-            f"h={h} was never trained. The MTP heads cover {TRAINED_HORIZONS}; h={PAPER_HORIZON} "
-            "is the only horizon the paper evaluates."
+            "h=1 cannot produce a forecast. mu-hat is defined over [t+1, t+h] with the entry at "
+            "C_{t+1}, so the rollout excludes k=1 and there is nothing left to accumulate — the "
+            f"answer is EXACTLY 0.000000% for every seed, by construction. Use one of "
+            f"{SELECTABLE_HORIZONS}; h={PAPER_HORIZON} is the only horizon the paper evaluates."
+        )
+    if h not in SELECTABLE_HORIZONS:
+        raise CsvRefused(
+            f"h={h} is not offered. The MTP heads were trained for {TRAINED_HORIZONS}, of which "
+            f"{SELECTABLE_HORIZONS} can produce a forecast (h=1 is structurally zero); "
+            f"h={PAPER_HORIZON} is the only horizon the paper evaluates."
         )
     bars = parse_csv(text)
     out = compute_features(_raw_stream(bars), FeatureConfig())
@@ -362,7 +403,7 @@ def forecast_from_csv(
                     estimator="expectation",
                 )[0]
             )
-            for ha in TRAINED_HORIZONS
+            for ha in SELECTABLE_HORIZONS
             if int(ha) <= h
         }
         last = float(bars.close[i])
@@ -465,6 +506,7 @@ def forecast_csv_export(f: CsvForecast) -> str:
 __all__ = [
     "MIN_ROWS",
     "PAPER_HORIZON",
+    "SELECTABLE_HORIZONS",
     "SEQ_LEN",
     "TRAINED_HORIZONS",
     "WARMUP_ROWS",
