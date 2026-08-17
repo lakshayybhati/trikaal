@@ -1,0 +1,276 @@
+{
+  "boxes": {
+    "r0": {
+      "bytes_reconcile": true,
+      "dph_billed": 0.4622222222222222,
+      "files": [
+        {
+          "bytes": 126942667,
+          "local": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/predictor.pt",
+          "local_sha256": "3af533845eefc29d37204efa91d717fd327e0231c3be4808e84ed09b6c0b7ded",
+          "match": true,
+          "onbox_sha256": "3af533845eefc29d37204efa91d717fd327e0231c3be4808e84ed09b6c0b7ded",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed0/predictor.pt"
+        },
+        {
+          "bytes": 4754,
+          "local": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/run_manifest.json",
+          "local_sha256": "126228c6d4f63696169501681d8cb4c7fe97e77e66ecaa40b86870b409ed0b45",
+          "match": true,
+          "onbox_sha256": "126228c6d4f63696169501681d8cb4c7fe97e77e66ecaa40b86870b409ed0b45",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed0/run_manifest.json"
+        },
+        {
+          "bytes": 54779223,
+          "local": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/stage1_state.pt",
+          "local_sha256": "fecec7291f4b2ac8581a163fb10fe208e4cff17a015934ec4e9e602abdc68947",
+          "match": true,
+          "onbox_sha256": "fecec7291f4b2ac8581a163fb10fe208e4cff17a015934ec4e9e602abdc68947",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed0/stage1_state.pt"
+        },
+        {
+          "bytes": 380844059,
+          "local": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/stage2_state.pt",
+          "local_sha256": "9fdbc74ff457da2261804e96a0bfc418affebb74222274725e542214f91986b5",
+          "match": true,
+          "onbox_sha256": "9fdbc74ff457da2261804e96a0bfc418affebb74222274725e542214f91986b5",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed0/stage2_state.pt"
+        },
+        {
+          "bytes": 18256167,
+          "local": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/tokenizer.pt",
+          "local_sha256": "e04d2678385c7431da468a703a773504b0f2bc8f6cd94904a2e8fcacf31eab98",
+          "match": true,
+          "onbox_sha256": "e04d2678385c7431da468a703a773504b0f2bc8f6cd94904a2e8fcacf31eab98",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed0/tokenizer.pt"
+        },
+        {
+          "bytes": 412,
+          "local": "runs_cloud/rescue/r0/shard_0.log",
+          "local_sha256": "844f9c065e2007d551cbd210695a8559a65736812627b76a266e4a4085ab88ff",
+          "match": true,
+          "onbox_sha256": "844f9c065e2007d551cbd210695a8559a65736812627b76a266e4a4085ab88ff",
+          "remote": "/root/shard_0.log"
+        }
+      ],
+      "host_id": 87485,
+      "inventory_bytes_m6": 580826870,
+      "label": "trikaal-m6-r0",
+      "local_bytes_m6": 580826870,
+      "machine_id": 19883,
+      "n_files": 6,
+      "n_sha_match": 6,
+      "offer_id": 13651731,
+      "provenance_stamp_all_16_keys": {
+        "attention_mode": "sdpa_deterministic",
+        "cuda_build": "13.0",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "device": "cuda",
+        "driver_version": "590.48.01",
+        "git_commit": "055d14fbf51ec3575b753267b2fe6a668176a3f8",
+        "gpu_name": "NVIDIA GeForce RTX 4090",
+        "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+        "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+        "numpy": "2.4.6",
+        "platform": "Linux-5.15.0-52-generic-x86_64-with-glibc2.35",
+        "platform_abi": "x86_64-with-glibc2.35",
+        "python": "3.11.10",
+        "python_executable": "/opt/conda/bin/python",
+        "steps_stage1": 26003,
+        "steps_stage2": 26003,
+        "torch": "2.12.1+cu130"
+      },
+      "seeds": [
+        0,
+        1
+      ],
+      "train_wall_s": 10254.0,
+      "unit_trained": "cell1_bsq_ohlcv_seed0"
+    },
+    "r1": {
+      "bytes_reconcile": true,
+      "dph_billed": 0.4677777777777778,
+      "files": [
+        {
+          "bytes": 126942667,
+          "local": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2/predictor.pt",
+          "local_sha256": "5aab6077166543d772f051c468f88994f0c110cb299d42a4a2a62c2c7c0deb42",
+          "match": true,
+          "onbox_sha256": "5aab6077166543d772f051c468f88994f0c110cb299d42a4a2a62c2c7c0deb42",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed2/predictor.pt"
+        },
+        {
+          "bytes": 4752,
+          "local": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2/run_manifest.json",
+          "local_sha256": "aa522d73a3aa628a7830712dc0f1d219b7c876f4c1a01ab1c1b184ac6e7ac523",
+          "match": true,
+          "onbox_sha256": "aa522d73a3aa628a7830712dc0f1d219b7c876f4c1a01ab1c1b184ac6e7ac523",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed2/run_manifest.json"
+        },
+        {
+          "bytes": 54779287,
+          "local": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2/stage1_state.pt",
+          "local_sha256": "10163716146eb5ef9bc9c7aaa7ca48a23860b036da408fbcf24621201262bea9",
+          "match": true,
+          "onbox_sha256": "10163716146eb5ef9bc9c7aaa7ca48a23860b036da408fbcf24621201262bea9",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed2/stage1_state.pt"
+        },
+        {
+          "bytes": 380844123,
+          "local": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2/stage2_state.pt",
+          "local_sha256": "7f42c7f3674ad30f55c957b7af32c3629113c81d9e5fc871495146e6bab06708",
+          "match": true,
+          "onbox_sha256": "7f42c7f3674ad30f55c957b7af32c3629113c81d9e5fc871495146e6bab06708",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed2/stage2_state.pt"
+        },
+        {
+          "bytes": 18256167,
+          "local": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2/tokenizer.pt",
+          "local_sha256": "a57ef3f2d56db1ff084f4ab83bc880c3e4bf4325ce19a6a793584821b6ee1d4c",
+          "match": true,
+          "onbox_sha256": "a57ef3f2d56db1ff084f4ab83bc880c3e4bf4325ce19a6a793584821b6ee1d4c",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed2/tokenizer.pt"
+        },
+        {
+          "bytes": 412,
+          "local": "runs_cloud/rescue/r1/shard_2.log",
+          "local_sha256": "0e3f38ca90c066c9d74e8b380b7d2dc444157296c2e8918db3da3bf3a2e1f5ce",
+          "match": true,
+          "onbox_sha256": "0e3f38ca90c066c9d74e8b380b7d2dc444157296c2e8918db3da3bf3a2e1f5ce",
+          "remote": "/root/shard_2.log"
+        }
+      ],
+      "host_id": 87485,
+      "inventory_bytes_m6": 580826996,
+      "label": "trikaal-m6-r1",
+      "local_bytes_m6": 580826996,
+      "machine_id": 13450,
+      "n_files": 6,
+      "n_sha_match": 6,
+      "offer_id": 37930542,
+      "provenance_stamp_all_16_keys": {
+        "attention_mode": "sdpa_deterministic",
+        "cuda_build": "13.0",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "device": "cuda",
+        "driver_version": "590.48.01",
+        "git_commit": "055d14fbf51ec3575b753267b2fe6a668176a3f8",
+        "gpu_name": "NVIDIA GeForce RTX 4090",
+        "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+        "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+        "numpy": "2.4.6",
+        "platform": "Linux-5.15.0-52-generic-x86_64-with-glibc2.35",
+        "platform_abi": "x86_64-with-glibc2.35",
+        "python": "3.11.10",
+        "python_executable": "/opt/conda/bin/python",
+        "steps_stage1": 26003,
+        "steps_stage2": 26003,
+        "torch": "2.12.1+cu130"
+      },
+      "seeds": [
+        2,
+        3
+      ],
+      "train_wall_s": 11065.3,
+      "unit_trained": "cell1_bsq_ohlcv_seed2"
+    },
+    "r2": {
+      "bytes_reconcile": true,
+      "dph_billed": 0.6277777777777778,
+      "files": [
+        {
+          "bytes": 126942667,
+          "local": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4/predictor.pt",
+          "local_sha256": "f3ad2c3a6815d9b2922313965137450eaa142da7bd500740b486d571ac8a46e1",
+          "match": true,
+          "onbox_sha256": "f3ad2c3a6815d9b2922313965137450eaa142da7bd500740b486d571ac8a46e1",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed4/predictor.pt"
+        },
+        {
+          "bytes": 4753,
+          "local": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4/run_manifest.json",
+          "local_sha256": "ecb5ad26c42045c4583273cb4476c56140a7126298b37d453fef13181fed2a02",
+          "match": true,
+          "onbox_sha256": "ecb5ad26c42045c4583273cb4476c56140a7126298b37d453fef13181fed2a02",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed4/run_manifest.json"
+        },
+        {
+          "bytes": 54779287,
+          "local": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4/stage1_state.pt",
+          "local_sha256": "5f2ff6ce9682fbcc863963740a3e6390c5fb7bb20a635f0f69c4c31d63b02474",
+          "match": true,
+          "onbox_sha256": "5f2ff6ce9682fbcc863963740a3e6390c5fb7bb20a635f0f69c4c31d63b02474",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed4/stage1_state.pt"
+        },
+        {
+          "bytes": 380844123,
+          "local": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4/stage2_state.pt",
+          "local_sha256": "e5b8d4062357f32c3d50da651b60a1aadec58a105da6816c17bb8f1dfb195bc1",
+          "match": true,
+          "onbox_sha256": "e5b8d4062357f32c3d50da651b60a1aadec58a105da6816c17bb8f1dfb195bc1",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed4/stage2_state.pt"
+        },
+        {
+          "bytes": 18256167,
+          "local": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4/tokenizer.pt",
+          "local_sha256": "ba84ff243c75b39e142ea64bd683cdd114fd8c4614c3b113d2bfa52f4c0941d4",
+          "match": true,
+          "onbox_sha256": "ba84ff243c75b39e142ea64bd683cdd114fd8c4614c3b113d2bfa52f4c0941d4",
+          "remote": "/root/m6/cell1_bsq_ohlcv_seed4/tokenizer.pt"
+        },
+        {
+          "bytes": 411,
+          "local": "runs_cloud/rescue/r2/shard_4.log",
+          "local_sha256": "d033ef74047041ab66906868a176a3d0be7f4f2f917221021c06164c1c807932",
+          "match": true,
+          "onbox_sha256": "d033ef74047041ab66906868a176a3d0be7f4f2f917221021c06164c1c807932",
+          "remote": "/root/shard_4.log"
+        }
+      ],
+      "host_id": 81036,
+      "inventory_bytes_m6": 580826997,
+      "label": "trikaal-m6-r2",
+      "local_bytes_m6": 580826997,
+      "machine_id": 51150,
+      "n_files": 6,
+      "n_sha_match": 6,
+      "offer_id": 38138032,
+      "provenance_stamp_all_16_keys": {
+        "attention_mode": "sdpa_deterministic",
+        "cuda_build": "13.0",
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false,
+        "device": "cuda",
+        "driver_version": "590.48.01",
+        "git_commit": "055d14fbf51ec3575b753267b2fe6a668176a3f8",
+        "gpu_name": "NVIDIA GeForce RTX 4090",
+        "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+        "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+        "numpy": "2.4.6",
+        "platform": "Linux-6.8.0-101-generic-x86_64-with-glibc2.35",
+        "platform_abi": "x86_64-with-glibc2.35",
+        "python": "3.11.10",
+        "python_executable": "/opt/conda/bin/python",
+        "steps_stage1": 26003,
+        "steps_stage2": 26003,
+        "torch": "2.12.1+cu130"
+      },
+      "seeds": [
+        4
+      ],
+      "train_wall_s": 10580.7,
+      "unit_trained": "cell1_bsq_ohlcv_seed4"
+    }
+  },
+  "boxes_undisturbed": "nothing was killed, signalled, restarted or deleted; the eval kept running throughout on all three boxes",
+  "eval_artifacts": "NONE \u2014 /root/m6/eval exists and is EMPTY on all three; no unit has completed",
+  "launch_sha": "055d14fbf51ec3575b753267b2fe6a668176a3f8",
+  "receipt": "m6_rescue_inventory",
+  "sweep": "find / -xdev -newermt '2026-08-11 16:00' excluding lake/proc/sys/site-packages/tmp/var: returned ONLY pip's HTTP cache, /root/.nv (NVIDIA JIT cache) and our own m6_payload.tgz. NO wandb directory on any box. NO tmp/scratch from the eval. The produced set is exactly /root/m6 (5 files) + /root/shard_N.log.",
+  "what": "READ-ONLY rescue of everything produced on the three production boxes. Training finished ~13 h before this pull and NOTHING had been banked: the runner gated its pull on a unit's EXIT CODE, and no unit has exited, so three trained models existed only on rented disk. The pull must be gated on FILES EXISTING, not on the unit completing."
+}

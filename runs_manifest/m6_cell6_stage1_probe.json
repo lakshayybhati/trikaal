@@ -1,0 +1,54 @@
+{
+  "PRE_COMMITTED_DECISION": {
+    "bpt_ok": false,
+    "decision": "DO_NOT_BUY_CELL_6",
+    "if_declined": "report the capacity handicap as UNQUANTIFIED IN IR UNITS (what the clause strings now say) and record this measured reason. Publishable, and it costs nothing.",
+    "if_wired": "buy 5 seeds (54.1 GPU-h, $15.68-21.63), report BOTH ends of the bracket whichever way they fall \u2014 the ordering is an empirical claim, not an identity \u2014 and disclose that the ends are confounded in OPPOSITE directions",
+    "reasons": [
+      "codebook utilization min(0.0741, 0.1233) < 0.95 \u2014 every cell-6 artifact would be REFUSED by _validate_artifact, so the arm cannot enter a verdict at all",
+      "realized bits-per-token 7.8158 outside FSQ_BPT_BAND [19.5, 20.5] \u2014 the bracket's lower end would be measured on a DIFFERENT-CAPACITY instrument, which is the matched-bits control invariant 6 exists to protect"
+    ],
+    "utilization_ok": false
+  },
+  "cell": "cell6_fsq_micro_constant",
+  "cell_6_is_a_control": "it enters NO verdict clause; PINNED_DSR['cells'] stays (1,2,3,4,5) and verdict._CELL_BY_ID must still hold exactly those five (asserted in the conformance gate, because n_trials_v12 is computed from the LIVE registry)",
+  "codebook": {
+    "capacity_bits_per_token": 20.057847655411855,
+    "coarse": {
+      "capacity_bits": 9.799281621521923,
+      "efficiency": 0.31653943022437925,
+      "entropy_bits": 3.1018590210847803,
+      "n_tokens": 4207680,
+      "n_used": 66,
+      "perplexity": 8.585243307583792,
+      "utilization": 0.07407407407407407,
+      "vocab": 891
+    },
+    "effective_bits_per_token": 7.815761672175561,
+    "fine": {
+      "capacity_bits": 10.258566033889933,
+      "efficiency": 0.4595089250795924,
+      "entropy_bits": 4.71390265109078,
+      "n_tokens": 4207680,
+      "n_used": 151,
+      "perplexity": 26.243762245002255,
+      "utilization": 0.12326530612244897,
+      "vocab": 1225
+    }
+  },
+  "gates": {
+    "codebook_min_utilization": 0.95,
+    "fsq_bpt_band": [
+      19.5,
+      20.5
+    ]
+  },
+  "n_symbols_tokenized": 2,
+  "receipt": "m6_cell6_stage1_probe",
+  "seed": 0,
+  "stage2_never_entered": false,
+  "steps_stage1": 3,
+  "steps_stage2": 0,
+  "wall_s": 155.6,
+  "what": "the ~$0.50 Stage-1 measurement that decides whether the $16-22 C-12 bracket is buildable at all"
+}
