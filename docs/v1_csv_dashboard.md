@@ -324,6 +324,39 @@ says nothing while sounding like it says something. Near parity is now named as 
 SIZE`), and the whole magnitude range from 190× smaller to 21× larger is pinned by test. It was
 found by reading the real output, not by reading the branch.
 
+## 5d. ★ THE CHOICE OF ESTIMATOR CHANGES THE SIGN — and the page was showing two of them
+
+Found by the operator disbelieving a number: the headline read negative over two positive per-seed
+labels, which looks like broken arithmetic. It was not. **The headline came from the sampled
+trajectories and the labels beside it were the `expectation` scalars.** Measured on
+`BTCUSDT_1m.csv`, 5,999 rows, h=15, one model, one rollout (`MC_SEED = 20260704`):
+
+| seed | expectation | mc_mean@32 | trajectory median | |
+|---|---|---|---|---|
+| 0 | +0.0113% | +0.0403% | +0.0353% | |
+| 2 | −0.0036% | −0.0004% | −0.0122% | |
+| 4 | **+0.0173%** | −0.0195% | **−0.0223%** | ← **sign flip** |
+| **majority positive** | **2 / 3** | 1 / 3 | 1 / 3 | |
+
+**Three estimators of the same quantity disagree on the majority sign, and seed 4 flips outright.**
+This is a third independent demonstration of what this project keeps measuring: *the directional
+signal is weak enough that the choice of estimator changes its sign.* Receipt:
+`runs_manifest/m6_estimator_sign_disagreement.json`. **Whether it belongs in the paper's
+limitations is the supervisor's call, not mine.**
+
+**The fix is the seed-mismatch fix again — one estimator on the page, and it is the one the
+picture is drawn from.** Every displayed per-seed value is now that seed's own trajectory median:
+the legend, the plain-English sentence, the endpoint dots, the band envelope, and the CSV's primary
+rows. The MTP anchor squares moved too — they were plotted from the expectation anchors while the
+line they marked was the trajectory median, so a marker did not sit on its own curve. The
+expectation and mc_mean survive as **named secondaries** in the export, under keys that say what
+they are, and never in the headline's visual register.
+
+**The fee-ratio line was removed from the headline** by operator decision after the supervisor
+argued for it. The fee facts remain in *What this is not*. `plain_english` still carries a fee
+clause of its own — a different surface, not part of the removal, and flagged rather than
+extrapolated.
+
 ## 6. TWO BUGS THE TESTS COULD NOT SEE
 
 * **The filename parse.** A real browser sends `Content-Type: text/csv` after

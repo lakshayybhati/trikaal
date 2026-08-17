@@ -291,11 +291,17 @@ def _svg(f) -> str:
             )
         y = yy(f.per_seed[s]["price"] / anchor)
         p.append(f'<circle cx="{xf(f.h):.1f}" cy="{y:.1f}" r="4" fill="{c}"/>')
-        for ha, mu in sorted(f.mtp_anchors.get(s, {}).items()):
-            if 1 <= ha <= f.h:
+        # ★ THE SQUARES MARK TRAINED HORIZONS ON THE LINE THEY BELONG TO. They used to be plotted
+        # from the `expectation` anchors while the line was the trajectory median — a second
+        # estimator on the same axes, so the marker did not sit on its own curve. Position now
+        # comes from the SAME median path; the expectation anchors survive in the CSV export as a
+        # named secondary.
+        qd_s = f.quantiles.get(s)
+        for ha in sorted(f.mtp_anchors.get(s, {})):
+            if 1 <= ha <= f.h and qd_s:
                 p.append(
-                    f'<rect x="{xf(ha) - 4:.1f}" y="{yy(_m.exp(mu)) - 4:.1f}" width="8" '
-                    f'height="8" fill="none" stroke="{c}" stroke-width="1.8"/>'
+                    f'<rect x="{xf(ha) - 4:.1f}" y="{yy(_m.exp(qd_s[50][ha - 1])) - 4:.1f}" '
+                    f'width="8" height="8" fill="none" stroke="{c}" stroke-width="1.8"/>'
                 )
 
     # ── THE POOLED MEDIAN, BOLD, ON TOP. Drawn last so it dominates the per-seed medians, which
@@ -466,7 +472,7 @@ def _svg(f) -> str:
         f"Solid = your data. BOLD WHITE = pointwise median of all {f.n_pooled} pooled paths; "
         "thin colours = each model&#8217;s own median.</text>"
         f'<text x="{pl}" y="101" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
-        "Shaded = 10-90 / 25-75 percentiles. y-axis = price &#247; last close. "
+        "EVERY % HERE IS A MEDIAN OF SAMPLED PATHS. Shaded = 10-90 / 25-75. "
         "THE X-AXIS IS SPLIT AT &#8220;NOW&#8221; &#8212; the two sides are NOT one scale.</text>"
     )
     return (
@@ -668,16 +674,15 @@ def _headline_payload(f) -> dict:
     """The one number and its three inseparable companions, as one object.
 
     ★ THEY TRAVEL TOGETHER OR NOT AT ALL. This is now the most quotable thing on the page, so the
-    context-stripping rule binds hardest: the value is emitted in the SAME dict as its spread, its
-    fee ratio and the agreement state, and the client renders them in one block. A central number
-    on its own is the failure mode this construction exists to avoid.
+    context-stripping rule binds hardest: the value is emitted in the SAME dict as its spread and
+    the agreement state, and the client renders them in one block. A central number on its own is
+    the failure mode this construction exists to avoid.
     """
     hd = headline(f)
     return {
         "ok": hd.ok,
         "value": hd.value,
         "spread": hd.spread,
-        "fee": hd.fee,
         "agreement": hd.agreement,
         "note": hd.note,
         "n_paths": hd.n_paths,
@@ -1092,7 +1097,6 @@ function canvas(){
       + '<div class="k">Pooled median over all ' + hd.n_paths + ' sampled paths, at '
       + r.h + ' minutes</div>'
       + '<div class="big">' + esc(hd.value) + '</div>'
-      + (hd.fee ? '<div class="fee">' + esc(hd.fee) + '</div>' : '')
       + '<div class="sub2">' + esc(hd.spread) + '</div>'
       + '<div class="agree' + (hd.agree ? '' : ' split') + '">' + esc(hd.agreement) + '</div>'
       + (hd.note ? '<div class="note2">' + esc(hd.note) + '</div>' : '')

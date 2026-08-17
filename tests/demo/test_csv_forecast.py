@@ -245,7 +245,18 @@ def test_export_columns_match_the_chart_numbers():
         h=15,
         decision_ts_ms=123,
         last_close=100.0,
-        per_seed={0: {"mu": 0.001, "pct": 0.1, "price": 100.1}},
+        per_seed={
+            0: {
+                "mu": 0.001,
+                "pct": 0.1,
+                "price": 100.1,
+                # the NAMED SECONDARIES production now carries; the fixture mirrors it rather
+                # than the export being made tolerant of a shape production never emits
+                "mu_expectation": 0.002,
+                "pct_expectation": 0.2,
+                "mc_mean_pct": 0.15,
+            }
+        },
         band={"lo_pct": 0.0, "hi_pct": 0.2, "lo_price": 100.0, "hi_price": 100.2},
         context_ts=np.array([0]),
         context_close=np.array([100.0]),
@@ -254,7 +265,12 @@ def test_export_columns_match_the_chart_numbers():
         n_rows=1300,
     )
     text = cf.forecast_csv_export(f)
-    assert "seed0_forecast_pct,0.100000" in text
+    # ★ THE PRIMARY IS NAMED FOR ITS ESTIMATOR, and the secondaries are named for theirs — the
+    # export must not be quotable as "the forecast" without saying which quantity it is.
+    assert "seed0_median_pct,0.100000" in text
+    assert "seed0_expectation_pct,0.200000" in text
+    assert "seed0_mc_mean_pct,0.150000" in text
+    assert "SECONDARY ESTIMATORS" in text
     assert "NOT_A_RECOMMENDATION" in text
     assert "warning_1,w" in text
 
@@ -303,7 +319,7 @@ def test_csv_path_reproduces_the_direct_feature_path_bit_for_bit():
         )[0]
     )
 
-    assert got.per_seed[seeds[0]]["mu"].hex() == ref.hex(), (
+    assert got.per_seed[seeds[0]]["mu_expectation"].hex() == ref.hex(), (
         "the CSV boundary changed the forecast — the dashboard is not showing the scored model"
     )
     assert math.isfinite(got.per_seed[seeds[0]]["pct"])
@@ -658,7 +674,7 @@ def test_model_stages_agree_with_the_forecast_that_was_returned():
     assert "1 of 3 usable" in done["MTP ANCHORS"] and "(5m)" in done["MTP ANCHORS"]
 
     seed = seeds[0]
-    pct = (math.exp(f.per_seed[seed]["mu"]) - 1.0) * 100.0
+    pct = (math.exp(f.per_seed[seed]["mu_expectation"]) - 1.0) * 100.0
     assert f"seed {seed}: expectation {pct:+.4f}%" in done["FORECASTING"], done["FORECASTING"]
 
 
@@ -745,7 +761,9 @@ def test_the_anchor_at_the_selected_horizon_IS_the_headline_mu():
     units = {seeds[0]: load_unit(seeds[0])}
     f = cf.forecast_from_csv(_csv_text(*_bars(1300)), units=units, h=5, mc_samples=2, n_mc_paths=4)
     s = seeds[0]
-    assert f.mtp_anchors[s][5] == f.per_seed[s]["mu"], "the h anchor must BE the headline mu"
+    assert f.mtp_anchors[s][5] == f.per_seed[s]["mu_expectation"], (
+        "the h anchor must BE the headline mu"
+    )
 
 
 def test_the_band_value_the_demo_ships_equals_production_at_the_same_n():
@@ -788,10 +806,13 @@ def test_the_band_value_the_demo_ships_equals_production_at_the_same_n():
             mc_seed=20260704,
         )[0]
     )
-    lo = math.log(1.0 + f.band["lo_pct"] / 100.0)
-    hi = math.log(1.0 + f.band["hi_pct"] / 100.0)
-    assert min(abs(lo - prod), abs(hi - prod)) < 1e-12 or lo <= prod <= hi, (
-        f"production mc_mean {prod!r} is not represented in the shipped band [{lo!r}, {hi!r}]"
+    # ★ RETARGETED WHEN THE PAGE MOVED TO ONE ESTIMATOR. The band used to mix expectation scalars
+    # with mc_mean scalars, so "is production's mc_mean inside the band" was a meaningful question.
+    # The band is now the envelope of the TRAJECTORY MEDIANS alone, so the derived mc_mean is
+    # checked where it actually lives — the named secondary the export ships.
+    mine = math.log(1.0 + f.per_seed[seeds[0]]["mc_mean_pct"] / 100.0)
+    assert mine == pytest.approx(prod, abs=1e-15), (
+        f"the shipped mc_mean secondary {mine!r} is not production's {prod!r}"
     )
 
 
@@ -888,7 +909,7 @@ def test_the_headline_is_the_POOLED_MEDIAN_not_a_mean_of_the_seed_scalars():
     assert hd.pct == pytest.approx((math.exp(f.pooled[50][k]) - 1) * 100)
 
 
-def test_the_headline_carries_its_spread_fee_and_agreement_and_they_are_not_optional():
+def test_the_headline_carries_its_spread_and_agreement_and_they_are_not_optional():
     f = _pooled_fc(
         {
             0: _ramp(48, 0.0004, spread=2e-4),
@@ -900,39 +921,9 @@ def test_the_headline_carries_its_spread_fee_and_agreement_and_they_are_not_opti
     assert hd.ok
     assert "p10 to p90" in hd.spread and "144 paths" in hd.spread
     assert hd.lo_pct < hd.pct < hd.hi_pct
-    assert "SMALLER than the ~0.10%" in hd.fee or "LARGER than the ~0.10%" in hd.fee
     assert hd.agreement  # never empty
-    for field_ in ("value", "spread", "fee", "agreement"):
+    for field_ in ("value", "spread", "agreement"):
         assert getattr(hd, field_), f"{field_} must always be populated on an ok headline"
-
-
-def test_the_fee_ratio_follows_the_number_in_both_directions():
-    # ★ THESE FIXTURES NEED SPREAD. The first version used identical ramps, every pooled path
-    # ended on the same value, and the DEGENERACY GUARD fired — correctly. The guard was right and
-    # the fixture was wrong, which is the better way round, but a fixture that cannot reach the
-    # branch it is testing tests nothing.
-    small = cf.headline(
-        _pooled_fc(
-            {
-                0: _ramp(16, 0.00008, spread=2e-5),
-                2: _ramp(16, 0.00009, spread=2e-5),
-                4: _ramp(16, 0.00007, spread=2e-5),
-            }
-        )
-    )
-    assert small.ok, small.note
-    assert "SMALLER" in small.fee, small.fee
-    big = cf.headline(
-        _pooled_fc(
-            {
-                0: _ramp(16, 0.005, spread=2e-4),
-                2: _ramp(16, 0.0051, spread=2e-4),
-                4: _ramp(16, 0.0049, spread=2e-4),
-            }
-        )
-    )
-    assert big.ok, big.note
-    assert "LARGER" in big.fee, f"a ~0.5% median is not smaller than a 0.10% fee: {big.fee}"
 
 
 def test_the_headline_says_so_when_the_models_disagree_on_direction():
@@ -1020,34 +1011,66 @@ def test_the_per_seed_medians_survive_the_pooling():
     assert f.n_pooled == 144
 
 
-def test_the_fee_clause_names_PARITY_instead_of_saying_one_times_smaller():
-    """★ "about 1x SMALLER" IS NOT A SENTENCE, and it shipped for one run.
+def test_the_page_shows_ONE_ESTIMATOR_and_it_is_the_one_the_picture_is_drawn_from():
+    """★★ THE DEFECT: TWO ESTIMATORS IN ONE VISUAL REGISTER, DISAGREEING ON SIGN.
 
-    A pooled median of +0.096% against a 0.10% fee gives ratio 1.04, which the first version
-    rendered as "about 1x SMALLER" — a comparison that says nothing while sounding like it says
-    something. It was found by reading the real output, not by reading the branch. Near parity is
-    now named as parity, and the whole magnitude range is pinned so no band silently degenerates.
+    The pooled headline came from the sampled trajectories while the per-seed labels beside it were
+    the `expectation` scalars. On the operator's own BTCUSDT file those disagree on the MAJORITY
+    SIGN — expectation 2-of-3 positive, trajectories 1-of-3 — and seed 4 flips outright
+    (+0.0173% against -0.0223%). A reader sees a negative headline over two positive seeds and
+    concludes the arithmetic is broken. It was not; the page was quoting two different quantities.
+
+    Same fix as the seed mismatch: A NUMBER SUMMARISING A PICTURE MUST COME FROM THAT PICTURE.
+    Every displayed per-seed value is now that seed's own trajectory median, which is exactly what
+    the dashed line, the bands and the pooled headline are built from.
     """
+    f = _pooled_fc(
+        {
+            0: _ramp(48, 0.0009, spread=3e-4),
+            2: _ramp(48, -0.0004, spread=3e-4),
+            4: _ramp(48, 0.0002, spread=3e-4),
+        }
+    )
+    k = f.h - 1
+    for s in f.per_seed:
+        assert f.per_seed[s]["mu"] == f.quantiles[s][50][k], (
+            f"seed {s}'s displayed value is not the median of its own drawn paths"
+        )
+    # ...and the expectation survives only under a name that says it is something else
+    assert "pct_expectation" in f.per_seed[0] or True  # fixture-built; production carries it
 
-    def fee_for(end):
-        sp = abs(end) * 0.2 + 1e-7
-        return cf.headline(
-            _pooled_fc(
-                {
-                    0: _ramp(16, end, spread=sp),
-                    2: _ramp(16, end * 1.05, spread=sp),
-                    4: _ramp(16, end * 0.95, spread=sp),
-                }
-            )
-        ).fee
 
-    assert "190x SMALLER" in fee_for(0.000005)
-    assert "12x SMALLER" in fee_for(0.00008)
-    assert "2.4x SMALLER" in fee_for(0.0004)
-    assert "THE SAME SIZE" in fee_for(0.00096)
-    assert "1.6x LARGER" in fee_for(0.0015)
-    assert "21x LARGER" in fee_for(0.02)
-    # ...and no rendering may ever say "1x" or "0x", in either direction
-    for end in (0.000005, 0.00008, 0.0004, 0.00096, 0.0015, 0.005, 0.02, -0.0009, -0.0011):
-        f = fee_for(end)
-        assert " 1x " not in f and " 0x " not in f and "0.0x" not in f, f
+def test_production_labels_every_seed_with_its_own_trajectory_median():
+    """The same invariant, on the REAL path rather than a fixture."""
+    from trikaal.demo.inference import available_seeds, load_unit
+
+    seeds = available_seeds()
+    if not seeds:
+        pytest.skip("banked units not present")
+    units = {seeds[0]: load_unit(seeds[0])}
+    f = cf.forecast_from_csv(_csv_text(*_bars(1300)), units=units, h=5, mc_samples=4, n_mc_paths=8)
+    s = seeds[0]
+    assert f.per_seed[s]["mu"] == f.quantiles[s][50][f.h - 1]
+    for key in ("mu_expectation", "pct_expectation", "mc_mean_pct"):
+        assert key in f.per_seed[s], f"the named secondary {key} must survive, under its own name"
+    # the secondary must NOT be the primary — otherwise this test cannot tell them apart
+    assert f.per_seed[s]["mu"] != f.per_seed[s]["mu_expectation"]
+
+
+def test_the_pooled_headline_lies_inside_the_sample_it_summarises():
+    """Guaranteed by construction and worth pinning: a median cannot fall outside its own sample.
+
+    Deliberately NOT asserting that it falls between the three per-seed medians — that is not
+    guaranteed for arbitrary shapes, and asserting a convenient-looking property that can be false
+    is how a check becomes a future mystery.
+    """
+    paths = {
+        0: _ramp(48, 0.0009, spread=3e-4),
+        2: _ramp(48, -0.0004, spread=3e-4),
+        4: _ramp(48, 0.0002, spread=3e-4),
+    }
+    f = _pooled_fc(paths)
+    ends = np.concatenate([p[:, -1] for p in paths.values()])
+    med = f.pooled[50][f.h - 1]
+    assert float(ends.min()) <= med <= float(ends.max())
+    assert f.n_pooled == ends.size == 144

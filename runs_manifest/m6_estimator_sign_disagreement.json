@@ -1,0 +1,38 @@
+{
+  "FINDING": "Three estimators of the same quantity, one model, one file: they DISAGREE ON THE MAJORITY SIGN, and seed 4 flips outright between expectation and the trajectory median. The directional signal is weak enough that the CHOICE OF ESTIMATOR CHANGES ITS SIGN.",
+  "note": "expectation = predict_mu(estimator='expectation'); mc_mean_32 = the mean of the first 32 sampled trajectories' endpoints (bit-identical to production's mc_mean); trajectory_median = the median of that seed's 48 sampled endpoints. All from the SAME rollout at MC_SEED=20260704.",
+  "file": "BTCUSDT_1m.csv",
+  "n_rows": 5999,
+  "h": 15,
+  "n_pooled_paths": 144,
+  "rows": [
+    {
+      "seed": 0,
+      "expectation_pct": 0.01125625773277239,
+      "mc_mean_32_pct": 0.04026601739510749,
+      "trajectory_median_pct": 0.0353032565902911
+    },
+    {
+      "seed": 2,
+      "expectation_pct": -0.003588945422627887,
+      "mc_mean_32_pct": -0.0003533294007151966,
+      "trajectory_median_pct": -0.012243446651971635
+    },
+    {
+      "seed": 4,
+      "expectation_pct": 0.017276181223024878,
+      "mc_mean_32_pct": -0.019487195586853634,
+      "trajectory_median_pct": -0.022334750114194613
+    }
+  ],
+  "majority_positive": {
+    "expectation": 2,
+    "mc_mean_32": 1,
+    "trajectory_median": 1
+  },
+  "pooled_median_pct": -0.0006048405242209398,
+  "pooled_p10_pct": -0.046936150576071256,
+  "pooled_p90_pct": 0.04939186723984523,
+  "WHY_IT_MATTERS": "The page previously rendered the pooled headline (trajectories) beside per-seed labels (expectation). A negative headline over two positive seeds reads as broken arithmetic. Fixed by putting ONE estimator on the page \u2014 the one the bands and median lines are drawn from.",
+  "LIMITS": "One file, one horizon, 3 seeds, cell 1. Illustrative of a measured property, not a new measurement of it."
+}

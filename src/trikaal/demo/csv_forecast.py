@@ -525,10 +525,30 @@ def forecast_from_csv(
             "ok",
         )
         last = float(bars.close[i])
+        # ★★ ONE ESTIMATOR ON THE PAGE, AND IT IS THE ONE THE PICTURE IS DRAWN FROM.
+        # `mu`/`pct` are the MEDIAN OF THIS SEED'S OWN 48 SAMPLED TRAJECTORIES at the horizon —
+        # the same paths that produce the bands, the dashed median line and the pooled headline.
+        #
+        # THEY USED TO BE THE `expectation` SCALAR, AND THAT PUT TWO ESTIMATORS ON ONE PAGE THAT
+        # DISAGREE ON SIGN. Measured on the operator's own BTCUSDT file: expectation was 2-of-3
+        # POSITIVE (+0.0113 / -0.0036 / +0.0173) while the trajectories were 2-of-3 NEGATIVE, with
+        # seed 4 flipping outright. The pooled headline came from the trajectories and the per-seed
+        # labels beside it came from the expectation, so a reader saw a negative headline over two
+        # positive seeds and concluded the arithmetic was broken. It was not; the page was quoting
+        # two different estimators in one visual register.
+        #
+        # This is the seed-mismatch defect in a new costume and it takes the same fix: A NUMBER
+        # SUMMARISING A PICTURE MUST COME FROM THAT PICTURE. The expectation survives as a NAMED
+        # SECONDARY under its own key, exported and labelled as a different estimator, never
+        # rendered beside the headline.
+        med_mu = float(quantiles[seed][50][h - 1])
         per_seed[seed] = {
-            "mu": mu,
-            "pct": (math.exp(mu) - 1.0) * 100.0,
-            "price": last * math.exp(mu),
+            "mu": med_mu,
+            "pct": (math.exp(med_mu) - 1.0) * 100.0,
+            "price": last * math.exp(med_mu),
+            "mu_expectation": mu,
+            "pct_expectation": (math.exp(mu) - 1.0) * 100.0,
+            "mc_mean_pct": (math.exp(mc) - 1.0) * 100.0,
         }
 
     # ── POOL EVERY TRAJECTORY FROM EVERY SEED INTO ONE SAMPLE, then read its quantiles
@@ -550,7 +570,10 @@ def forecast_from_csv(
 
     # The band is the SPREAD ACROSS SEEDS AND THEIR MC MEANS — an honest envelope of what these
     # three models disagree about. It is NOT a calibrated predictive interval and is labelled so.
-    allmu = [v["mu"] for v in per_seed.values()] + mu_samples
+    # ONE ESTIMATOR HERE TOO: the envelope of what the three models disagree about, measured on
+    # the same trajectory medians the page displays. It used to mix expectation scalars with
+    # mc_mean scalars, which is two estimators in one number.
+    allmu = [v["mu"] for v in per_seed.values()]
     lo, hi = (min(allmu), max(allmu)) if allmu else (0.0, 0.0)
     last = float(bars.close[i])
     band = {
@@ -599,7 +622,6 @@ class Headline:
     n_paths: int
     value: str  # the number as rendered, or the named degenerate state
     spread: str
-    fee: str
     agreement: str
     note: str = ""
 
@@ -616,7 +638,7 @@ def _direction_counts(f: CsvForecast) -> tuple[int, int, int]:
 
 
 def headline(f: CsvForecast) -> Headline:
-    """The POOLED MEDIAN at the horizon, with its spread, its fee ratio and the agreement state.
+    """The POOLED MEDIAN at the horizon, with its spread and the agreement state.
 
     ★ WHY THIS STATISTIC AND NOT A MEAN OF THE THREE SEEDS. A mean of three scalars blends three
     separate models into one confident number and deletes the disagreement that IS this project's
@@ -624,12 +646,15 @@ def headline(f: CsvForecast) -> Headline:
     from every seed pooled into one sample — so which-model and which-path uncertainty are carried
     by one named statistic rather than averaged away.
 
-    ★ THE THREE COMPANIONS ARE NOT DECORATION AND ARE RETURNED TOGETHER. This is now the most
+    ★ THE TWO COMPANIONS ARE NOT DECORATION AND ARE RETURNED TOGETHER. This is now the most
     quotable object on the page, so the context-stripping rule binds hardest here: a central
-    number without its SPREAD is the failure mode; the FEE RATIO is the single most informative
-    fact about a number this size and belongs in the same breath, not in a footer; and the
-    AGREEMENT STATE must sit BESIDE it, because a pooled median is perfectly capable of looking
-    decisive while the three models it pools point in different directions.
+    number without its SPREAD is the failure mode, and the AGREEMENT STATE must sit BESIDE it —
+    because a pooled median is perfectly capable of looking decisive while the three models it
+    pools point in different directions.
+
+    (A fee-ratio companion shipped here briefly and was REMOVED by operator decision. The fee
+    facts live in the page's "what this is not" panel. ``plain_english`` still carries a fee
+    clause of its own; that is a different surface and was not part of the removal.)
 
     ★ IT CARRIES ITS OWN DEGENERACY GUARD. The agreement sentence already has one, but this is a
     DIFFERENT STATISTIC ON DIFFERENT INPUTS — 144 trajectories rather than 3 scalars — and a
@@ -646,15 +671,14 @@ def headline(f: CsvForecast) -> Headline:
 
     if not f.pooled or f.n_pooled == 0:
         return Headline(
-            False,
-            0.0,
-            0.0,
-            0.0,
-            0,
-            "NO POOLED FORECAST",
-            "",
-            "",
-            agreement,
+            ok=False,
+            pct=0.0,
+            lo_pct=0.0,
+            hi_pct=0.0,
+            n_paths=0,
+            value="NO POOLED FORECAST",
+            spread="",
+            agreement=agreement,
             note="no sampled trajectories were produced, so there is no pooled distribution.",
         )
 
@@ -665,15 +689,14 @@ def headline(f: CsvForecast) -> Headline:
     # ── DEGENERACY, BEFORE THE VALUE IS READ ─────────────────────────────────────────────────
     if hi == lo:
         return Headline(
-            False,
-            pct,
-            lo,
-            hi,
-            f.n_pooled,
-            "DEGENERATE",
-            f"all {f.n_pooled} pooled paths land on the same value",
-            "",
-            agreement,
+            ok=False,
+            pct=pct,
+            lo_pct=lo,
+            hi_pct=hi,
+            n_paths=f.n_pooled,
+            value="DEGENERATE",
+            spread=f"all {f.n_pooled} pooled paths land on the same value",
+            agreement=agreement,
             note=(
                 f"every one of the {f.n_pooled} sampled paths ended identically, which is a "
                 "collapsed sample rather than a confident forecast."
@@ -681,49 +704,31 @@ def headline(f: CsvForecast) -> Headline:
         )
     if round(pct, DISPLAY_DP) == 0.0:
         return Headline(
-            False,
-            pct,
-            lo,
-            hi,
-            f.n_pooled,
-            "NO DIRECTIONAL SIGNAL",
-            f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
+            ok=False,
+            pct=pct,
+            lo_pct=lo,
+            hi_pct=hi,
+            n_paths=f.n_pooled,
+            value="NO DIRECTIONAL SIGNAL",
+            spread=f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
             f"{hi:+.{DISPLAY_DP}f}%",
-            "",
-            agreement,
+            agreement=agreement,
             note=(
                 f"the pooled median rounds to zero at {DISPLAY_DP} decimal places, so there is no "
                 "direction to report — this is an absent signal, not a neutral call."
             ),
         )
 
-    # ★ "ABOUT 1x SMALLER" IS NOT A SENTENCE, AND IT SHIPPED FOR ONE RUN. A pooled median of
-    # +0.096% against a 0.10% fee gives ratio 1.04, which the first version rendered as
-    # "about 1x SMALLER than the ~0.10%" — a comparison that says nothing while sounding like it
-    # says something. Near parity has to be NAMED as parity; found by reading the real output
-    # rather than the branch.
-    ratio = ROUND_TRIP_PCT / abs(pct)
-
-    def _x(v: float) -> str:
-        return f"{v:.0f}x" if v >= 10 else f"{v:.1f}x"
-
-    if 0.8 <= ratio <= 1.25:
-        fee = f"about THE SAME SIZE as the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
-    elif ratio > 1.25:
-        fee = f"about {_x(ratio)} SMALLER than the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
-    else:
-        fee = f"about {_x(1.0 / ratio)} LARGER than the ~{ROUND_TRIP_PCT:.2f}% it costs to trade it"
     return Headline(
-        True,
-        pct,
-        lo,
-        hi,
-        f.n_pooled,
-        f"{pct:+.{DISPLAY_DP}f}%",
-        f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
+        ok=True,
+        pct=pct,
+        lo_pct=lo,
+        hi_pct=hi,
+        n_paths=f.n_pooled,
+        value=f"{pct:+.{DISPLAY_DP}f}%",
+        spread=f"p10 to p90 of the same {f.n_pooled} paths: {lo:+.{DISPLAY_DP}f}% to "
         f"{hi:+.{DISPLAY_DP}f}%",
-        fee,
-        agreement,
+        agreement=agreement,
     )
 
 
@@ -844,10 +849,33 @@ def forecast_csv_export(f: CsvForecast) -> str:
     w.writerow(["decision_ts_ms", f.decision_ts_ms])
     w.writerow(["horizon_minutes", f.h])
     w.writerow(["last_close", f"{f.last_close:.10g}"])
+    w.writerow(
+        [
+            "# PRIMARY ESTIMATOR = the MEDIAN of that seed's own sampled trajectories at h.",
+            "This is what the chart, the legend and the headline all show.",
+        ]
+    )
     for s in sorted(f.per_seed):
         v = f.per_seed[s]
-        w.writerow([f"seed{s}_forecast_pct", f"{v['pct']:.6f}"])
-        w.writerow([f"seed{s}_forecast_price", f"{v['price']:.10g}"])
+        w.writerow([f"seed{s}_median_pct", f"{v['pct']:.6f}"])
+        w.writerow([f"seed{s}_median_price", f"{v['price']:.10g}"])
+    if f.pooled:
+        pooled_pct = (math.exp(f.pooled[50][f.h - 1]) - 1.0) * 100.0
+        w.writerow(["pooled_median_pct", f"{pooled_pct:.6f}"])
+        w.writerow(["pooled_n_paths", f.n_pooled])
+        for q in (10, 90):
+            v = (math.exp(f.pooled[q][f.h - 1]) - 1.0) * 100.0
+            w.writerow([f"pooled_p{q}_pct", f"{v:.6f}"])
+    # ★ SECONDARY ESTIMATORS, NAMED AS SUCH AND NEVER SHOWN BESIDE THE HEADLINE. On the operator's
+    # own file these DISAGREE ON MAJORITY SIGN with the primary, and seed 4 flips outright. That
+    # is a real property of the model, not a bug, and it is exported so it can be inspected —
+    # but a page that renders two estimators in one visual register reads as broken arithmetic.
+    w.writerow([])
+    w.writerow(["# SECONDARY ESTIMATORS — different quantities, NOT what the chart draws."])
+    for s in sorted(f.per_seed):
+        v = f.per_seed[s]
+        w.writerow([f"seed{s}_expectation_pct", f"{v['pct_expectation']:.6f}"])
+        w.writerow([f"seed{s}_mc_mean_pct", f"{v['mc_mean_pct']:.6f}"])
     w.writerow(["band_lo_pct", f"{f.band['lo_pct']:.6f}"])
     w.writerow(["band_hi_pct", f"{f.band['hi_pct']:.6f}"])
     w.writerow(["inferred_bar_seconds", f.inferred_bar_ms / 1000])
