@@ -10,7 +10,8 @@ the thresholds, the captions and the LaTeX floats are final before any result is
 
 An earlier draft of Figures 9 and 10 drew plausible positive information ratios with the
 microstructure arm above the OHLCV arm above the placebo -- that is, it manufactured a
-realistic-looking FAVOURABLE result for a run nobody has performed. That defect is the origin of
+realistic-looking FAVOURABLE result for a run stopped before it could
+produce one. That defect is the origin of
 the project's CONTEXT-STRIPPING RULE (CLAUDE.md standing rules; BUILD_RECORD.md section 5): an
 artifact must remain safe when its context is stripped, because a reader who crops or screenshots a
 panel loses the watermark and keeps the numbers.
@@ -90,7 +91,7 @@ def watermark(ax, *, rot=14, size=15, y=0.5, x=0.5):
     ax.text(
         x,
         y,
-        "PLACEHOLDER — awaiting the run",
+        "PLACEHOLDER — THE RUN WAS STOPPED",
         transform=ax.transAxes,
         ha="center",
         va="center",

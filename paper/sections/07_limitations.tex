@@ -344,12 +344,17 @@ from the banked one.}}
 \end{center}
 % artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period 7.900476918876868e-06,
 %   annualized_ir_of_always_long_market 0.3704062519620255, n_periods 35064, n_symbols 40};
-%   DISCREPANCY, DISCLOSED RATHER THAN EXPLAINED: two receipts disagree by one period.
-%   Every scored money artifact carries grid.n_periods = 35,064 and its headline_series has
-%   35,064 entries (verified by length); m6_horizon_break_even.json's costing block carries
-%   decisions_per_symbol = 35,063, which is the figure §5, §7.9 and D.3 quote. We could not
-%   establish from the receipts alone which is canonical, and no quantity in this paper depends
-%   on the difference. Flagged rather than reconciled by assertion.
+%   TWO NAMED QUANTITIES DIFFERING BY ONE, NOT A CONTRADICTION. Measured across the receipts:
+%     35,064 -> `n_periods` (21) and `n_periods_h15` (1): the period GRID, and the length of the
+%              headline series (verified by len()).
+%     35,063 -> `T` (2), `T_periods` (1), `decisions_per_symbol` (1): SCORED periods per
+%              instrument. Self-consistent with the exact A_p run's own total: 1,402,520 / 40 = 
+%              35,063 exactly.
+%   Both names are stable across receipts and each is internally consistent; §5, §7.9 and D.3
+%   quote the scored count, which is the right one for those statements. An earlier version of
+%   this note said "the artifacts disagree" -- they do not, and a disclosure that overstates a
+%   problem is its own defect. WE DO NOT ASSERT A MECHANISM for the off-by-one: the endpoint
+%   versus interval reading is the obvious candidate and remains a guess, so it is not written.
 %   rows[*].{modal_sign, modal_share, a_ir_gross_model, b_ir_gross_constant_direction,
 %   delta_a_minus_b, delta_ci95_lower, bias_only_share_of_model_ir}; paired block bootstrap,
 %   B = 10,000, block 188, seed 20260704. Caveat verbatim in ★_BENCHMARK_SUBSTITUTION_READ_FIRST.

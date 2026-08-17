@@ -241,6 +241,20 @@ establishes that this tokenizer does not carry the signed channels, not that non
 \input{sections/appendix_repro}
 
 \input{sections/appendix_claims}
-\input{sections/appendix_audit}
+
+% ---------------------------------------------------------------------------------------------
+% APPENDIX F IS INTERNAL AND MUST NOT SHIP. This is a MECHANISM, not an intention: "we will
+% remember to remove it" is the shape of defect this project has spent two days closing.
+% Build the submission target instead of this file --
+%     tectonic -X compile submission.tex     ->  F is absent
+%     tectonic -X compile main.tex           ->  F is present (internal read-through)
+% and check_submission_build.py compiles BOTH and asserts the difference in both directions,
+% so a mechanism that silently stopped working fails rather than passing quietly.
+% ---------------------------------------------------------------------------------------------
+\ifdefined\SUBMISSIONBUILD
+  \typeout{TRIKAAL: submission build -- Appendix F omitted}
+\else
+  \input{sections/appendix_audit}
+\fi
 
 \end{document}

@@ -216,6 +216,43 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.39 (2026-08-17, THE 35,064/35,063 "DISAGREEMENT" DID NOT EXIST; THE WATERMARK OUTLIVED
+  THE RUN; AND APPENDIX F'S REMOVAL IS NOW A MECHANISM WITH A TWO-SIDED CHECK.)**
+  - **★ MY OWN DISCLOSURE OVERSTATED A PROBLEM, WHICH IS ITS OWN DEFECT.** v1.6.38 recorded that
+    "the artifacts disagree" on 35,064 vs 35,063 and declined to explain the off-by-one. Declining
+    was right; **"disagree" was wrong.** Measured: they are **two named quantities**, each
+    internally consistent — `n_periods` (21) and `n_periods_h15` (1) carry **35,064**, the period
+    GRID and the length of the headline series; `T` (2), `T_periods` (1) and
+    `decisions_per_symbol` (1) carry **35,063**, the SCORED count, and **1,402,520 / 40 = 35,063
+    exactly**, so it is self-consistent with the exact A_p run's own total. **A disclosure that
+    describes a defect which does not exist is a defect.** Corrected; the mechanism for the
+    off-by-one is still NOT asserted, because it is still a guess.
+  - **AND I RECONCILED THE COUNTS RATHER THAN ACCEPTING EITHER SIDE'S.** The audit said "across two
+    receipts"; the supervisor said 35,063 appears at "one site"; my first grep said 18. **All three
+    were wrong.** A raw grep is inflated by substrings inside longer floats (`35063987737`,
+    `350639224`); matching on JSON *values* gives **4 occurrences across 3 receipts under 3 names**.
+    This is the distrust-greps norm working: re-run the counterpart grep unanchored and reconcile
+    against the tool's own total.
+  - **THE WATERMARK OUTLIVED THE EVENT IT NAMED.** `make_fig8_10_stubs.py:93` still rendered
+    **"PLACEHOLDER — awaiting the run"** onto figures 8, 9 and 10. "PLACEHOLDER" remains correct —
+    those panels carry no result and never will — but **nothing is awaited**: the run is over and
+    was stopped. Now **"PLACEHOLDER — THE RUN WAS STOPPED"**, verified on the rendered fig10. The
+    two other hits (`make_fig4_legibility.py:26`, `08_repro.tex:317`) are **historical record of
+    what the figure used to say** and correctly stay.
+  - **★ APPENDIX F'S REMOVAL IS A MECHANISM NOW, NOT AN INTENTION.** F.5 said the appendix "is
+    removed before submission", which is a promise. The mechanism: **`paper/submission.tex`** sets
+    `\SUBMISSIONBUILD` and `main.tex` gates the appendix on it — build `submission.tex` for
+    anything that leaves the project (48 pp), `main.tex` for the internal read-through (52 pp).
+  - **AND THE CHECK IS TWO-SIDED ON PURPOSE, because a one-sided one is the defect class.**
+    "F is absent from the submission build" passes just as happily if the appendix is **deleted
+    outright**, if the gate is **inverted**, or if the target stops compiling the real document.
+    `paper/check_submission_build.py` compiles BOTH and asserts four things: F present in the
+    internal build, F absent from the submission build, **every other section still present** (a
+    written-out list, not one derived from the build, so an over-broad gate fails instead of
+    agreeing), and the submission build strictly shorter. **Observed to fail on all three
+    mutations** — gate inverted, appendix deleted, gate widened to drop §7 — with a comment-only
+    no-op as negative control.
+
 - **v1.6.38 (2026-08-17, ★★ PRE-PUBLICATION AUDIT: THE MEASUREMENT SURVIVED, THE MOST-READ
   SURFACES DID NOT. THE PRIMARY FIGURE DID NOT CONTAIN THE PRIMARY RESULT.)**
   - **THE AUDIT'S OWN VERDICT IS PART OF THE RECORD: *publish with named changes, not as-is*.** An
