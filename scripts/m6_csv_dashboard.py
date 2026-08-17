@@ -171,6 +171,10 @@ def disclosure_lines(f) -> list[str]:
         "separate training runs that differ only in their random starting point. Squares mark "
         f"the {n_anchor} trained MTP horizons IN RANGE (of 3 usable: 5/15/60 - h=1 is "
         "structurally zero and is not offered); between them is interpolation.",
+        "THE X-AXIS IS SPLIT AT 'NOW': the context is compressed into the left "
+        f"{HIST_FRAC * 100:.0f}% and the {f.h}-minute forecast expanded into the right "
+        f"{(1 - HIST_FRAC) * 100:.0f}%. THE TWO SIDES ARE NOT ONE SCALE. The y-axis is the "
+        "price as supplied in your CSV; the inset below is in percent.",
         f"THE BOLD LINE IS A POINTWISE MEDIAN of all {f.n_pooled} pooled paths - the middle of "
         "them at each step SEPARATELY. It is NOT one of the sampled trajectories and no single "
         "run of the model produces it. The three models are still drawn separately and are NEVER "
@@ -187,7 +191,11 @@ def _svg(f) -> str:
     """History solid, forecast expanded past a labelled break. Every qualifier is a text node."""
     import math as _m
 
-    w, pl, pr, pt, plot_h = 1120, 78, 30, 122, 360
+    # pl is the y-axis gutter. It was 78px when the ticks were 6-character ratios; PRICE
+    # labels carry thousands separators and a derived decimal count, so it is widened to
+    # hold ~15 monospace characters. `test_no_text_node_runs_off_the_right_edge` also
+    # checks x < -0.5, so a label that outgrows this gutter fails rather than clips.
+    w, pl, pr, pt, plot_h = 1120, 112, 30, 122, 360
     pw = w - pl - pr
 
     # ── disclosure block sized FIRST, so the canvas grows to fit the text instead of clipping it
@@ -253,14 +261,45 @@ def _svg(f) -> str:
         f'<rect x="{x_split:.1f}" y="{pt}" width="{pl + pw - x_split:.1f}" height="{plot_h}" '
         f'fill="#0d1015"/>'
     )
+    # ── THE AXIS IS LABELLED IN THE ASSET'S OWN PRICE, NOT IN NORMALIZED RATIOS.
+    # The internal normalization stays — the forecast is a return ratio, and a shared scale is the
+    # only reason the history and the fan are comparable at all — but "1.0012 / 0.9997" beside a
+    # BTCUSDT chart is meaningless to the person who supplied the file, and it makes a $63,000
+    # instrument unrecognisable as itself. The tick VALUES are multiplied back by the last close.
+    #
+    # ★ THE DECIMAL COUNT IS DERIVED FROM THE TICK SPACING, NOT PICKED. A $63,000 asset and a
+    # $0.42 altcoin need different precision, and any fixed choice makes one of them unreadable:
+    # 2dp renders the alt as "0.42 / 0.42 / 0.42", 4dp renders BTC as "63,142.0000". The spacing
+    # is what has to be resolved, so the spacing is what sets the precision.
+    tick_step = 0.25 * (ymax - ymin) * anchor
+    dp = 2 if tick_step <= 0 else min(10, max(0, _m.ceil(-_m.log10(tick_step)) + 1))
+    y_anchor = yy(1.0)
     for q in (0.0, 0.25, 0.5, 0.75, 1.0):
         v = ymin + q * (ymax - ymin)
         y = yy(v)
+        p.append(f'<line x1="{pl}" y1="{y:.1f}" x2="{pl + pw}" y2="{y:.1f}" stroke="{FIG_GRID}"/>')
+        # suppress a regular tick that would collide with the highlighted last-close tick
+        if abs(y - y_anchor) < 13:
+            continue
         p.append(
-            f'<line x1="{pl}" y1="{y:.1f}" x2="{pl + pw}" y2="{y:.1f}" stroke="{FIG_GRID}"/>'
             f'<text x="{pl - 10}" y="{y + 3.5:.1f}" text-anchor="end" '
-            f'style="font:10.5px {_MONO_CSS};fill:{FIG_AX}">{v:.4f}</text>'
+            f'style="font:10.5px {_MONO_CSS};fill:{FIG_AX}">{v * anchor:,.{dp}f}</text>'
         )
+    # ★ THE LAST ACTUAL CLOSE, ON THE AXIS AND IN BOLD. It is the number every other value on this
+    # chart is anchored to, so it is identifiable rather than inferred from the gridlines.
+    p.append(
+        f'<line x1="{pl - 6}" y1="{y_anchor:.1f}" x2="{pl + pw}" y2="{y_anchor:.1f}" '
+        f'stroke="#5b6673" stroke-dasharray="3 3"/>'
+        f'<text x="{pl - 10}" y="{y_anchor + 3.5:.1f}" text-anchor="end" '
+        f'style="font:700 10.5px {_MONO_CSS};fill:#ffffff">{anchor:,.{dp}f}</text>'
+    )
+    # ★ THE UNIT, SAID ONCE, AND NOT INVENTED. A CSV has no currency column, so the axis is
+    # labelled "as supplied in your CSV" — inferring "$" or "USD" from a filename would be
+    # putting a fact on the figure that the input never contained.
+    p.append(
+        f'<text x="{pl}" y="{pt - 8}" style="font:10.5px {_MONO_CSS};fill:{FIG_AX}">'
+        "PRICE, AS SUPPLIED IN YOUR CSV &#183; BOLD TICK = LAST CLOSE</text>"
+    )
 
     # ── bands: sample percentiles of each seed's own sampled paths, drawn in the expanded region
     for s in sorted(f.per_seed):
@@ -472,8 +511,8 @@ def _svg(f) -> str:
         f"Solid = your data. BOLD WHITE = pointwise median of all {f.n_pooled} pooled paths; "
         "thin colours = each model&#8217;s own median.</text>"
         f'<text x="{pl}" y="101" style="font:13px {_SANS_CSS};fill:{FIG_SUB}">'
-        "EVERY % HERE IS A MEDIAN OF SAMPLED PATHS. Shaded = 10-90 / 25-75. "
-        "THE X-AXIS IS SPLIT AT &#8220;NOW&#8221; &#8212; the two sides are NOT one scale.</text>"
+        "EVERY % HERE IS A MEDIAN OF SAMPLED PATHS. Shaded = 10-90 / 25-75 percentiles. "
+        "The inset below stays in PERCENT.</text>"
     )
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {hgt}" '

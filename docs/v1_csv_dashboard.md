@@ -357,6 +357,49 @@ argued for it. The fee facts remain in *What this is not*. `plain_english` still
 clause of its own — a different surface, not part of the removal, and flagged rather than
 extrapolated.
 
+## 5e. THE Y-AXIS IS THE ASSET'S OWN PRICE
+
+The main chart's ticks were normalized ratios — `1.0012 / 1.0005 / 0.9997` beside a BTCUSDT chart.
+Meaningless to the person who supplied the file, and it makes a $63,000 instrument unrecognisable
+as itself. The internal normalization stays (the forecast is a return ratio, and a shared scale is
+the only reason the history and the fan are comparable), but the tick **values** are multiplied
+back by the last close.
+
+★ **The decimal count is derived from the tick spacing, not chosen.** Any fixed count makes some
+asset unreadable: 2dp renders a micro-cap as `0.00 / 0.00 / 0.00`, 8dp renders BTC as
+`63,142.87000000`. What has to be resolved is the *spacing*, so the spacing sets the precision:
+`dp = min(10, max(0, ceil(-log10(0.25 · span · anchor)) + 1))`. Rendered and read at three
+magnitudes, plus four more asserted:
+
+| anchor | ticks |
+|---|---|
+| 63,063 | `62,953 · 63,000 · ` **`63,063`** ` · 63,093 · 63,140` |
+| 0.4505 | `0.420 · 0.433 · ` **`0.450`** ` · 0.461 · 0.474` |
+| 0.00001155 | `0.00001061 · 0.00001090 · ` **`0.00001155`** ` · 0.00001148 · 0.00001177` |
+
+Every tick distinct from its neighbour at every magnitude; no scientific notation; thousands
+separators where they help. The test is **parametrized by magnitude** — 63,142 / 2,481 / 142 /
+0.4213 / 0.10382 / 0.00001053 / 1,234,567 — because tick formatting reads fine at one scale and
+collapses at another, so one price proves nothing.
+
+★ **The unit is named once and never invented.** A CSV has no currency column, so the axis says
+**"PRICE, AS SUPPLIED IN YOUR CSV · BOLD TICK = LAST CLOSE"**. Inferring `$` or `USD` from a
+filename would put a fact on the figure that the input never contained; a test asserts none of
+`USD / $ / USDT / EUR` appears.
+
+★ **The last close is the bold tick**, with a dashed reference line across the plot — it is the
+number every other value is anchored to, so it is shown rather than inferred from the gridlines. A
+regular tick within 13px of it is suppressed rather than allowed to collide.
+
+**The inset stays in percent**, asserted at every magnitude. Two panels, two units, each labelled —
+they measure *different things* (an absolute price level and a relative move), which is not the
+two-estimators-of-one-quantity defect from §5d.
+
+The gutter widened from 78px to 112px to hold a price label; `test_no_text_node_runs_off_the_right_edge`
+also checks `x < -0.5`, so a label that outgrows the gutter fails rather than clips. That widening
+narrowed the disclosure box, which pushed subtitle line 3 past the right edge — caught by rendering,
+and fixed by moving the split-axis qualifier into the disclosure block where it wraps.
+
 ## 6. TWO BUGS THE TESTS COULD NOT SEE
 
 * **The filename parse.** A real browser sends `Content-Type: text/csv` after

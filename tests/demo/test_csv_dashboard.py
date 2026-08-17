@@ -330,7 +330,11 @@ def test_the_forecast_region_is_a_readable_share_of_the_plot():
     svg = dash._svg(_fixture_forecast())
     text = " ".join(t for *_, t, _a in _text_nodes(svg))
     assert "COMPRESSED" in text and "EXPANDED" in text
-    assert "NOT one scale" in text or "NOT the same scale" in text
+    # matched case-insensitively on CONTENT: the qualifier moved into the disclosure block (where
+    # it wraps instead of clipping) and is rendered in caps there. A test that pins the casing of
+    # a sentence pins the wrong thing — what must survive is that the split is ANNOUNCED.
+    low = text.lower()
+    assert "not one scale" in low or "not the same scale" in low
 
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -775,3 +779,128 @@ def test_the_figure_says_whose_most_likely_scenario_it_is():
     assert "most likely scenario FOR THAT MODEL" in body
     assert "not a single prediction" in body
     assert "random starting point" in body
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# THE Y-AXIS IS THE ASSET'S OWN PRICE — and tick formatting breaks by MAGNITUDE, so test by it
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+def _fc_at_price(anchor: float, h: int = 15, n_ctx: int = 512):
+    """A forecast whose closes sit around ``anchor`` — the one input tick formatting depends on."""
+    rng = np.random.default_rng(3)
+    close = anchor * np.exp(np.cumsum(rng.normal(0, 3e-4, n_ctx)))
+    close = close * (anchor / close[-1])  # land exactly on the anchor
+    per_seed, quantiles, anchors = {}, {}, {}
+    for k, s in enumerate((0, 2, 4)):
+        mu = (k - 1) * 4e-4
+        step = np.linspace(0.0, mu, h)
+        quantiles[s] = {q: step + (q - 50) / 50.0 * 2e-3 for q in (10, 25, 50, 75, 90)}
+        per_seed[s] = {
+            "mu": float(step[-1]),
+            "pct": (float(np.exp(step[-1])) - 1) * 100,
+            "price": anchor * float(np.exp(step[-1])),
+            "mu_expectation": mu,
+            "pct_expectation": (float(np.exp(mu)) - 1) * 100,
+            "mc_mean_pct": 0.0,
+        }
+        anchors[s] = {a: float(step[min(a, h) - 1]) for a in (5, 15) if a <= h}
+    stacked = np.concatenate([np.tile(quantiles[s][50], (48, 1)) for s in quantiles])
+    from trikaal.demo.csv_forecast import path_quantiles
+
+    return CsvForecast(
+        h=h,
+        decision_ts_ms=1_700_000_000_000,
+        last_close=float(anchor),
+        per_seed=per_seed,
+        band={},
+        context_ts=np.arange(n_ctx, dtype=np.int64) * 60_000,
+        context_close=close,
+        inferred_bar_ms=60_000,
+        warnings=[],
+        n_rows=n_ctx + 720,
+        quantiles=quantiles,
+        n_mc_samples=48,
+        mtp_anchors=anchors,
+        pooled=path_quantiles(stacked),
+        n_pooled=144,
+    )
+
+
+def _y_tick_labels(svg: str) -> list[str]:
+    root = ET.fromstring(svg)
+    out = []
+    for el in root.iter("{http://www.w3.org/2000/svg}text"):
+        if el.get("text-anchor") == "end" and float(el.get("x", 0)) < 115:
+            out.append(el.text or "")
+    return out
+
+
+@pytest.mark.parametrize(
+    "anchor", [63_142.87, 2_481.30, 142.06, 0.4213, 0.10382, 0.00001053, 1_234_567.89]
+)
+def test_the_y_axis_is_the_assets_own_price_at_every_magnitude(anchor):
+    """★ NORMALIZED TICKS ARE MEANINGLESS TO THE PERSON WHO SUPPLIED THE FILE.
+
+    "1.0012 / 1.0005 / 0.9997" beside a BTCUSDT chart makes a $63,000 instrument unrecognisable as
+    itself. The internal normalization stays — a shared scale is why the history and the fan are
+    comparable — but the tick VALUES are multiplied back by the last close.
+
+    ★ AND THE PRECISION IS DERIVED, NOT PICKED, WHICH IS WHY THIS IS PARAMETRIZED BY MAGNITUDE.
+    Any fixed decimal count makes some asset unreadable: 2dp renders a micro-cap as
+    "0.00 / 0.00 / 0.00", 8dp renders BTC as "63,142.87000000". Tick formatting is exactly the
+    class of thing that reads fine at one scale and collapses at another, so every tick must be
+    DISTINCT from its neighbour at every magnitude — that is the property, and it is checked here
+    rather than eyeballed at one price.
+    """
+    svg = dash._svg(_fc_at_price(anchor))
+    ticks = _y_tick_labels(svg)
+    assert len(ticks) >= 4, ticks
+    assert len(set(ticks)) == len(ticks), (
+        f"tick labels collapsed to duplicates at anchor {anchor}: {ticks} — the derived precision "
+        "is not resolving the spacing"
+    )
+    vals = sorted(float(t.replace(",", "")) for t in ticks)
+    assert vals[0] < anchor < vals[-1] or any(abs(v - anchor) < 1e-12 for v in vals), (
+        f"the last close {anchor} is not on the axis: {ticks}"
+    )
+    # thousands separators wherever they help, and never scientific notation
+    assert not any("e" in t.lower() for t in ticks), f"scientific notation on the axis: {ticks}"
+    if anchor >= 10_000:
+        assert any("," in t for t in ticks), f"no thousands separator at {anchor}: {ticks}"
+
+
+def test_the_axis_names_its_unit_without_inventing_a_currency():
+    """A CSV has no currency column. Inferring "$" or "USD" would put a fact on the figure that
+    the input never contained."""
+    svg = dash._svg(_fc_at_price(63_142.87))
+    text = " ".join(t for *_, t, _a in _text_nodes(svg))
+    assert "PRICE, AS SUPPLIED IN YOUR CSV" in text
+    assert "BOLD TICK = LAST CLOSE" in text
+    for invented in ("USD", "$", "USDT", "EUR"):
+        assert invented not in text, f"the figure invented a currency: {invented}"
+
+
+def test_the_last_close_is_identifiable_on_the_axis():
+    """It is the number every other value is anchored to, so it is shown rather than inferred."""
+    anchor = 63_142.87
+    svg = dash._svg(_fc_at_price(anchor))
+    root = ET.fromstring(svg)
+    bold = [
+        el.text
+        for el in root.iter("{http://www.w3.org/2000/svg}text")
+        if "700" in (el.get("style") or "") and el.get("text-anchor") == "end"
+    ]
+    assert bold == [f"{anchor:,.0f}"], f"the last close is not the bold tick: {bold}"
+
+
+@pytest.mark.parametrize("anchor", [63_142.87, 0.4213, 0.00001053])
+def test_the_inset_stays_in_PERCENT_at_every_magnitude(anchor):
+    """Two panels, two units, each labelled — they measure DIFFERENT THINGS (an absolute price
+    level and a relative move), which is not the two-estimators-of-one-thing defect."""
+    svg = dash._svg(_fc_at_price(anchor))
+    inset = _rect(svg, "inset")
+    top, bot = float(inset.get("y")), float(inset.get("y")) + float(inset.get("height"))
+    labels = [
+        t for _x, y, _px, _m, t, _a in _text_nodes(svg) if top <= y <= bot and t.endswith("%")
+    ]
+    assert len(labels) >= 3, labels
+    assert all("," not in t for t in labels), f"the inset is showing prices, not percent: {labels}"
