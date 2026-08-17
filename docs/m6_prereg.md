@@ -216,6 +216,35 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.44 (2026-08-17, THE THIRD FORM OF THE SAME CLASS — THE SWEEP COVERED SOURCES AND
+  STOPPED AT EXPORTS — AND THE INSTRUMENT FOUND FOUR SHIPPING ARTIFACTS THAT ARE NOT OURS.)**
+  - **THE CLASS, NOW COMPLETE AT THREE INSTANCES: A CORRECTION PROPAGATES TO WHAT YOU EDIT, NOT TO
+    WHAT DERIVES FROM IT.** Prose → generators (fig1 kept `21.3M` through the parameter sweep);
+    title → figures that quote it (fig12 kept "duplicates price" through the title fix); **sources
+    → exports** (`paper/main_full.txt`, four days stale, carrying the superseded title). Each time
+    the edit was correct and the derived artifact was not swept. **The only reliable instrument is
+    a grep of the superseded STRING across the WHOLE tree**, not a review of the files you touched.
+  - **DELETED, because their purpose is spent and regenerating buys nothing:** `paper/main_full.txt`,
+    `paper/03_mechanism.md`, and the whole `review_s3`–`s7` family (`.tex`, `.pdf`, `.blg`, `.log`,
+    `.txt`) — exports built 2026-08-09/10 for reviews that are finished, describing an experiment
+    that had not yet stopped. Also `paper/main.blg` and `paper/main.log`, which are build detritus
+    that was tracked. **No regeneration step was added, deliberately: "remember to regenerate" is
+    the shape of the defect, and the paper builds from source in one command.**
+  - **THE SWEEP FOUND TWO THINGS IN paper/ THAT THE AUDIT DID NOT NAME.** §6.3 still read *"the four
+    magnitude dimensions essentially pass"* — the same defect corrected in the abstract two commits
+    earlier and missed one section away, which is the class again at the smallest scale. And §8.9
+    still narrated the figure's draft history in the present tense; the methodological point
+    survives, stated as a property rather than as a story, per the prereg/paper split.
+  - **★★ AND THE HIGHEST-VALUE FIND IS NOT IN MY DOMAIN: FOUR ARTIFACTS THAT SHIP WITH THE WEIGHTS
+    CARRY THE SUPERSEDED AND FACTUALLY WRONG FRAMING.** `README.md:21`, `docs/MODEL_CARD.md:37`,
+    `scripts/m6_weights_release.py:135` and `runs_manifest/m6_weights_release.json` all state that
+    the tokenizer *"keeps microstructure that duplicates PRICE"*. **The surviving channels co-vary
+    with VOLUME, not price** — that is the reviewer's first quibble and the reason the title was
+    changed. These are the release surfaces: the model card is what a HuggingFace reader sees
+    first, and the release receipt is what a downstream user quotes. **Flagged, not touched** —
+    outside the writer's domain. The correction is the title's: *keeps the microstructure that
+    duplicates OHLCV and drops the signed channels.*
+
 - **v1.6.43 (2026-08-17, ★★ THE AUDIT VOICE LEAKED INTO THE PAPER VOICE. 54 PP → 42 INTERNAL /
   39 SUBMISSION, AND ALL TWELVE PROTECTED PASSAGES SURVIVED.)**
   - **★ MY RULING ON THE AUDIT-VOICE DIAGNOSIS: THE REVIEWER IS RIGHT, AND THE ROOT CAUSE IS MINE

@@ -1021,6 +1021,9 @@ File: figures/fig13_seeds.pdf Graphic file (type pdf)
 <use figures/fig13_seeds.pdf>
  [26])
 (sections/08_repro [27] [28] [29]) (main.bbl [30]) (sections/appendix_mechanism
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
 [31]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
@@ -1028,7 +1031,7 @@ LaTeX Warning: `h' float specifier changed to `ht'.
 [32]) (sections/appendix_repro
 Requested font "[lmmono9-regular]:" at 9.0pt
  -> lmmono9-regular
- [33]
+
 Underfull \hbox (badness 6978) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 clause 5 deflated-Sharpe
  []
@@ -1043,7 +1046,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 degeneracy guard, sign-
  []
 
-[34] [35] [36]) (sections/appendix_claims
+[33] [34] [35] [36]) (sections/appendix_claims
 Underfull \hbox (badness 1354) in paragraph at lines 53--53
 []|\TU/TeXGyreTermesX(0)/m/n/9 interface re-spec re-
  []
@@ -1143,4 +1146,4 @@ X(0)/m/n/10 keeps it and remains the internal read-through build. \TU/lmtt/m/n/
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 3B0C42B8F70B598580575D42BC619BC5;16888.
  )
-Output written on main.xdv (42 pages, 1552212 bytes).
+Output written on main.xdv (42 pages, 1548984 bytes).

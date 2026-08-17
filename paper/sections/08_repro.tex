@@ -116,7 +116,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $57$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $58$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever
@@ -259,19 +259,16 @@ the run manifests, and the scripts that regenerate every figure in this paper fr
 at render time. No number in any figure is transcribed; each is loaded from the receipt that
 produced it.
 
-\textbf{That property is weaker than it sounds, and we state the weaker version because the
-stronger one was false here.} Loading from a receipt prevents a figure from contradicting the
-receipt it reads. It does not prevent a figure from reading the \emph{wrong} receipt, or from
-reading no receipt at all for a panel whose result now exists --- and that is exactly what
-happened to \cref{fig:legibility}, this paper's primary figure. Its right-hand panel rendered six
-empty slots watermarked ``awaiting the run'' for every draft after the gate had fired, because the
-generator loaded four fixture-era receipts and contained no reference to the gate's own stop
-receipt. Nothing failed; there was nothing to fail. Two figures now carry an explicit check ---
-\cref{fig:legibility} asserts its drawn values against the stop receipt, and \cref{fig:design}
-asserts its parameter counts against the checkpoints --- and each check has been observed to fail
-under a deliberately wrong constant. The general claim is therefore: a figure that
-\emph{contradicts} the artifact it loads fails to build, and where a figure could silently omit an
-artifact instead, we have added the check rather than assumed the property.
+\textbf{That property is weaker than it sounds, and the weaker version is the one we claim.}
+Loading from a receipt prevents a figure from contradicting the receipt it \emph{reads}. It does
+not prevent a figure from reading the wrong receipt, or from reading no receipt at all for a panel
+whose result exists --- and a generator that omits an artifact fails nothing, because there is
+nothing to fail. Two figures therefore carry an explicit check on top of the loading:
+\cref{fig:legibility} asserts its drawn values against the gate's stop receipt and
+\cref{fig:design} asserts its parameter counts against the checkpoints, and each has been observed
+to fail under a deliberately wrong constant. \textbf{The claim is thus: a figure that contradicts
+the artifact it loads fails to build, and where a figure could silently omit an artifact instead,
+we added a check rather than assumed the property.}
 
 Two things a reader can check without rerunning anything: the anchor hash, which fixes the
 evaluation instrument, and \cref{app:claims}, which separates every claim in this paper into
