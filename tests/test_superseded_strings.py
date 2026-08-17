@@ -36,6 +36,18 @@ recorded in ``EXPECTED_HITS`` with a routing note rather than treated as build f
 cannot fix. Everything in the builder's domain is blocking. The distinction is about who can act,
 not about which is more important — the highest-value hit this instrument has found to date is in
 ``paper/main.tex``, and it is in the abstract.
+
+★ THE KNOWN BLIND SPOT, AND WHERE IT IS COVERED. This file matches SUPERSEDED STRINGS. It therefore
+catches verbatim survivals and near-misses of the wording it lists, and it does NOT catch a retired
+claim RESTATED IN DIFFERENT WORDS. That limit nearly bit on its first outing: the abstract said
+"duplicates what price already carries", and the only reason ``duplicates_price`` matched is that
+its pattern happens to carry an optional ``what`` — design and luck in roughly equal measure.
+``paper/check_claim_drift.py`` (the writer's) is the stronger construction for that failure mode:
+each of its rules pairs a CLAIM pattern with a FORBIDDEN pattern and fires on any sentence matching
+both, which is a statement about meaning rather than about wording. The two are complementary and
+neither subsumes the other — a string sweep sees restatements the claim/forbidden pairing has no
+rule for, and the pairing sees paraphrases a string sweep cannot. Read both before concluding a
+retired claim is gone.
 """
 
 from __future__ import annotations
@@ -148,37 +160,33 @@ _record(
     "the design record, using the design-time target; annotated with the realized totals",
     "PARAMETER-COUNT NOTE",
 )
+for _c in SUPERSEDED:
+    _record(
+        _c,
+        "paper/check_claim_drift.py",
+        "the writer's own drift checker, which names the retired claims it searches for — the "
+        "same exemption this file holds for itself, and read the note in the module docstring "
+        "about which of the two instruments is the stronger design",
+        "RETIRED CLAIMS",
+    )
 
 # --------------------------------------------------------------------------------------------
 # SURVIVING HITS OUTSIDE THE BUILDER'S DOMAIN. Exact — fixing one must FAIL this file.
 # --------------------------------------------------------------------------------------------
-EXPECTED_HITS: dict[tuple[str, str], str] = {
-    ("duplicates_price", "paper/main.tex"): (
-        "★ THE ABSTRACT. Sections 1 and 6 were corrected to 'duplicates what OHLCV already "
-        "carries'; the same sentence in the abstract, which lives in main.tex rather than under "
-        "sections/, still says 'price'. ROUTED to the writer 2026-08-17."
-    ),
-    ("price_correlated_channel", "paper/sections/06_results.tex"): (
-        "§6 states the allocation claim as 'spends its bits on the microstructure that co-varies "
-        "with price' 150 lines after correctly saying 'duplicates what OHLCV already carries'. "
-        "Also describes the shuffled arm as independent of 'its own bar's price'. ROUTED."
-    ),
-    ("price_correlated_channel", "paper/sections/07_limitations.tex"): (
-        "§7.2 says the shuffle destroys the block's 'covariance with price'. Lower confidence "
-        "than the two above — the shuffle destroys covariance with the whole bar — but it is the "
-        "same phrasing and reads as the superseded claim. ROUTED."
-    ),
-    ("price_correlated_channel", "paper/main.tex"): (
-        "the abstract and the §1 lead-in describe the evicted channel as 'weakly covariant with "
-        "price'. LOWER CONFIDENCE than the hits above and possibly correct as written — the "
-        "signed channels are weakly covariant with price AND with volume — but it is the phrasing "
-        "the title correction retired, so the writer should decide. ROUTED."
-    ),
-    ("price_correlated_channel", "paper/sections/03_mechanism.tex"): (
-        "§3 says the evicted dims are 'weakly covariant with price shape'. Same tier as main.tex: "
-        "arguably true, and it is the retired phrasing. ROUTED for the writer's judgement."
-    ),
-}
+EXPECTED_HITS: dict[tuple[str, str], str] = {}
+# ★ EMPTY, AND IT WAS EMPTIED BY THE ROT-CHECK RATHER THAN BY ANYONE REMEMBERING. On 2026-08-17
+# this list held five routed hits in paper/: the ABSTRACT (`main.tex` said "duplicates what price
+# already carries" while §1 and §6 had been corrected to OHLCV), §6's allocation claim, §7.2's
+# placebo sentence, and two lower-confidence "weakly covariant with price" sites I flagged as the
+# writer's judgement rather than as defects. The writer fixed ALL FIVE — including both
+# lower-confidence ones, and generalized rather than substituting: "weakly covariant with the
+# high-variance channels already being coded", "with the rest", "with OHLCV shape".
+#
+# The mechanism is the point. Nobody re-read this file; the rot-check went red on the next run and
+# named each entry to delete. A list that can only grow is a permanent silence, and this is what
+# the alternative looks like in practice.
+#
+# paper/main_full.txt held a sixth entry for about an hour before the writer deleted the export.
 # NOTE ON WHAT IS NOT LISTED: paper/main_full.txt carried a fourth hit when this file was first
 # written and the writer deleted the export before it was committed. The rot-check below is what
 # surfaced that within one run, which is the property the list is built for.
