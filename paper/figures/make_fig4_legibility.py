@@ -17,14 +17,20 @@ ARTIFACTS — loaded at render time; nothing transcribed.
         .pin.PINNED_MICRO_POINT_WEIGHT                   -> lambda = 3
     runs_manifest/m6_acceptance_stage1_manifest.json
         .runs.{planted,noise}.per_bar_id_legibility      -> the feature-space acceptance run
+    runs_manifest/m6_micro_legibility_stop.json          THE GATE'S FIRING ON REAL DATA
+        .legibility_receipt.cell4_fsq_micro_seed0.per_dim.<d>.{sign_acc, base_rate_positive}
+        .legibility_receipt.cell5_fsq_micro_shuffled_seed0.per_dim.<d>.{sign_acc}
     src/trikaal/train/gates.py                           MICRO_DIMS, MICRO_LEGIBILITY_MIN
 
-RIGHT PANEL CARRIES NO VALUES AT ALL, DELIBERATELY. The standing gate's first execution on real
-microstructure has not happened. An earlier draft drew six plausible bars near the gate, which
-implied a passing result that nobody has measured -- exactly the defect class this project exists
-to prevent. The panel now draws six EMPTY slots: the axis, the ordering, the threshold and the
-caption are final, and no value is implied in either direction. Six numbers from the run's gate
-receipt fill the slots.
+RIGHT PANEL NOW CARRIES THE PRIMARY RESULT, AND FOR A LONG TIME IT DID NOT. Through every draft up
+to this one it drew six EMPTY slots watermarked "NO VALUES / awaiting the run" -- correct while the
+gate had not executed, and then simply STALE once it had. The gate fired on 2026-08-12; the six
+numbers were printed in §6.1 and quoted in the abstract; and this file, the generator of the
+paper's primary figure, contained NO REFERENCE TO THE STOP RECEIPT AT ALL. Nothing failed: it
+loaded four fixture-era receipts, found everything it asked for, and rendered a watermark over the
+result. That is the exact defect §8.9 claims our tooling prevents, so _verify_gate_values below now
+makes the claim true for this figure: the drawn values are asserted against the receipt, and a
+disagreement raises rather than rendering.
 
 RENDERING ONLY — not part of the anchored instrument; produces no measurement.
 
@@ -40,7 +46,6 @@ import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.patches import Rectangle
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import figstyle as fs
@@ -56,6 +61,7 @@ fs.apply()
 CUR = json.loads((RM / "m6_interface_respec_design_pass.json").read_text())
 LAM = json.loads((RM / "m6_lambda_search_receipt.json").read_text())
 ACC = json.loads((RM / "m6_acceptance_stage1_manifest.json").read_text())
+STOP = json.loads((RM / "m6_micro_legibility_stop.json").read_text())
 PRE = json.loads(
     subprocess.run(
         ["git", "show", "c4cd082:runs_manifest/m6_interface_respec_design_pass.json"],
@@ -108,6 +114,49 @@ STAGES = [
         ],
     ),
 ]
+
+
+# What §6.1 ASSERTS fails, written independently of the receipt so the check below can fail.
+# Dims 10 and 12 clear 0.90; 9 and 11 miss it by 0.0025 and 0.0038; 7 and 8 miss it badly.
+FAILING_DIMS = (7, 8, 9, 11)
+
+GATE_ARM = "cell4_fsq_micro_seed0"
+SHUF_ARM = "cell5_fsq_micro_shuffled_seed0"
+
+
+def _gate_row(dim: int) -> tuple[float, float, float]:
+    """(real sign-accuracy, shuffled sign-accuracy, base rate) for one microstructure dim."""
+    lr = STOP["legibility_receipt"]
+    d = str(dim)
+    return (
+        lr[GATE_ARM]["per_dim"][d]["sign_acc"],
+        lr[SHUF_ARM]["per_dim"][d]["sign_acc"],
+        lr[GATE_ARM]["per_dim"][d]["base_rate_positive"],
+    )
+
+
+def _verify_gate_values() -> None:
+    """§8.9's claim, made true for this figure: disagree with the receipt and RAISE.
+
+    The figure spent every draft after the firing rendering a watermark over a result that
+    existed, because nothing checked that what it drew matched what had been measured. This is
+    that check. It must be capable of failing -- mutate any drawn value and this raises.
+    """
+    lr = STOP["legibility_receipt"]
+    if STOP.get("stage2_entered") is not False:
+        raise AssertionError("stop receipt does not record a pre-Stage-2 halt")
+    for arm in (GATE_ARM, SHUF_ARM):
+        if arm not in lr:
+            raise AssertionError(f"stop receipt is missing arm {arm}")
+    for dim in MICRO_DIMS_IDX:
+        real, shuf, base_rate = _gate_row(dim)
+        for label, v in (("real", real), ("shuffled", shuf), ("base", base_rate)):
+            if not 0.0 <= v <= 1.0:
+                raise AssertionError(f"dim {dim} {label} out of range: {v}")
+        if real < GATE and dim not in FAILING_DIMS:
+            raise AssertionError(f"dim {dim} is below the gate but not marked failing")
+        if real >= GATE and dim in FAILING_DIMS:
+            raise AssertionError(f"dim {dim} clears the gate but is marked failing")
 
 
 def main() -> None:
@@ -188,61 +237,73 @@ def main() -> None:
     axL.spines["left"].set_visible(False)
     axL.tick_params(axis="y", length=0)
 
-    # ---------------------------------------------------------------- right: real data, MOCK
+    # ------------------------------------------------- right: real data, THE GATE'S OWN RECEIPT
+    _verify_gate_values()
     axR.set_axisbelow(True)
     axR.xaxis.grid(True)
     names = [FEATURE_NAMES[i] for i in MICRO_DIMS_IDX]
     yr = np.arange(len(names))[::-1]
-    for y, nm in zip(yr, names, strict=True):
-        # an EMPTY slot, matching the empty outcome cells of Figure 8. No value is implied.
-        axR.add_patch(
-            Rectangle(
-                (0.455, y - 0.29),
-                0.50,
-                0.58,
-                fc="white",
-                ec="#c8c8c8",
-                lw=0.6,
-                ls=(0, (2, 1.5)),
-                zorder=2,
-            )
+    for y, dim, nm in zip(yr, MICRO_DIMS_IDX, names, strict=True):
+        real, shuf, _base = _gate_row(dim)
+        fails = dim in FAILING_DIMS
+        col = fs.FAIL if fails else fs.PASS
+        # the shuffled placebo arm: open marker, joined to the real value so the collapse is visible
+        axR.plot([shuf, real], [y, y], color="#d0d0d0", lw=0.7, zorder=3)
+        axR.plot(
+            [shuf], [y], marker="o", ms=3.0, mfc="white", mec="#9a9a9a", mew=0.7, lw=0, zorder=4
+        )
+        axR.plot([real], [y], marker="D", ms=3.4, color=col, lw=0, zorder=5)
+        # value in a FIXED right-hand column, never beside the marker: a label that tracks the
+        # value collides with the gate rule exactly where the interesting values sit.
+        axR.text(
+            1.055,
+            y,
+            f"{real:.4f}",
+            ha="right",
+            va="center",
+            fontsize=5.6,
+            color=col,
+            zorder=6,
         )
         axR.text(
-            0.468,
-            y,
+            0.455,
+            y + 0.30,
             nm.replace("_", " "),
             ha="left",
-            va="center",
-            fontsize=6.0,
+            va="bottom",
+            fontsize=5.6,
             color=fs.RULE,
             zorder=5,
         )
-        axR.text(0.93, y, "—", ha="right", va="center", fontsize=7.0, color="#b0b0b0", zorder=5)
 
     axR.axvline(GATE, color=fs.RULE, ls=(0, (4, 3)), lw=0.8, zorder=4)
     axR.set_yticks([])
-    axR.set_xlim(0.44, 0.98)
-    axR.set_ylim(-0.7, len(names) - 0.05)
+    axR.set_xlim(0.44, 1.06)
+    axR.set_ylim(-1.35, len(names) - 0.05)
     axR.set_xlabel("same probe, real bars")
-    axR.set_title("real microstructure — the standing gate", loc="left", fontsize=7.0, pad=5)
+    axR.set_title(
+        "real microstructure — the gate fired, both arms refused", loc="left", fontsize=7.0, pad=5
+    )
     axR.spines["left"].set_visible(False)
     axR.tick_params(axis="y", length=0)
-
     axR.text(
-        0.71,
-        (len(names) - 1) / 2,
-        "NO VALUES\nawaiting the run",
-        ha="center",
+        GATE - 0.008,
+        len(names) - 0.35,
+        f"gate {GATE:.2f}",
+        ha="right",
         va="center",
-        fontsize=8.5,
-        weight="bold",
-        color=fs.FAIL,
-        rotation=16,
-        alpha=0.85,
-        zorder=7,
-        linespacing=1.4,
+        fontsize=5.6,
+        color=fs.RULE,
+        zorder=6,
     )
+    # legend, inside the axes and below every row so nothing can paint over it
+    ly = -1.05
+    axR.plot([0.462], [ly], marker="D", ms=3.4, color=fs.FAIL, lw=0, zorder=6)
+    axR.text(0.478, ly, "real microstructure", fontsize=5.4, va="center", color=fs.RULE, zorder=6)
+    axR.plot([0.735], [ly], marker="o", ms=3.0, mfc="white", mec="#9a9a9a", mew=0.7, lw=0, zorder=6)
+    axR.text(0.751, ly, "shuffled placebo", fontsize=5.4, va="center", color=fs.RULE, zorder=6)
 
+    fs.assert_text_legible(fig, (axL, axR))
     fs.save(fig, OUT, "fig4_legibility")
 
 

@@ -25,13 +25,25 @@ It is also precisely what stops the result being a measurement of markets. We do
 variance and covariance geometry of real trade-flow imbalance against real price well enough to
 assert that the fixture reproduces it; we know only that one entropy statistic matches.
 
-The consequence is a specific one, and we hold to it under every experimental outcome: capacity
-eviction is a mechanism we demonstrate, not a market phenomenon we measure, and it is not this
-paper's headline claim. A reader who wants the mechanism established on real microstructure will
-not find it here. What the pre-registered ablation of \cref{sec:setup} tests is the downstream
-question --- whether real trade-flow imbalance survives the re-specified pipeline --- and a
-positive result there would be consistent with the mechanism without confirming it, because many
-other differences between cells 2 and 4 could produce the same sign.
+The consequence is specific, and it is narrower than the paragraph a reader might expect here.
+\textbf{The distinction that matters is between the mechanism and its consequence, not between the
+fixture and the paper's claim.} What the fixture establishes is the \emph{causal} statement --- that
+a reconstruction objective allocates capacity by variance and covariance, shown by intervening on
+an entropy-calibrated stream where the answer is known in advance. What the gate establishes on
+real data is the \emph{consequence}: this tokenizer does not make real trade-flow imbalance legible
+from a bar's own token, and under the placebo shuffle the signed channels collapse toward their
+base rates while the magnitude channels hold (\cref{sec:res-gate}). The second is the paper's
+headline claim and it is measured on markets; the first is its explanation and it is measured on a
+fixture. Neither substitutes for the other, and \cref{sec:res-interpretation} states the join
+rather than assuming it.
+
+\textbf{What a reader should therefore not take from the gate firing is the causal direction.}
+The gate is an observation about an outcome: the signed channels are not recoverable. That they
+are not recoverable \emph{because} reconstruction priced them out is the fixture's claim carried
+over by argument, not by a real-data intervention, and no experiment here varies the objective on
+market data. The downstream ablation that would have separated the remaining alternatives ---
+whether real trade-flow imbalance survives the re-specified pipeline into forecast quality --- was
+gated by the legibility check and never ran, so its evidence is absent rather than negative.
 
 Two narrower limits inside the same fixture. We demonstrate the effect for one reconstruction
 objective, one quantizer family and one class of encoder. We show that \emph{this} objective
@@ -52,8 +64,9 @@ originally specified to load published reference weights and reproduce their rep
 information coefficient as an external anchor for this cell. That gate was found unexecutable and
 dropped as binding before any cell was scored, for three separate reasons, each sufficient on its
 own: the reference paper publishes two rank information coefficients for the same model that
-differ by $2.4\times$ ($0.0431$ against $0.0665$) without the pre-registration saying which
-applies; both are measured on Shanghai Stock Exchange $15$-minute equity bars, a market and a
+differ by $2.45\times$ ($0.0254$ against $0.0622$) without the pre-registration saying which
+applies --- the plain information coefficients for the same pair, $0.0431$ and $0.0665$, differ by
+$1.54\times$, and an earlier draft of this sentence quoted those values under the rank label; both are measured on Shanghai Stock Exchange $15$-minute equity bars, a market and a
 frequency this study firewalls out of v1, so the gate's two requirements --- reproduce the
 published number, and do it on our own pinned slice --- cannot both hold; and executing the
 weights would require importing the reference model code, which our independence invariant
@@ -331,6 +344,12 @@ from the banked one.}}
 \end{center}
 % artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period 7.900476918876868e-06,
 %   annualized_ir_of_always_long_market 0.3704062519620255, n_periods 35064, n_symbols 40};
+%   DISCREPANCY, DISCLOSED RATHER THAN EXPLAINED: two receipts disagree by one period.
+%   Every scored money artifact carries grid.n_periods = 35,064 and its headline_series has
+%   35,064 entries (verified by length); m6_horizon_break_even.json's costing block carries
+%   decisions_per_symbol = 35,063, which is the figure §5, §7.9 and D.3 quote. We could not
+%   establish from the receipts alone which is canonical, and no quantity in this paper depends
+%   on the difference. Flagged rather than reconciled by assertion.
 %   rows[*].{modal_sign, modal_share, a_ir_gross_model, b_ir_gross_constant_direction,
 %   delta_a_minus_b, delta_ci95_lower, bias_only_share_of_model_ir}; paired block bootstrap,
 %   B = 10,000, block 188, seed 20260704. Caveat verbatim in ★_BENCHMARK_SUBSTITUTION_READ_FIRST.

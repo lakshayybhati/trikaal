@@ -216,6 +216,94 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.38 (2026-08-17, ★★ PRE-PUBLICATION AUDIT: THE MEASUREMENT SURVIVED, THE MOST-READ
+  SURFACES DID NOT. THE PRIMARY FIGURE DID NOT CONTAIN THE PRIMARY RESULT.)**
+  - **THE AUDIT'S OWN VERDICT IS PART OF THE RECORD: *publish with named changes, not as-is*.** An
+    independent auditor re-ran the Gate-A anchor bit-for-bit, traced ~90 quoted values to the
+    digit, and attacked five gates finding all five bite; its assessment was that nothing traced
+    was fabricated, inflated or unreproducible. **Every defect below is on a surface a reader sees
+    FIRST — contributions list, abstract, primary figure, limitations opening — and every one of
+    them described the world BEFORE the gate fired.** The pattern is the point: the measurement
+    layer was maintained and the presentation layer was not.
+  - **★★ THE PRIMARY FIGURE DID NOT CONTAIN THE PRIMARY RESULT, AND NOTHING COULD HAVE CAUGHT IT.**
+    `fig4_legibility`'s right panel rendered **six empty dashed boxes watermarked "NO VALUES /
+    awaiting the run"** for every draft after 2026-08-12, while the six values it was waiting for
+    were printed in §6.1 and quoted in the abstract. Root cause verified by grep: the generator
+    contained **ZERO references to `m6_micro_legibility_stop.json`** — it loaded four fixture-era
+    receipts, found everything it asked for, and rendered a watermark over the result. **Nothing
+    failed because there was nothing to fail.**
+  - **★ AND THAT FALSIFIED §8.9's CLAIM ABOUT OUR OWN TOOLING** — *"a figure that disagrees with
+    its artifact fails to build rather than rendering a stale value."* This figure disagreed with
+    its artifact and built happily. **Loading from a receipt prevents a figure CONTRADICTING the
+    receipt it reads; it does nothing about a figure that reads NO receipt.** §8.9 now states the
+    weaker true claim, names this figure as the instance, and points at the two explicit checks
+    that now exist (`fig4` against the stop receipt, `fig5` against the checkpoints), **each
+    observed to fail under a wrong constant.**
+  - **THE OTHER SURFACE DEFECTS, ALL VERIFIED AGAINST SOURCE BEFORE FIXING.** (1) Contributions
+    bullet 4 read *"We RUN a pre-registered ... ablation ... SCORED by cost-aware net IR"* — it was
+    neither run nor scored, twelve lines above §1's own *"It did not run."* Rewritten to
+    specify/pre-register with the gate outcome named. (2) *"This paper reports no information
+    ratio"* is false as written — §7.9 prints gross IRs of +1.2665/+2.1715/+1.1446 and §7.8 reports
+    break-even, which our own text calls the same statement as a positive gross IR; now *"no
+    ablation outcome — no cost-aware net information ratio"*. (3) §7.2 carried the **RankIC label
+    over the plain-IC pair**: "differ by 2.4× (0.0431 against 0.0665)", internally inconsistent
+    since 0.0665/0.0431 = 1.54. The RankIC pair is **0.0254/0.0622 = 2.45×**; both pairs now
+    printed with the earlier error named. (4) §6.5 said item E was pre-written *"months earlier"*;
+    **git says 13 days** — 46c6a9d 2026-07-30 against a 2026-08-12 firing — and the error ran in
+    the FLATTERING direction in the one sentence whose job is provenance. (5) §7.1 still denied the
+    title; rewritten around the distinction that actually holds — the fixture establishes the
+    CAUSAL statement, the gate establishes its CONSEQUENCE on markets, and the causal direction on
+    real data is carried by argument rather than by a real-data intervention.
+  - **★ ITEM 8, RULED. `fig9_cost_stress`'s placeholder curve crossed zero EXACTLY on the pinned
+    0.30% rule** — the most quotable point on the axis — reading, once cropped, as a break-even of
+    0.30% against a measured 0.0023–0.0208%: **wrong by 14–130×**. Its caption's own defence was
+    also false: it claimed magnitudes "two orders above anything this design could produce", and
+    the design produced net IRs of −28.5 to −146.5, so ±45 sat **INSIDE** the measured range.
+    **I took none of the three options offered.** Moving the crossing (auditor) yields a different
+    wrong number, not no number; removing the figure (supervisor's first) contradicts §6.4's own
+    stated position that pre-registered-but-unreached analyses are published unfilled as part of
+    the record; relocating it to §4 (supervisor's preferred) changes the section but not the
+    defect, because **any crossing at any x is quotable**. **I applied Figure 8's solution instead:
+    draw the specified apparatus and NO data at all** — axes, pinned band, economic floor, no
+    curve, so there is no crossing to quote — and then went further than any option asked, by
+    drawing the **one break-even we have actually measured** in the panel with its cell-1-only
+    scope IN THE RASTER. The quantity a reader tries to read off is now true rather than absent,
+    which is the context-stripping rule discharged **positively** rather than only by omission.
+  - **THE RENDER RULE, APPLIED TO THE POPULATION AND NOT TO THE HYPOTHESIS.** All ten figures were
+    regenerated and **looked at**. Two defects surfaced that NEITHER audit named: `fig1_architecture`
+    still printed **"21.3M params"**, a site the v1.6.34 parameter sweep missed because that sweep
+    covered the `.tex` files and one generator but not the other eight — **the class rule failing
+    on the class rule's own fix**; and `fig7_coverage`'s two annotations were drawn directly on the
+    filled mass and are unreadable at print size. **A third suspected defect was WITHDRAWN after
+    checking**: I read "must not not see" in fig6 at 95 dpi, and the PDF text says "must not see" —
+    a misreading of my own low-resolution render, not a defect.
+  - **THE INSTRUMENT THIS PASS ADDED, because three of the figure defects were invisible to every
+    test we own:** `figstyle.assert_text_legible` measures EVERY text node on the RENDERED figure
+    via the renderer's own extents — the matplotlib analogue of `getBBox` — and asserts nothing is
+    clipped by its axes and nothing overlaps anything else. **Its first version checked containment
+    only and passed a legend that was sitting on top of a data row**, which is the same
+    check-that-cannot-fail defect one level up; overlap detection was added after that was seen.
+    Artists tagged `gid="overlay"` are exempt so the DRAFT watermark can lie across a panel by
+    design. Proven capable of failing on three separate mutations with a semantic no-op as negative
+    control.
+  - **SMALLER, ALL VERIFIED:** §6.6's unexplained `---` at λ=8 hid **0.8465**, three seeds present
+    and monotone between the printed endpoints — an unexplained dash where a benign number exists
+    reads as selective omission, and it is now printed. §6.0's "confined to §7.5, §7.6" undercounted
+    — §7.9 and §8.1 also rest on those three units. `fig8`'s caption claimed its rule strings were
+    "persisted into the verdict manifest, not a restatement" when they are hardcoded in the
+    generator, and the `--real` swap its docstring and Appendix F.5 describe **does not exist**
+    (no argv handling at all). Test count 727 → **911 collected**; census figures 11 → 10, `\PH`
+    6 → 5. `fig4`'s caption called the fixture rule "pre-registered" where §3 honestly says
+    "restated". A vestigial comment cited "the three comments" where two exist. And 03_mechanism's
+    0.3044/0.8216 sat above a receipt that does not contain them.
+  - **ONE THING I DECLINED TO ASSERT.** The 35,064-vs-35,063 period discrepancy: every scored money
+    artifact carries `grid.n_periods = 35,064` with a headline series of that length, while the
+    break-even receipt's costing block says 35,063 and the prose follows it. **I first wrote an
+    explanation — "35,064 boundaries over 35,063 scored periods" — and then deleted it, because I
+    had invented it rather than measured it.** The comment now states both values, that the
+    artifacts disagree, and that we could not establish which is canonical. No quantity depends on
+    it.
+
 - **v1.6.37 (2026-08-15, ★ WITHDRAWN: THE "PERCENTILE CLEARS, NORMAL DOES NOT" DISAGREEMENT
   DOES NOT EXIST. IT COMPARED A ONE-SIDED BOUND AGAINST A TWO-SIDED ONE.)**
   - **WHAT WAS PUBLISHED AND IS NOW WITHDRAWN.** §7 v1.6.36 and the paper stated that *"the

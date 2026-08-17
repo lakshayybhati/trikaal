@@ -18,7 +18,8 @@ training. Neither gated arm entered Stage~2 and neither produced an evaluation a
 five-cell ablation has no result --- not a null, and not an inconclusive one, but an experiment
 that its own pre-registered entry condition stopped. The gate reads the six live microstructure
 dimensions, so it binds only the microstructure arms; three ungated BSQ units were scored, and what
-they support is confined to \cref{sec:lim-filter,sec:lim-breakeven}. \Cref{sec:res-gate} is therefore the whole of the
+they support is confined to \cref{sec:lim-filter,sec:lim-breakeven,sec:lim-skill} and
+\cref{sec:repro-bitexact}. \Cref{sec:res-gate} is therefore the whole of the
 measurement; \cref{sec:res-primary,sec:res-effects,sec:res-stress} record what was not reached, and
 \cref{sec:res-interpretation} carries the branch that pre-committed this disposition.}
 
@@ -100,8 +101,9 @@ is part of the record.
 \emph{Five interpretation branches were written and dated before the run --- four on 2026-08-10,
 one on 2026-08-11 --- so that no reading could be composed with an outcome in front of us. The
 branch below is the one the outcome selected. The other four are deleted rather than softened, as
-pre-committed. This branch was additionally pre-written in the pre-registration itself, months
-earlier, as the \emph{modal} prediction of the mechanism: ``a firing is the MODAL prediction of our
+pre-committed. This branch was additionally pre-written in the pre-registration itself --- thirteen
+days earlier, in the final pre-data amendment, adopted 2026-07-30 against a firing on 2026-08-12
+--- as the \emph{modal} prediction of the mechanism: ``a firing is the MODAL prediction of our
 own finding \ldots{} gate fires $\rightarrow$ STOP and report; the PRIMARY becomes the mechanism
 finding.'' It is now the primary.}
 
@@ -159,7 +161,7 @@ across all three seeds, and it was not moved.
 cell 4, seed mean & $\lambda = 5$ & $\lambda = 8$ & $\lambda = 12$ \\
 \midrule
 \texttt{signed\_count\_imbalance} (dim 8) & 0.7140 & 0.7187 & 0.7219 \\
-\texttt{TFI} (dim 7) & 0.8268 & --- & 0.8574 \\
+\texttt{TFI} (dim 7) & 0.8268 & 0.8465 & 0.8574 \\
 OHLCV reconstruction MAE & 0.12814 & 0.12678 & 0.12530 \\
 \bottomrule
 \end{tabular}

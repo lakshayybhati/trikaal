@@ -99,6 +99,7 @@ def watermark(ax, *, rot=14, size=15, y=0.5, x=0.5):
         alpha=0.30,
         rotation=rot,
         zorder=20,
+        gid="overlay",  # exempt from fs.assert_text_legible: this is MEANT to lie across the panel
     )
 
 
@@ -209,68 +210,84 @@ def fig8_verdict() -> None:
 
 
 # =============================================================================================
-def fig9_cost_stress() -> None:
-    """Net IR against the cost assumption, with the pinned rate and break-even marked."""
-    fig, ax = plt.subplots(figsize=(fs.SINGLE_COL, 2.35))
-    costs = np.linspace(0.0, 0.006, 60)
+BREAK_EVEN_LO, BREAK_EVEN_HI = 0.0023236455995917574, 0.02082459364067311
 
-    # ONE curve. All three cells are drawn coincident on it, at a magnitude (~+-45 annualized IR)
-    # that this design could not produce, so no ordering and no crossing point can be read off.
-    ABSURD = 45.0
-    ir = ABSURD - 2.0 * ABSURD * (costs / costs[-1])
-    ax.plot(costs * 100, ir, lw=1.6, color=fs.RULE, zorder=3)
-    for k, (cell, colour) in enumerate(((4, fs.MICRO), (2, fs.OHLCV), (5, fs.PLACEBO))):
-        ax.text(
-            costs[-1] * 100 + 0.010,
-            ir[-1] + 6.5 - k * 6.5,
-            f"cell {cell}",
-            ha="left",
-            va="center",
-            fontsize=6.2,
-            color=colour,
-        )
+
+def fig9_cost_stress() -> None:
+    """The specified cost-stress apparatus, with NO curve — the ablation it was for never ran."""
+    fig, ax = plt.subplots(figsize=(fs.SINGLE_COL, 2.35))
+    # NO CURVE IS DRAWN. This panel previously carried one placeholder line whose zero crossing
+    # landed EXACTLY on the pinned 0.30% rule -- the single most quotable point on the axis --
+    # so a crop read "break-even is about 0.30%" against a MEASURED break-even of 0.0023-0.0208%,
+    # wrong by 14-130x. Its defence in the caption was also false: it claimed a magnitude "two
+    # orders above anything this design could produce", and the design produced net IRs of -28.5
+    # to -146.5, so +-45 sat INSIDE the measured range. Figure 8's solution is used instead:
+    # draw the specified apparatus and no data at all. There is then no crossing to quote.
+    #
+    # What IS drawn is the one break-even we have actually measured, so that the quantity a
+    # reader tries to read off this panel is true rather than absent -- with its cell-1-only
+    # scope written into the raster, because a crop removes the caption.
     ax.text(
-        costs[-1] * 100 + 0.010,
-        ir[-1] - 19.0,
-        "all three coincident\n(placeholder)",
-        ha="left",
+        0.31,
+        -0.62,
+        "no curve is drawn — the ablation this panel was specified for never ran",
+        ha="center",
         va="center",
-        fontsize=5.8,
+        fontsize=6.3,
         color=fs.RULE,
-        linespacing=1.35,
+        style="italic",
+        zorder=6,
+    )
+    ax.axvspan(BREAK_EVEN_LO, BREAK_EVEN_HI, color=fs.FAIL, alpha=0.9, zorder=5)
+    ax.annotate(
+        f"MEASURED break-even\n{BREAK_EVEN_LO:.4f}–{BREAK_EVEN_HI:.4f}%\n"
+        "cell 1 only, 3 units\nNOT an ablation result",
+        xy=(BREAK_EVEN_HI, 0.72),
+        xytext=(0.088, 0.72),
+        textcoords="data",
+        fontsize=5.9,
+        color=fs.FAIL,
+        linespacing=1.4,
+        va="center",
+        arrowprops={"arrowstyle": "-", "lw": 0.7, "color": fs.FAIL},
+        zorder=6,
     )
 
     ax.axhline(0.0, color=fs.INK, lw=0.7, zorder=2)
     ax.axhline(ECON_FLOOR_IR, color=fs.RULE, ls=(0, (4, 3)), lw=0.8, zorder=2)
     ax.text(
         0.605,
-        ECON_FLOOR_IR + 0.04,
+        ECON_FLOOR_IR - 0.11,
         f"economic floor {ECON_FLOOR_IR}",
         ha="right",
+        va="center",
         fontsize=6.1,
         color=fs.RULE,
+        zorder=6,
     )
     ax.axvline(HEADLINE_COST * 100, color=fs.FAIL, ls=(0, (4, 2.5)), lw=1.0, zorder=4)
     ax.text(
         HEADLINE_COST * 100 + 0.012,
-        ax.get_ylim()[1] * 0.86,
+        -0.20,
         f"pinned headline\n{HEADLINE_COST * 100:.2f}% round trip",
         ha="left",
-        va="top",
+        va="center",
         fontsize=6.1,
         color=fs.FAIL,
         linespacing=1.35,
+        zorder=6,
     )
     ax.axvspan(0.10, 0.30, color=fs.GRID, alpha=0.55, zorder=0)
     ax.text(
         0.20,
-        ax.get_ylim()[0] + 0.10,
+        -0.20,
         "pre-registered\ncost band",
         ha="center",
-        va="bottom",
+        va="center",
         fontsize=6.0,
         color=fs.RULE,
         linespacing=1.3,
+        zorder=6,
     )
 
     ax.set_xlabel("round-trip transaction cost (%)")
@@ -279,9 +296,12 @@ def fig9_cost_stress() -> None:
         "how far the result survives a worse cost assumption", loc="left", fontsize=7.0, pad=5
     )
     ax.set_xlim(0, 0.62)
+    ax.set_ylim(-0.85, 1.15)
+    ax.set_yticks([ECON_FLOOR_IR, 0.0])
     ax.set_axisbelow(True)
     ax.yaxis.grid(True)
     watermark(ax, y=0.42)
+    fs.assert_text_legible(fig, (ax,))
     fs.save(fig, OUT, "fig9_cost_stress")
 
 

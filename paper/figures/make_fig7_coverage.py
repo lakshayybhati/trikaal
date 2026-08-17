@@ -114,6 +114,9 @@ def main() -> None:
         fontsize=6.0,
         color=fs.RULE,
         linespacing=1.35,
+        # both annotations sit ON the filled coverage mass; without a plate they are unreadable
+        # at print size. Found by rendering, not by any check.
+        bbox=dict(fc="white", ec="none", alpha=0.82, pad=1.4),
         arrowprops=dict(arrowstyle="-|>", lw=0.6, color=fs.RULE, shrinkA=1, shrinkB=2),
     )
     ax.annotate(
@@ -124,6 +127,7 @@ def main() -> None:
         va="center",
         fontsize=6.0,
         color=fs.FAIL,
+        bbox=dict(fc="white", ec="none", alpha=0.82, pad=1.4),
         linespacing=1.35,
         arrowprops=dict(arrowstyle="-|>", lw=0.6, color=fs.FAIL, shrinkA=1, shrinkB=2),
     )

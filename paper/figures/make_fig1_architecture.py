@@ -45,7 +45,11 @@ BPT = BITS_C + BITS_F
 with open(ROOT / "runs_manifest" / "m6_lambda_search_receipt.json") as fh:
     LAMBDA = json.load(fh)["pin"]["PINNED_MICRO_POINT_WEIGHT"]
 
-N_PARAMS = 21_301_248  # realized backbone at the FSQ vocabulary
+# §7 v1.6.34: the HEADLINE figure is the REALIZED PREDICTOR TOTAL. The backbone-excluding-MTP
+# count is the named secondary. This generator carried 21.3M through the whole correction pass
+# because that sweep covered the .tex files and one other generator, not this one.
+N_PARAMS = 31_795_200  # realized predictor total at the FSQ vocabulary (checkpoint-verified)
+N_BACKBONE = 21_301_248  # backbone EXCLUDING the 10,493,952 MTP heads
 
 # ---- layout ------------------------------------------------------------------------------
 FIG_W, FIG_H = fs.SINGLE_COL, 1.95
@@ -287,7 +291,8 @@ def main() -> None:
         Y_MID - 0.145,
         wb,
         0.290,
-        f"AR backbone\n{N_PARAMS / 1e6:.1f}M params\n8 layers · $d$512",
+        f"AR backbone + MTP\n{N_PARAMS / 1e6:.1f}M params\n"
+        f"({N_BACKBONE / 1e6:.1f}M excl. MTP)\n8 layers · $d$512",
         size=6.6,
     )
     ax.text(

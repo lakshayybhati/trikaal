@@ -284,6 +284,9 @@ chance rate of $0.5$, and an MLP regressing $s_t$ on the same digits achieves a 
 of $0.0142$ --- while the same tokenizer on the same stream reconstructs that dimension at the
 window level at MAE $0.3044$ against a $0.8216$ baseline. The state is encoded, and per-bar
 illegible.
+% artifact: the 0.3044 / 0.8216 pair is NOT in the receipt below -- it is the window-level
+%   reconstruction quoted 60 lines earlier, runs_manifest/m6_canary_v6_stage1_manifest.json ::
+%   micro_recon["9"].{recon_mae=0.3044, mean_baseline_mae=0.8216, non_degenerate=true}.
 % artifact: runs_manifest/m6_token_control_step0.json :: id_visibility_probe.{logistic_sign_accuracy=0.5135166645050049, logistic_chance=0.5, mlp_state_pearson_corr=0.014173370141830274, sample_bars=300000, train_test_split=[240000,60000], tokenizer, stream}
 
 A stronger form of the same defect appears when the encoder is not causal at all, and we record it
@@ -387,17 +390,21 @@ plant in the way \cref{sec:mech-localize}'s control is calibrated against its ow
   \caption{\textbf{Only the third change moves per-bar legibility, and the threshold sits at the
   achievable ceiling.} \emph{Left:} logistic sign-accuracy of a microstructure dimension from bar
   $t$'s own token, across the intervention. Open circles are seeds and the diamond is their mean;
-  the pre-registered acceptance rule over the three calibration seeds is mean $\geq 0.90$ and every
-  seed $\geq 0.85$, so both thresholds are drawn. The original contextual design, the pointwise
+  the acceptance rule over the three calibration seeds --- \emph{restated} after seeing calibration
+  results, as \cref{sec:mech-fix} sets out --- is mean $\geq 0.90$ and every seed $\geq 0.85$, so
+  both thresholds are drawn. The original contextual design, the pointwise
   encoder alone, and the pointwise encoder with the bottleneck leg all sit at chance --- the leg
   trains, but does not decide which dimensions win. Class weighting at $\lambda = 2$ still fails;
   $\lambda = 3$ clears, and the pinned construction path reproduces it. Note how little headroom
   exists above the gate: this is the achievable ceiling, not a comfortable margin. \emph{Right:}
-  the same probe applied to real microstructure by the standing gate, which runs after first-stage
-  training and before any second-stage expenditure. \PH{no values drawn} --- the panel shows six empty
-  slots rather than placeholder bars, because bars near the gate would imply a passing result
-  nobody has measured. Six numbers drop in from the gate's own receipt, and the gate halts the run
-  if any of them falls below the rule.}
+  the same probe applied to real microstructure by the standing gate, which ran after first-stage
+  training and before any second-stage expenditure. \textbf{It fired.} Filled diamonds are the
+  measured sign accuracies on real bars and open circles the same dimensions under the
+  microstructure-shuffled placebo; the rule here is the gate's own, $0.90$ on \emph{every} live
+  dimension with no mean clause, so both arms were refused. The shortfall is concentrated in the
+  two signed channels, which are also the two that collapse under the shuffle while the four
+  magnitude channels hold --- the ordering the mechanism predicts, on market data
+  (\cref{sec:res-gate}).}
   \label{fig:legibility}
 \end{figure}
 

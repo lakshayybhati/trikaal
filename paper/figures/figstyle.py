@@ -113,3 +113,40 @@ def save(fig, out_dir, stem: str) -> None:
 def minus(text: str) -> str:
     """Typographic minus, so figure numerals match the manuscript."""
     return text.replace("-", "−")
+
+
+def assert_text_legible(fig, axes, tol: float = 1.0) -> None:
+    """Measure EVERY text node on the RENDERED figure: nothing clipped, nothing overlapping.
+
+    The render rule's corollary: figure geometry is coupled, and my own arithmetic is what
+    produced the layout, so re-deriving the layout from it is the shared-input failure with both
+    arms in one head. Matplotlib's renderer is the independent second arm -- the analogue of
+    getBBox on an SVG. Containment alone is not enough: the first version of this check passed a
+    legend that was sitting on top of a data row, because overlap is the other half of legible.
+    """
+    fig.canvas.draw()
+    r = fig.canvas.get_renderer()
+    bad = []
+    for ax in axes:
+        box = ax.get_window_extent(renderer=r)
+        # gid "overlay" opts an artist out: the DRAFT watermark is meant to lie across the
+        # panel, so overlapping it is the design. Everything else must be legible.
+        items = [t for t in ax.texts if t.get_text().strip() and t.get_gid() != "overlay"]
+        for t in items:
+            e = t.get_window_extent(renderer=r)
+            over = max(box.x0 - e.x0, e.x1 - box.x1, box.y0 - e.y0, e.y1 - box.y1)
+            if over > tol:
+                bad.append(f"{t.get_text()[:40]!r} overflows its axes by {over:.1f}px")
+        for i, a in enumerate(items):
+            ea = a.get_window_extent(renderer=r)
+            for b in items[i + 1 :]:
+                eb = b.get_window_extent(renderer=r)
+                ox = min(ea.x1, eb.x1) - max(ea.x0, eb.x0)
+                oy = min(ea.y1, eb.y1) - max(ea.y0, eb.y0)
+                if ox > tol and oy > tol:
+                    bad.append(
+                        f"{a.get_text()[:30]!r} overlaps {b.get_text()[:30]!r} "
+                        f"by {ox:.1f}x{oy:.1f}px"
+                    )
+    if bad:
+        raise AssertionError("figure text is clipped or overlapping:\n  " + "\n  ".join(bad))

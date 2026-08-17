@@ -7,7 +7,8 @@
   conjunctively: the primary outcome is SURVIVES only if none fails, and NULL otherwise. Two
   guards sit outside the clauses and are HALT-only --- they can refuse to report an outcome their
   own inputs cannot support, and can never flip SURVIVES to NULL or back. The rule strings shown
-  are the ones persisted into the verdict manifest, not a restatement of them. \PH{no values} --- every outcome
+  are transcribed into this figure's source rather than loaded from a manifest, and are therefore a
+  restatement; the persisted strings are the authority. \PH{no values} --- every outcome
   cell is empty because the run has not been executed; each is filled from a single named field of
   that manifest.}
   \label{fig:verdict}
@@ -16,15 +17,16 @@
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig9_cost_stress.pdf}
-  \caption{\textbf{How far the result survives a worse cost assumption.} Cost-aware net information
-  ratio against the round-trip transaction cost, for the microstructure arm, the OHLCV-only arm and
-  the placebo. The headline is pinned at $0.30\%$ --- the pessimistic end of the pre-registered
-  $0.1$--$0.3\%$ band --- so the region to the right of that rule is stress beyond what was
-  committed to, and the crossing of the economic floor is the quantity a reader should look for
-  first. \PH{one coincident curve, magnitudes $\sim\pm45$} --- all three cells are drawn on a single
-  line at a scale roughly two orders of magnitude above anything this design could produce, so no
-  ordering between cells and no crossing point can be read off. The axes, the pinned rate and the
-  floor are real; nothing else on the panel is.}
+  \caption{\textbf{The specified cost-stress apparatus, with no curve.} Cost-aware net information
+  ratio against the round-trip transaction cost was to be drawn here for the microstructure arm,
+  the OHLCV-only arm and the placebo; the headline is pinned at $0.30\%$, the pessimistic end of
+  the pre-registered $0.1$--$0.3\%$ band. \PH{no curve drawn} --- the ablation this panel was
+  specified for never ran, so the axes, the pinned rate, the band and the economic floor are real
+  and no cell is drawn. An earlier draft carried a placeholder line whose zero crossing fell
+  \emph{exactly} on the pinned $0.30\%$ rule, the most quotable point on the axis; cropped away
+  from this caption it read as a break-even of $0.30\%$, against a measured $0.0023$--$0.0208\%$.
+  The one break-even we have measured is drawn instead, in red at the left margin, with its
+  cell-1-only scope written into the image rather than left to the caption.}
   \label{fig:cost}
 \end{figure}
 \clearpage

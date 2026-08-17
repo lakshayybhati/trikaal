@@ -900,12 +900,12 @@ Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
 +tnum;+lnum;mapping=tex-text;" at 9.0pt
  -> TeXGyreTermesX-Italic.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 12.0pt on input line 155.
+(Font)              scaled to size 12.0pt on input line 157.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 12.0pt on input line 155.
+(Font)              scaled to size 12.0pt on input line 157.
 Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Bold.otf
@@ -941,13 +941,7 @@ Requested font "ntxexa" at 10.0pt
 )
 File: figures/fig1_mechanism.pdf Graphic file (type pdf)
 <use figures/fig1_mechanism.pdf>
- [2]
-Overfull \hbox (1.63503pt too wide) in paragraph at lines 201--206
-[]\TU/TeXGyreTermesX(0)/m/n/10 We run a pre-registered, capacity-matched five-c
-ell ablation with a shuffled microstructure placebo
- []
-
-(sections/02_related [3] [4]) (sections/03_mechanism [5]
+ [2] (sections/02_related [3] [4]) (sections/03_mechanism [5] [6]
 File: figures/fig2_eviction_by_variance_class.pdf Graphic file (type pdf)
 <use figures/fig2_eviction_by_variance_class.pdf>
 Requested font "ntx-Bold-tlf-ot1" at 9.0pt
@@ -958,7 +952,7 @@ Requested font "ntx-Bold-tlf-ot1" at 5.5pt
  -> ntx-Bold-tlf-ot1
 Requested font "ntx-Bold-tlf-ot1" at 10.0pt
  -> ntx-Bold-tlf-ot1
- [6]
+ [7]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
 (Font)              scaled to size 7.3pt on input line 186.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
@@ -969,14 +963,13 @@ LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 5.5pt
  -> TeXGyreTermesX-Regular.otf
- [7]
 File: figures/fig3_extraction.pdf Graphic file (type pdf)
 <use figures/fig3_extraction.pdf>
  [8] [9]
 File: figures/fig4_legibility.pdf Graphic file (type pdf)
 <use figures/fig4_legibility.pdf>
-
-[10]) (sections/04_design [11] [12] [13]
+ [10]) (sections/04_design
+[11] [12] [13]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/sc' will be
 (Font)              scaled to size 10.0pt on input line 187.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
@@ -985,14 +978,14 @@ Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
  [14] [15]) (sections/04_figures
 File: figures/fig5_design.pdf Graphic file (type pdf)
 <use figures/fig5_design.pdf>
-
-[16]
+ [16] [17]
 File: figures/fig6_validation.pdf Graphic file (type pdf)
 <use figures/fig6_validation.pdf>
-) [17] (sections/05_data [18
+) [18]
+(sections/05_data [19
 
 
-] [19]
+] [20]
 Overfull \hbox (6.94173pt too wide) in paragraph at lines 174--182
 \TU/TeXGyreTermesX(0)/m/n/10 The reduced lake is Hive-partitioned Parquet under
  \TU/lmtt/m/n/10 (symbol, frequency, month)\TU/TeXGyreTermesX(0)/m/n/10 , queri
@@ -1008,37 +1001,37 @@ Overfull \hbox (1.37178pt too wide) in paragraph at lines 183--187
 ) (sections/05_figures
 File: figures/fig7_coverage.pdf Graphic file (type pdf)
 <use figures/fig7_coverage.pdf>
-) [20] [21] (sections/06_results [22
+) [21] [22] (sections/06_results [23
 
 ]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
-(Font)              scaled to size 10.0pt on input line 147.
+(Font)              scaled to size 10.0pt on input line 149.
 Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
 s05;+tnum;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-BoldItalic.otf
- [23])
+ [24])
 (sections/06_figures
 File: figures/fig8_verdict.pdf Graphic file (type pdf)
 <use figures/fig8_verdict.pdf>
- [24] [25]
+ [25] [26]
 File: figures/fig9_cost_stress.pdf Graphic file (type pdf)
 <use figures/fig9_cost_stress.pdf>
- [26]
+ [27]
 File: figures/fig10_seed_stability.pdf Graphic file (type pdf)
 <use figures/fig10_seed_stability.pdf>
- [27]) (sections/07_limitations [28
+ [28]) (sections/07_limitations [29
 
 
 
 ]
-[29] [30]
+[30] [31]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 8.0pt on input line 320.
+(Font)              scaled to size 8.0pt on input line 333.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
-(Font)              scaled to size 8.0pt on input line 329.
+(Font)              scaled to size 8.0pt on input line 342.
 Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
 +tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-Italic.otf
@@ -1087,25 +1080,25 @@ Requested font "ntxexa" at 8.0pt
 Requested font "ntxexa" at 6.2pt
  -> ntxexa
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
-(Font)              scaled to size 8.0pt on input line 329.
+(Font)              scaled to size 8.0pt on input line 342.
 Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
 s05;+tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-BoldItalic.otf
- [31]
-Overfull \hbox (8.21841pt too wide) in paragraph at lines 358--364
+ [32]
+Overfull \hbox (8.21841pt too wide) in paragraph at lines 377--383
 []\TU/TeXGyreTermesX(0)/b/n/10 The third was the live one, and re-running it on
  the specified benchmark closed it — marginally,
  []
 
-[32] [33]) (sections/08_repro [34] [35] [36] [37]) (main.bbl [38])
-(sections/appendix_mechanism
+[33] [34]) (sections/08_repro [35] [36] [37] [38]) [39] (main.bbl)
+(sections/appendix_mechanism [40]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[39] [40]) (sections/appendix_repro
+[41]) (sections/appendix_repro
 Requested font "[lmmono9-regular]:" at 9.0pt
  -> lmmono9-regular
-
+ [42]
 Underfull \hbox (badness 6978) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 clause 5 deflated-Sharpe
  []
@@ -1120,7 +1113,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 degeneracy guard, sign-
  []
 
-[41] [42] [43] [44]) (sections/appendix_claims
+[43] [44] [45]) (sections/appendix_claims
 Underfull \hbox (badness 1354) in paragraph at lines 53--53
 []|\TU/TeXGyreTermesX(0)/m/n/9 interface re-spec re-
  []
@@ -1151,7 +1144,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 53--53
 []|$\OML/ntxmi/m/it/9 ^^U$\TU/TeXGyreTermesX(0)/m/n/9 -search; restated
  []
 
-[45]
+[46]
 Underfull \hbox (badness 1859) in paragraph at lines 113--113
 []|\TU/TeXGyreTermesX(0)/m/n/9 MDE inputs re-
  []
@@ -1191,7 +1184,7 @@ Underfull \hbox (badness 3919) in paragraph at lines 113--113
 []|\TU/TeXGyreTermesX(0)/m/n/9 same; the grid
  []
 
-[46]) (sections/appendix_audit [47]
+[47]) (sections/appendix_audit [48]
 Overfull \hbox (6.00842pt too wide) in paragraph at lines 24--32
 \TU/TeXGyreTermesX(0)/m/n/10 The ruling named itself amendment v1.6.28 while th
 at tag was absent from the log: \TU/lmtt/m/n/10 grep -c v1.6.28
@@ -1209,8 +1202,8 @@ Underfull \hbox (badness 5302) in paragraph at lines 73--76
 ermesX(0)/m/n/10 The
  []
 
-[48] [49]) [50] (main.aux)
+[49] [50]) [51] (main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 2223F862F078BA442F225BBBE8C4D38C;17498.
  )
-Output written on main.xdv (50 pages, 1756832 bytes).
+Output written on main.xdv (51 pages, 1789844 bytes).

@@ -74,7 +74,7 @@
 %   20.058 bpt (unchanged bits/token)  git show c4cd082:runs_manifest/
 %                m6_interface_respec_design_pass.json ::
 %                gate2_blocked_diagnosis.capacity_arithmetic.total_bpt_pinned
-%   3.518 / 0.5 / 0.027  see the three comments at the end of this abstract.
+%   3.518 / 0.5 / 0.027  see the two artifact comments at the end of this abstract.
 % ----------------------------------------------------------------------------------------------
 \begin{abstract}
 Two-stage models for financial time series learn a tokenizer under a reconstruction objective and
@@ -104,7 +104,9 @@ rates while the magnitude channels hold. \textbf{The tokenizer preserves the mic
 duplicates what price already carries and loses the microstructure that is independent of it.}
 A firing was pre-registered as the modal prediction of the mechanism and as the event that makes
 the mechanism the primary result; the five-cell ablation it gates was therefore never run, and this
-paper reports no information ratio, no null and no verdict. The finding is bounded by one budget
+paper reports no ablation outcome --- no cost-aware net information ratio, no null and no verdict.
+Gross information ratios for three ungated baseline units are reported in
+\cref{sec:limitations} as limitations, not as a result. The finding is bounded by one budget
 point, one objective and one architecture, and by a class weight fitted on a synthetic proxy: it
 establishes that this tokenizer does not carry the signed channels, not that none can.
 % artifact: runs_manifest/m6_micro_legibility_stop.json — per-dim sign_acc and base_rate_positive,
@@ -198,11 +200,12 @@ establishes that this tokenizer does not carry the signed channels, not that non
     bottleneck decode leg and calibrated class weighting --- that restores per-bar legibility at
     unchanged bits per token, and a \emph{legibility gate} that enforces the property on real
     data as a pre-second-stage hard stop (\cref{sec:mech-fix,sec:mech-gate}).
-  \item We run a pre-registered, capacity-matched five-cell ablation with a shuffled
-    microstructure placebo on $304{,}625{,}181$ one-minute bars, scored by cost-aware
-    net information ratio under purged walk-forward validation, with the decision rule, seed
-    count and multiple-testing correction fixed before any result existed
-    (\cref{sec:setup,sec:results}).
+  \item We pre-register a capacity-matched five-cell ablation with a shuffled microstructure
+    placebo over $304{,}625{,}181$ one-minute bars, to be scored by cost-aware net information
+    ratio under purged walk-forward validation, with the decision rule, seed count and
+    multiple-testing correction fixed before any result existed --- and then \textbf{the gate
+    refused both microstructure arms before second-stage training, so that ablation was never
+    run and this paper reports no ablation result} (\cref{sec:setup,sec:results}).
 \end{itemize}
 
 % =============================================================================================
