@@ -81,7 +81,12 @@ PINNED_LAKE_MERKLE = "sha256:5dfd667d05b97bda5a35946433b96d40738df8a926d5fa8a8d9
 # The M4b universe manifest, a sibling of the lake rather than a child of it.
 LAKE_MANIFEST = Path("processed/universe/universe_manifest.json")
 
-_VERIFIED_LAKES: set[str] = set()
+# ★ A CACHE MUST SHORT-CIRCUIT THE WORK, NOT THE ANSWER. The first version stored only the KEYS of
+# lakes already checked and returned {"cached": True} on a hit — so the acceptance receipt, which
+# stamps this call's result as provenance, recorded a stub instead of the identity, because
+# prepare_symbol had warmed the cache first. The receipt was written, looked fine, and carried
+# nothing. Caching the full result costs one dict and removes the failure mode.
+_VERIFIED_LAKES: dict[str, dict] = {}
 
 
 class LakeIdentityError(RuntimeError):
@@ -104,7 +109,7 @@ def verify_lake_identity(lake_root: Path | None = None, *, manifest: Path | None
         mf = Path(manifest) if manifest is not None else (REPO / LAKE_MANIFEST)
     key = f"{root.resolve()}|{mf.resolve() if mf.exists() else mf}"
     if key in _VERIFIED_LAKES:
-        return {"lake_root": str(root), "cached": True}
+        return {**_VERIFIED_LAKES[key], "cached": True}
 
     parts = sorted(p.name[len("symbol=") :] for p in root.glob("symbol=*") if p.is_dir())
     if len(parts) != PINNED_LAKE_SYMBOLS:
@@ -127,15 +132,14 @@ def verify_lake_identity(lake_root: Path | None = None, *, manifest: Path | None
             f"{mf} names {len(missing)} symbols with no partition under {root} "
             f"(e.g. {sorted(missing)[:3]}) — the manifest does not describe this lake"
         )
-    _VERIFIED_LAKES.add(key)
-    return {
+    _VERIFIED_LAKES[key] = {
         "lake_root": str(root),
         "manifest": str(mf),
         "n_symbol_partitions": len(parts),
         "total_bars": PINNED_LAKE_BARS,
         "universe_merkle": PINNED_LAKE_MERKLE,
-        "cached": False,
     }
+    return {**_VERIFIED_LAKES[key], "cached": False}
 
 
 @dataclass(frozen=True)

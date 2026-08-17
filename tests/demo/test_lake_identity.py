@@ -114,3 +114,23 @@ def test_a_manifest_describing_another_lake_is_rejected(tmp_path, real_doc) -> N
     root, mf = _fake_lake(tmp_path, real_doc, swapped)
     with pytest.raises(LakeIdentityError, match="no partition under"):
         verify_lake_identity(root, manifest=mf)
+
+
+@needs_lake
+def test_a_cache_hit_returns_the_identity_not_a_stub() -> None:
+    """★ A CACHE MUST SHORT-CIRCUIT THE WORK, NOT THE ANSWER.
+
+    The first version cached only the KEY and returned ``{"lake_root": ..., "cached": True}`` on a
+    hit. The demo acceptance receipt stamps this call's result as its lake provenance, and
+    ``prepare_symbol`` warms the cache first — so the newest receipt recorded a stub where the
+    identity should have been, and looked entirely healthy doing it. Caught by reading the emitted
+    receipt rather than the code that emits it.
+    """
+    cold = verify_lake_identity(REAL_LAKE, manifest=REAL_MANIFEST)
+    warm = verify_lake_identity(REAL_LAKE, manifest=REAL_MANIFEST)
+    assert warm["cached"] is True
+    assert {k: v for k, v in warm.items() if k != "cached"} == {
+        k: v for k, v in cold.items() if k != "cached"
+    }
+    for field in ("universe_merkle", "total_bars", "n_symbol_partitions"):
+        assert field in warm, f"a cache hit dropped {field} — the receipt would carry a stub"

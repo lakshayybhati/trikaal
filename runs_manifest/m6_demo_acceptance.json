@@ -1,6 +1,67 @@
 {
   "script": "scripts/m6_demo_acceptance.py",
-  "schema": "m6_demo_acceptance_v1",
+  "schema": "m6_demo_acceptance_v2",
+  "provenance": {
+    "environment": {
+      "image": "unavailable",
+      "git_commit": "f31a8e2e8f2962d0efd71c5e168d70f5b8fd9e65",
+      "steps_stage1": 26003,
+      "steps_stage2": 26003,
+      "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+      "gpu_name": "unavailable",
+      "cuda_build": "unavailable",
+      "driver_version": "unavailable",
+      "device": "cpu",
+      "torch": "2.12.1",
+      "numpy": "2.4.6",
+      "python": "3.11.7",
+      "python_executable": "/Users/lakshaybhati/Downloads/trikaal/.venv/bin/python",
+      "platform": "macOS-26.5.1-arm64-arm-64bit",
+      "platform_abi": "macOS-26.5.1-arm64-arm-64bit",
+      "attention_mode": "unknown",
+      "deterministic_algorithms": false,
+      "cudnn_deterministic": false,
+      "cudnn_benchmark": false
+    },
+    "written_at_utc": "2026-08-17T11:29:18+00:00",
+    "lake_root": "processed/universe_bars",
+    "lake_identity": {
+      "lake_root": "processed/universe_bars",
+      "manifest": "/Users/lakshaybhati/Downloads/trikaal/processed/universe/universe_manifest.json",
+      "n_symbol_partitions": 200,
+      "total_bars": 304625181,
+      "universe_merkle": "sha256:5dfd667d05b97bda5a35946433b96d40738df8a926d5fa8a8d9dfc924f5a04b7",
+      "cached": true
+    },
+    "units": {
+      "0": {
+        "dir": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0",
+        "tokenizer_hash": "sha256:93b78fccd94c76a151802f1c28fae230cde95370d8a69b8b99d423a064a4e288",
+        "predictor_hash": "sha256:8c8c85de842a0bd5e06670ce2e1bae1756a05eee6e8b5a76449775d84960d5e6",
+        "n_params_realized": 31725568
+      },
+      "2": {
+        "dir": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2",
+        "tokenizer_hash": "sha256:89f1558971b784d7d21bb3d168407f9f55cf0ea287324fb8f120f5194f279946",
+        "predictor_hash": "sha256:d8ed0be05e010eed60b495f79a85fc0d06c5cba4faef8cec4d371806a153bd91",
+        "n_params_realized": 31725568
+      },
+      "4": {
+        "dir": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4",
+        "tokenizer_hash": "sha256:5fb3df69b39e5feb3760a1af81f9e2ce68ad78f21886f1d5209c229c2af7ef61",
+        "predictor_hash": "sha256:aec256d1f8053552edcd8d2a0f69794909b7d03007fb90ae432c567b16a31ae6",
+        "n_params_realized": 31725568
+      }
+    },
+    "window": [
+      "2021-01-01",
+      "2025-01-01"
+    ],
+    "train_frac": 0.7,
+    "h": 15,
+    "seq_len": 512,
+    "arm": "ohlcv"
+  },
   "what_it_proves": "The demo's SINGLE-DECISION assembly lands on the same float64 bits as the PRODUCTION whole-symbol batched assembly. Not circular: the two paths share only predict_mu; window selection, decision indexing, arm transform and batching are built independently on each side, and those are where a demo actually drifts.",
   "comparison": "bit-for-bit float64 (.hex()), never allclose",
   "batch_composition_disclosure": "NON-GATING. mu-hat is NOT invariant to how many decisions are scored in one predict_mu call: the same decision batched with others differs from the same decision scored alone by ~1e-6 relative (float32 reduction order). The gate therefore matches batch composition and stays EXACT rather than adopting a tolerance. Recorded because it is a second instance of the invariant-7 class \u2014 everything deterministic, and the answer still moves \u2014 and because mu-hat feeds a SIGN decision, so a decision sitting within this margin of zero can flip. How many do is NOT measured here.",

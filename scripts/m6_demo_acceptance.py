@@ -33,6 +33,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -48,11 +49,13 @@ from trikaal.demo.inference import (  # noqa: E402
     LAKE_ROOT,
     PINNED_TRAIN_FRAC,
     PINNED_WINDOW,
+    UNIT_DIRS,
     ForecastBundle,
     available_seeds,
     forecast_at,
     load_unit,
     prepare_symbol,
+    verify_lake_identity,
 )
 from trikaal.eval.predict import predict_mu  # noqa: E402
 from trikaal.eval.xsection import (  # noqa: E402
@@ -64,6 +67,8 @@ from trikaal.eval.xsection import (  # noqa: E402
 from trikaal.run.matrix import load_symbol_arrays  # noqa: E402
 from trikaal.train.arms import select_arm  # noqa: E402
 from trikaal.train.token_stream import tokenize_features  # noqa: E402
+from trikaal.utils.paths import display_path  # noqa: E402
+from trikaal.utils.provenance import run_provenance  # noqa: E402
 
 
 def production_mu(symbol: str, decision_ms_list: list[int], unit, *, device: str = "cpu"):
@@ -239,9 +244,37 @@ def main() -> int:
             if not ok:
                 mismatches.append(rows[-1])
 
+    # ★ PROVENANCE, AND ITS ABSENCE WAS THE NEWEST RECEIPT COMMITTING THE PROJECT'S OLDEST
+    # DEFECT. This gate's own receipt carried no git SHA, no timestamp, no lake path and no
+    # checkpoint hashes — a bit-identity claim with nothing recording WHICH bytes it was made
+    # about. "9/9 bit-identical" is unfalsifiable without them: a reader cannot tell whether it
+    # was run against these weights, this lake, or this revision. The lake path is here for the
+    # specific historical reason that the demo once read the WRONG lake and this very gate agreed
+    # with itself about it (the shared-input rule) — so the source is now on the record, next to
+    # the identity that verify_lake_identity asserts.
     doc = {
         "script": "scripts/m6_demo_acceptance.py",
-        "schema": "m6_demo_acceptance_v1",
+        "schema": "m6_demo_acceptance_v2",
+        "provenance": {
+            "environment": run_provenance(device=args.device),
+            "written_at_utc": datetime.now(UTC).isoformat(timespec="seconds"),
+            "lake_root": str(LAKE_ROOT),
+            "lake_identity": verify_lake_identity(),
+            "units": {
+                str(s): {
+                    "dir": display_path(UNIT_DIRS[s], REPO),
+                    "tokenizer_hash": units[s].tokenizer_hash,
+                    "predictor_hash": units[s].predictor_hash,
+                    "n_params_realized": units[s].n_params_realized,
+                }
+                for s in seeds
+            },
+            "window": list(PINNED_WINDOW),
+            "train_frac": PINNED_TRAIN_FRAC,
+            "h": DEMO_H,
+            "seq_len": DEMO_SEQ_LEN,
+            "arm": DEMO_ARM,
+        },
         "what_it_proves": (
             "The demo's SINGLE-DECISION assembly lands on the same float64 bits as the "
             "PRODUCTION whole-symbol batched assembly. Not circular: the two paths share only "

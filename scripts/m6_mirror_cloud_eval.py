@@ -31,6 +31,10 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO / "src"))
+
+from trikaal.utils.paths import display_path  # noqa: E402
+
 OUT = REPO / "runs_manifest" / "m6_cell1_eval_mirror.json"
 
 # The three scored cell-1 units. Cell 1 = BSQ + OHLCV-only, the only arm with scored artifacts.
@@ -128,7 +132,7 @@ def main() -> int:
 
     if args.check:
         if not OUT.exists():
-            print(f"MIRROR ABSENT: {OUT.relative_to(REPO)}", file=sys.stderr)
+            print(f"MIRROR ABSENT: {display_path(OUT, REPO)}", file=sys.stderr)
             return 2
         old = json.loads(OUT.read_text())
         # git_head moves every commit and is provenance, not content — compare everything else.
@@ -146,7 +150,7 @@ def main() -> int:
             f"  {name:16s} total {p['n_params_realized_total']:,}  mtp {p['n_params_mtp']:,}  "
             f"backbone {p['n_params_backbone_excluding_mtp']:,}"
         )
-    print(f"\nMirror: {OUT.relative_to(REPO)}  ({len(text):,} bytes)")
+    print(f"\nMirror: {display_path(OUT, REPO)}  ({len(text):,} bytes)")
     return 0
 
 

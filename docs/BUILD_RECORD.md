@@ -1279,3 +1279,174 @@ Registered as C8.
 *End of record. Reconstructed 2026-08-05 at `7bd6083`. Every numeric claim above is traceable to a
 commit, a milestone document, a receipt under `runs_manifest/`, or a line of source; statements
 without such backing carry `[recollection — no artifact]`.*
+
+---
+
+# 9. Pre-publication audit remediation — 2026-08-17
+
+An independent auditor completed a full pre-publication audit and returned **PUBLISH WITH NAMED
+CHANGES**. It praised the measurement layer specifically — the Gate-A anchor re-run end to end and
+reproduced bit-for-bit with zero git diff on the tracked manifest, 864 tests with no xfails and no
+unconditional skips, five gates attacked and all five biting, the codebook gate re-killed in a
+throwaway worktree, all six pinned parameter counts recomputed exact, ~90 paper values traced to
+the digit, the demo acceptance gate 9/9 and `demo/index.html` rebuilding byte-identical. **Every
+defect it found was text, figures or repository hygiene. None needed a GPU-hour.**
+
+What follows is what was changed, what was refused, and what was routed. Items under `paper/` are
+the writer's and are reported rather than edited.
+
+## 9.1 — The paper's sole §6.6 artifact was never committed
+
+`runs_manifest/m6_lambda_sweep.json` is the only artifact behind §6.6, the once-only λ
+re-derivation. Not gitignored — never added. A fresh clone could not verify the subsection, every
+local check passed, and nothing in the repository could tell the difference. **This is the
+pre-declaration defect repeating, in a new costume: an artifact whose existence is asserted rather
+than checked.**
+
+The commit is the instance. The fix is `tests/test_paper_artifact_citations.py`, which sweeps every
+`% artifact:` citation under `paper/` and requires each path to EXIST and to be TRACKED. "Tracked"
+is the operative word: "exists on the builder's disk" is precisely the state that makes an
+unverifiable claim look verified, and it is the only place the two predicates disagreed. Run
+against the pre-fix tree it reproduced the auditor's finding independently and named exactly one
+file; it was also watched failing against a synthetic paper citing a ghost receipt and a
+present-but-uncommitted one, so it cannot pass by doing nothing.
+
+`runs_cloud/` and `processed/` are gitignored by design and are allow-listed — but each allow-list
+entry must name a **tracked mirror**, asserted in the same file, so the exception cannot grow into
+a hole. Eleven other untracked load-bearing files landed with it, disposition COMMITTED in every
+case.
+
+## 9.2 — Clause 2 shipped the superseded MDE formula
+
+`verdict.py`'s clause-2 rule string read `MDE_paired = (z0.95+z0.80)·SE_boot` — the pre-v1.5
+recipe — while `paired_bootstrap` computed t-quantiles at the Welch–Satterthwaite ν over SE_total,
+the signed-off v1.5 item-B amendment. The string ships inside every emitted verdict manifest. No
+manifest was ever emitted, so nothing false reached a reader; the string was in the released
+artifact and asserted a recipe the code does not run.
+
+**This is the class rule failing two lines from where it is written down.** Clause 5's own comment
+says *"a rule string that cannot disagree with the recipe is the fix"*, and clause 5 was rebuilt
+from its pins. Clause 2's formula half was left restated. Sweeping the class found a **third**
+site the audit did not name: `paired_bootstrap`'s module docstring stated the z form as the rule,
+directly above the code computing the t form.
+
+The fix is structural. `mde_terms()` is the single site deciding the recipe; both the number and
+the prose read it. The string carries the multiplier and the SE it multiplies at 12 significant
+figures in a pinned `:: A x B = C` tail, and `tests/eval/test_mde_rule_string.py` parses them back
+out and requires `A·B == C == mde_paired`. Verified a bit-exact no-op: 18 configurations × 9 float
+fields, `.hex()` equality against the pre-change module, with a control proving the comparison can
+report a difference.
+
+**Routed, not edited:** `docs/m6_prereg.md:75` states clause 2 in the same superseded form.
+`runs_manifest/m6_toy_verdict_manifest.json` carries the stale string as a record of what was
+actually emitted at the time; regenerating it would falsify the record, so it stands and is
+disclosed. `scripts/m6_prereg.py:15` uses z correctly — a different quantity (the tabled temporal
+MDE).
+
+## 9.3 — The release the paper promises did not exist
+
+No `LICENSE`, no model card, no weights manifest, no release path of any kind — while §8.9 promises
+"the trained weights" and the M8 gate requires Apache-2.0. "Specified but not enforced", at the
+release boundary.
+
+`LICENSE` (Apache-2.0, extracted from a vendored copy and diffed word-for-word against a second
+independent copy, 11,358 bytes = the canonical length); `docs/MODEL_CARD.md`, which leads with what
+the weights are **NOT**, because that gap is the result; `runs_manifest/m6_weights_release.json`
+with per-file SHA-256, roles, and parameter arithmetic **recomputed from the tensors** (31,725,568 /
+10,493,952 / 21,231,616), `--verify` re-hashing and refusing on drift. Deliberately **not** an
+uploader: the HuggingFace push stays an operator action.
+
+`runs_manifest/m6_cell1_eval_mirror.json` mirrors the `runs_cloud/` artifacts §7.5 and §7.10 cite,
+verbatim including `headline_series` — a summary would leave a reader able to read our information
+ratios and unable to recompute them. §7.5's activity figures reproduce to the digit off the mirror.
+
+## 9.4 — ★ Three false external-validation claims neither audit named
+
+`docs/ROADMAP.md` asserted in **four places** that Cell 1 is *"externally validated against
+published Kronos-small"*, that *"the public weights appear only inside the eval harness as a
+validation target"*, and that the metric cross-check was *"deferred to M6 (weights load there
+anyway)"*. **No Kronos weights were ever pulled and none ever will be.** The gate was dropped as
+binding on 2026-08-03; `external_validation.GATE_IS_BINDING = False`. CLAUDE.md has called that
+wording *"a false statement of what validation we performed"* for two weeks — in the file every
+session reads first — and the roadmap, which is the file a newcomer reads second, kept saying it.
+Corrected at all four sites, plus `docs/m6_design.md`'s cell table and the two occurrences in the
+blueprint spec (annotated rather than rewritten: the spec records what was SPECIFIED).
+
+The lesson is not "the roadmap was stale". It is that **a correction applied to the canonical
+statement of an invariant does not propagate to the documents that restate it**, and nothing in the
+repository was looking.
+
+## 9.5 — The verification tooling was the least verified code in the project
+
+The tooling rule, sixth instance, and the auditor found it rather than the builder.
+
+**`m6_verify_extracted_facts.py` carried four false-pass vectors underneath a green mutation
+control.** The control proved the checker could refute a *wrong* value; it never asked whether the
+checker declines an *undecidable* one. All four were demonstrated live against the shipped code and
+all four returned CONFIRMED: a claim and its own negation confirming each other via bidirectional
+substring containment (`"supported"` inside `"premise NOT supported"`); `"true"` inside `"untrue"`;
+a multi-number claim confirming against **the number it was contrasting with**; and a claim's number
+appearing anywhere inside a container — unconditional in a 35,000-element series. `_values_agree`
+now returns three values rather than two, because the missing one was "I cannot decide".
+
+**The confirmation rate fell from 424 to 147 of 626.** That is a property of the checker, not of the
+facts: quarantine says the tool never had grounds, not that the fact is wrong. The receipt carries
+the superseded totals and a `READ_THIS_FIRST` so a count cannot be quoted without them. The tool was
+also **not re-runnable at all** — its documented input was a session scratch file that no longer
+exists — so the input is now reconstructed from the receipt's own rows and committed beside it.
+
+**`m6_receipt_provenance_sweep.py` had two independent vectors, and I had the causal story
+backwards on the second.** Prose washing is real and measured: 6,701 of a 17,058-token vocabulary
+entered only via docstrings and sentence-shaped literals, 39% of the evidence the tool weighs. But
+that is **not** why `m6_demo_seed_sign_disagreement.json` — committed with no producer anywhere in
+the repository — passed. I asserted washing, then measured it: excluding prose moves that receipt
+from 11 to 14 untraceable key paths and still would not flag it. The real reason is that the
+detector is **block-shaped**, needing a nested object of ≥3 keys before it says anything, and that
+receipt is flat top-level scalars plus one list. Both are fixed; `hand_authored_flat` is new.
+**Closing one vector while believing it was the other is the failure this entry exists to record.**
+Flagged receipts move 4/78 → 16/98, the correct direction for a tool that was under-reporting.
+
+The missing producer is landed as `scripts/m6_demo_seed_sign_disagreement.py`, and its `--check`
+reproduces the committed receipt.
+
+## 9.6 — The demo's lake pin was doing less work than it looked like
+
+`LAKE_ROOT` fixed **where** we read, after the shared-input defect. Nothing asserted **what** we
+read: the only check was a fail-loud "no bars", which fires for an absent symbol and stays silent
+for a wrong lake at the right path — so the acceptance gate would have agreed with itself again,
+for exactly the same reason as the first time. `verify_lake_identity` pins 200 symbols /
+304,625,181 bars / Merkle `5dfd667d` in tracked code and cross-checks the partition tree against
+the lake's own manifest, so neither is trusted alone. Filesystem only: the equivalent SQL takes
+16 s — as long as a whole forecast — and a check that has to be skipped in the interactive path is
+not a check. Five negative cases prove it bites.
+
+## 9.7 — Appendix D's pins are transcribed, and now they are checked
+
+`appendix_repro.tex` states its values are *"imported live … none is transcribed"*. No generator
+exists; they are hand-typed, and they are all currently correct. Rather than write into `paper/`,
+`tests/test_paper_pins.py` reads the table and asserts every printed pin equals its live constant —
+which makes the claim operationally true, since a drifted pin now fails CI. The header's wording is
+the writer's to keep or soften.
+
+## 9.8 — Reported, not edited (`paper/**` is the writer's)
+
+- `make_fig8_10_stubs.py` documents a `--real <verdict-manifest.json>` flag and Appendix F.5
+  describes the swap. The script has **no argv handling at all**. "Specified but not enforced", in
+  released figure tooling.
+- Figures 4, 8, 9 and 10 say "awaiting the run", and fig 8's caption says the run "has not been
+  executed". Under item E's final disposition **nothing is awaited** — the honest text is "the gate
+  fired; never run".
+- `main_full.txt` and the `review_s3–s7.pdf` exports predate the gate firing and still carry the
+  superseded "21,301,248-parameter measurement instrument" and the 0.327% gap.
+
+## 9.9 — Verification performed for this pass
+
+`ruff check src tests scripts docs` exit 0; `ruff format --check` exit 0. **Repository-wide
+`ruff check .` is exit 1**, on two errors in `paper/figures/make_fig1_architecture.py` (E501) and
+`make_fig4_legibility.py` (F401) — the writer's files, being edited in parallel, deliberately not
+touched. Gate-A anchor re-run twice after the `verdict.py` change: exit 0 both times,
+`results_hash sha256:3f86882a63dd06c7…` both times.
+
+*The first attempt to compare the two anchor runs reported a difference. It was comparing whole
+stdout, which includes wall-clock timings. The instrument was wrong and the work was right — the
+tooling rule, again, in the same session that fixed three other instruments.*
