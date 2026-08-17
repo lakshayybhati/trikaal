@@ -117,13 +117,18 @@ reconstruction-trained tokenizer, built and explicitly weighted to carry the mic
 does not make it recoverable from each bar's own token.
 
 \textbf{And the failure is informative about where, which we did not anticipate.} The per-dimension
-receipt localizes it: the shortfall is concentrated in the two signed channels, trade-flow imbalance
-and signed count imbalance, while the four magnitude channels essentially pass. Under the placebo
-shuffle the signed channels collapse toward their base rates while the magnitude channels hold.
+receipt localizes it: $97.3\%$ of the shortfall falls on the two signed channels, trade-flow
+imbalance and signed count imbalance, while two of the four magnitude channels clear the gate and
+two miss it by $0.0025$ and $0.0038$. Under the placebo shuffle the signed channels collapse toward
+their base rates while the magnitude channels hold.
 \textbf{The tokenizer preserves the microstructure that duplicates what OHLCV already carries and
-loses the microstructure that is independent of it.} That is the mechanism of \cref{sec:mechanism}
---- allocation by variance and covariance, never by independence --- observed on real market data,
-with the evicted features named rather than inferred. It is also, precisely, the channel that
+loses the microstructure that is independent of it.} That pattern is what the mechanism of
+\cref{sec:mechanism} predicts, and the prediction was made before the gate ran. \textbf{What is
+observed on real data is the consequence --- which channels survive and which do not, with the
+evicted features named rather than inferred. That reconstruction is what allocates capacity is
+carried over from the fixture by argument, not established by an intervention on market data}
+(\cref{sec:lim-fixture}); \cref{sec:res-ceiling} sets out how far the real-data evidence goes
+against a pure capacity explanation, and where it stops. It is also, precisely, the channel that
 invariant 1 scopes this study's claim to.
 
 The claim ends there, and four limits bind it. It does \emph{not} establish that no tokenizer can:
@@ -168,6 +173,8 @@ cell 4, seed mean & $\lambda = 5$ & $\lambda = 8$ & $\lambda = 12$ \\
 OHLCV reconstruction MAE & 0.12814 & 0.12678 & 0.12530 \\
 \bottomrule
 \end{tabular}
+
+\vspace{0.45em}
 \emph{Table note, which travels with these numbers wherever they are quoted: \textbf{these
 configurations are not comparable to the gate-firing run.} They were trained with the last tenth of
 the training region held out; the run of \cref{sec:res-gate} was not. \textbf{No difference between
@@ -178,7 +185,9 @@ which is what makes the sweep readable at all.}
 %   disposition}; configs.lambda<L>_seed<S>_cell<C>.{per_dim.<dim>.sign_acc, ohlcv_recon_mae};
 %   NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN carried as a required field. 18 configs, 0 clearing.
 
-Three readings follow, and each strengthens the primary finding rather than competing with it.
+Three readings follow. Two of them raise an objection to the primary finding before they support
+it, and we take that objection first rather than after, because it is the strongest one available
+against this paper.
 
 \textbf{The knob does not reach the failing channel.} Across a $2.4\times$ increase in the class
 weight, the worst dimension moves by $+0.0079$ --- leaving $0.1781$ of the gap to the threshold
@@ -200,6 +209,59 @@ fourth moves $+0.0025$. On cell 5, whose shuffled block starts far lower --- tra
 at $0.7387$ against cell 4's $0.8268$ --- there is room, and \emph{all six} dimensions rise, the
 two signed ones by $+0.0405$ and $+0.0248$. The internal trade-off appears exactly where there is
 no headroom and vanishes where there is. Neither arm takes anything from price.
+
+\subsection{Is this a capacity ceiling rather than an allocation?}
+\label{sec:res-ceiling}
+
+The two readings above invite a serious objection, and it is the one we would raise. If the class
+weight barely moves trade-flow imbalance and costs the price channels nothing, then nothing is
+being \emph{traded off} --- and a story with no trade-off in it is a story about a \textbf{ceiling},
+not about \textbf{allocation}. The bit arithmetic of \cref{sec:mech-claim} sharpens it further:
+six microstructure dimensions at $0.90$ sign accuracy need on the order of ten bits, which is
+approximately the entire fine-subtoken budget. On that reading the real-data failure is
+over-determined by arithmetic alone and needs no allocation mechanism at all.
+
+\textbf{We think the objection is right about capacity and wrong that it is the whole story, and
+the evidence that separates them is already in \cref{sec:res-gate}.} Three observations, in
+increasing order of force.
+
+\textbf{First, a ceiling predicts a uniform shortfall and ours is sharply selective.} A budget
+constraint does not know which dimensions are signed. If thirteen dimensions cannot fit at $0.90$,
+the deficit should be spread across them. Instead $97.3\%$ of cell 4's total shortfall falls in two
+of six microstructure dimensions; two of the remaining four clear the threshold outright and two
+miss it by $0.0025$ and $0.0038$. That distribution is not what running out of room looks like.
+
+\textbf{Second, the placebo holds capacity fixed and changes only structure --- and the outcome
+moves.} Cell 5 has the same bits per token, the same six dimensions, the same budget and the same
+architecture as cell 4. The only difference is that its microstructure block is shuffled against
+price, which destroys the block's covariance with price and its own serial structure while leaving
+its marginal distributions intact. If the result were a ceiling, that shuffle should change nothing:
+the capacity is identical. It changes a great deal, and \emph{selectively} --- the two signed
+channels collapse from $0.8223$ and $0.7528$ to $0.6135$ and $0.5896$, while the four magnitude
+channels hold, the largest of them losing $0.0635$. \textbf{A comparison in which capacity is held
+constant cannot have its differential explained by capacity.} What the survivors have and the
+evicted channels lack is covariance with the price channels the objective already reconstructs.
+
+\textbf{Third, the channel is absent rather than merely hard to read per bar.} On the fixture, the
+failure mode was that state was encoded but smeared across the window, so a per-bar probe missed
+what a windowed probe could find. That escape does not apply here. Reading trade-flow imbalance from
+the whole $512$-bar window rather than from bar $t$'s own token, with the same estimator and split
+and $19$ log-spaced lags out to $511$, moves sign accuracy from $0.8399$ to $0.8385$ --- a change of
+$-0.0014$. The window recovers \emph{nothing}. The signed channel is not hidden in the token
+stream; at this budget it is not in it.
+% artifact: runs_manifest/m6_window_context_probe.json :: arms.cell4_micro.7.{lag0_sign_acc
+%   0.8399, windowed_sign_acc 0.8385, delta_windowed_minus_lag0 -0.0014}; dim 8 0.7516 -> 0.7562;
+%   basis_is_restricted.lags = 19 log-spaced lags to 511, n_features_per_bar 53; sampling.n_rows
+%   150,000 over 10 symbols, the gate's own estimator, split and seed. The restricted basis can
+%   only UNDER-state recoverability, so the null is conservative.
+
+\textbf{The honest reading is that both are true, and stating both is stronger than choosing.}
+Capacity sets the \emph{size} of the loss: not all thirteen dimensions fit at this budget, and
+\cref{sec:mech-claim}'s arithmetic says so. Allocation determines its \emph{address}: which two of
+the six were given up, and why those two. Neither claim does the other's work. What this study adds
+is the second --- that the objective spends its bits on the microstructure that co-varies with price
+and abandons the microstructure that does not --- and the placebo is what licenses it, because the
+placebo is the one comparison in the design where capacity is constant and structure is not.
 
 \textbf{The placebo turns out to be an eviction experiment in its own right.} The shuffled arm's
 microstructure block is, by construction, independent of its own bar's price. Comparing the two

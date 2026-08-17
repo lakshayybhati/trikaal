@@ -216,6 +216,74 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.41 (2026-08-17, ★★ THE CEILING-VS-ALLOCATION OBJECTION IS VALID AND IS NOW CONFRONTED
+  WHERE IT ARISES — AND THE ABSTRACT WAS ATTRIBUTING THE GATE'S FIRING TO 200 INSTRUMENTS WHEN THE
+  PROBE SAMPLED 40.)**
+  - **★ THE RULING ON ITEM 1, WHICH IS THE ONLY ITEM THAT CHANGES WHAT THE PAPER CLAIMS.** A
+    reader-reviewer objected that §6.4's readings — the class weight barely moves TFI and costs
+    OHLCV nothing — describe a **CEILING**, not an **ALLOCATION**, since nothing is traded off; and
+    that §3.1's own bit arithmetic may over-determine the real-data failure without any allocation
+    story. **I accept the objection as valid, reject that it is the whole story, and adopt the
+    both-framing.** New §6.5 makes the argument where the objection arises instead of labelling the
+    readings "strengthens the primary finding" and moving on.
+  - **THE THREE-STEP ARGUMENT, EACH STEP VERIFIED AT ENTRY-TIME.**
+    (1) **A ceiling predicts a UNIFORM shortfall; ours is selective.** 97.3% of cell 4's shortfall
+    is in two of six dims — recomputed from the stop receipt and reproduced exactly (my own first
+    subtraction was wrong; the paper's figure is right). A budget constraint does not know which
+    dimensions are signed.
+    (2) **The placebo holds capacity CONSTANT and changes only structure.** Cell 5 has the same
+    bits, dims, budget and architecture; only the covariance with price and the block's own serial
+    structure are destroyed. Signed dims collapse 0.8223→0.6135 and 0.7528→0.5896 while the four
+    magnitude dims hold. **A comparison in which capacity is held constant cannot have its
+    differential explained by capacity.** This is the discriminator and it is measured on real data.
+    (3) **The channel is ABSENT, not merely per-bar illegible.** The fixture's escape — state
+    encoded but smeared across the window — does not apply here.
+  - **★ AND THE DECISIVE NUMBER WAS ALREADY MEASURED AND ABSENT FROM THE PAPER.**
+    `runs_manifest/m6_window_context_probe.json`: reading TFI from the whole 512-bar window rather
+    than bar *t*'s token moves sign accuracy **0.8399 → 0.8385, Δ = −0.0014**, across 19 log-spaced
+    lags to 511 with the gate's own estimator, split and seed. **The window recovers NOTHING.** The
+    reviewer named this as the sharpest question a referee will ask (~0.95 → the fixture's story;
+    ~0.82 → the tokenizer cannot encode the channel at this budget) and the answer is the second.
+    Its restricted basis can only UNDER-state recoverability, so the null is conservative.
+  - **ITEM 2, A LOGICAL OVERCLAIM, CORRECTED IN THE ABSTRACT AND §3.6.** "Each was necessary; none
+    was sufficient alone" is not what a CUMULATIVE ladder establishes. (i), (i)+(ii), (i)+(ii)+(iii)
+    establishes **insufficiency of the prefixes and sufficiency of the triple** — necessity of (i)
+    or (ii) needs each REMOVED from the final triple, which was never done. Only (iii) has that
+    evidence. The claim is weakened to what the ladder supports rather than the leave-one-out being
+    run, and the abstract's "necessary and not sufficient" becomes "not sufficient".
+  - **ITEM 3, THE HIGHEST VALUE PER WORD AND THE REVIEWER IS RIGHT.** §3.2 presents Figure 2 as
+    measuring "the tokenizer" and a reader takes that as the ORIGINAL contextual design; it was
+    produced by a tokenizer that ALREADY carries interventions (i) and (ii), which do not exist in
+    the reader's world for another three pages. One sentence at the head of §3.2 now says so, and
+    says the original fails the same test MORE severely, not less.
+  - **★★ ITEM 4 CONTAINED ONE DEFECT WORSE THAN THE REVIEWER GRADED IT, IN THE MOST-QUOTED SENTENCE
+    OF THE PAPER.** It flagged "the scored universe is 40 instruments, not 200" as a buried lead.
+    It is not buried, it is **misattributed**: the abstract read *"On 304,625,181 one-minute bars
+    across 200 instruments, that gate fired"*, and the gate's probe measured **150,000 rows across
+    40 symbols** (`n_symbols_in_sample = 40`, both arms). The lake is the training draw; the probe
+    is not the lake. Now: *"Trained on ... 200 instruments and probed on 150,000 decisions drawn
+    from 40, that gate fired."* **Neither audit caught this.**
+  - **THE REST OF ITEM 4, ALL VERIFIED BEFORE FIXING.** Figure 3's caption described a **different
+    figure** — "nats of validation cross-entropy ... dashed rule marking the information planted"
+    against a generator that draws **probe correlation with a 0.30 detection threshold**; corrected
+    to what is plotted, with the nats named as receipt values quoted beside it. **β was never
+    defined** anywhere (`(λ, β)` at §3.6) — now defined as the weight on the bottleneck leg's own
+    reconstruction term. **§3.2 contradicted itself in one paragraph** — "every dimension is
+    marginally standard normal" against "the return carries 3.15× the marginal sd of the rest";
+    the twelve compared dims are matched, the thirteenth return dim is deliberately not, and that
+    is the point. **"The four magnitude channels essentially pass"** hid that two of four fail the
+    letter of the gate; the abstract now prints 0.0025 and 0.0038. **§6.3 and §7.1 disagreed** —
+    "observed on real market data" against "carried over by argument"; §6.3 now separates the
+    CONSEQUENCE (observed) from the CAUSAL claim (carried over), and points at §6.5.
+    **The λ table's note rendered to the RIGHT of the table** rather than beneath it; fixed and
+    confirmed by rendering.
+  - **HELD, NOT REFUSED: items 5, 6 and 7** — the audit-voice diagnosis, the ~14-page cut list, and
+    promoting the signed-vs-magnitude split to the headline. The supervisor's instruction was to
+    read the full review before acting and it has not arrived; these three are restructuring
+    decisions whose whole value is in the reviewer's detail, and acting on a relay would be the
+    thing this project exists not to do. **The one-line widow is deferred with them**, since the
+    document re-flows wholesale under any cut.
+
 - **v1.6.40 (2026-08-17, THREE NEW FIGURES, ALL RECEIPT-BACKED — AND THE FIGURE CHECKER I BUILT
   TO CATCH CHECKS-THAT-CANNOT-FAIL WAS ITSELF ONE, FOR EVERY TITLE IN THE PAPER.)**
   - **THE NON-NEGOTIABLE HELD: every quantity in every new figure loads from a named receipt at

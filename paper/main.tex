@@ -90,18 +90,20 @@ $0.001$--$0.014$ for the one independent dimension --- and a signal worth $1.151
 feature space is not recovered at all, while $0.900$ nats planted directly in token space is
 recovered by the identical backbone at $94.4\%$, localizing the loss to the tokenizer--backbone
 interface. We re-specify that interface so the fine subtoken is a per-bar encoding of the current
-bar. \textbf{That change alone is necessary and not sufficient}: it leaves per-bar legibility at
+bar. \textbf{That change alone is not sufficient}: it leaves per-bar legibility at
 chance on the fixture --- $0.4995$--$0.5182$ across three seeds against a before-value of
 $0.5112$ --- and only a microstructure class weight, fitted on that same fixture and introduced in
 response to that failure, carries it to a seed mean of $0.9047$ whose minimum is $0.8839$, at
 unchanged bits per token. We convert that property into a pre-registered hard stop on real data.
-\textbf{On $304{,}625{,}181$ one-minute bars across $200$ instruments, that gate fired.} The
+\textbf{Trained on $304{,}625{,}181$ one-minute bars across $200$ instruments and probed on
+$150{,}000$ decisions drawn from $40$, that gate fired.} The
 re-specified tokenizer does not make microstructure per-bar legible on real market data, and the
 failure localizes: $97.3\%$ of the shortfall falls on trade-flow imbalance and signed count
-imbalance --- the two \emph{signed} channels --- while the four magnitude channels essentially
-pass, and under a shuffled-microstructure placebo the signed channels collapse toward their base
-rates while the magnitude channels hold. \textbf{The tokenizer preserves the microstructure that
-duplicates what price already carries and loses the microstructure that is independent of it.}
+imbalance --- the two \emph{signed} channels --- while two of the four magnitude channels clear the
+gate outright and the other two miss it by $0.0025$ and $0.0038$. Under a shuffled-microstructure
+placebo the signed channels collapse toward their base rates while the magnitude channels hold.
+\textbf{The tokenizer preserves the microstructure that duplicates what price already carries and
+loses the microstructure that is independent of it.}
 A firing was pre-registered as the modal prediction of the mechanism and as the event that makes
 the mechanism the primary result; the five-cell ablation it gates was therefore never run, and this
 paper reports no ablation outcome --- no cost-aware net information ratio, no null and no verdict.

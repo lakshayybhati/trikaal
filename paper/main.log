@@ -895,17 +895,17 @@ Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 9.0pt
  -> TeXGyreTermesX-Bold.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
-(Font)              scaled to size 9.0pt on input line 101.
+(Font)              scaled to size 9.0pt on input line 102.
 Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
 +tnum;+lnum;mapping=tex-text;" at 9.0pt
  -> TeXGyreTermesX-Italic.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 12.0pt on input line 157.
+(Font)              scaled to size 12.0pt on input line 159.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/n' will be
-(Font)              scaled to size 12.0pt on input line 157.
+(Font)              scaled to size 12.0pt on input line 159.
 Requested font "[TeXGyreTermesX-Bold.otf]/OT:script=latn;language=dflt;-ss05;+t
 num;+lnum;mapping=tex-text;" at 12.0pt
  -> TeXGyreTermesX-Bold.otf
@@ -956,32 +956,32 @@ Requested font "ntx-Bold-tlf-ot1" at 10.0pt
  -> ntx-Bold-tlf-ot1
  [7]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 7.3pt on input line 186.
+(Font)              scaled to size 7.3pt on input line 197.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 7.3pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 5.5pt on input line 186.
+(Font)              scaled to size 5.5pt on input line 197.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 5.5pt
  -> TeXGyreTermesX-Regular.otf
  [8]
 File: figures/fig3_extraction.pdf Graphic file (type pdf)
 <use figures/fig3_extraction.pdf>
- [9]
+ [9] [10]
 File: figures/fig4_legibility.pdf Graphic file (type pdf)
 <use figures/fig4_legibility.pdf>
- [10] [11])
+) [11]
 (sections/04_design [12] [13]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/sc' will be
 (Font)              scaled to size 10.0pt on input line 187.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;+smcp;+pcap;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-Regular.otf
- [14] [15]) (sections/04_figures
+ [14] [15] [16]) (sections/04_figures
 File: figures/fig5_design.pdf Graphic file (type pdf)
 <use figures/fig5_design.pdf>
- [16] [17]
+ [17]
 File: figures/fig6_validation.pdf Graphic file (type pdf)
 <use figures/fig6_validation.pdf>
 )
@@ -1008,15 +1008,15 @@ File: figures/fig7_coverage.pdf Graphic file (type pdf)
 
 ]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
-(Font)              scaled to size 10.0pt on input line 152.
+(Font)              scaled to size 10.0pt on input line 157.
 Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
 s05;+tnum;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-BoldItalic.otf
- [24])
+ [24] [25])
 (sections/06_figures
 File: figures/fig8_verdict.pdf Graphic file (type pdf)
 <use figures/fig8_verdict.pdf>
- [25] [26]
+ [26]
 File: figures/fig9_cost_stress.pdf Graphic file (type pdf)
 <use figures/fig9_cost_stress.pdf>
  [27]
@@ -1026,8 +1026,8 @@ File: figures/fig10_seed_stability.pdf Graphic file (type pdf)
 
 
 
-]
-[30] [31]
+] [30]
+[31]
 File: figures/fig11_economics.pdf Graphic file (type pdf)
 <use figures/fig11_economics.pdf>
  [32]
@@ -1211,7 +1211,7 @@ ermesX(0)/m/n/10 The
  []
 
 [50] [51])
-Overfull \hbox (72.80508pt too wide) in paragraph at lines 159--259
+Overfull \hbox (72.80508pt too wide) in paragraph at lines 159--261
 \TU/TeXGyreTermesX(0)/m/n/10 this appendix; \TU/lmtt/m/n/10 main.tex \TU/TeXGyr
 eTermesX(0)/m/n/10 keeps it and remains the internal read-through build. \TU/lm
 tt/m/n/10 paper/check_submission_build.py
@@ -1219,6 +1219,6 @@ tt/m/n/10 paper/check_submission_build.py
 
 [52] [53] (main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 2223F862F078BA442F225BBBE8C4D38C;17498.
+(rerunfilecheck)             Checksum: 0FDEC8A3EC2AAD38F7BF3B0BD5173C11;17845.
  )
-Output written on main.xdv (53 pages, 1828520 bytes).
+Output written on main.xdv (53 pages, 1884284 bytes).

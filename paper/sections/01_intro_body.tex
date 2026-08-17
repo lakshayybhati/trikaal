@@ -47,7 +47,7 @@ The original design produces both halves of each token from one contextual encod
 state is smeared across the tokens of every later bar in the window --- the window reconstructs
 while the per-bar symbol carries almost nothing. Making the fine half a function of the current bar
 alone leaves per-bar legibility at chance --- $0.4995$ to $0.5182$ across three seeds, against a
-baseline of $0.5112$ --- so the interface change is necessary and not sufficient. Adding an
+baseline of $0.5112$ --- so the interface change is not sufficient on its own. Adding an
 objective that weights the microstructure block as a class, with a weight fitted on that same
 fixture, carries it to a seed mean of $0.9047$ at unchanged bits per token and recovers the signal
 that was previously lost. Which half of that pair did the work matters later, and we keep them

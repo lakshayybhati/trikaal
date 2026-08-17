@@ -90,11 +90,22 @@ emergent one.
 \subsection{Measuring the eviction}
 \label{sec:mech-measure}
 
+\textbf{One point of order before the measurement, because this section is easy to read as
+describing the tokenizer introduced at the start of \cref{sec:mechanism}.} The reconstruction
+results below were produced by a tokenizer that already carries interventions (i) and (ii) of
+\cref{sec:mech-fix} --- the per-bar fine encoder and the bottleneck leg --- which are not
+introduced until three pages from here. They are present because the eviction they expose survives
+them; the original contextual design fails the same test more severely, not less.
+
 To measure the claim we need a fixture in which one dimension differs from the others in exactly
 the property the claim names, and in nothing else. We construct a synthetic bar stream in which
-every dimension is marginally standard normal --- so all of them contribute equally to a
-variance-weighted loss --- and then make eleven of them mutually dependent while one, the
-\emph{signal} dimension, is independent of everything.
+the twelve dimensions that carry the comparison are marginally standard normal --- so all twelve
+contribute equally to a variance-weighted loss --- and then make eleven of them mutually dependent
+while one, the \emph{signal} dimension, is independent of everything. A thirteenth, the
+\emph{return} dimension, is deliberately \emph{not} standard normal: it carries $3.15\times$ the
+marginal standard deviation of the rest and stands in for price. Matching the twelve is what
+isolates dependence from variance; giving the return a larger scale is what supplies the
+high-variance channel the mechanism is about.
 
 The dependence is not chosen for convenience; it is calibrated to the real data. On $30$ symbols
 and $3{,}895{,}808$ unmasked bars, the Gaussian-copula correlation log-determinant over the seven
@@ -255,11 +266,12 @@ interface.
   \centering
   \includegraphics[width=\textwidth]{figures/fig3_extraction.pdf}
   \caption{\textbf{The same backbone extracts nearly everything from token space and nothing from
-  feature space.} Nats of validation cross-entropy recovered against training step, measured
-  against a matched reference run, with the dashed rule in each panel marking the information
-  actually planted. \textbf{Left:} $1.151$ nats planted in feature space, where it must survive
-  tokenization --- the curve never leaves zero, and the forecast--state probe stays below $0.05$ at
-  all $40$ evaluation points. \textbf{Centre:} $0.9003$ nats planted directly in token space,
+  feature space.} \emph{Plotted:} the forecast--state probe correlation against training step, with
+  the dashed rule in each panel marking the pre-registered detection threshold of $0.30$. The nats
+  quoted below each panel are the planted and recovered information for the same runs, read from
+  their receipts rather than from the curve. \textbf{Left:} $1.151$ nats planted in feature space,
+  where it must survive tokenization --- the probe never leaves zero, staying below $0.05$ at all
+  $40$ evaluation points. \textbf{Centre:} $0.9003$ nats planted directly in token space,
   bypassing the tokenizer --- the identical backbone at the identical budget recovers $0.8496$
   nats, $94.4\%$ of what was planted, crossing the detection threshold at step $2{,}000$.
   \textbf{Right:} the original feature-space plant, after the tokenizer interface is re-specified
@@ -302,8 +314,14 @@ for usability: it removes the leak forward and leaves the smear backward.
 \label{sec:mech-fix}
 
 If capacity is allocated by an objective that cannot see per-bar legibility, the remedy is to give
-the objective a term that can. We make three changes. Each was necessary; none was sufficient
-alone, and we report the intermediate failures because they are what establishes that.
+the objective a term that can. We make three changes, and we state precisely what the evidence
+about them supports. They were introduced \emph{cumulatively} --- (i), then (i)+(ii), then
+(i)+(ii)+(iii) --- so the ladder establishes that no \emph{prefix} of the three suffices and that
+the full triple does. It does not establish that (i) or (ii) is necessary, because neither was
+removed from the final triple; only (iii) has that evidence, being inert at every $\lambda$ without
+the others. \textbf{The supported claim is therefore that no prefix of the three was sufficient
+and the full triple was}, and we report the intermediate failures because they are what establishes
+it.
 
 \paragraph{(i) A pointwise fine encoder.}
 The fine subtoken becomes a per-bar encoding of bar $t$'s own features, produced by a branch with
@@ -337,7 +355,9 @@ to $\lambda = 10^{6}$ --- because the window objective re-creates the smearing i
 the leg removes it.
 % artifact: runs_manifest/m6_lambda_search_receipt.json :: detach_amendment
 
-$\lambda$ is calibrated, not chosen. Across $26$ trials no $(\lambda, \beta)$ pair cleared $0.90$
+$\lambda$ is calibrated, not chosen. The search ran over two knobs: the class weight $\lambda$ and
+$\beta$, the weight on the bottleneck leg's own reconstruction term. Across $26$ trials no
+$(\lambda, \beta)$ pair cleared $0.90$
 on all three seeds, which places the threshold inside the instrument's seed-noise band at the
 achievable ceiling, while confirming that the state is carried (signal-dimension point-decoder
 correlation $0.77$--$0.96$, microstructure class $0.86$--$0.92$, return preserved above $0.96$).
