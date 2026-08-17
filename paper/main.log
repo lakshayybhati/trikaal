@@ -1005,7 +1005,7 @@ File: figures/fig7_coverage.pdf Graphic file (type pdf)
 
 ]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
-(Font)              scaled to size 10.0pt on input line 149.
+(Font)              scaled to size 10.0pt on input line 152.
 Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
 s05;+tnum;+lnum;mapping=tex-text;" at 10.0pt
  -> TeXGyreTermesX-BoldItalic.otf
@@ -1206,4 +1206,4 @@ ermesX(0)/m/n/10 The
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 2223F862F078BA442F225BBBE8C4D38C;17498.
  )
-Output written on main.xdv (51 pages, 1789844 bytes).
+Output written on main.xdv (51 pages, 1799420 bytes).

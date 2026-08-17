@@ -143,8 +143,18 @@ exactly. The remainder of \cref{app:claims} is \emph{unverified by independent c
 
 \subsection*{F.5\quad What the run changes}
 
-Filling \cref{sec:results} from the manifest, deleting four of the five interpretation branches,
-selecting one title and abstract variant, re-rendering Figs 8--10 from the artifact with
-\texttt{-{}-real}, and removing this appendix. Nothing else in the paper is contingent on the
-outcome; every other section is written to be correct under all five branches, which is the
-property that makes that list short.
+\emph{This entry listed what a completed run would change. The run is over --- the gate stopped it
+--- so the list is settled rather than pending, and it is kept in that form because what it
+predicted is a fact about how contingent the paper actually was.}
+
+Four of the five items are done: four interpretation branches were deleted, one title and abstract
+variant was selected and locked, \cref{sec:results} carries the gate receipt in place of a verdict,
+and \cref{fig:legibility} was re-rendered from the gate's own artifact. \textbf{One item was
+withdrawn rather than done, and it was never possible.} It read ``re-rendering Figs 8--10 from the
+artifact with \texttt{-{}-real}'', describing a flag that the generator does not implement --- it
+has no argument handling at all --- and that could not have run in any case, because under the
+pre-registration's stopping rule no verdict manifest is ever emitted, so the flag has no input that
+can exist. The documentation of it is the defect, and it is removed rather than implemented.
+
+\textbf{One item remains: removing this appendix.} Nothing else in the paper was contingent on the
+outcome, which is why that list was short and is now shorter.

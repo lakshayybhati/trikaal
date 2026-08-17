@@ -24,8 +24,9 @@ watermark removed. Concretely --
   Fig 10  all five cells centred on zero with identical dispersion, at the same absurd magnitude.
           No cell is favoured, and the claimed-effect bracket is drawn symmetric about zero.
 
-`--real <verdict-manifest.json>` swaps in the artifact and drops the watermark; nothing else about
-the figures changes.
+NO --real FLAG EXISTS, and none will: under the pre-registration's stopping rule no verdict
+manifest is ever emitted, so a swap-in-the-artifact path has no input that can exist. This
+docstring previously described one, and Appendix F.5 repeated the description.
 
 THRESHOLDS AND STRUCTURE BELOW ARE REAL — they are pins, not results, and are loaded at render
 time from the committed decision surface:
