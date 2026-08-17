@@ -196,7 +196,9 @@ reconstruction on cell 4 does not degrade; it improves slightly, from $0.12814$ 
 the placebo arm it is unchanged end to end, $0.17442$ to $0.17444$, a shift of $+0.00002$ across
 the whole range (the midpoint dips to $0.17313$, so this is flatness between the endpoints rather
 than a monotone line). Weighting the microstructure class harder, by a factor of $2.4$, takes
-nothing from the price channels.
+nothing from the OHLCV block --- measured across all seven of its dimensions, the two volume
+channels included, which matters because volume is what the surviving microstructure co-varies
+with.
 
 \textbf{Where it goes instead depends on how much headroom the block has, which is what saturation
 predicts.} On cell 4, whose microstructure block is intact and already near the ceiling this
@@ -211,7 +213,7 @@ no headroom and vanishes where there is. Neither arm takes anything from price.
 \label{sec:res-ceiling}
 
 The two readings above invite a serious objection, and it is the one we would raise. If the class
-weight barely moves trade-flow imbalance and costs the price channels nothing, then nothing is
+weight barely moves trade-flow imbalance and costs the OHLCV block nothing, then nothing is
 being \emph{traded off} --- and a story with no trade-off in it is a story about a \textbf{ceiling},
 not about \textbf{allocation}. The bit arithmetic of \cref{sec:mech-claim} sharpens it further:
 six microstructure dimensions at $0.90$ sign accuracy need on the order of ten bits, which is

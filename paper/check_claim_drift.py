@@ -56,6 +56,16 @@ RULES: tuple[tuple[str, str, str, str, tuple[str, ...]], ...] = (
         ),
     ),
     (
+        "a measurement over the OHLCV block described as covering only PRICE",
+        r"(takes nothing from|costs .{0,20}nothing|reconstruction|recon MAE|buy capacity from"
+        r"|does not degrade|spends its bits)",
+        r"\bprice channels?\b",
+        "OHLCV reconstruction is measured over SEVEN dimensions, two of which are volume "
+        "(log_volume, log_amount). Naming the price channels alone understates the measurement "
+        "AND drops the volume channels the surviving microstructure co-varies with.",
+        (),
+    ),
+    (
         "the cumulative ladder claimed NECESSITY of each intervention",
         r"(each was necessary|necessary and not sufficient)",
         r".",

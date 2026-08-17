@@ -216,6 +216,48 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.46 (2026-08-17, ★★ FOURTH INSTRUMENT FAILURE OF THE DAY, AND IT WAS THE INSTRUMENT BUILT
+  TO CATCH THE OTHER THREE. THE READING IS WHAT FOUND ALL FOUR.)**
+  - **THE SITES.** §6.5 said the class weight *"takes nothing from the PRICE channels"* and *"costs
+    the PRICE channels nothing"*. The measured quantity is OHLCV reconstruction MAE over **seven**
+    dimensions — `ret_close, range, body, upper_wick_frac, lower_wick_frac, log_volume,
+    log_amount` — of which **two are volume**. So the noun named five of the seven that were
+    measured, in the subsection carrying our answer to the ceiling objection.
+  - **★ AND THE SUPERVISOR'S READING SHARPENS MY OWN DISTINCTION, SO I AM REPLACING IT.** I had
+    split these sentences into OUTCOME statements (where "price" is simply wrong) and MECHANISM
+    statements (where it was not false). These are neither: they describe what the weight COSTS.
+    The right test is not which class a sentence belongs to — it is **does the noun name exactly
+    what was measured?** Here it named a SUBSET, which is an error of coverage whatever the
+    sentence is doing. That test would have caught all six of yesterday's sites and both of these;
+    my two-class split caught six and missed two.
+  - **THE FIX IS ALSO STRONGER THAN THE SENTENCE IT REPLACES.** The weight costs nothing across
+    **all seven** dimensions including the volume channels — and volume is precisely what the
+    SURVIVING microstructure co-varies with, so the volume channels are the ones a sceptic would
+    most expect to pay. Saying "price" understated our own result.
+  - **★★ THE FINDING THAT OUTLASTS THE FIX: EVERY INSTRUMENT BUILT FOR THIS CLASS HAS BEEN
+    NARROWER THAN THE CLAIM IT CHECKED — INCLUDING BOTH BUILT SPECIFICALLY TO CATCH IT.**
+    (1) my sweep, scoped to `sections/`, missed `main.tex`; (2) the supervisor's grep matched
+    *"duplicates price"* and missed *"duplicates what price already carries"*; (3) the builder's
+    matched *"vs"* and missed *"against"*; (4) **`check_claim_drift.py` reported CLEAN while
+    "price channels" survived twice** — its `\bprice\b` rule fires only alongside eviction
+    vocabulary, and these sentences use cost vocabulary instead.
+  - **SO THE RULE NEEDS A THIRD CLAUSE: A CLAIM CAN BE RESTATED IN A VOCABULARY THE INSTRUMENT DOES
+    NOT SHARE.** Grep the superseded string → catches verbatim survivals. Grep the claim's
+    distinctive terms → catches restatements in the vocabulary you anticipated. **Neither catches a
+    restatement in vocabulary you did not.** The only defence that has worked all day is **a human
+    or agent reading with the claim in mind**: all four of these were found that way, and none by
+    the instrument that preceded it. **Keep the instruments; do not let them retire the reading.**
+    A sixth rule now covers cost vocabulary, and it is observed to fail on the pre-fix text — but
+    it was added *after* a reading found what it could not.
+  - **HISTORY HYGIENE.** `845106d` and `96c1f3b` carried identical subjects, one mine and one the
+    builder's, which makes the log unreadable at the moment strangers start reading it. Mine was
+    the tip and matched origin exactly, so its subject was amended and force-pushed **under
+    `--force-with-lease`**, which refuses if anyone has pushed since. `845106d` → `f050236`;
+    **the builder should rebase rather than merge if it holds the old SHA.** The distinction from
+    the earlier incident this week is deliberate: that one amended ANOTHER author's commit without
+    re-checking the tree; this is my own commit, at the tip, with a lease guard, at the
+    coordinator's request.
+
 - **v1.6.45 (2026-08-17, ★★ THE PAPER WAS RIGHT AND THE FOUR DOCUMENTS A READER MEETS FIRST WERE
   WRONG — AND THREE HAND-GREPS ALL MISSED THE ABSTRACT BECAUSE EACH WAS NARROWER THAN THE CLAIM.)**
   - **★ THE SECOND HALF OF THE RULE, WHICH IS THE PART THAT MATTERS.** "Grep the superseded string"
