@@ -43,9 +43,10 @@ none of a larger signal planted in \emph{feature} space. Model capacity is acqui
 construction, and the loss is localized to the interface between the two stages.
 
 The remedy follows from the diagnosis and is an interface property rather than a matter of scale.
-The original design produces both halves of each token from one contextual encoder, so a bar's own
-state is smeared across the tokens of every later bar in the window --- the window reconstructs
-while the per-bar symbol carries almost nothing. Making the fine half a function of the current bar
+The original design produces both halves of each token from one contextual encoder --- causal, but
+free to look back --- so bar $t$'s state can be written into the codes of every \emph{later} bar in
+the window, and a window-level decoder reconstructs it from all of them. The window reconstructs;
+the per-bar symbol carries almost nothing. Making the fine half a function of the current bar
 alone leaves per-bar legibility at chance --- $0.4995$ to $0.5182$ across three seeds, against a
 baseline of $0.5112$ --- so the interface change is not sufficient on its own. Adding an
 objective that weights the microstructure block as a class, with a weight fitted on that same
@@ -79,7 +80,14 @@ seed count and trial enumeration all fixed before any of their inputs existed.
 %   Its _verify() REFUSES to draw if the receipt stops recording a stop or if either gated arm's
 %   worst dimension clears the threshold.
 
-\textbf{It did not run.} The gate described above fired on real data and stopped the study before
+\textbf{It did not run --- and what stopped it is the result.} The gate fired, and it fired
+\emph{selectively}: $97.3\%$ of the shortfall falls on the two signed channels, trade-flow
+imbalance and signed count imbalance, while the four magnitude channels --- the ones that co-vary
+with volume --- essentially clear it. Under a placebo that shuffles microstructure against price
+the signed channels collapse toward chance and the magnitude channels hold. \textbf{The tokenizer
+keeps the microstructure that duplicates what OHLCV already carries and drops the part that is
+independent of it, which is the part a microstructure model would want.} We did not anticipate
+that split, and it is the paper's real-data finding. The gate described above fired on real data and stopped the study before
 any cell was trained through the second stage --- an outcome the pre-registration had named as the
 mechanism's own modal prediction, and had bound in advance to make the mechanism finding the
 primary result. \Cref{sec:results} reports what the gate measured and what was therefore never

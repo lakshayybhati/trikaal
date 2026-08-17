@@ -26,12 +26,7 @@ backbone dimensions and much of the training and evaluation scaffolding, and we 
 Every component here is written from scratch; the parent's weights are not used, and no result in
 this paper is a comparison against them.
 
-We should be exact about what this artifact is, because the surrounding literature invites a
-larger claim than we can support. This is not a foundation model. The backbone is a fixed,
-$31{,}795{,}200$-parameter measurement instrument, held identical across every arm so that the
-quantizer and input arm are the only varied factors. It is trained on one venue, one instrument
-class and one frequency, and we make no transfer claim of any kind. The object under study is the
-tokenizer.
+The artifact is a measurement vehicle, not a foundation model; \cref{sec:intro} says what that means and \cref{sec:lim-universe} what it costs.
 
 \subsection{Discrete tokenization, and what its objective actually optimizes}
 \label{sec:rel-tokenization}
@@ -84,7 +79,7 @@ We therefore use the name trade-flow imbalance throughout, in prose, configurati
 never the order-flow name. This is not pedantry about terminology. The published effect sizes
 belong to the depth-based quantity, they are not evidence about ours, and a negative result here
 is evidence about trade-flow imbalance only. Order-book depth is explicit future work
-(\cref{sec:lim-features}).
+(\cref{sec:lim-micro}).
 
 \subsection{Evaluation discipline}
 \label{sec:rel-eval}

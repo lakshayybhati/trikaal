@@ -16,7 +16,7 @@ Every instrument is a USDT-margined perpetual future on Binance, sampled at one-
 over the four years \mbox{2021-01-01} to \mbox{2025-01-01}. Two public sources are combined per
 bar: the klines dump supplies open, high, low, close, volume and quote volume; the aggregated-trades
 dump supplies the signed trade statistics that the microstructure block is built from. No paid feed
-and no order book is involved, which is a scope limit (\cref{sec:lim-features}) and also the reason
+and no order book is involved, which is a scope limit (\cref{sec:lim-micro}) and also the reason
 the corpus is reproducible by anyone.
 
 The symbol set is bootstrapped \emph{from the data} rather than from the exchange's live instrument
@@ -69,7 +69,7 @@ ingest covers klines and aggregated trades only, so on all $304{,}625{,}181$ bar
 columns have standard deviation exactly $0.0$ and their masks are set on $100\%$ of rows. We state
 this here rather than in a footnote because the natural reading of ``a 16-dimensional
 microstructure vector for perpetual futures'' is that funding and open interest are in it, and
-they are not. The vector is $16$ wide and $13$ live. \Cref{sec:lim-features} carries what that
+they are not. The vector is $16$ wide and $13$ live. \Cref{sec:lim-micro} carries what that
 costs.
 % artifact: docs/m6_prereg.md §7 v1.6.16 — x_13/14/15 stddev exactly 0.0, m_13/14/15 masked on 100% of bars
 % artifact: src/trikaal/constants.py :: MASK_BITS_PERP = (13, 14, 15)
@@ -172,12 +172,10 @@ universe. \Cref{sec:lim-universe} carries that.
 \label{sec:data-provenance}
 
 The reduced lake is Hive-partitioned Parquet under \texttt{(symbol, frequency, month)}, queried
-through DuckDB. It was first written per-day, at $211{,}595$ files, which made per-symbol globbing
-pathological; compaction to one file per symbol-month gives $7{,}024$ files and $15$\,GB. The
+through DuckDB, one file per symbol-month. The layout was compacted for query performance, and the
 compaction was proven content-preserving rather than assumed: all $200$ per-symbol dataset hashes
 were re-derived from the compacted lake and the universe Merkle root recomputed, with zero
-mismatches and an unchanged root. Identical features, masks and timestamps imply an identical
-causal result, so the hash comparison subsumes a re-run of the causal sweep.
+mismatches and an unchanged root.
 % artifact: docs/milestone4b_universe_ingest.md §4.1 lake-compaction entry — 211,595 -> 7,024 files, 23 GB -> 15 GB, 0 hash mismatches, Merkle unchanged; scripts/compact_lake.py
 
 Every dataset is content-hashed and the universe carries a single Merkle root over the lake,

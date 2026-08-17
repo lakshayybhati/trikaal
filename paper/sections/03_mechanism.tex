@@ -99,7 +99,11 @@ them; the original contextual design fails the same test more severely, not less
 
 To measure the claim we need a fixture in which one dimension differs from the others in exactly
 the property the claim names, and in nothing else. We construct a synthetic bar stream in which
-the twelve dimensions that carry the comparison are marginally standard normal --- so all twelve
+the fixture is thirteen dimensions wide, matching the live width of the real vector, and stands to
+it as follows: one return dimension for price, eleven mutually dependent \emph{fillers} standing
+for the OHLCV block and for the microstructure channels that co-vary with it, and one independent
+\emph{signal} dimension standing for the channel whose predictive content is its own. The twelve
+that carry the comparison are marginally standard normal --- so all twelve
 contribute equally to a variance-weighted loss --- and then make eleven of them mutually dependent
 while one, the \emph{signal} dimension, is independent of everything. A thirteenth, the
 \emph{return} dimension, is deliberately \emph{not} standard normal: it carries $3.15\times$ the
@@ -129,7 +133,7 @@ $0.001$--$0.014$. It is not coded at all.
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figures/fig2_eviction_by_variance_class.pdf}
-  \caption{\textbf{Reconstruction quality is sorted by variance class, not by task relevance, and
+  \caption{\textbf{Per-bar recoverability sorts by variance class, not by task relevance, and
   the ordering is deterministic.} Point-decoder correlation between each dimension's value at bar
   $t$ and its reconstruction from bar $t$'s own code, for three independently initialized
   tokenizers on a fixture whose non-signal structure is entropy-calibrated to the real data. The

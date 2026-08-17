@@ -14,18 +14,16 @@ to claim even if every pre-registered clause passes.
 \subsection{The mechanism is measured on a synthetic fixture, not on markets}
 \label{sec:lim-fixture}
 
-Everything in \cref{sec:mechanism} is measured on a constructed fixture. That is a deliberate
-trade and it cuts both ways. The fixture's non-signal structure is entropy-matched to the real
-lake --- a per-dimension deficit of $0.4631$ nats, reproduced at $0.462$ against a declared
-tolerance of $0.05$ --- and its signal dimension is planted with an exactly computable information
-content, which is what allows us to say that $94.4\%$ of a known quantity was recovered rather
-than that a loss curve moved.
+Everything in \cref{sec:mechanism} is measured on a constructed fixture. The fixture's non-signal
+structure is entropy-matched to the real lake --- a per-dimension deficit of $0.4631$ nats,
+reproduced at $0.462$ against a declared tolerance of $0.05$ --- and its signal dimension is
+planted with an exactly computable information content, which is what allows us to say that
+$94.4\%$ of a known quantity was recovered rather than that a loss curve moved. It is also
+precisely what stops the result being a measurement of markets: we do not know the variance and
+covariance geometry of real trade-flow imbalance against real price well enough to assert that the
+fixture reproduces it; we know only that one entropy statistic matches.
 % artifact: runs_manifest/m6_interface_respec_design_pass.json :: filler_calibration.{lake_measurement.per_dim_deficit_nats=0.4631, achieved_per_dim_deficit_nats=0.462, tolerance_nats=0.05, within_tolerance=true}
-It is also precisely what stops the result being a measurement of markets. We do not know the
-variance and covariance geometry of real trade-flow imbalance against real price well enough to
-assert that the fixture reproduces it; we know only that one entropy statistic matches.
 
-The consequence is specific, and it is narrower than the paragraph a reader might expect here.
 \textbf{The distinction that matters is between the mechanism and its consequence, not between the
 fixture and the paper's claim.} What the fixture establishes is the \emph{causal} statement --- that
 a reconstruction objective allocates capacity by variance and covariance, shown by intervening on
@@ -34,243 +32,124 @@ real data is the \emph{consequence}: this tokenizer does not make real trade-flo
 from a bar's own token, and under the placebo shuffle the signed channels collapse toward their
 base rates while the magnitude channels hold (\cref{sec:res-gate}). The second is the paper's
 headline claim and it is measured on markets; the first is its explanation and it is measured on a
-fixture. Neither substitutes for the other, and \cref{sec:res-interpretation} states the join
-rather than assuming it.
+fixture. Neither substitutes for the other.
 
-\textbf{What a reader should therefore not take from the gate firing is the causal direction.}
-The gate is an observation about an outcome: the signed channels are not recoverable. That they
-are not recoverable \emph{because} reconstruction priced them out is the fixture's claim carried
-over by argument, not by a real-data intervention, and no experiment here varies the objective on
-market data. The downstream ablation that would have separated the remaining alternatives ---
-whether real trade-flow imbalance survives the re-specified pipeline into forecast quality --- was
-gated by the legibility check and never ran, so its evidence is absent rather than negative.
+\textbf{What a reader should therefore not take from the gate firing is the causal direction.} The
+gate is an observation about an outcome: the signed channels are not recoverable. That they are not
+recoverable \emph{because} reconstruction priced them out is carried over from the fixture by
+argument. The one real-data intervention we do have is the $\lambda$ sweep of
+\cref{sec:res-lambda}, which varies the objective's weighting but not its form, and
+\cref{sec:res-ceiling} sets out exactly how far it and the placebo carry the causal claim and where
+they stop. The downstream ablation that would have separated the remaining alternatives was gated
+by the legibility check and never ran, so its evidence is absent rather than negative.
 
 Two narrower limits inside the same fixture. We demonstrate the effect for one reconstruction
-objective, one quantizer family and one class of encoder. We show that \emph{this} objective
-allocates by variance and covariance; we do not show that no reconstruction objective can do
-otherwise, and \cref{sec:mech-fix} is a counterexample to the strong form --- it is a
-reconstruction objective that carries the evicted channel, because it was given an explicit term
-to do so. Separately, the $94.4\%$ recovery figure is calibrated against a single matched
-reference run and inherits whatever run-to-run variation that reference carries; we report it as
-one measurement, not as an expectation over runs.
+objective, one quantizer family and one class of encoder; we do not show that no reconstruction
+objective can do otherwise, and \cref{sec:mech-fix} is a counterexample to the strong form. And the
+$94.4\%$ recovery figure is calibrated against a single matched reference run, so we report it as
+one measurement rather than an expectation over runs.
 % artifact: runs_manifest/m6_token_control_run_manifest.json :: decision_inputs.{H0_source, H0_val=13.5979, final_val_minus_H0=-0.8496}
 
-\subsection{The BSQ baseline is ours, and nothing external anchors it}
+\subsection{The BSQ baseline is ours, and the external anchor was dropped}
 \label{sec:lim-baseline}
 
 Cell 1 --- binary spherical quantization on OHLCV-only inputs --- is our own implementation at
-matched bits per token. It is not an independently validated reference. The evaluation harness was
-originally specified to load published reference weights and reproduce their reported rank
-information coefficient as an external anchor for this cell. That gate was found unexecutable and
-dropped as binding before any cell was scored, for three separate reasons, each sufficient on its
-own: the reference paper publishes two rank information coefficients for the same model that
-differ by $2.45\times$ ($0.0254$ against $0.0622$) without the pre-registration saying which
-applies --- the plain information coefficients for the same pair, $0.0431$ and $0.0665$, differ by
-$1.54\times$, and an earlier draft of this sentence quoted those values under the rank label; both are measured on Shanghai Stock Exchange $15$-minute equity bars, a market and a
-frequency this study firewalls out of v1, so the gate's two requirements --- reproduce the
-published number, and do it on our own pinned slice --- cannot both hold; and executing the
-weights would require importing the reference model code, which our independence invariant
-forbids. Resolvability was never the obstacle: the band is $4.51$ to $11.05$ standard errors wide
-at the measured effective sample size of $1{,}401{,}637$.
-% artifact: src/trikaal/eval/external_validation.py :: GATE_IS_BINDING = False, and the three-count comment above it
-% artifact: runs_manifest/m6_c4_resolvability.json :: which_published_figure.{ic_price_series=0.0431, ic_return_forecasting=0.0665, dataset_in_the_caption}; resolvability_MEASURED.{n_eff_summed=1401637, se_rankic=0.0008446, band_over_se_price_series=4.51, band_over_se_return_forecast=11.05}
-
-Two compensating controls were armed in its place, and it is important to be exact about what they
-do. A saturation check asks whether cell 1 was trained enough to be a fair baseline. A codebook
-utilization gate, pinned at $0.95$, asks whether our BSQ codebook collapsed. Neither answers the
-question the external gate was for. We therefore carry the following sentence as a required field
-of every verdict manifest, refused if absent, and reproduce it verbatim here:
-
-\begin{quote}
-We therefore cannot exclude that our BSQ baseline is weaker than a reference BSQ implementation,
-which would inflate the FSQ-vs-BSQ comparison reported in \cref{sec:results}.
-\end{quote}
-% artifact: src/trikaal/eval/external_validation.py :: BSQ_DISCLOSURE (verbatim); conformance PINNED_CODEBOOK_MIN_UTILIZATION = 0.95
-
-This bounds the quantizer leg specifically. It does not bound the input-arm leg: the comparison
-between cells 2 and 4, and between cell 4 and the placebo, is internal to our own implementation
-on both sides, and a weak baseline cannot inflate a difference in which the same baseline appears
-twice.
-
-The consequence is a withdrawal, and we make it here rather than leaving it implicit. \textbf{The
-three marginals involving a BSQ arm --- $\IR(2) - \IR(1)$, $\IR(4) - \IR(3)$, and $\IR(3) -
-\IR(1)$ --- are reported, not claimed.} They appear in \cref{sec:results} with their confidence
-intervals because suppressing them would be worse, and they are excluded from every claim this
-paper makes. A reader who wants the FSQ-versus-BSQ question answered will not find it answered
-here; what is answered is the input-arm question, on which the same implementation stands on both
-sides of every comparison.
+matched bits per token, not an independently validated reference. The harness was specified to
+reproduce a published reference model's rank information coefficient as an external anchor; that
+gate was found unexecutable and dropped as binding before any cell was scored, for three
+independent reasons. The reference paper publishes two rank information coefficients for the same
+model differing by $2.45\times$ ($0.0254$ against $0.0622$) without saying which applies; both are
+measured on Shanghai Stock Exchange $15$-minute equity bars, a market and frequency this study
+firewalls out; and executing the weights would require importing reference model code that our
+independence invariant forbids. \textbf{We therefore cannot exclude that our BSQ baseline is
+weaker than a reference implementation, which would inflate any FSQ-versus-BSQ comparison.} That
+disclosure is a required field in every emitted verdict manifest, and the three BSQ marginals the
+design would have supported are withdrawn as claims rather than reported weakly. Resolvability was
+never the obstacle: the band is $4.51$ to $11.05$ standard errors wide at the measured effective
+sample size.
+% artifact: src/trikaal/eval/external_validation.py :: GATE_IS_BINDING = False;
+%   runs_manifest/m6_c4_resolvability.json :: {ic_price_series 0.0431, ic_return_forecasting 0.0665,
+%   rankic_price_series 0.0254, rankic_return_forecasting 0.0622}
 
 \subsection{The placebo removes information and capacity together}
 \label{sec:lim-placebo}
 
-The shuffled-microstructure cell is the design's central control, and its reach is narrower than
-its name suggests. Measured on the fixture, the shuffle destroys exactly what it was built to
-destroy: microstructure's contemporaneous link to price falls from $0.2037$ to $0.0005$, and its
-own lag-1 autocorrelation from $0.4165$ to $0.0006$, while the within-block and within-OHLCV
-correlations are left as they were.
-% artifact: docs/m6_c12_placebo_mechanism.md — the measured before/after table, parsed at render time by paper/figures/make_fig5_design.py
-
-But microstructure dimensions in cell 4 are partly amortized against structure the code already
-carries, and shuffling removes that sharing along with the information. $\Delta\IR(4-5)$ is
-therefore (information) $+$ (capacity handicap), and \textbf{we have not quantified the handicap in
-information-ratio units}. A sixth cell holding the microstructure block constant rather than
-shuffled would bracket it, and no such cell appears anywhere in the pre-registration --- we have
-verified this by exhaustive search of that document --- so it is future work, not a committed
-contingency we chose not to exercise. The practical consequence: a positive $\Delta\IR(4-5)$ is
-evidence that microstructure carries information beyond input capacity, and is not a calibrated
-estimate of how much.
+\Cref{sec:setup-placebo} states the confound and quantifies what it can: the shuffle destroys the
+microstructure block's covariance with price and its own serial structure, and it also makes the
+block incompressible, so cell 5 reconstructs the byte-identical OHLCV targets $1.51\times$ worse
+than cell 4. \textbf{The residual difference between cells 4 and 5 is therefore information plus
+capacity, and we cannot separate them by subtraction.} No cell in the design brackets the capacity
+term, so it is disclosed and unquantified in information-ratio units; a sixth cell holding the
+block constant would bracket it and is future work. \Cref{sec:res-ceiling} gives the one reading
+that survives the confound --- the shape of the degradation within the arm rather than any
+comparison between arms.
 
 \subsection{The effect we can detect is larger than the effect we expect}
 \label{sec:lim-power}
 
-At the headline horizon the paired minimum detectable effect is $3.518$ annualized information
-ratio, against an economic materiality floor of $0.5$.
-% artifact: runs_manifest/m6_mde_inputs.json :: h15_pooled.{MDE_annualized_IR=3.518, T=35063, T_eff=35002.3, N_breadth_eff=1.5, avg_breadth=40.0}
-% artifact: src/trikaal/eval/verdict.py :: ECON_FLOOR_IR = 0.5
-The only prior we hold for the quantity under test is our own univariate liveness screen of
-trade-flow imbalance on a single symbol: $|\text{RankIC}| = 0.0270$ at $h=5$ and $0.0197$ at the
-headline $h=15$, both with confidence intervals excluding zero. That screen's own source describes
-it as a liveness screen and not the headline test, and we use it here only to set expectations
-about magnitude.
-% artifact: docs/milestone2_btcusdt_stage1.md — TFI RankIC -0.0270 [-0.0304,-0.0236] at h=5; -0.0197 [-0.0230,-0.0166] at h=15; BTCUSDT only
-An effect of that size does not become an information ratio of $3.5$. We therefore state plainly,
-before seeing any result, that a null or inconclusive outcome is the most likely honest one, and
-that this was pre-committed as publishable: the outcome taxonomy has three members, and the
-decision rule names what we report under each.
+The minimum detectable effect at the pinned horizon is $3.518$ annualized information ratio, and
+our own prior for a univariate microstructure signal is a rank information coefficient of $0.0197$
+at that horizon. \textbf{The design was therefore powered to detect an effect substantially larger
+than the one we had reason to expect}, which is why \cref{sec:decision} pre-committed that
+\textsc{null} or \textsc{inconclusive} was the most likely honest outcome. Two facts sharpen it. The
+three-seed replication carries no term for training variance, and same-seed divergence measured on
+identical hardware puts a lower bound on that term; the power guard exists for exactly this and is
+halt-only. And the effect the design can see is one the execution filter may never admit ---
+\cref{sec:lim-filter}.
 
-A second, less visible power limitation. The minimum detectable effect above is built from
-\emph{scoring} noise --- the dispersion of the portfolio return series --- and contains no term
-for training variance. That omission is not conservative, and we found its magnitude by accident:
-two runs at the same seed, the same recipe, the same horizon and the same estimator produced
-fraction-negative $0.5662$ and $0.99883$ for the same cell. Same-seed divergence is basin-hopping,
-and it is a lower bound on across-seed variance, which is the quantity the design actually
-averages over. Five seeds are pinned up front, which helps; forcing deterministic kernels does not
-help, because it removes the same-seed component and leaves the across-seed component untouched.
-% artifact: docs/m6_prereg.md §7 v1.4.5 — acceptance cell4 frac_negative 0.5662 vs money-leg cell4 0.99883 at identical h/cap/estimator/seed/recipe
-% artifact: src/trikaal/eval/conformance.py :: PINNED_SEEDS = (0,1,2,3,4)
-
-What we do about it is a refusal rather than a correction. A power guard, computed after the
-clauses and unable to alter them, compares each cell's across-seed range against the effect being
-claimed; if the range reaches the claimed effect, the verdict is reported as
-\textsc{halt\_adjudicate} rather than as an outcome. The guard is HALT-only by construction --- it
-can manufacture neither a positive nor a negative claim --- which is what makes it legitimate to
-have added it before the run. It does not increase power. It prevents us from reporting a number
-smaller than its own inputs' wobble.
-% artifact: src/trikaal/eval/verdict.py :: power_guard; tests/eval/test_degeneracy_guard.py
-
-\subsection{The execution filter binds on real data, and it is the forecasts that are wrong}
+\subsection{The execution filter binds on real data, and the forecasts are over-dispersed}
 \label{sec:lim-filter}
 
-\emph{This subsection asserted through several drafts that the question below was unmeasured. It
-is measured, in three committed artifacts, and the answer is the branch we argued was less
-likely. The prediction is kept, with what it got wrong, because a limitations section that
-silently replaces a wrong forecast with the right answer teaches a reader nothing about how much
-to trust the rest of it.}
-
-The headline metric is a cost-aware net information ratio \emph{under a forecast-magnitude
-execution filter}, $\theta = \kappa c$. On the calibration fixture that filter behaved in both
-extremes --- inert on the degenerate checkpoints at the pinned horizon, and binding at every
-$\kappa$ on a non-degenerate one (\cref{sec:metric}) --- so we treated its behaviour on real bars
-as open. The three real-lake units that were scored before the gate refused the microstructure
-arms settle it for the arm they cover. Decision activity at $\kappa^\ast = 3$ is $0.0926$,
-$0.0193$ and $0.4702$; at $\kappa = 1$ it is $0.339$, $0.176$ and $0.916$. The filter is neither
-inert nor absorbing: it removes between half and nine-tenths of the decisions it is given, and
-what remains is substantial rather than a handful.
+The headline metric is a cost-aware net information ratio under a forecast-magnitude filter,
+$\theta = \kappa c$. On the three ungated units that were scored, decision activity at
+$\kappa^\ast$ is $0.0926$, $0.0193$ and $0.4702$: the filter is neither inert nor absorbing.
+\textbf{What that reveals is a calibration failure, not a healthy book.} A calibrated forecast at
+our own prior would have $\operatorname{std}(\hat{\mu}) = 0.027 \times 0.003504 = 9.46\times
+10^{-5}$; the measured values are $0.005376$, $0.005331$ and $0.010373$ --- $56$ to $110$ times
+that. The models are grossly over-dispersed, which is why they trade at all, and it means a
+realized information ratio would reflect miscalibration at least as much as skill. We had reasoned
+from the pinned budget being compute-optimal to the models being calibrated and had planned for the
+opposite branch; the measurement selected the branch we deprioritized.
 % artifact: runs_cloud/results/{r0/cell1_seed0,r1/cell1_seed2,r2/cell1_seed4}_eval.json ::
-%   mu_diag.activity_decisions and .activity_decisions_by_kappa. Cell 1 only (BSQ + OHLCV-only).
+%   mu_diag.{activity_decisions, std, n = 1,402,520}; |RankIC| = 0.027 from the M2 screen and
+%   std(y_15) = 0.003504 over the full BTCUSDT history. The budget is 426,033,152 tokens, which is
+%   20.00 per backbone parameter but 13.40 per realized predictor parameter — see §7.10.
 
-The reason this is a limitation and not a detail is arithmetic. Binding is decided by the
-\emph{forecast} magnitude, and for a calibrated conditional mean
-$\operatorname{std}(\hat{\mu}) = \text{IC}\cdot\operatorname{std}(y)$. The scale of $y$ was
-measured twice, and we report both because the second supersedes the first and moves the
-conclusion in the harder direction. A first measurement over the $1{,}051{,}199$ bars of one
-partial history gave $\operatorname{std}(y_{15}) = 0.004238$; a subsequent measurement over the
-full $2{,}103{,}825$-bar history of the same instrument gives $0.003504$. The corrected, smaller
-figure puts the execution threshold \emph{further} out, not nearer: at our own prior of
-$|\text{RankIC}| = 0.027$ it sits $8.5$, $11.6$ and $22.2$ standard deviations out across the
-modeled-cost range rather than $7.0$, $9.6$ and $18.4$, and the information coefficient a
-calibrated forecast would need to trade $5\%$ of bars rises from $0.096$--$0.253$ to
-$0.116$--$0.306$ --- four to eleven times our measured prior. The finding is strengthened by its
-own correction.
-
-Two branches follow, and the more likely one is the worse one. If the trained models are
-calibrated, activity is near zero everywhere and the headline metric is computed on a handful of
-decisions or none. If they are over-dispersed they trade, but the realized information ratio then
-partly reflects miscalibration rather than skill. We previously hedged toward the second branch on
-the grounds that the training budget was a small fraction of compute-optimal; we then withdrew
-that hedge, on the ground that the pinned budget is $20.00$ tokens per parameter and a model
-trained to compute-optimal is \emph{more} likely to be calibrated, not less. We concluded that the
-near-zero activity branch was the one to plan for.
-
-\textbf{That ratio divided by a number that excludes a third of the trained model.} The
-$426{,}033{,}152$-token budget against the realized $31{,}795{,}200$ parameters is $13.40$ tokens
-per parameter, not $20.00$ --- about two-thirds of the reference ratio rather than at it. The
-withdrawn hedge was closer to right than the correction that replaced it, though the truth sits
-between them: the budget is below compute-optimal, but not by the margin first supposed.
-
-\textbf{That conclusion is wrong, and the measurement says so without ambiguity.} A calibrated
-forecast at our own prior would have $\operatorname{std}(\hat{\mu}) = 0.027 \times 0.003504 =
-9.46\times10^{-5}$. The measured values are $0.005376$, $0.005331$ and $0.010373$ --- \textbf{$56$
-to $110$ times} that. The trained models are not calibrated but grossly over-dispersed, which is
-precisely why the filter admits as much as it does, and it puts us in the second branch: they
-trade, and the realized information ratio reflects miscalibration at least as much as skill. The
-sign of the error matters more than its size. We reasoned from compute-optimality to calibration
-and planned for the branch that reasoning implied; the branch we deprioritized is the one that
-occurred, on the only arm we can check.
-% artifact: same three artifacts :: mu_diag.std = 0.005376390828602091 / 0.005331342352099716 /
-%   0.010373105755420041, estimator "expectation", n = 1,402,520 each. Calibrated reference from
-%   |RankIC| = 0.027 (M2 screen) and std(y_15) = 0.003504 (full BTCUSDT history).
-% artifact: measured on processed/universe_bars — BTCUSDT 15-bar forward log-return std:
-%   0.004238 over n = 1,051,199 (partial history, 2026-08-10) SUPERSEDED BY
-%   0.003504 over n = 2,103,825 (full BTCUSDT history, docs/degeneracy_guard_activity_leg_RULING.md,
-%   2026-08-11). Both windows named in the prose. sd-out and required-IC figures from the ruling's
-%   table. Budget: 426,033,152 tokens. /21,301,248 BACKBONE params = 20.00 tok/param (per 591ec44);
-%   /31,795,200 REALIZED predictor params = 13.40 tok/param. Denominator named at every use.
-%   theta = kappa * c_modeled per src/trikaal/eval/xsection.py:335; modeled c_total range 8e-4 to
-%   2.1e-3 per the harness KATs. Arithmetic over measured inputs; the harness was not run at these
-%   values.
-
-The pre-registration does not assume an answer. A HALT-only degeneracy guard refuses a verdict for
-any cell whose decision activity at $\kappa^\ast$ is exactly $0$ or $1$, tested on the seed mean
-and on every individual seed. We state its limit rather than leave it to be found: unlike the
-companion sign-balance test, which carries a $[0.05, 0.95]$ band, the activity test fires only at
-the exact endpoints, so an activity of $0.999$ passes it. Whether to band that leg is an open
-decision at the time of writing, and \cref{app:repro} records it as open rather than resolved.
-% artifact: src/trikaal/eval/verdict.py :: FRAC_NEG_BAND = (0.05, 0.95) on the sign leg;
-%   _never_binds tests v <= 0.0 or v >= 1.0 on the activity leg. No amendment supersedes this.
-
-\subsection{Break-even cost falls short of fees by more than an order of magnitude, and our
-pre-registered instrument could not have told us}
+\subsection{Break-even cost falls an order of magnitude short of fees}
 \label{sec:lim-breakeven}
 
-Two findings sit here, and the one about our own instrument is the one we would rather a reader
-got from us.
+\textbf{This is the number a reader asking ``how far from tradeable is any of this?'' should
+take away.} At the pinned horizon the round-trip cost at which net information ratio crosses zero
+is $0.00232\%$, $0.00538\%$ and $0.02082\%$ across the three scored units, against a $0.10\%$ taker
+round trip --- $4.8$ to $43$ times short. It survives sampling error: the most favourable $95\%$
+upper bound is $0.0396\%$, still $2.5$ times short. Two qualifications are ours to state. The
+$0.10\%$ threshold is supplied rather than measured here, though the direction rescues it, since a
+taker round trip excludes spread, impact, funding and slippage and the true bar is therefore
+higher. And the interval statement is not independent corroboration of the gross-information-ratio
+statement: gross IR \emph{is} the $t$-statistic of break-even on this grid.
 
-\textbf{The pre-registered break-even metric bottoms out exactly where the question begins.} The
-cost-stress curve sweeps a pinned grid of $0.10\%$, $0.20\%$ and $0.30\%$ round-trip costs, and
-the break-even statistic returns $-\infty$ when net IR is non-positive across the whole grid. On
-all three scored units it returns exactly that. The grid's \emph{floor} is $0.10\%$ --- which is
-the realistic round trip any such number must be compared against --- so the instrument cannot
-distinguish a break-even just below a round trip from one forty-three times below it, and the true
-answer is the second. A second defect compounds it: the break-even value \emph{is} computed at
-evaluation time and the artifact writer does not persist it, so on the rented hardware it was
-computed and discarded. The design specifies the right quantity, throws it away, and falls back
-to a grid that cannot resolve it.
-% artifact: src/trikaal/eval/harness.py:45 FLAT_COSTS = (0.0010, 0.0020, 0.0030); :221 c_break
-%   computed, :280 stored on CellScore; src/trikaal/eval/metrics.py break_even_cost returns -inf
-%   when all IR <= 0. The string "break_even" appears in none of the three shipped money artifacts.
+\textbf{Our own pre-registered instrument could not have told us this}, and the defect is worth
+recording because it is structural rather than clerical. The cost-stress curve sweeps a pinned grid
+whose \emph{floor} is $0.10\%$ --- exactly the comparison --- and the break-even statistic returns
+$-\infty$ when net IR is non-positive across the whole grid, which it is on all three units. The
+instrument cannot distinguish a break-even just below a round trip from one forty-three times
+below it. A second defect compounds it: the value \emph{is} computed at evaluation time and the
+artifact writer does not persist it, so it was computed and discarded.
 
-\textbf{Recomputed below that floor, break-even falls short of fees by $4.8$ to $43$ times.} At
-the pinned $h = 15$ on the headline money grid, the round-trip cost at which net IR crosses zero
-is $0.00232\%$, $0.00538\%$ and $0.02082\%$ across the three units, against a $0.10\%$ taker round
-trip. It survives sampling error: the most favourable $95\%$ upper bound is $0.0396\%$, still
-$2.5$ times short, and two of the three intervals contain zero. Two qualifications travel with
-that and both are ours to state. The $0.10\%$ threshold is supplied rather than measured here ---
-though the direction rescues it, since a taker round trip excludes spread, impact, funding and
-slippage, so the true bar is \emph{higher} and the shortfall larger. And the interval statement is
-not independent corroboration of the gross-IR statement: gross IR \emph{is} the $t$-statistic of
-break-even on this grid, so ``two intervals contain zero'' and the pre-declared bootstrap
-intervals containing zero are one fact, not two.
+\textbf{The strongest form of the result is assumption-free.} Break-even equals mean gross return
+per active period identically, so clearing a round trip of $c$ requires gross edge per active
+period of at least $c$ --- and that bar is the same at every horizon. What a longer horizon changes
+is how much edge a period can contain, not the bar it must clear. Under linear scaling, which is
+generous because real drift decays, the measured edge would reach $0.10\%$ only after $72$ to $646$
+minutes of holding against the $15$ evaluated. \textbf{This evidence is weak in both directions:}
+it covers cell 1 alone, so a horizon that cleared fees would have been suggestive rather than
+proof, and finding none does not license ``no horizon is tradeable'' --- the arm the headline claim
+is about was never scored.
+% artifact: runs_manifest/m6_horizon_break_even.json :: measured_h15_headline[*].{c_break_pct,
+%   c_break_interval, shipped_PREREGISTERED_break_even_cost_on_pinned_grid = -inf},
+%   THE_ASSUMPTION_FREE_REFRAMING.required_h_minutes_range_LOWER_BOUND, fee_reference,
+%   REQUIRED_READING.{asymmetry_both_directions, scoping_correction, break_even_not_persisted};
+%   src/trikaal/eval/harness.py:45 FLAT_COSTS floor = 0.0010.
 
 \begin{figure}[t]
   \centering
@@ -284,111 +163,40 @@ intervals containing zero are one fact, not two.
   Intervals are $95\%$ bootstrap; two of the three include zero. Cell 1 only.}
   \label{fig:economics}
 \end{figure}
+
 % artifact: paper/figures/make_fig11_economics.py from runs_manifest/m6_horizon_break_even.json ::
 %   measured_h15_headline[*].{c_break_pct_POINT_see_c_break_interval, c_break_interval.{ci95_low,
 %   ci95_high}, clears_round_trip_fee}; fee_reference.round_trip_frac 0.001; pins.flat_costs.
 %   Its _verify() RAISES if any unit's break-even ever clears the fee -- the figure's own headline
 %   would then be false and it must not be drawn.
 
-\textbf{The horizon reading this invites is not available, and we record that the file inviting it
-is ours.} Only $h = 15$ is measured. At $h = 5$ and $h = 60$ the sole exact statement is that
-break-even is below $0.30\%$ --- above the fee, and therefore no constraint on the fee question at
-all --- and the attempt to infer more was rejected as uninformative, with admissible bands spanning
-$66\%$ to $1{,}140\%$. What survives is stronger for being assumption-free: break-even equals mean
-gross return per active period \emph{identically}, so clearing a round trip of $c$ requires gross
-edge per active period of at least $c$, and \textbf{that bar is identical at every horizon}. What
-a longer horizon changes is how much edge a period can contain, not the bar it must clear. Under
-linear scaling --- generous, since real drift decays --- the measured edge would reach $0.10\%$
-only after $72$ to $646$ minutes of holding, against the $15$ evaluated.
-
-\textbf{This evidence is weak in both directions, and the limit is enforced rather than promised.}
-It covers cell 1 alone --- BSQ with OHLCV-only inputs, one arm of a $2\times2$ that never ran. A
-horizon clearing real fees would have been suggestive, not proof; finding none does not license
-``no horizon is tradeable'', because the arm the headline claim is about was never scored.
-Microstructure-arm artifacts exist but every non-money artifact set is refused by the production
-loader for a missing index, wrong schema or incomplete matrix, so no transfer check is possible at
-all --- which is a stronger statement than a promise not to make one.
-% artifact: runs_manifest/m6_horizon_break_even.json :: measured_h15_headline[*].{c_break_pct,
-%   c_break_interval.{ci95_low,ci95_high}, shipped_PREREGISTERED_break_even_cost_on_pinned_grid},
-%   THE_ASSUMPTION_FREE_REFRAMING.{measured_and_required_horizon, required_h_minutes_range_LOWER_BOUND},
-%   REQUIRED_READING.{asymmetry_both_directions, scoping_correction, shipped_instrument_floor,
-%   break_even_not_persisted}, fee_reference.{round_trip_frac 0.001, source "supervisor-supplied
-%   ... NOT independently verified here", caveat}, transfer_check_inventory.conclusion.
-%   NON-PRE-REGISTERED INSTRUMENT recomputing a pre-registered component; admissibility ruled by
-%   the supervisor 2026-08-14 and logged as prereg §7 v1.6.33. Cell 1 only.
-
-\subsection{The positive gross edge is not directional bias, on two of three seeds}
+\subsection{The positive gross edge is not directional bias}
 \label{sec:lim-skill}
 
-The break-even quantity above is positive on every unit, which is the same statement as a positive
-gross information ratio. A gross edge that is never tested against the cheapest alternative
-explanation is an assertion, so we ran that test rather than leave it to a referee.
+A positive gross edge that is never tested against the cheapest alternative explanation is an
+assertion, so we ran that test. The alternative is directional bias times sample drift: the
+evaluated sample rose at $7.900\times10^{-6}$ per period, enough that simply holding long returns
+an annualized information ratio of $0.3704$, and each model leans one way. The benchmark is each
+model's own modal direction held constant on the same active periods, with a paired block
+bootstrap.
 
-The alternative is directional bias times sample drift. Each model leans one way --- two are short
-on roughly two-thirds of decisions, one is long on nine-tenths --- and the evaluated sample drifted
-\emph{up}, at $7.900\times10^{-6}$ per fifteen-minute period, enough that simply holding long
-returns an annualized information ratio of $0.3704$. A model that merely leaned the right way in a
-drifting sample would show a positive gross edge with no timing content at all. The benchmark is
-therefore each model's own modal direction, held constant on the same active periods, with a paired
-block bootstrap.
-
-\begin{center}
-\begin{minipage}{0.95\columnwidth}
-\centering
-\begin{tabular}{lclrrrr}
-\toprule
-seed & lean & benchmark & model & bias only & $\Delta$ & $\Delta$ 95\% low \\
-\midrule
-0 & short, $67.7\%$ & evaluated set & $+1.2665$ & $-0.7607$ & $+2.0271$ & $-0.5530$ \\
-2 & short, $65.5\%$ & evaluated set & $+2.1715$ & $-1.2640$ & $+3.4355$ & $\mathbf{+1.5574}$ \\
-4 & long, $92.7\%$ & \textbf{names traded} & $+1.1446$ & $+0.1474$ & $+0.9972$ & $\mathbf{+0.0454}$ \\
-\addlinespace
-\multicolumn{3}{l}{\emph{(seed 4, superseded, evaluated set)}} & $+1.1443$ & $+0.4282$ & $+0.7161$ & $-0.2410$ \\
-\bottomrule
-\end{tabular}
-
-\vspace{0.4em}
-{\footnotesize\emph{Gross annualized information ratios at $h=15$ on the headline money grid, cell 1
-only. \textbf{Seed 4 uses the specified benchmark --- the names the model actually traded --- so no
-substitution caveat applies to it. Seeds 0 and 2 use the evaluated cross-section instead, because
-their traded names are not persisted and they were not re-run; for those two rows the benchmark is
-``constant direction on the evaluated set'', not ``on the names this model picked'', and the
-direction of that difference is unknown and unbounded.} \textbf{Seed 4's $\Delta$ is $t = 1.70$. The bound
-shown is the pre-registered one-sided $\alpha = 0.05$ percentile bound; its normal counterpart at
-the same level is $+0.0307$. A two-sided $95\%$ bound, a stricter test than the one pre-registered,
-is $-0.1545$ with $p = 0.0897$.} Seed 4's model row is the value recomputed during the exact run, $3.5\times10^{-4}$
-from the banked one.}}
-\end{minipage}
-\end{center}
-% artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period 7.900476918876868e-06,
-%   annualized_ir_of_always_long_market 0.3704062519620255, n_periods 35064, n_symbols 40};
-%   TWO NAMED QUANTITIES DIFFERING BY ONE, NOT A CONTRADICTION. Measured across the receipts:
-%     35,064 -> `n_periods` (21) and `n_periods_h15` (1): the period GRID, and the length of the
-%              headline series (verified by len()).
-%     35,063 -> `T` (2), `T_periods` (1), `decisions_per_symbol` (1): SCORED periods per
-%              instrument. Self-consistent with the exact A_p run's own total: 1,402,520 / 40 = 
-%              35,063 exactly.
-%   Both names are stable across receipts and each is internally consistent; §5, §7.9 and D.3
-%   quote the scored count, which is the right one for those statements. An earlier version of
-%   this note said "the artifacts disagree" -- they do not, and a disclosure that overstates a
-%   problem is its own defect. WE DO NOT ASSERT A MECHANISM for the off-by-one: the endpoint
-%   versus interval reading is the obvious candidate and remains a guess, so it is not written.
-%   rows[*].{modal_sign, modal_share, a_ir_gross_model, b_ir_gross_constant_direction,
-%   delta_a_minus_b, delta_ci95_lower, bias_only_share_of_model_ir}; paired block bootstrap,
-%   B = 10,000, block 188, seed 20260704. Caveat verbatim in ★_BENCHMARK_SUBSTITUTION_READ_FIRST.
-% artifact: runs_manifest/m6_skill_vs_bias_exact.json (SEED 4, the SPECIFIED A_p benchmark) ::
-%   a_ir_gross_model 1.1446252585124777, b_ir_gross_constant_direction_Ap 0.1474227707914885,
-%   delta_a_minus_b 0.9972024877209892, delta_ci95_lower 0.045448119782374716,
-%   se_boot 0.5875946654652116, bias_only_share_of_model_ir 0.12879566451562927.
-%   t = 0.9972.../0.5876... = 1.6971. THE PRE-REGISTERED BOUND IS ONE-SIDED at alpha = 0.05 --
-%   src/trikaal/eval/paired_bootstrap.py:36 `BOOT_ALPHA = 0.05  # §3a: one-sided level (the CI
-%   lower bound is the alpha-quantile)`. One-sided a=.05: percentile +0.0454, normal
-%   delta - 1.6449*se = +0.0307 (they AGREE). Two-sided 95%: delta - 1.9600*se = -0.1545,
-%   p = 2(1-Phi(t)) = 0.0897. An EARLIER DRAFT compared the one-sided percentile bound against a
-%   TWO-SIDED normal bound and reported a disagreement; there is none at a common level.
-%   Both outcome branches pre-declared: .PRE_DECLARED_READING (declared_by "supervisor, BEFORE the
-%   run"), outcome .OUTCOME_AGAINST_THE_PRE_DECLARED_READING.branch_taken "delta EXCLUDES ZERO
-%   POSITIVE". Spend: box 47715433, RTX 4090 @ $0.3322/h, 13.5 h, ~$4.48 of an $8 cap.
+\textbf{On two of three units the bias explanation does not merely fail --- it predicts the wrong
+sign.} Seeds 0 and 2 lean short in a sample that rose, so their lean alone \emph{loses} money,
+$-0.7607$ and $-1.2640$, while the models earn $+1.2665$ and $+2.1715$. On the third, measured
+against the names it actually traded, holding long reproduces $12.9\%$ of its gross information
+ratio and the remainder is $+0.9972$. \textbf{That margin is thin and we quote every bound with its
+level.} The pre-registered instrument is a one-sided bound at $\alpha = 0.05$, where the percentile
+bound is $+0.0454$ and its normal counterpart $+0.0307$; a two-sided $95\%$ bound is a stricter
+test and does not clear, at $-0.1545$ with $p = 0.0897$. The effect is real on the instrument
+declared in advance and it is not comfortably large. \textbf{None of this is a claim of
+economically useful skill} --- \cref{sec:lim-breakeven} puts the gross edge an order of magnitude
+short of fees. It is the narrower claim that the cheapest deflationary explanation is refuted.
+% artifact: runs_manifest/m6_skill_vs_bias.json :: market_drift.{mean_per_period, annualized_ir_of_always_long_market},
+%   rows[*].{modal_sign, a_ir_gross_model, b_ir_gross_constant_direction, delta_ci95_lower};
+%   m6_skill_vs_bias_exact.json for seed 4's A_p benchmark; se_boot 0.5875946654652116, t = 1.6971;
+%   src/trikaal/eval/paired_bootstrap.py:36 BOOT_ALPHA = 0.05, documented one-sided.
+%   Seeds 0 and 2 use the evaluated cross-section rather than the names they traded, which is not
+%   recoverable for them; the direction of that difference is unknown and unbounded.
 
 \begin{figure}[t]
   \centering
@@ -404,6 +212,7 @@ from the banked one.}}
   differ only by seed. Cell 1 only, $1{,}402{,}520$ decisions each.}
   \label{fig:seeds3}
 \end{figure}
+
 % artifact: paper/figures/make_fig13_seeds.py from runs_cloud/results/{r0/cell1_seed0,
 %   r1/cell1_seed2,r2/cell1_seed4}_eval.json :: mu_diag.{std, frac_negative, activity_decisions,
 %   n = 1,402,520, estimator "expectation"}; runs_manifest/m6_skill_vs_bias.json ::
@@ -413,197 +222,55 @@ from the banked one.}}
 %   sd(y_15) = 0.003504 and |RankIC| = 0.027 as in §7.7. Its _verify() RAISES if the two receipts
 %   disagree on any unit's lean, or if either short-leaning unit's lean stops losing money.
 
-\textbf{On two of three seeds the bias explanation does not merely fail --- it predicts the wrong
-sign.} Seeds 0 and 2 lean short in a sample that rose. Their lean alone \emph{loses} money,
-$-0.7607$ and $-1.2640$, while the models earn $+1.2665$ and $+2.1715$. Whatever produces their
-gross edge, it is earned against their own directional tilt, and drift capture cannot be it. That
-is a harder test than the one we set out to run, and it passes.
-
-\textbf{The third was the live one, and re-running it on the specified benchmark closed it ---
-marginally, which is the first thing to say about it.} Against the names seed 4 actually traded,
-rather than the evaluated cross-section, holding long returns $+0.1474$ instead of $+0.4282$:
-seed 4 traded \emph{lower}-drift names than the average symbol, so the substituted benchmark had
-been flattering the deflationary explanation, not the model. The bias-only share falls from
-$37.4\%$ to $12.9\%$ and the remainder moves from straddling zero to excluding it, $+0.9972$ with
-a $95\%$ lower bound of $+0.0454$.
-
-\textbf{That margin is thin, and every bound below is quoted with the level it was computed at,
-because a bound without its level is a number that can be argued with either way.} The effect is
-$\Delta = +0.9972$ with a bootstrap standard error of $0.5876$, so $t = 1.6971$. The
-pre-registered instrument is a one-sided bound at $\alpha = 0.05$; at that level the percentile
-bound is $+0.0454$ and its normal counterpart is $+0.0307$, and the two agree. A two-sided $95\%$
-bound is a stricter test than the one we registered, and at that level the effect does not clear:
-the lower bound is $-0.1545$ and $p = 0.0897$. \textbf{The honest sentence is that the effect is
-real on the instrument declared in advance, and that it is not comfortably large.} Both directions
-of the outcome were written down before the run, so the reading was not chosen after the number:
-the pre-declaration specified what we would conclude if the interval excluded zero, if it straddled
-it, and if it came back negative.
-
-\textbf{What survives, stated at the width the evidence supports:} directional bias times sample
-drift does not explain the gross performance of \emph{any} of the three seeds. For two, the bias
-alone \emph{loses} money while the models earn, so the explanation predicts the wrong sign. For the
-third, on its own traded names, the bias reproduces $12.9\%$ and the remainder excludes zero by
-$0.05$ information-ratio units. The claim is not that these models have predictive skill in any
-economically useful sense --- \cref{sec:lim-breakeven} shows the gross edge is an order of magnitude
-short of fees. It is the narrower one that the cheapest deflationary explanation of that edge is
-refuted on all three, decisively on two and marginally on one.
-
-\textbf{The exact benchmark was authorized, priced, and found infeasible --- and our first price
-for it was wrong in a way worth recording.} Averaging over the traded names requires re-scoring
-per-symbol forecasts across the full grid. The first estimate costed tokenization at about an hour
-and left the rollouts unquantified; measured, the rollouts are the whole cost --- $494.9$\,ms per
-decision on CPU, which is $193$ hours for seed 4 alone and $579$ for all three. The cheap term was
-priced and the dominant one implicitly set to zero. Subsampling does not rescue it: a
-$1{,}000$-period window costs about six hours and widens the bootstrap standard error roughly
-sixfold, on an interval that already straddles zero. \textbf{The GPU path was then taken for the
-one seed whose answer was open}: seed 4 was re-scored on a rented RTX 4090 for roughly \$$4.48$,
-which is why its row above carries the specified benchmark and the other two do not. Seeds 0 and 2
-were not re-run, by ruling, because their inversion is structural --- a short-biased model in a
-rising sample cannot have its positive edge explained by drift on any benchmark --- so the
-substitution caveat stands for them and is stated in the table rather than resolved.
-
-\subsection{One exchange, one venue, one year of scored data}
+\subsection{One exchange, one venue, and a scored universe of forty}
 \label{sec:lim-universe}
 
-The lake is $304{,}625{,}181$ one-minute bars across $200$ instruments, and the breadth of that
-number should not be read as breadth of evidence. Every instrument is a USDT-margined perpetual
-future on a single exchange. Perpetuals are not spot, and one exchange is not the market: fee
-schedules, tick sizes, liquidation mechanics and the composition of flow all differ across venues,
-and trade-flow imbalance is a venue-local quantity in a way that returns are not. Nothing here
-establishes that the result transfers to spot, to another exchange, to dated futures, or to any
-other asset class.
+The lake is $304{,}625{,}181$ one-minute bars across $200$ instruments, and that breadth is not
+breadth of evidence. Every instrument is a USDT-margined perpetual future on a single exchange;
+perpetuals are not spot, fee schedules and liquidation mechanics differ across venues, and
+trade-flow imbalance is venue-local in a way returns are not. \textbf{More narrowly still, the
+evaluation universe is forty instruments, not two hundred}: the gate's probe drew $150{,}000$
+decisions from forty, and the money grid scores forty. The two hundred is the training draw. One
+scored year cannot separate a regime-specific result from a general one, and the year is a single
+crypto cycle phase.
 
-Within that universe the scored slice is narrower still. The headline metric is computed on $40$
-instruments, not $200$, and on forward blocks $1$ through $5$ --- roughly 2024-01-01 to
-2025-01-01, one year --- with block $0$ spent selecting the execution filter and excluded. The
-remaining $160$ instruments are lake breadth, not evaluation breadth.
-% artifact: runs_manifest/m6_mde_inputs.json :: symbols_sampled (40 entries), primary_region_ms = [1704132000000, 1735689600000], n_blocks = 6
-One year of scored data at a $15$-bar horizon is $35{,}063$ periods per instrument, and the
-effective breadth across a correlated $40$-instrument cross-section is $1.5$, not $40$ --- which
-is where most of the minimum detectable effect in \cref{sec:lim-power} comes from. That single
-year is also one market regime. We do not test regime transfer and cannot claim it.
-
-Survivorship is owned rather than filtered: instruments that stop trading are retained, and $17$
-of them stop inside the window, giving the ragged right edge of \cref{fig:coverage}. This removes
-one bias; it does not remove listing bias, since an instrument must have been listed on this venue
-to enter the universe at all.
-% artifact: runs_manifest/m6_c15b_lake_surface_check.json :: bars = 304625181; paper/figures/make_fig7_coverage.py — enumerated from processed/universe_bars at render time
-
-\subsection{The embargo premise is established for one channel only}
+\subsection{The embargo premise holds for one channel and fails for the other}
 \label{sec:lim-embargo}
 
-The $120$-bar leading embargo is a $60$-bar label look-forward plus a $60$-bar
-serial-correlation margin, and the premise behind the second margin was measured on all $200$
-instruments rather than assumed, with a control arm that recovers a known AR(1) answer first so
-that a null reading is a measurement and not a silent failure. For signed returns it holds
-comfortably: autocorrelation at lag $60$ is $0.0067$ on average and $0.0191$ at the worst
-instrument.
+The $120$-bar embargo is built on a measured premise, and the measurement is honest about where it
+does not hold. Signed-return autocorrelation at lag $60$ is $0.0067$ on average and $0.0191$ at
+worst, so the margin is comfortable for the channel a label leak would travel on. Absolute-return
+autocorrelation is $0.2323$ and $0.3604$ --- volatility clustering, which is not a label channel
+but is not nothing either, and a volatility-conditioned strategy could in principle exploit it
+across the boundary. We state both rather than the favourable one.
 
-For absolute returns it does not hold: $0.2323$ on average and $0.3604$ at the worst instrument,
-at the same lag. We report this as a red finding rather than a footnote. Our position is that
-signed returns are the channel a label leak would actually travel on --- the labels are signed
-forward returns, and a leak means a training window seeing the sign of a future return it should
-not --- and that persistent absolute-return autocorrelation is volatility clustering, a
-well-established property of the series that is present in the training region and the evaluation
-region alike and is not a path from label to feature.
+\subsection{``Microstructure'' here is narrower than the word suggests}
+\label{sec:lim-micro}
 
-That is an argument, and it is the weakest link in the validation geometry. What we have
-established is that the signed channel is clean at the chosen margin. What we have \emph{not}
-established is that no leakage path exists through volatility --- for instance, a model that
-learns to condition on realized volatility could in principle be advantaged by a training window
-whose volatility state persists into the evaluation region. Extending the margin until the
-absolute-return premise also holds would require a margin several times longer and would cost
-evaluation data we do not have; we chose the shorter margin and we are stating the choice.
-% artifact: runs_manifest/m6_c20_embargo_premise.json :: reading.{H_MAX_DEFAULT=60, L_CORR_DEFAULT=60, EMBARGO_DEFAULT=120, ALL200_signed_acf_at_60_mean=0.006669, ALL200_signed_acf_at_60_worst=0.019079, abs_acf_at_L_corr_60_mean=0.2323, abs_acf_at_L_corr_60_worst_symbol=0.3604, premise_supported_for_ABS_returns=false}; control_arm.series = AR(1) rho=0.97, n=200000
+Three limits compound. The imbalance is computed from executed trades, so it is \emph{trade}-flow
+imbalance and not order-flow imbalance; true OFI needs book depth, which v1 firewalls out.
+Funding and open interest occupy three of the sixteen feature dimensions and are masked on every
+bar in the lake --- specified, wired, and structurally absent. And the class weight $\lambda = 3$
+was fitted on the synthetic fixture and on a single decision path, then pinned; the gate is what
+guards the transfer, and on real data it refused.
 
-\subsection{The microstructure leg is narrower than ``microstructure'' suggests}
-\label{sec:lim-features}
-
-\paragraph{Trade-flow imbalance, not order-flow imbalance.}
-The imbalance signal is computed from freely available aggregated trades, and is therefore signed
-\emph{executed-volume} imbalance. True order-flow imbalance requires order book depth --- the
-arrival and cancellation of resting liquidity --- which we do not have. The distinction is not
-cosmetic: order-flow imbalance carries information about intent that never executes, and a
-substantial part of the microstructure literature's predictive content comes from exactly that.
-We use the name trade-flow imbalance everywhere, in code, configuration and prose, and a negative
-result here is evidence about trade-flow imbalance only. Depth-based order-flow imbalance is
-explicit v2 work.
-
-\paragraph{Three of sixteen feature dimensions are structurally absent.}
-The per-bar feature vector is specified as $16$ dimensions, of which $13$ are live. Funding rate
-and open interest occupy dimensions $13$ through $15$; they are wired, carried through the
-pipeline, and masked --- and in the v1 lake they have standard deviation exactly $0.0$ and are
-masked on $100\%$ of all $304{,}625{,}181$ bars, because ingest covers klines and aggregated
-trades only. They are specified and structurally absent. The microstructure block that the
-ablation actually varies is six live dimensions, $7$ through $12$, each non-degenerate across all
-$200$ instruments.
-% artifact: docs/m6_prereg.md §7 v1.6.16 — x_13/14/15 stddev exactly 0.0, m_13/14/15 masked on 100% of bars
-% artifact: src/trikaal/constants.py :: MASK_BITS_PERP = (13, 14, 15)
-% artifact: runs_manifest/m6_c10_micro_density.json :: symbols_with_zero_unmasked_per_dim = {} for dims 7-12; per_dim_total_unmasked ~ 3.0e8 each
-Funding and open interest are the two channels most plausibly carrying the information a
-perpetual-futures microstructure study would want, and the study is run without them. This is a
-limitation of the v1 data, not a design choice defended on merit.
-
-\subsection{Two matching caveats}
+\subsection{Matched to a tolerance, not exactly}
 \label{sec:lim-matching}
 
-\paragraph{$\lambda$ is fitted to a synthetic proxy.}
-The class weight that makes the per-bar bottleneck carry the microstructure block was selected on
-the calibration fixture, not on real data, and its acceptance threshold was restated after
-calibration results were seen --- we state that plainly in \cref{sec:mech-fix} rather than let it
-be discovered. It is pinned pre-data at a single value and applied identically to every arm, so it
-cannot favour any cell relative to any other. The residual risk is that the proxy does not
-transfer: a $\lambda$ tuned for a synthetic covariance geometry may under-serve the real one. The
-guard is the legibility gate, which is why it exists --- it is evaluated on real data before any
-second-stage training begins, requires at least $0.90$ sign accuracy on every one of the six live
-microstructure dimensions with no mean clause and no floor, and raises a hard stop rather than
-degrading quietly. A gate that fires costs us the run; it does not cost us the honesty of the
-result.
+The two quantizer arms differ by $0.058$ bits per bar and by $69{,}632$ parameters --- $0.219\%$ of
+the realized model, $0.327\%$ of the backbone alone; we give the denominator because a bare
+percentage travels without one. Both gaps favour the FSQ arm and both are an order of magnitude
+smaller than any effect the design can detect. Separately, the acceptance rule for the interface
+fix was \emph{restated} after seeing calibration results, from a single threshold to a seed mean
+plus a per-seed floor. \Cref{sec:mech-fix} sets out why that is defensible and what it costs; the
+run's own gate is the stricter absolute form, applied to every dimension with no mean clause.
 
-\paragraph{The arms are matched to $0.219\%$ of the model, not exactly.}
-The predictor realizes $31{,}795{,}200$ parameters at the FSQ vocabulary and $31{,}725{,}568$ at
-the BSQ vocabulary --- $69{,}632$ fewer, which is $0.219\%$ of the realized model and $0.327\%$ of
-the backbone alone; we give the denominator because the bare percentage is the shape that travels
-without it --- because embedding and output-head rows
-scale with vocabulary size. The two quantizer arms also differ by $0.058$ bits per bar. Both gaps
-favour the FSQ arm, both are an order of magnitude smaller than any effect the design can detect,
-and both are reported rather than absorbed. We do not claim exact parameter parity; we claim
-parity to a stated tolerance, hard-checked before any cell is scored. The gap is also
-\emph{smaller} than we previously disclosed, because the heads it does not touch belong in the
-denominator: $0.219\%$ supersedes the $0.327\%$ carried in earlier drafts, and the absolute figure
-is unchanged.
-
-\textbf{One admission belongs with this, because the same omission produced two wrong corrections
-in the same direction.} Both of the figures above were themselves \emph{corrections}, and both
-overshot. An earlier draft described the instrument as roughly a $27$-million-parameter model; we
-replaced that with $21{,}301{,}248$ on the reasoning that a target should give way to a realized
-count. The realized count is $31{,}795{,}200$, so the figure we discarded as imprecise was nearer
-the truth than the one that replaced it. Separately, we withdrew a hedge that the training budget
-was below compute-optimal in favour of ``$20.00$ tokens per parameter, which is compute-optimal'';
-against the realized model that ratio is $13.40$, so again the withdrawn statement was the closer
-one. Both errors have a single cause --- a parameter count that silently excluded the multi-token
-heads --- and in both cases correcting moved the number further from the truth while making it
-sound more precise. We record it because the released weights make the total checkable in one
-line, and a reader who checks should find the discrepancy already described here rather than
-discover it.
-% artifact: runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0/predictor.pt and
-%   runs_cloud/ckpt_cell4_seed0/predictor.pt — realized totals 31,725,568 / 31,795,200; the "mtp.*"
-%   parameter group is 10,493,952 in BOTH, so total - mtp = 21,231,616 / 21,301,248 exactly.
-%   src/trikaal/train/cells.py:134 gates model.num_backbone_params() (backbone, EXCLUDING MTP)
-%   against PINNED_BACKBONE_PARAMS = 21,301,248 (src/trikaal/eval/conformance.py:48) — the CODE
-%   names it "backbone base params" correctly; the paper had promoted it to the model count.
-%   Ratios: 426,033,152 / 21,301,248 = 20.00; / 31,795,200 = 13.40.
-% artifact: runs_manifest/m6_cuda_probe.json :: params_gate = "21,301,248 enforced by OrchestratorConfig.expect_backbone_params"
-
-\subsection{Reproducibility is bit-exact except in one place, and that place is training}
+\subsection{Reproducibility is bit-exact except in training}
 \label{sec:lim-determinism}
 
-The data pipeline, the frozen normalization statistics and prediction replay are bit-exact from
-one configuration file, a pinned seed and content-hashed inputs --- within one provenance identity;
-across a different \texttt{torch} build and a different physical GPU, replay reproduces to about
-four decimal places rather than to the bit, which \cref{sec:repro-bitexact} measures. GPU training is not, unless the
-deterministic-attention fallback is enabled, and the two are not the same claim: deterministic
-attention is necessary for bit-exact training and is not sufficient, because reduction order
-elsewhere in the backward pass is unconstrained. We record the mode for every run.
-\Cref{sec:repro} states exactly which artifacts carry which guarantee, and \cref{app:claims}
-separates what was measured from what was estimated across the whole paper.
+The data pipeline, the frozen normalization statistics and prediction replay are bit-exact from one
+configuration file, a pinned seed and content-hashed inputs, within one provenance identity. GPU
+training is not, unless the deterministic-attention fallback is enabled, and deterministic
+attention is necessary but not sufficient: reduction order is unconstrained unless deterministic
+algorithms are forced as well. \Cref{sec:repro-bitexact} reports what replay costs across
+environments and what it does not cover.

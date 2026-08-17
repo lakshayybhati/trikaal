@@ -216,6 +216,56 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.43 (2026-08-17, ★★ THE AUDIT VOICE LEAKED INTO THE PAPER VOICE. 54 PP → 42 INTERNAL /
+  39 SUBMISSION, AND ALL TWELVE PROTECTED PASSAGES SURVIVED.)**
+  - **★ MY RULING ON THE AUDIT-VOICE DIAGNOSIS: THE REVIEWER IS RIGHT, AND THE ROOT CAUSE IS MINE
+    AND NAMEABLE.** *"A paper is not its changelog"* is correct, and the reason the changelog got
+    into the paper is that **I applied the document-of-record norm to the wrong document.** That
+    norm — quote the false wording, name why it was false, never silently rewrite — is right for
+    THIS log, which exists to record what we believed and when. Applied to `paper/` it produced a
+    paper that argues with its own previous drafts in the present tense. **The corrections are all
+    still recorded; they are recorded where they belong.** Removed from the paper: "This subsection
+    asserted through several drafts…", "One admission belongs with this…", "an earlier draft of
+    this sentence quoted…", "This entry described §6 before the run. It is corrected rather than
+    replaced…", and the parameter-count revision history.
+  - **THE CUT, EXECUTED: 54 → 42 pp internal, 50 → 39 pp submission.** §7 from twelve subsections
+    and 609 source lines to eleven and 277, each limitation stated ONCE at its first natural home
+    (−4 pp). §4.4–4.7 — a pre-registration document embedded in a paper — compressed into one
+    subsection with the machinery pointed at Appendix D (−2 pp). **Figures 8, 9 and 10 DELETED**
+    with their generator and orphaned PDFs (−3 pp): three consecutive pages of empty watermarked
+    panels read, in the reviewer's words, as *"the paper performing its own honesty"*, and a
+    sentence does what an empty plot does. §8.5's GPU-rental narrative to one paragraph, §5.6's
+    storage layout to one sentence, the abstract 476 → 377 words with its three-negation ending
+    gone, and the one-line widow closed.
+  - **★ WHAT I REFUSED, AND WHY.** (1) The reviewer wanted §7.2, the dropped external anchor, in
+    *"two sentences"*. It is a paragraph: a reader needs it once, but a **referee** checks the
+    withdrawal where it is used, and the required-disclosure field shipped in every verdict
+    manifest has to be traceable to prose. (2) The **placebo handicap** stays in §4.3 *and* §7.3
+    rather than once — §4.3 states the design fact, §7.3 states what it costs the claim, and C-12
+    is what makes that the difference between a disclosure and a live objection. (3) **§7.6 was
+    not cut to limitation size.** The reviewer itself called break-even *"the most trading-relevant
+    number in the paper"* and complained it was *"filed as a limitation"*; it stays in §7, because
+    that is where a bounded negative result belongs, but it now opens by saying it is the number to
+    take away, and Figure 11 draws it.
+  - **ALL TWELVE PROTECTED PASSAGES SURVIVE, verified in the render — and one FALSE ALARM is worth
+    more than the confirmation.** My check reported *"Both outcomes are reportable"* missing; the
+    phrase wraps across a line in the PDF and my grep required it whole. **A verification that
+    fails on its own formatting is a false positive, and I came within one step of "fixing" a
+    passage that was never broken.** The instrument, not the paper, was wrong.
+  - **THREE OF THE REVIEWER'S FOUR "MISSING FIGURES" ALREADY EXIST**, built before the review
+    arrived: the argument-chain schematic is Figure 12, the economics figure is Figure 11, the seed
+    divergence is Figure 13. The two still absent — the smearing curve, and a real-data per-dim
+    legibility figure across all thirteen live dims — are buildable from existing receipts and are
+    named as future work rather than quietly dropped.
+  - **SUBSTANTIVE FIXES BEYOND ITEMS 1–4.** The title said *"Duplicates Price"* when the surviving
+    channels co-vary with **volume** — now *"Duplicates OHLCV and Drops the Signed Channels"*. §1
+    carries the signed-vs-magnitude split on **page one** as the result rather than on page 24. The
+    smearing mechanism gets its gloss where it is first used instead of seven pages later. §3.2
+    states the fixture↔real mapping (why eleven fillers for a 7+6 vector). Figure 2's caption title
+    said *"reconstruction quality"* for what is **per-bar recoverability**. And §7.1's *"no
+    experiment here varies the objective on market data"* contradicted §6.4, which sweeps λ on
+    market data — corrected to name the sweep as the one real-data intervention we have.
+
 - **v1.6.42 (2026-08-17, ★ MY OWN ITEM-1 STEP 2 WAS RIGHT FOR THE WRONG REASON — THE PLACEBO IS
   NOT CAPACITY-NEUTRAL, AND WE MEASURED THAT OURSELVES.)**
   - **WHAT I WROTE AND WHY IT WAS FALSE.** §6.5 step 2 claimed the placebo *"holds capacity fixed

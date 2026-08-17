@@ -15,7 +15,7 @@
 \label{app:claims}
 
 Every quantitative claim in this paper carries an inline comment in the \LaTeX{} source naming the
-artifact it came from --- $147$ such comments across $59$ distinct artifact paths, stripped from
+artifact it came from --- $99$ such comments across $47$ distinct artifact paths, stripped from
 the submitted version and present in the released source. This appendix summarizes them by status.
 
 Four statuses are used, and the boundaries between them are the point of the table.
@@ -139,7 +139,7 @@ gross IR vs own-lean benchmark, $\Delta$ & $+0.9972$--$+3.4355$ & measured & ski
 \quad seed 4, two-sided $95\%$ low / $p$ & $-0.1545$ / $0.0897$ & derived & stricter than pre-registered \\
 \quad cross-build replay agreement & $2.59\times10^{-4}$ & measured & exact-run control arm \\
 \quad always-long IR of the sample & $+0.3704$ & measured & same; the deflationary alternative \\
-amendment log & $56$ revision tags & measured & pre-registration \\
+amendment log & $57$ revision tags & measured & pre-registration \\
 anchor causal sweep & $420$ of $420$ & measured & Gate-A manifest \\
 test suite & $947$ passing & measured & \texttt{pytest} at \texttt{78a502d} \\
 \bottomrule
@@ -148,8 +148,8 @@ test suite & $947$ passing & measured & \texttt{pytest} at \texttt{78a502d} \\
 
 \subsection*{E.4a\quad A header-less tag is cited on a shipped clause}
 
-Appendix~F.1 records that the amendment log carries $56$ distinct revision tags across
-$53$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
+Appendix~F.1 records that the amendment log carries $57$ distinct revision tags across
+$54$ top-level entries, three tags --- v1.0, v1.6.24 and v1.6.27 --- appearing as in-body
 references without headers of their own. One consequence belongs here rather than there, because
 it touches a field that ships.
 
@@ -176,19 +176,11 @@ ruling in Appendix~D.2. Ruled by the supervisor, 2026-08-11.
 
 \subsection*{E.5\quad Everything in \S6}
 
-\emph{This entry described \S6 before the run. It is corrected rather than replaced, because what
-it got wrong is a fact about the paper's history.} It read ``every quantity in \S6 is
-\textbf{pending}'' and that is no longer true: the gate receipt of \cref{sec:res-gate} ---
-twelve sign accuracies, their base rates and the two gate outcomes --- is \textbf{measured}, as is
-the $\lambda$ sweep of \cref{sec:res-lambda}. What remains pending is everything the ablation
-would have produced, which is the rest of the section: no verdict, no cell comparison, no
-secondary diagnostic. Those bindings are tabulated in Appendix~D.5 and named beside each slot in
-the source, so filling them would be mechanical substitution rather than judgement.
-
-Two further sentences here have been overtaken and are corrected in place. Of the three figures in
-that section, none now carries a placeholder value that could be mistaken for a result:
-\cref{fig:cost} draws no curve at all, \cref{fig:seeds} places every cell on zero at absurd
-magnitudes, and both remain watermarked. The third, \cref{fig:verdict}, is a schematic of the decision
-surface carrying no values at all. And \cref{sec:res-interpretation} no longer carries all five
+The gate receipt of \cref{sec:res-gate} --- twelve sign accuracies, their base rates and the two
+gate outcomes --- is \textbf{measured}, as is the $\lambda$ sweep of \cref{sec:res-lambda}. What
+remains \textbf{pending} is everything the ablation would have produced: no verdict, no cell
+comparison, no secondary diagnostic. Those bindings are tabulated in Appendix~D.5 and named beside
+each slot in the source, so filling them would be mechanical substitution rather than
+judgement. And \cref{sec:res-interpretation} no longer carries all five
 interpretation branches: the outcome selected one, and the other four were deleted rather than
 softened, exactly as pre-committed.

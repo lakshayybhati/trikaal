@@ -30,8 +30,8 @@ to prevent. The entry has since been written (\S7 v1.6.28, dated 2026-08-11, cit
 \texttt{2012acc}), and only then did the count move to $42$ in \cref{sec:repro-prereg} and
 Appendix~D.4.
 
-Two facts about the log that a reader checking this should have. The $56$ counts \emph{distinct
-revision tags}, which is what the paper claims; the log carries $53$ top-level entries, because
+Two facts about the log that a reader checking this should have. The $57$ counts \emph{distinct
+revision tags}, which is what the paper claims; the log carries $54$ top-level entries, because
 three tags --- v1.0, v1.6.24 and v1.6.27 --- appear as in-body references without headers of their
 own. And one claim inside the ruling document does not survive checking: it states that the
 compute-optimal token figure was ``verified from \texttt{PINNED\_STEPS\_STAGE2} at HEAD'', but that
@@ -85,16 +85,16 @@ retained struck in \texttt{main.tex}. \\
 \toprule
 quantity & count \\
 \midrule
-compiled pages & $54$ \\
+compiled pages & $42$ \\
 undefined references & $0$ \\
-inline \texttt{\% artifact:} comments & $147$ \\
-distinct artifact paths cited & $59$ \\
+inline \texttt{\% artifact:} comments & $99$ \\
+distinct artifact paths cited & $47$ \\
 marked placeholders (\texttt{\textbackslash TBD}) & $\mathbf{0}$ \\
 \quad in the rendered document & \textbf{none: affiliation and email are now set.} \\
 \quad remaining in source comments & $5$, all referring to the removed verdict slot. \\
-marked placeholder figure data (\texttt{\textbackslash PH}) & $5$ \\
+marked placeholder figure data (\texttt{\textbackslash PH}) & $1$ \\
 \textbf{unmarked placeholders} & $\mathbf{0}$ \\
-figures & $13$ \\
+figures & $10$ \\
 bibliography entries & $16$ \\
 \bottomrule
 \end{tabular}
@@ -156,7 +156,7 @@ has no argument handling at all --- and that could not have run in any case, bec
 pre-registration's stopping rule no verdict manifest is ever emitted, so the flag has no input that
 can exist. The documentation of it is the defect, and it is removed rather than implemented.
 
-\textbf{One item remains, and it is now a mechanism rather than an intention.} This appendix must
+\textbf{One item remains, and it is a mechanism rather than an intention.} This appendix must
 not ship, and ``we will remember to remove it'' is the shape of defect the rest of this paper spent
 two days closing. The submission target is \texttt{paper/submission.tex}, which sets a build flag
 that omits this appendix; \texttt{main.tex} keeps it and remains the internal read-through build.
@@ -165,5 +165,4 @@ directions --- that the submission build lacks this appendix, that the internal 
 that every other section survives, and that the submission build is strictly shorter --- because a
 one-sided check passes just as happily if the appendix is deleted outright or the gate is inverted.
 It has been observed to fail under each of those three mutations, with a semantic no-op as a
-negative control. Nothing else in the paper was contingent on the outcome, which is why that list
-was short and is now done.
+negative control. Nothing else was contingent on the outcome.

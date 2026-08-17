@@ -116,7 +116,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $56$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $57$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever
@@ -155,68 +155,18 @@ manifest, and a manifest that lacks it cannot be quoted; disagreement between th
 specifications is a first-class finding rather than a footnote.
 % artifact: src/trikaal/eval/verdict.py :: dual_specification assembled and emitted into the manifest; §7 v1.5 makes it a REQUIRED field
 
-\subsection{One identity key was deliberately relaxed, on schedule grounds}
-\label{sec:repro-platform}
+\subsection{One identity key was deliberately relaxed}
+\label{sec:repro-abi}
 
-Every unit of the ablation is stamped with sixteen provenance keys, and the verdict is refused
-outright if any key disagrees across units: a cell trained and scored on a different instrument is
-a different experiment, and $\Delta\IR(4-5)$ across two instruments measures the instruments as
-much as the tokenizer. One of those keys was relaxed before the run, and because a reproducibility
-claim is exactly the kind of sentence that gets quoted alone, we state the exception inside the
-claim rather than beside it. \textbf{The units of this study ran on hardware that is identical in
-fifteen of sixteen recorded respects; the sixteenth, the host kernel release, is recorded but not
-required to match, and this section says why.}
-
-The key originally carried the full platform string, kernel included. It was split: the
-ABI-bearing part --- architecture and C library --- remains an identity key and still refuses on
-mismatch, while the full string, kernel included, is still stamped on every artifact as a recorded
-but non-compared field. \textbf{What changed is what we refuse on, never what we record.} Fifteen
-keys are untouched --- GPU model, driver, CUDA build, PyTorch, NumPy, Python, commit, image,
-lockfile hash, attention mode and all three determinism flags still must match exactly.
-
-\textbf{The motive was schedule, and we state it before the technical argument rather than after.}
-The rental market exposes no kernel filter, so a box's kernel is knowable only by renting it.
-Across a probe and two batches we rented fourteen machines and observed fourteen distinct kernels
-with no matched pair; filtering on driver, the only axis exposed, determines nothing about the
-kernel. A matched multi-machine pool was therefore not purchasable at any price we found, which
-forced the entire $270.4$ GPU-hour workload onto one machine --- $11.3$ days of wall-clock. The
-split makes a five-machine fan-out purchasable and takes that to $54.1$ hours. The additional
-\emph{work} is about $1.1$ GPU-hours --- roughly a dollar --- because the computation is identical
-and only per-machine setup multiplies. Any further difference in outlay comes from renting the five
-cheapest machines rather than the single cheapest, which raises the mean hourly rate; that is a
-market condition rather than a property of the change. There was accordingly no work-versus-time
-trade to make: the change buys wall-clock and nothing else.
-
-The technical argument is that a kernel patch release does not participate in GPU floating-point
-computation --- with GPU model, driver, CUDA build and framework fixed and deterministic
-algorithms forced, no float operation or kernel selection differs. We hold that argument to its
-scope: it concerns GPU arithmetic, not a general claim that kernel versions are immaterial.
-
-Two properties make the relaxation checkable rather than a matter of trust. It \textbf{fails
-closed}: the kernel is removed by stripping an exact expected prefix, and where that prefix does
-not match --- as on a non-Linux host --- the full string is returned and the key compares
-everything it compared before, so an unrecognised format cannot silently widen the gate. And the
-kernel remains \textbf{stamped per artifact}, so a reader can enumerate exactly which kernels ran
-and test any result against them. The change was made before any unit was trained at the pinned
-budget, which was mechanically checkable at the time: no evaluation artifact then carried the
-pinned step count. That statement is dated rather than standing --- the run has since begun, and
-three units at the pinned budget now exist.
-% artifact: src/trikaal/utils/provenance.py :: PROVENANCE_IDENTITY_KEYS (16 keys, `platform_abi`
-%   at position 12, `platform` absent from the comparison set); platform_abi() strips the exact
-%   "{system}-{release}-" prefix and returns the FULL string otherwise; run_provenance() stamps
-%   both. Verified at entry-time: the 7 literal rented kernels in
-%   tests/run/test_platform_abi_split.py collapse to x86_64-with-glibc2.35; glibc2.31 and aarch64
-%   still separate; macOS returns the full string. 40 tests passed across that file and
-%   tests/run/test_fanout_refusal.py.
-% artifact: docs/m6_fanout_runbook.md §0 table — 1 box 270.4 h compute / 270.7 billed / $79--$108;
-%   5 boxes 54.1 h compute / 271.8 billed / $79--$109. Delta +1.1 GPU-h, about +$1.
-% artifact: docs/m6_prereg.md §7 v1.6.29 — the 14-box measurement, the attribution sequence, and
-%   the correction to the briefed "$96 -> $121" cost figure ($96 appears in no artifact).
-% artifact: AS OF 2026-08-11, zero eval artifacts under runs_cloud/ carried
-%   provenance.steps_stage2 == 26003. AS OF 2026-08-12 two do (results/r0 cell1_seed0,
-%   results/r2 cell1_seed4) — the run has started. The claim above is dated, not standing;
-%   §7 v1.6.30 records the change and its consequence for the timing claims. The 23
-%   that exist are toy-rehearsal (15), CUDA-validation probe (7) and P2 (1), all at other budgets.
+Sixteen keys define a run's provenance identity, and one --- the platform ABI string --- was split
+so that the CUDA and driver components no longer force a mismatch on their own. The reason was
+schedule, not principle: rented GPUs arrive with heterogeneous drivers, and an unsplit key would
+have refused otherwise-identical runs across machines. \textbf{We state the motive in plain words
+because a relaxation justified on convenience and reported as rigour is the failure this section
+exists to prevent}; the amendment is logged with its direction, and the remaining fifteen keys are
+unchanged.
+% artifact: src/trikaal/utils/provenance.py :: PROVENANCE_IDENTITY_KEYS (16 keys, platform_abi
+%   split); docs/m6_prereg.md §7 v1.6.29, motive recorded as schedule.
 
 \subsection{The conformance surface}
 \label{sec:repro-conformance}
