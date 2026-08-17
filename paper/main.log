@@ -938,10 +938,12 @@ Requested font "ntxsyc" at 10.0pt
  -> ntxsyc
 Requested font "ntxexa" at 10.0pt
  -> ntxexa
+File: figures/fig12_decision_path.pdf Graphic file (type pdf)
+<use figures/fig12_decision_path.pdf>
 )
 File: figures/fig1_mechanism.pdf Graphic file (type pdf)
 <use figures/fig1_mechanism.pdf>
- [2] (sections/02_related [3] [4]) (sections/03_mechanism [5] [6]
+ [2] (sections/02_related [3] [4]) [5] (sections/03_mechanism [6]
 File: figures/fig2_eviction_by_variance_class.pdf Graphic file (type pdf)
 <use figures/fig2_eviction_by_variance_class.pdf>
 Requested font "ntx-Bold-tlf-ot1" at 9.0pt
@@ -963,13 +965,14 @@ LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 5.5pt
  -> TeXGyreTermesX-Regular.otf
+ [8]
 File: figures/fig3_extraction.pdf Graphic file (type pdf)
 <use figures/fig3_extraction.pdf>
- [8] [9]
+ [9]
 File: figures/fig4_legibility.pdf Graphic file (type pdf)
 <use figures/fig4_legibility.pdf>
- [10]) (sections/04_design
-[11] [12] [13]
+ [10] [11])
+(sections/04_design [12] [13]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/sc' will be
 (Font)              scaled to size 10.0pt on input line 187.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
@@ -981,8 +984,8 @@ File: figures/fig5_design.pdf Graphic file (type pdf)
  [16] [17]
 File: figures/fig6_validation.pdf Graphic file (type pdf)
 <use figures/fig6_validation.pdf>
-) [18]
-(sections/05_data [19
+)
+[18] (sections/05_data [19
 
 
 ] [20]
@@ -1025,13 +1028,16 @@ File: figures/fig10_seed_stability.pdf Graphic file (type pdf)
 
 ]
 [30] [31]
+File: figures/fig11_economics.pdf Graphic file (type pdf)
+<use figures/fig11_economics.pdf>
+ [32]
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/n' will be
-(Font)              scaled to size 8.0pt on input line 333.
+(Font)              scaled to size 8.0pt on input line 351.
 Requested font "[TeXGyreTermesX-Regular.otf]/OT:script=latn;language=dflt;-ss05
 ;+tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-Regular.otf
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/m/it' will be
-(Font)              scaled to size 8.0pt on input line 342.
+(Font)              scaled to size 8.0pt on input line 360.
 Requested font "[TeXGyreTermesX-Italic.otf]/OT:script=latn;language=dflt;-ss05;
 +tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-Italic.otf
@@ -1080,25 +1086,27 @@ Requested font "ntxexa" at 8.0pt
 Requested font "ntxexa" at 6.2pt
  -> ntxexa
 LaTeX Font Info:    Font shape `TU/TeXGyreTermesX(0)/b/it' will be
-(Font)              scaled to size 8.0pt on input line 342.
+(Font)              scaled to size 8.0pt on input line 360.
 Requested font "[TeXGyreTermesX-BoldItalic.otf]/OT:script=latn;language=dflt;-s
 s05;+tnum;+lnum;mapping=tex-text;" at 8.0pt
  -> TeXGyreTermesX-BoldItalic.otf
- [32]
-Overfull \hbox (8.21841pt too wide) in paragraph at lines 382--388
+File: figures/fig13_seeds.pdf Graphic file (type pdf)
+<use figures/fig13_seeds.pdf>
+
+Overfull \hbox (8.21841pt too wide) in paragraph at lines 423--429
 []\TU/TeXGyreTermesX(0)/b/n/10 The third was the live one, and re-running it on
  the specified benchmark closed it — marginally,
  []
 
-[33] [34]) (sections/08_repro [35] [36] [37] [38]) [39] (main.bbl)
-(sections/appendix_mechanism [40]
+[33] [34] [35]) (sections/08_repro [36] [37] [38] [39]) (main.bbl [40])
+(sections/appendix_mechanism
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[41]) (sections/appendix_repro
+[41] [42]) (sections/appendix_repro
 Requested font "[lmmono9-regular]:" at 9.0pt
  -> lmmono9-regular
- [42]
+
 Underfull \hbox (badness 6978) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 clause 5 deflated-Sharpe
  []
@@ -1113,7 +1121,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 63--63
 []|\TU/TeXGyreTermesX(0)/m/n/9 degeneracy guard, sign-
  []
 
-[43] [44] [45]) (sections/appendix_claims
+[43] [44] [45] [46]) (sections/appendix_claims
 Underfull \hbox (badness 1354) in paragraph at lines 53--53
 []|\TU/TeXGyreTermesX(0)/m/n/9 interface re-spec re-
  []
@@ -1144,7 +1152,7 @@ Underfull \hbox (badness 10000) in paragraph at lines 53--53
 []|$\OML/ntxmi/m/it/9 ^^U$\TU/TeXGyreTermesX(0)/m/n/9 -search; restated
  []
 
-[46]
+[47]
 Underfull \hbox (badness 1859) in paragraph at lines 113--113
 []|\TU/TeXGyreTermesX(0)/m/n/9 MDE inputs re-
  []
@@ -1184,7 +1192,7 @@ Underfull \hbox (badness 3919) in paragraph at lines 113--113
 []|\TU/TeXGyreTermesX(0)/m/n/9 same; the grid
  []
 
-[47]) (sections/appendix_audit [48]
+[48]) (sections/appendix_audit [49]
 Overfull \hbox (6.00842pt too wide) in paragraph at lines 24--32
 \TU/TeXGyreTermesX(0)/m/n/10 The ruling named itself amendment v1.6.28 while th
 at tag was absent from the log: \TU/lmtt/m/n/10 grep -c v1.6.28
@@ -1202,15 +1210,15 @@ Underfull \hbox (badness 5302) in paragraph at lines 73--76
 ermesX(0)/m/n/10 The
  []
 
-[49] [50])
+[50] [51])
 Overfull \hbox (72.80508pt too wide) in paragraph at lines 159--259
 \TU/TeXGyreTermesX(0)/m/n/10 this appendix; \TU/lmtt/m/n/10 main.tex \TU/TeXGyr
 eTermesX(0)/m/n/10 keeps it and remains the internal read-through build. \TU/lm
 tt/m/n/10 paper/check_submission_build.py
  []
 
-[51] [52] (main.aux)
+[52] [53] (main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 2223F862F078BA442F225BBBE8C4D38C;17498.
  )
-Output written on main.xdv (52 pages, 1807672 bytes).
+Output written on main.xdv (53 pages, 1828520 bytes).

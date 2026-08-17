@@ -272,6 +272,24 @@ not independent corroboration of the gross-IR statement: gross IR \emph{is} the 
 break-even on this grid, so ``two intervals contain zero'' and the pre-declared bootstrap
 intervals containing zero are one fact, not two.
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig11_economics.pdf}
+  \caption{\textbf{Break-even sits one to two orders of magnitude below the cost of trading.} The
+  round-trip cost at which net information ratio crosses zero, for the three scored units, against
+  a $0.10\%$ taker round trip. The axis is logarithmic because the finding is the \emph{size} of
+  the gap: on a linear axis every measured value collapses onto the origin. The shaded band is the
+  pre-registered cost grid, whose floor is the comparison itself --- which is why the
+  pre-registered break-even statistic returns $-\infty$ here and cannot resolve the question.
+  Intervals are $95\%$ bootstrap; two of the three include zero. Cell 1 only.}
+  \label{fig:economics}
+\end{figure}
+% artifact: paper/figures/make_fig11_economics.py from runs_manifest/m6_horizon_break_even.json ::
+%   measured_h15_headline[*].{c_break_pct_POINT_see_c_break_interval, c_break_interval.{ci95_low,
+%   ci95_high}, clears_round_trip_fee}; fee_reference.round_trip_frac 0.001; pins.flat_costs.
+%   Its _verify() RAISES if any unit's break-even ever clears the fee -- the figure's own headline
+%   would then be false and it must not be drawn.
+
 \textbf{The horizon reading this invites is not available, and we record that the file inviting it
 is ours.} Only $h = 15$ is measured. At $h = 5$ and $h = 60$ the sole exact statement is that
 break-even is below $0.30\%$ --- above the fee, and therefore no constraint on the fee question at
@@ -371,6 +389,29 @@ from the banked one.}}
 %   Both outcome branches pre-declared: .PRE_DECLARED_READING (declared_by "supervisor, BEFORE the
 %   run"), outcome .OUTCOME_AGAINST_THE_PRE_DECLARED_READING.branch_taken "delta EXCLUDES ZERO
 %   POSITIVE". Spend: box 47715433, RTX 4090 @ $0.3322/h, 13.5 h, ~$4.48 of an $8 cap.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig13_seeds.pdf}
+  \caption{\textbf{Three seeds of one configuration take structurally different directional
+  positions --- and the two short-leaning units earn their edge against that lean.} \emph{(a)} the
+  forecasts are $1.5$--$3.0$ times wider than the returns they forecast. \emph{(b)} two units are
+  negative on roughly two-thirds of decisions and one on seven per cent, a difference of kind
+  rather than degree. \emph{(c)} each unit's gross information ratio beside the same unit's own
+  modal direction held constant: for seeds 0 and 2 the lean \emph{loses} money in a sample that
+  rose, so drift capture predicts the wrong sign for them. The lean propagates --- decision
+  activity spans $24\times$ and net information ratio spans $118$ points across three units that
+  differ only by seed. Cell 1 only, $1{,}402{,}520$ decisions each.}
+  \label{fig:seeds3}
+\end{figure}
+% artifact: paper/figures/make_fig13_seeds.py from runs_cloud/results/{r0/cell1_seed0,
+%   r1/cell1_seed2,r2/cell1_seed4}_eval.json :: mu_diag.{std, frac_negative, activity_decisions,
+%   n = 1,402,520, estimator "expectation"}; runs_manifest/m6_skill_vs_bias.json ::
+%   rows[*].{modal_sign, a_ir_gross_model, b_ir_gross_constant_direction} and
+%   market_drift.annualized_ir_of_always_long_market; m6_skill_vs_bias_exact.json for seed 4's
+%   A_p benchmark; m6_horizon_break_even.json :: ir_net_at_headline_cost for the 118-point spread.
+%   sd(y_15) = 0.003504 and |RankIC| = 0.027 as in §7.7. Its _verify() RAISES if the two receipts
+%   disagree on any unit's lean, or if either short-leaning unit's lean stops losing money.
 
 \textbf{On two of three seeds the bias explanation does not merely fail --- it predicts the wrong
 sign.} Seeds 0 and 2 lean short in a sample that rose. Their lean alone \emph{loses} money,

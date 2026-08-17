@@ -230,10 +230,8 @@ def main() -> None:
     axL.set_yticklabels([s[0] for s in STAGES], fontsize=6.2, linespacing=1.35)
     axL.set_xlim(0.44, 0.98)
     axL.set_ylim(-0.7, len(STAGES) - 0.05)
-    axL.set_xlabel("logistic sign-accuracy from bar $t$'s own token")
-    axL.set_title(
-        "synthetic fixture — the intervention, stage by stage", loc="left", fontsize=7.0, pad=5
-    )
+    axL.set_xlabel("logistic sign-accuracy from bar $t$'s own token", fontsize=fs.T_LABEL)
+    fs.panel_title(axL, "a", "synthetic fixture — the intervention, stage by stage", pad=5)
     axL.spines["left"].set_visible(False)
     axL.tick_params(axis="y", length=0)
 
@@ -280,10 +278,8 @@ def main() -> None:
     axR.set_yticks([])
     axR.set_xlim(0.44, 1.06)
     axR.set_ylim(-1.35, len(names) - 0.05)
-    axR.set_xlabel("same probe, real bars")
-    axR.set_title(
-        "real microstructure — the gate fired, both arms refused", loc="left", fontsize=7.0, pad=5
-    )
+    axR.set_xlabel("same probe, real bars", fontsize=fs.T_LABEL)
+    fs.panel_title(axR, "b", "real bars — gate fired", pad=5)
     axR.spines["left"].set_visible(False)
     axR.tick_params(axis="y", length=0)
     axR.text(
@@ -299,10 +295,11 @@ def main() -> None:
     # legend, inside the axes and below every row so nothing can paint over it
     ly = -1.05
     axR.plot([0.462], [ly], marker="D", ms=3.4, color=fs.FAIL, lw=0, zorder=6)
-    axR.text(0.478, ly, "real microstructure", fontsize=5.4, va="center", color=fs.RULE, zorder=6)
-    axR.plot([0.735], [ly], marker="o", ms=3.0, mfc="white", mec="#9a9a9a", mew=0.7, lw=0, zorder=6)
-    axR.text(0.751, ly, "shuffled placebo", fontsize=5.4, va="center", color=fs.RULE, zorder=6)
+    axR.text(0.476, ly, "real", fontsize=fs.T_MICRO, va="center", color=fs.RULE, zorder=6)
+    axR.plot([0.575], [ly], marker="o", ms=3.0, mfc="white", mec="#9a9a9a", mew=0.7, lw=0, zorder=6)
+    axR.text(0.591, ly, "shuffled", fontsize=fs.T_MICRO, va="center", color=fs.RULE, zorder=6)
 
+    fig.subplots_adjust(left=0.235, right=0.955, top=0.90, bottom=0.135)
     fs.assert_text_legible(fig, (axL, axR))
     fs.save(fig, OUT, "fig4_legibility")
 

@@ -60,12 +60,31 @@ is a separate question, and it is the one we set out to answer: a pre-registered
 capacity-matched five-cell ablation with a shuffled-microstructure placebo, on $304{,}625{,}181$
 one-minute bars across $200$ instruments, with the decision rule, thresholds, horizon, cost model,
 seed count and trial enumeration all fixed before any of their inputs existed.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/fig12_decision_path.pdf}
+  \caption{\textbf{A gate written before the data stopped the study, and the disposition that
+  followed was pre-registered too.} The five-cell design, the legibility gate that stands in front
+  of second-stage training, its firing on real data, and the pre-committed consequence --- the
+  mechanism finding becomes primary and the ablation reports nothing. The reading was not composed
+  after the outcome: the rule that makes the mechanism primary on a firing was fixed thirteen days
+  before it fired. Boxes are schematic; every number on them is loaded at render time from the
+  pinned constants and the gate's own stop receipt.}
+  \label{fig:path}
+\end{figure}
+% artifact: paper/figures/make_fig12_decision_path.py loads every number on the panel at render
+%   time -- src/trikaal/eval/conformance.py :: PINNED_MICRO_LEGIBILITY_MIN, PINNED_SEEDS;
+%   src/trikaal/train/gates.py :: MICRO_DIMS; runs_manifest/m6_micro_legibility_stop.json ::
+%   stage2_entered false, artifacts_produced 0, legibility_receipt.<arm>.per_dim.<d>.sign_acc.
+%   Its _verify() REFUSES to draw if the receipt stops recording a stop or if either gated arm's
+%   worst dimension clears the threshold.
+
 \textbf{It did not run.} The gate described above fired on real data and stopped the study before
 any cell was trained through the second stage --- an outcome the pre-registration had named as the
 mechanism's own modal prediction, and had bound in advance to make the mechanism finding the
 primary result. \Cref{sec:results} reports what the gate measured and what was therefore never
 reached; this paper contains no ablation outcome --- no cost-aware net information ratio, no null
-and no verdict. Three ungated baseline units were scored before the gate refused the
+and no verdict. \Cref{fig:path} is that sequence in one panel. Three ungated baseline units were scored before the gate refused the
 microstructure arms, and what they support is confined to \cref{sec:limitations}.
 
 Two things this paper is not. It is not a foundation model: the backbone is a fixed measurement

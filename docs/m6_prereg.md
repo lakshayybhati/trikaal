@@ -216,6 +216,62 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.40 (2026-08-17, THREE NEW FIGURES, ALL RECEIPT-BACKED — AND THE FIGURE CHECKER I BUILT
+  TO CATCH CHECKS-THAT-CANNOT-FAIL WAS ITSELF ONE, FOR EVERY TITLE IN THE PAPER.)**
+  - **THE NON-NEGOTIABLE HELD: every quantity in every new figure loads from a named receipt at
+    render time, and each new generator carries a `_verify()` that REFUSES TO DRAW if the receipt
+    stops supporting the figure's own headline.** Fig 11 raises if any unit's break-even ever
+    clears the fee; Fig 12 raises if the stop receipt stops recording a halt or if a gated arm
+    clears the threshold; Fig 13 raises if the two receipts disagree on any unit's lean or if a
+    short-leaning unit's lean stops losing money.
+  - **BUILT 3 OF THE 7 CANDIDATES.** (1) **Fig 12, the decision path** — the sequence a reader
+    otherwise assembles from prose in three sections; schematic boxes, every number loaded.
+    (2) **Fig 11, the economics** — measured break-even against realistic execution on a LOG axis,
+    because the finding is the SIZE of the gap and a linear axis puts every measured value on the
+    origin. (3) **Fig 13, three seeds** — candidates 3, 4 and 7 MERGED, because they are three
+    views of the same three units and the same 1,402,520 decisions each; split into three figures a
+    reader has to reassemble the causal chain that is the actual point.
+  - **REFUSED, WITH GROUNDS.** **Candidate 5 (three estimators): its own receipt records the input
+    as `/Users/.../BTCUSDT_1m.csv`, NOT_IN_THE_REPOSITORY** — a figure no reader could regenerate,
+    and the receipt itself calls it *"illustrative of a measured property, not a new measurement"*.
+    **Candidate 6 (data and fold design): IT ALREADY EXISTS** — fig6's three panels ARE the
+    purged-walk-forward/embargo/ACF diagram and fig7 is the 200-symbol coverage figure; adding a
+    third would be duplication. **Candidate 3 standalone: its receipt is 2 SYMBOLS AND 80
+    DECISIONS**, and its own header says the raw disagreement rate must not be quoted alone — the
+    finding is kept but drawn at MONEY scale (1.4M decisions per unit) inside Fig 13 instead.
+  - **AND ONE QUANTITY IN THE BRIEF WAS NOT DRAWN BECAUSE I COULD NOT SOURCE IT.** The "25–446×
+    over-dispersion" figure appears in no receipt I could locate. Fig 13 uses the two ratios that
+    ARE sourced — sd(μ̂) against the return sd it forecasts (1.5–3.0×), and against a calibrated
+    forecast at our own measured prior (56–110×, §7.7). Stated rather than quietly substituted.
+  - **★★ THE CHECKER WAS EXTENDED FOUR TIMES, EACH TIME BECAUSE A RENDER WAS LOOKED AT AND SHOWED
+    SOMETHING IT MISSED — AND THE FOURTH IS THE ONE WORTH KEEPING.** v1 containment only → passed a
+    legend sitting on a data row. v2 + overlap → passed a scope line running **232px off the
+    canvas**. v3 + figure-level text → passed a panel label overlapping its own title. v4 + titles
+    and axis labels, overlap made GLOBAL → a title spilling into the NEXT panel was invisible while
+    overlap was computed one axes at a time.
+  - **★ AND THEN v4 DID NOT WORK, WHICH IS THE REAL FINDING. `ax.title` IS THE *CENTRE* TITLE AND
+    IS EMPTY WHENEVER `loc="left"` IS USED — WHICH IS EVERY PANEL TITLE IN THIS PAPER.** The check
+    "now covers titles" was reading an empty artist and could not fail. It was caught only because
+    a deliberate over-long-title mutation **failed to fail**, and only because I checked that the
+    mutation had actually landed before believing the pass. Matplotlib keeps three title artists;
+    all three are read now. **A check-that-cannot-fail, inside the checker built to catch
+    checks-that-cannot-fail.**
+  - **WHAT THE HARDENED CHECKER THEN FOUND IN FIGURES THAT HAD BEEN PASSING:** fig4's right-panel
+    title ran **94px** past the canvas and fig9's x-axis label **26.6px**. Stated precisely rather
+    than dramatically: under `bbox="tight"` such text is **not clipped** — it widens the saved
+    bounding box, so the figure is scaled down to fit `\textwidth` and its type renders SMALLER
+    than its siblings'. **That is the mechanism behind a figure set that reads as separate
+    efforts**, which is exactly the complaint this pass started from.
+  - **THE SYSTEM WORK IS A FIVE-STEP TYPE LADDER plus three shared helpers** (`panel_title`,
+    `finding`, `scope`), on top of the palette that already existed and was already Tol-based and
+    colourblind-checked. `panel_title` folds the panel letter INTO the title because a floating
+    "(a)" collides with a left-aligned title on any narrow panel — removing the collision class
+    rather than tuning around it. `finding` and `scope` put the finding and the qualifier INSIDE
+    the raster, per the context-stripping rule.
+  - **COUPLING CONFIRMED, EXACTLY AS WARNED.** Setting an explicit left margin on fig4 to stop the
+    x-label overflowing narrowed the right panel and **collided its legend** — a change in one
+    place breaking text in another, caught by the checker rather than by me.
+
 - **v1.6.39 (2026-08-17, THE 35,064/35,063 "DISAGREEMENT" DID NOT EXIST; THE WATERMARK OUTLIVED
   THE RUN; AND APPENDIX F'S REMOVAL IS NOW A MECHANISM WITH A TWO-SIDED CHECK.)**
   - **★ MY OWN DISCLOSURE OVERSTATED A PROBLEM, WHICH IS ITS OWN DEFECT.** v1.6.38 recorded that

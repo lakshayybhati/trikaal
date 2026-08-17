@@ -292,7 +292,7 @@ def fig9_cost_stress() -> None:
         zorder=6,
     )
 
-    ax.set_xlabel("round-trip transaction cost (%)")
+    ax.set_xlabel("round-trip transaction cost (%)", fontsize=fs.T_LABEL)
     ax.set_ylabel("cost-aware net IR, annualized")
     ax.set_title(
         "how far the result survives a worse cost assumption", loc="left", fontsize=7.0, pad=5
@@ -303,6 +303,7 @@ def fig9_cost_stress() -> None:
     ax.set_axisbelow(True)
     ax.yaxis.grid(True)
     watermark(ax, y=0.42)
+    fig.subplots_adjust(left=0.135, right=0.985, top=0.88, bottom=0.215)
     fs.assert_text_legible(fig, (ax,))
     fs.save(fig, OUT, "fig9_cost_stress")
 
