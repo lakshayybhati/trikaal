@@ -231,16 +231,29 @@ the deficit should be spread across them. Instead $97.3\%$ of cell 4's total sho
 of six microstructure dimensions; two of the remaining four clear the threshold outright and two
 miss it by $0.0025$ and $0.0038$. That distribution is not what running out of room looks like.
 
-\textbf{Second, the placebo holds capacity fixed and changes only structure --- and the outcome
-moves.} Cell 5 has the same bits per token, the same six dimensions, the same budget and the same
-architecture as cell 4. The only difference is that its microstructure block is shuffled against
-price, which destroys the block's covariance with price and its own serial structure while leaving
-its marginal distributions intact. If the result were a ceiling, that shuffle should change nothing:
-the capacity is identical. It changes a great deal, and \emph{selectively} --- the two signed
-channels collapse from $0.8223$ and $0.7528$ to $0.6135$ and $0.5896$, while the four magnitude
-channels hold, the largest of them losing $0.0635$. \textbf{A comparison in which capacity is held
-constant cannot have its differential explained by capacity.} What the survivors have and the
+\textbf{Second --- and this is the load-bearing step --- the placebo degrades \emph{selectively},
+which a capacity penalty cannot do.} We state first what the placebo is \emph{not}: it is not
+capacity-neutral, and we measured that ourselves. Shuffled microstructure is incompressible, so
+cell 5 faces a harder compression problem at the same budget, and it shows --- cell 5 reconstructs
+the \emph{byte-identical} OHLCV targets $1.51\times$ worse than cell 4, worse on all seven price
+dimensions, with per-dimension ratios from $1.24$ to $1.87$. Same budget, less effective capacity.
+Any argument resting on ``capacity is held constant across the placebo'' is therefore false, and a
+referee who reads our own disclosure would be right to say so.
+
+\textbf{The argument that survives rests on the shape of the degradation within the arm, not on
+equality between arms.} A capacity penalty is indiscriminate: a harder problem at a fixed budget
+degrades what the tokenizer encodes roughly together. What we observe under the shuffle is a
+$2.6\times$ separation between two disjoint groups. The two signed channels fall by $0.2088$ and
+$0.1632$, collapsing to within $0.10$ and $0.06$ of their majority-class base rates. The four
+magnitude channels fall by $0.0059$, $0.0551$, $0.0271$ and $0.0635$ --- the smallest signed drop
+is $2.6$ times the largest magnitude drop. \textbf{A uniform capacity penalty does not produce a
+selective within-arm split along exactly the signed/unsigned line.} What the survivors have and the
 evicted channels lack is covariance with the price channels the objective already reconstructs.
+% artifact: runs_manifest/m6_ohlcv_recon_ratio.json :: comparison.ratio_cell5_over_cell4 =
+%   1.512811, arms.<arm>.ohlcv_recon_mae_by_dim (7 dims, every one worse in cell 5, per-dim ratios
+%   1.2426-1.8654), NON_GATING disclosure only, lambda_in_force 3.0. This is C-12, and it is the
+%   reason the step above is framed on the WITHIN-arm pattern: an earlier draft of this paragraph
+%   claimed the placebo holds capacity constant, which this receipt contradicts.
 
 \textbf{Third, the channel is absent rather than merely hard to read per bar.} On the fixture, the
 failure mode was that state was encoded but smeared across the window, so a per-bar probe missed

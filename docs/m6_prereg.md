@@ -216,6 +216,37 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.42 (2026-08-17, ★ MY OWN ITEM-1 STEP 2 WAS RIGHT FOR THE WRONG REASON — THE PLACEBO IS
+  NOT CAPACITY-NEUTRAL, AND WE MEASURED THAT OURSELVES.)**
+  - **WHAT I WROTE AND WHY IT WAS FALSE.** §6.5 step 2 claimed the placebo *"holds capacity fixed
+    and changes only structure"* and concluded that *"a comparison in which capacity is held
+    constant cannot have its differential explained by capacity."* **The premise is false.**
+    Shuffled microstructure is incompressible, so cell 5 faces a HARDER compression problem at the
+    same budget: **same BUDGET, less EFFECTIVE capacity.**
+  - **VERIFIED AT ENTRY-TIME FROM OUR OWN RECEIPT, NOT FROM THE CORRECTION.**
+    `runs_manifest/m6_ohlcv_recon_ratio.json` (C-12): cell 5 reconstructs the **byte-identical**
+    OHLCV targets **1.512811× worse** than cell 4 — worse on **all seven** price dimensions, with
+    per-dimension ratios **1.2426 to 1.8654**. The placebo permutation never touches the OHLCV
+    columns, which is exactly what makes the comparison like-for-like and the finding unavoidable.
+  - **★ AND THE DANGER WAS SPECIFIC: WE DISCLOSE C-12 OURSELVES.** A referee who read our own
+    disclosure would have found the paper asserting capacity equality across the placebo while a
+    committed receipt of ours measures a 1.51× capacity gap. **We would have handed them our own
+    measurement as the weapon.** This is the recurring class — an argument that is right for a
+    slightly different reason than the one stated — and it is the second time in two days that the
+    stated reason, not the conclusion, was the defect.
+  - **THE ARGUMENT SURVIVES, RE-FOUNDED ON THE WITHIN-ARM PATTERN.** A capacity penalty is
+    indiscriminate: a harder problem at a fixed budget degrades what the tokenizer encodes roughly
+    TOGETHER. Measured under the shuffle: the two signed channels fall **−0.2088** and **−0.1632**,
+    collapsing to within 0.10 and 0.06 of their majority-class base rates, while the four magnitude
+    channels fall **−0.0059, −0.0551, −0.0271, −0.0635**. **The smallest signed drop is 2.6× the
+    largest magnitude drop** — a separation between two disjoint groups, along exactly the
+    signed/unsigned line. **A uniform capacity penalty cannot produce that.** The paper now states
+    what the placebo is NOT before stating what it shows, and quotes the false framing rather than
+    deleting it, per the document-of-record norm.
+  - **STEP 1 KEPT VERBATIM AS INSTRUCTED:** *"a budget constraint does not know which dimensions
+    are signed."*
+  - **STILL HELD: items 5, 6 and 7.** The full review has not arrived.
+
 - **v1.6.41 (2026-08-17, ★★ THE CEILING-VS-ALLOCATION OBJECTION IS VALID AND IS NOW CONFRONTED
   WHERE IT ARISES — AND THE ABSTRACT WAS ATTRIBUTING THE GATE'S FIRING TO 200 INSTRUMENTS WHEN THE
   PROBE SAMPLED 40.)**
