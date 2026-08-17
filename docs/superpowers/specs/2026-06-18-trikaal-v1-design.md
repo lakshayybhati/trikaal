@@ -706,6 +706,8 @@ This pipeline **does not choose** the split or embargo — it **consumes boundar
 
 ## 3. Volatility-Scaled, Regime-Relative Targets
 
+> **★ PARAMETER-COUNT NOTE (added 2026-08-17).** Where this section says *"a 21.3M-param model"* it means the AR backbone **excluding** the MTP heads — the design-time target. The realized shipped checkpoint totals **31,795,200** (FSQ) / **31,725,568** (BSQ), of which 10,493,952 are the MTP heads. 21,301,248 remains a real, pinned, named secondary (`PINNED_BACKBONE_PARAMS`); it is not the model size. Left inline rather than rewritten: this is the design record.
+
 This section owns the volatility transform that the feature spec (§7) exposes as a hook. It defines the causal current-regime volatility estimator `sigma_t`, the exact set of quantities it scales, the precise order of operations relative to the §3.2 z-score (so nothing is double-normalized), and the decode-time de-normalization that recovers absolute moves, prices, and quantiles. **Core premise:** a `+0.4%` 1-minute move is a non-event when BTC's realized vol is `1.2%`/min during a liquidation cascade, but a `4-sigma` tail when vol is `0.1%`/min in an overnight drift. Standardizing every move by its current-regime vol lets a 21.3M-param model spend its capacity learning *shape and direction relative to regime* instead of re-learning the unconditional vol distribution it will see at decode time anyway.
 
 ---
@@ -2673,7 +2675,7 @@ A Gradio/Streamlit app that consumes a **live Binance 1m WS stream (or a determi
 
 ### 4. Future-work roadmap — firewalled from v1
 
-The roadmap is a **firewall, not a backlog**: nothing below is in v1, and the repo is structured so that a v1 reviewer can verify the v1 scope is closed and self-contained before any v2 work begins. v1 ships the **controlled comparison — our FSQ vs our BSQ at matched bits-per-token, externally validated against published Kronos-small — with the FSQ-tokenizer claim proven by the 2×2 table (and defended by the §8.C.4 placebo)** — and stops there.
+The roadmap is a **firewall, not a backlog**: nothing below is in v1, and the repo is structured so that a v1 reviewer can verify the v1 scope is closed and self-contained before any v2 work begins. v1 ships the **controlled comparison — our FSQ vs our BSQ at matched bits-per-token (**specified** as externally validated against published Kronos-small — **THAT GATE WAS DROPPED AS BINDING 2026-08-03 AND NEVER EXECUTED**; no Kronos weights were ever pulled) — with the FSQ-tokenizer claim proven by the 2×2 table (and defended by the §8.C.4 placebo)** — and stops there.
 
 #### 4.1 What is deliberately NOT in v1 (and why)
 | Excluded | Why it's out of v1 |

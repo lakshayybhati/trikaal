@@ -2,15 +2,25 @@
 
 | Cell | Quantizer | Arm             | Role                                     |
 |------|-----------|-----------------|------------------------------------------|
-| 1    | BSQ       | ohlcv           | baseline (externally validated §8.C.3)   |
+| 1    | BSQ       | ohlcv           | our BSQ baseline — NOT externally valid. |
 | 2    | FSQ       | ohlcv           | FSQ-vs-BSQ tokenizer effect              |
 | 3    | BSQ       | micro           | micro under BSQ                          |
 | 4    | FSQ       | micro           | the hero                                 |
 | 5    | FSQ       | micro_shuffled  | placebo (capacity kept, info destroyed)  |
 
+★ CELL 1 IS NOT EXTERNALLY VALIDATED, and this table said it was. The §8.C.3 Kronos gate was found
+unexecutable and DROPPED AS BINDING (2026-08-03, prereg §7 v1.6.22); no Kronos weights were ever
+pulled and invariant 8 forbids it. CLAUDE.md has called the old wording "a false statement of what
+validation we performed" since then — and this docstring, which defines the cell matrix every arm
+is built from, kept asserting it. Found by grepping the SUPERSEDED string rather than re-reading
+the corrected files (``tests/test_superseded_strings.py``); two hand-sweeps and two audits had
+missed it. The compensating control is a required disclosure in every verdict manifest.
+
 Construction gates (asserted before any training step): the AR backbone at Kronos_small dims must
-realize EXACTLY 21,301,248 base params per cell (invariant 4's matched-backbone requirement), and
-the BSQ/FSQ tokenizer arms must pass G-parity (bpt + param matching, ``parity.check_arm_parity``).
+realize EXACTLY 21,301,248 base params per cell (invariant 4's matched-backbone requirement —
+note this is the backbone EXCLUDING the MTP heads, a named secondary; the realized checkpoint
+total is 31,795,200 FSQ / 31,725,568 BSQ), and the BSQ/FSQ tokenizer arms must pass G-parity
+(bpt + param matching, ``parity.check_arm_parity``).
 """
 
 from __future__ import annotations

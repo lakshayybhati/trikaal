@@ -20,6 +20,18 @@ downstream value**. A low-variance, weakly-price-correlated channel — which is
 microstructure is — is **silently evicted**, and no amount of downstream modelling recovers what
 the tokenizer discarded. That is the claim the paper is organised around.
 
+> **★ THE GATE HAS SINCE SPOKEN, AND THE SENTENCE ABOVE WAS WRONG IN A SPECIFIC AND INSTRUCTIVE
+> WAY. LEFT STANDING DELIBERATELY.** *"which is exactly what microstructure is"* over-generalizes:
+> on real data only the **two signed** channels (`TFI`, `signed_count_imbalance`) behave that way
+> and carry 97.3% of the shortfall. The **four magnitude** channels co-vary with **volume** — which
+> the OHLCV arm already carries — and essentially clear the gate. The corrected statement is *the
+> tokenizer keeps the microstructure that duplicates OHLCV and drops the signed channels*
+> (prereg §7 v1.6.43). **This paragraph is not being rewritten to match the outcome.** It is a
+> pre-run prediction under a banner that says the framing is provisional until the gate speaks;
+> editing a prediction into agreement with its result is the one thing this document exists to
+> make impossible. What it got right — variance-and-covariance allocation, silent eviction, no
+> downstream recovery — held. What it got wrong is which channels that description applies to.
+
 ## §2 Background
 
 Kronos as cited prior art (two-stage tokenizer → AR). BSQ vs FSQ. What "microstructure" means here
@@ -34,6 +46,8 @@ OI-retention reason). **The input is 16-wide with 13 live dims**, and the paper 
 funding or OI as carried information. Measured: `runs_manifest/m6_c15b_lake_surface_check.json`.
 
 ## §3 The object under study
+
+> **★ PARAMETER-COUNT NOTE (added 2026-08-17).** *"The 21,301,248-parameter decoder-only backbone"* below names the backbone **excluding** the MTP heads. The realized shipped checkpoint totals **31,795,200** (FSQ) / **31,725,568** (BSQ); the heads are 10,493,952 and are 33.03% of the artifact. 21,301,248 stays a real pinned secondary (`PINNED_BACKBONE_PARAMS`) — it is not the model size, and §7.10 of the paper retracts having quoted it as one. Annotated, not rewritten: this is a pre-run document.
 
 **A tokenizer study, not a foundation model.** The 21,301,248-parameter decoder-only backbone
 (Kronos_small class: 8L / d512 / ff1024 / 8h) is the **measurement vehicle** — held fixed and

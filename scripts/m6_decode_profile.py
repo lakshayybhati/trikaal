@@ -3,9 +3,12 @@
     PYTHONPATH=src .venv/bin/python scripts/m6_decode_profile.py --decisions 8
 
 THE ARITHMETIC THAT MOTIVATES THIS. 569.3 s per (cell, seed) over ~51.5 chunks x 527 steps is
-~21 ms per incremental step at batch 512. For a 21.3M-param model on a 4090 the bandwidth floor is
-~0.04 ms and the compute floor ~0.3 ms — roughly 50x off. The card is working; it may be working
-badly.
+~21 ms per incremental step at batch 512. The floors below were computed against 21,301,248
+params — the backbone EXCLUDING the MTP heads — but decoding runs the heads too, so the right
+figure is the realized total, 31,795,200 (1.4927x larger). Both floors scale with it: bandwidth
+~0.04 -> ~0.06 ms, compute ~0.3 -> ~0.45 ms. The measured step is still one to two orders of
+magnitude above either, so the conclusion is unchanged and the number it rested on was wrong by
+1.5x. The card is working; it may be working badly.
 
 WHAT THE STRUCTURE SAYS BEFORE ANY TIMING. Of those 527 steps, **512 are CONTEXT FILL, not
 rollout**: ``_fill_context`` loops ``for p in range(seq_len)`` issuing 512 single-token

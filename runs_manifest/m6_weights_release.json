@@ -3,7 +3,7 @@
   "byte_verification_receipt": "runs_manifest/m6_rescue_inventory.json \u2014 each file's on-box SHA-256 vs its local SHA-256 after transfer, all matching",
   "bytes_inference_only": 435610761,
   "bytes_total": 1742480863,
-  "git_head": "484b29e838b95b25ae1ff5d8d57b7f92c7ae7e24",
+  "git_head": "d88b3e531b7823a8ed804683209c1c961dcce263",
   "how_to_verify": "sha256sum each file and compare against .units[seed].files[name].sha256; then load predictor.pt and sum numel() over state_dict to reproduce n_params_realized_total, and over keys starting 'mtp.' for n_params_mtp.",
   "license_code": "Apache-2.0 (LICENSE)",
   "license_weights": "Apache-2.0 \u2014 same terms as the code; Binance source data is NOT redistributed, only the pipeline and its content hashes (M8 gate, docs/ROADMAP.md)",
@@ -148,5 +148,5 @@
       "source_path": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4"
     }
   },
-  "\u2605_WHAT_THIS_IS_NOT": "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell 1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 and \u00a77 v1.5 item E took effect: the ablation does not run as designed, cells 3/4/5 were never trained, and the paper's primary result is the MECHANISM finding (microstructure that duplicates price is kept; what is independent of it is evicted). These weights demonstrate the measurement vehicle, not the claim."
+  "\u2605_WHAT_THIS_IS_NOT": "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell 1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 and \u00a77 v1.5 item E took effect: the ablation does not run as designed, cells 3/4/5 were never trained, and the paper's primary result is the MECHANISM finding: the tokenizer keeps the microstructure that DUPLICATES OHLCV and DROPS THE SIGNED CHANNELS. 97.3% of the shortfall sits on TFI and signed_count_imbalance, while the four magnitude channels -- the ones that co-vary with VOLUME, not with price -- essentially clear the gate. These weights demonstrate the measurement vehicle, not the claim."
 }

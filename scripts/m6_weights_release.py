@@ -131,9 +131,12 @@ def build() -> dict:
             "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell "
             "1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 "
             "and §7 v1.5 item E took effect: the ablation does not run as designed, cells 3/4/5 "
-            "were never trained, and the paper's primary result is the MECHANISM finding "
-            "(microstructure that duplicates price is kept; what is independent of it is evicted). "
-            "These weights demonstrate the measurement vehicle, not the claim."
+            "were never trained, and the paper's primary result is the MECHANISM finding: the "
+            "tokenizer keeps the microstructure that DUPLICATES OHLCV and DROPS THE SIGNED "
+            "CHANNELS. 97.3% of the shortfall sits on TFI and signed_count_imbalance, while the "
+            "four magnitude channels -- the ones that co-vary with VOLUME, not with price -- "
+            "essentially clear the gate. These weights demonstrate the measurement vehicle, not "
+            "the claim."
         ),
         "how_to_verify": (
             "sha256sum each file and compare against .units[seed].files[name].sha256; then load "

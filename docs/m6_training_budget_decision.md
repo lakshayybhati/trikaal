@@ -131,6 +131,9 @@ only option that risks spending $33–50 on an experiment that cannot answer its
 
 ## 7. Both publishable sentences
 
+> **★ PARAMETER-COUNT NOTE (added 2026-08-17).** The candidate sentences below say *"the compute-optimal point for a 21.3M-parameter model"*. **Both halves are wrong against the realized artifact** and §7.10 of the paper retracts them: 21,301,248 is the backbone EXCLUDING the MTP heads, the shipped total is **31,795,200**, and against that total the ratio is **13.40 tokens per parameter**, not 20.00 and not compute-optimal. These sentences are LEFT AS WRITTEN because this document records the options that were on the table at a decision point; editing a recorded option into correctness would destroy the record of what was actually offered.
+
+
 - **If raised (C):** *"Each cell was trained for 26,003 steps at 32×512 tokens/step — 1.40 passes
   over the 304.6M-bar corpus, ≈20 tokens per parameter, the compute-optimal point for a
   21.3M-parameter model."*

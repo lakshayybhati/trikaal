@@ -18,12 +18,15 @@ item E pre-committed the response: gate fires → **stop**, and the primary resu
 designed**. Cells 2–5 were never trained; Stage 2 was never entered for them. Cell 1 (BSQ +
 OHLCV-only, seeds 0/2/4) is the only arm with scored artifacts.
 
-**The finding the gate produced:** the tokenizer keeps microstructure that *duplicates price* and
-evicts what is *independent of it* — because an MSE reconstruction objective allocates capacity by
+**The finding the gate produced:** the tokenizer keeps the microstructure that *duplicates OHLCV*
+and **drops the signed channels** — because an MSE reconstruction objective allocates capacity by
 variance **and covariance**, making an independent low-variance channel the worst per-bit
-investment available. Measured three ways that share no input (a synthetic fixture, a
-planted-information canary, and 40 real symbols at n=150k/dim), and a 512-bar windowed read
-recovers nothing beyond the per-bar read — so it is eviction, not smearing.
+investment available. The gate named the channels: 97.3% of the shortfall sits on `TFI` and
+`signed_count_imbalance`, the two **signed** channels, while the four **magnitude** channels — the
+ones that co-vary with **volume**, not with price — essentially clear it. Measured three ways that
+share no input (a synthetic fixture, a planted-information canary, and 40 real symbols at
+n=150k/dim), and a 512-bar windowed read recovers nothing beyond the per-bar read — so it is
+eviction, not smearing.
 
 Milestones M1–M5 (synthetic slice → BTCUSDT real slice → Stage-2 AR → eval harness → the full
 200-symbol / 304,625,181-bar universe lake, Merkle `5dfd667d…`) are complete. The environment is

@@ -34,9 +34,15 @@ paper and they are negative by a factor of 4.8–43×.
 
 ## What the mechanism finding is
 
-The tokenizer keeps microstructure that duplicates price and evicts what is independent of it.
+The tokenizer keeps the microstructure that **duplicates OHLCV** and **drops the signed channels**.
+Which channels survive is the finding, and they are not the ones price would predict: the four
+**magnitude** dims (`trade_count`, `mean_trade_size`, `trade_size_dispersion`, `large_trade_share`)
+co-vary with **volume** — which the OHLCV arm already carries as `log_volume` and `log_amount` —
+and they essentially clear the gate. The two **signed** dims (`TFI`, `signed_count_imbalance`)
+carry 97.3% of the shortfall, and they are exactly the channels invariant 1 scopes the claim to.
+
 Measured three ways that do not share an input: a synthetic fixture (return dim reconstructs at
-0.98, price-correlated dims 0.82–0.92, an independent low-variance dim 0.001–0.014), a canary
+0.98, the correlated filler dims 0.82–0.92, an independent low-variance dim 0.001–0.014), a canary
 (1.151 nats planted in feature space → **zero** extracted; 0.900 nats planted in token space →
 94.4% extracted), and real data (40 symbols, n=150k/dim: TFI 0.8223 and signed-count 0.7528
 against magnitude dims 0.8975–0.9320, with 97.3% of the shortfall in the two *signed* channels).
