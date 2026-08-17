@@ -19,7 +19,7 @@ All cells share: Kronos_small backbone (8L / d512 / ff1024 / 8h; 21,301,248 para
 
 | Cell | Quantizer | Input arm | Role |
 |---|---|---|---|
-| 1 | BSQ | OHLCV-only | our BSQ baseline; externally validated vs Kronos-small (§8.C.3) |
+| 1 | BSQ | OHLCV-only | our BSQ baseline. **NOT externally validated** — the §8.C.3 Kronos gate was found unexecutable and **dropped as binding** (2026-08-03, prereg §7 v1.6.22); no Kronos weights were ever pulled. The compensating control is a required verdict-manifest disclosure. **This cell is the only arm with scored artifacts.** |
 | 2 | FSQ | OHLCV-only | isolates the FSQ-vs-BSQ tokenizer effect |
 | 3 | BSQ | OHLCV+micro | micro under BSQ |
 | 4 | **FSQ** | **OHLCV+micro** | **the hero** |

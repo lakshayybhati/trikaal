@@ -22,7 +22,7 @@ Everything else — DeepSeek-V3-style **MTP** heads for multi-horizon output, **
 
 | | OHLCV-only (F = 7) | +Microstructure (F = 16) |
 |---|---|---|
-| **BSQ** | Cell 1 — our BSQ baseline (externally validated vs published Kronos-small) | Cell 3 — isolates the microstructure leg |
+| **BSQ** | Cell 1 — our BSQ baseline (specified as externally validated vs published Kronos-small — **GATE DROPPED AS BINDING 2026-08-03, never executed**) | Cell 3 — isolates the microstructure leg |
 | **FSQ** | Cell 2 — isolates the FSQ leg | Cell 4 — **Trikaal** (full model) |
 
 Both legs must visibly earn their place across tokenizer-level metrics (reconstruction MAE/MSE, codebook usage/perplexity, collapse rate) **and** every downstream task — or it is reported honestly.
@@ -2291,7 +2291,7 @@ This is the experiment. The headline claim ("microstructure-aware FSQ tokenizer 
 
 | Cell | Quantizer | Input vector | Role |
 |---|---|---|---|
-| **1** | BSQ | OHLCV-only — `F = 7` (5 price/shape + 2 volume/liquidity = the Kronos-equivalent subset) | **our BSQ baseline** (externally validated vs published Kronos-small, §C.3) |
+| **1** | BSQ | OHLCV-only — `F = 7` (5 price/shape + 2 volume/liquidity = the Kronos-equivalent subset) | **our BSQ baseline** (specified as externally validated vs published Kronos-small, §C.3 — **THAT GATE WAS DROPPED AS BINDING on 2026-08-03 and never executed; no Kronos weights were ever pulled**) |
 | **2** | BSQ | full `F = 16` (+micro) | isolates the *microstructure* leg |
 | **3** | FSQ | OHLCV-only — `F = 7` | isolates the *FSQ* leg |
 | **4** | **FSQ** | **full `F = 16` (+micro)** | **the proposed model** |

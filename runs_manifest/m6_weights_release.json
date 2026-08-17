@@ -1,0 +1,152 @@
+{
+  "WHAT_THIS_IS": "Three trained units from CELL 1 of the M6 design: BSQ quantizer, OHLCV-only inputs, seeds 0/2/4, trained on the 200-symbol / 304,625,181-bar universe lake (Merkle sha256:5dfd667d...). Each unit is a Stage-1 tokenizer plus a Stage-2 AR backbone with MTP heads.",
+  "byte_verification_receipt": "runs_manifest/m6_rescue_inventory.json \u2014 each file's on-box SHA-256 vs its local SHA-256 after transfer, all matching",
+  "bytes_inference_only": 435610761,
+  "bytes_total": 1742480863,
+  "git_head": "484b29e838b95b25ae1ff5d8d57b7f92c7ae7e24",
+  "how_to_verify": "sha256sum each file and compare against .units[seed].files[name].sha256; then load predictor.pt and sum numel() over state_dict to reproduce n_params_realized_total, and over keys starting 'mtp.' for n_params_mtp.",
+  "license_code": "Apache-2.0 (LICENSE)",
+  "license_weights": "Apache-2.0 \u2014 same terms as the code; Binance source data is NOT redistributed, only the pipeline and its content hashes (M8 gate, docs/ROADMAP.md)",
+  "minimum_inference_bundle": [
+    "tokenizer.pt",
+    "predictor.pt",
+    "run_manifest.json"
+  ],
+  "schema": "m6_weights_release_v1",
+  "script": "scripts/m6_weights_release.py",
+  "units": {
+    "0": {
+      "arm": "ohlcv",
+      "cell": 1,
+      "files": {
+        "predictor.pt": {
+          "bytes": 126942667,
+          "needed_for_inference": true,
+          "role": "Stage-2 AR backbone + MTP heads \u2014 REQUIRED by the demo",
+          "sha256": "3af533845eefc29d37204efa91d717fd327e0231c3be4808e84ed09b6c0b7ded"
+        },
+        "run_manifest.json": {
+          "bytes": 4754,
+          "needed_for_inference": true,
+          "role": "the unit's own provenance stamp (environment, pins, hashes)",
+          "sha256": "126228c6d4f63696169501681d8cb4c7fe97e77e66ecaa40b86870b409ed0b45"
+        },
+        "stage1_state.pt": {
+          "bytes": 54779223,
+          "needed_for_inference": false,
+          "role": "Stage-1 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "fecec7291f4b2ac8581a163fb10fe208e4cff17a015934ec4e9e602abdc68947"
+        },
+        "stage2_state.pt": {
+          "bytes": 380844059,
+          "needed_for_inference": false,
+          "role": "Stage-2 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "9fdbc74ff457da2261804e96a0bfc418affebb74222274725e542214f91986b5"
+        },
+        "tokenizer.pt": {
+          "bytes": 18256167,
+          "needed_for_inference": true,
+          "role": "Stage-1 FSQ/BSQ tokenizer autoencoder \u2014 REQUIRED by the demo",
+          "sha256": "e04d2678385c7431da468a703a773504b0f2bc8f6cd94904a2e8fcacf31eab98"
+        }
+      },
+      "predictor_parameter_groups": {
+        "n_params_backbone_excluding_mtp": 21231616,
+        "n_params_mtp": 10493952,
+        "n_params_realized_total": 31725568,
+        "stored_artifact_hash": "sha256:8c8c85de842a0bd5e06670ce2e1bae1756a05eee6e8b5a76449775d84960d5e6"
+      },
+      "quantizer": "bsq",
+      "source_path": "runs_cloud/rescue/r0/cell1_bsq_ohlcv_seed0"
+    },
+    "2": {
+      "arm": "ohlcv",
+      "cell": 1,
+      "files": {
+        "predictor.pt": {
+          "bytes": 126942667,
+          "needed_for_inference": true,
+          "role": "Stage-2 AR backbone + MTP heads \u2014 REQUIRED by the demo",
+          "sha256": "5aab6077166543d772f051c468f88994f0c110cb299d42a4a2a62c2c7c0deb42"
+        },
+        "run_manifest.json": {
+          "bytes": 4752,
+          "needed_for_inference": true,
+          "role": "the unit's own provenance stamp (environment, pins, hashes)",
+          "sha256": "aa522d73a3aa628a7830712dc0f1d219b7c876f4c1a01ab1c1b184ac6e7ac523"
+        },
+        "stage1_state.pt": {
+          "bytes": 54779287,
+          "needed_for_inference": false,
+          "role": "Stage-1 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "10163716146eb5ef9bc9c7aaa7ca48a23860b036da408fbcf24621201262bea9"
+        },
+        "stage2_state.pt": {
+          "bytes": 380844123,
+          "needed_for_inference": false,
+          "role": "Stage-2 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "7f42c7f3674ad30f55c957b7af32c3629113c81d9e5fc871495146e6bab06708"
+        },
+        "tokenizer.pt": {
+          "bytes": 18256167,
+          "needed_for_inference": true,
+          "role": "Stage-1 FSQ/BSQ tokenizer autoencoder \u2014 REQUIRED by the demo",
+          "sha256": "a57ef3f2d56db1ff084f4ab83bc880c3e4bf4325ce19a6a793584821b6ee1d4c"
+        }
+      },
+      "predictor_parameter_groups": {
+        "n_params_backbone_excluding_mtp": 21231616,
+        "n_params_mtp": 10493952,
+        "n_params_realized_total": 31725568,
+        "stored_artifact_hash": "sha256:d8ed0be05e010eed60b495f79a85fc0d06c5cba4faef8cec4d371806a153bd91"
+      },
+      "quantizer": "bsq",
+      "source_path": "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2"
+    },
+    "4": {
+      "arm": "ohlcv",
+      "cell": 1,
+      "files": {
+        "predictor.pt": {
+          "bytes": 126942667,
+          "needed_for_inference": true,
+          "role": "Stage-2 AR backbone + MTP heads \u2014 REQUIRED by the demo",
+          "sha256": "f3ad2c3a6815d9b2922313965137450eaa142da7bd500740b486d571ac8a46e1"
+        },
+        "run_manifest.json": {
+          "bytes": 4753,
+          "needed_for_inference": true,
+          "role": "the unit's own provenance stamp (environment, pins, hashes)",
+          "sha256": "ecb5ad26c42045c4583273cb4476c56140a7126298b37d453fef13181fed2a02"
+        },
+        "stage1_state.pt": {
+          "bytes": 54779287,
+          "needed_for_inference": false,
+          "role": "Stage-1 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "5f2ff6ce9682fbcc863963740a3e6390c5fb7bb20a635f0f69c4c31d63b02474"
+        },
+        "stage2_state.pt": {
+          "bytes": 380844123,
+          "needed_for_inference": false,
+          "role": "Stage-2 optimizer/scheduler state \u2014 resume only, not needed for inference",
+          "sha256": "e5b8d4062357f32c3d50da651b60a1aadec58a105da6816c17bb8f1dfb195bc1"
+        },
+        "tokenizer.pt": {
+          "bytes": 18256167,
+          "needed_for_inference": true,
+          "role": "Stage-1 FSQ/BSQ tokenizer autoencoder \u2014 REQUIRED by the demo",
+          "sha256": "ba84ff243c75b39e142ea64bd683cdd114fd8c4614c3b113d2bfa52f4c0941d4"
+        }
+      },
+      "predictor_parameter_groups": {
+        "n_params_backbone_excluding_mtp": 21231616,
+        "n_params_mtp": 10493952,
+        "n_params_realized_total": 31725568,
+        "stored_artifact_hash": "sha256:aec256d1f8053552edcd8d2a0f69794909b7d03007fb90ae432c567b16a31ae6"
+      },
+      "quantizer": "bsq",
+      "source_path": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4"
+    }
+  },
+  "\u2605_WHAT_THIS_IS_NOT": "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell 1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 and \u00a77 v1.5 item E took effect: the ablation does not run as designed, cells 3/4/5 were never trained, and the paper's primary result is the MECHANISM finding (microstructure that duplicates price is kept; what is independent of it is evicted). These weights demonstrate the measurement vehicle, not the claim."
+}

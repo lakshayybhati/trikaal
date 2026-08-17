@@ -2,17 +2,48 @@
 
 A **tokenizer study**: does microstructure-aware **FSQ** quantization of crypto 1-minute K-lines
 buy anything a price-shape tokenizer does not? The object under study is the *tokenizer*; the
-21.3M-parameter decoder-only backbone is the **measurement vehicle**, held fixed across every
-arm, not a product. A controlled evolution of Kronos. The authoritative design is the blueprint
-spec at
+decoder-only backbone — **31,795,200 realized parameters** at the FSQ vocabulary, 31,725,568 at
+the BSQ one, of which 10,493,952 are the MTP heads — is the **measurement vehicle**, held fixed
+across every arm, not a product. A controlled evolution of Kronos; **no Kronos code or weights are
+part of it**. The authoritative design is the blueprint spec at
 [`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md);
 the live build order + milestone exit gates are in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
-**Status:** M1 (synthetic slice), M2 (BTCUSDT real slice + Stage-1 tokenizer), M3 (Stage-2 AR),
-M5 (eval harness), and M4 (the full 200-symbol / 304.6 M-bar universe lake, Merkle `5dfd667d…`)
-are **complete**; **M6** (the 5-cell {BSQ,FSQ}×{OHLCV,+micro}+placebo ablation) is next — see
-[`docs/m6_design.md`](docs/m6_design.md). The environment is **pinned** (committed `uv.lock`;
-`uv sync --locked --extra data --extra dev`).
+## ★ Status: the designed experiment did not run, and that is the result
+
+**A pre-registered micro-legibility gate fired on real data on 2026-08-12.** It was written on
+2026-07-30 — thirteen days earlier, before any of the data it refused had been seen — and §7 v1.5
+item E pre-committed the response: gate fires → **stop**, and the primary result becomes the
+**mechanism finding**. So the 5-cell {BSQ,FSQ}×{OHLCV,+micro}+placebo ablation **does not run as
+designed**. Cells 2–5 were never trained; Stage 2 was never entered for them. Cell 1 (BSQ +
+OHLCV-only, seeds 0/2/4) is the only arm with scored artifacts.
+
+**The finding the gate produced:** the tokenizer keeps microstructure that *duplicates price* and
+evicts what is *independent of it* — because an MSE reconstruction objective allocates capacity by
+variance **and covariance**, making an independent low-variance channel the worst per-bit
+investment available. Measured three ways that share no input (a synthetic fixture, a
+planted-information canary, and 40 real symbols at n=150k/dim), and a 512-bar windowed read
+recovers nothing beyond the per-bar read — so it is eviction, not smearing.
+
+Milestones M1–M5 (synthetic slice → BTCUSDT real slice → Stage-2 AR → eval harness → the full
+200-symbol / 304,625,181-bar universe lake, Merkle `5dfd667d…`) are complete. The environment is
+**pinned** (committed `uv.lock`; `uv sync --locked --extra data --extra dev`).
+
+## Where to start
+
+| You want | Read |
+|---|---|
+| what the weights are, and what they are **not** | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) |
+| what ships, and its content hashes | [`runs_manifest/m6_weights_release.json`](runs_manifest/m6_weights_release.json) |
+| the build order and its exit gates | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
+| the M6 design and pre-registration | [`docs/m6_design.md`](docs/m6_design.md), [`docs/m6_prereg.md`](docs/m6_prereg.md) |
+| the local forecast dashboard | [`docs/v1_csv_dashboard.md`](docs/v1_csv_dashboard.md) |
+
+**The economics are negative and are reported as such.** Break-even is the mean gross return per
+active period: 0.00232% / 0.00538% / 0.02082% against a realistic ~0.10% round trip — 4.8× to 43×
+short. The net information ratios (−28 / −67 / −146) are reproduced to within 8–17% by a
+*zero-skill* model paying the same costs, i.e. they measure cost drag rather than negative skill.
+Nothing here is a trading system.
 
 The sections below describe the original milestone-1 synthetic slice, whose gates and structure
 still underpin the repo.
@@ -36,8 +67,10 @@ It builds, in order:
    Four planted-lookahead variants prove the harness has teeth; the real transforms pass.
 4. **The FSQ tokenizer** (`trikaal.tokenizer`) — encoder → FSQ (`[11,9,9,7,7,5,5]`, coarse
    `{11,9,9}`→891 / fine `{7,7,5,5}`→1225) → decoder, hierarchical Huber loss, **no commitment term**.
-5. **The AR backbone + MTP** (`trikaal.model`) — exact Kronos_small (8L/512/1024/8h, **31,795,200** realized total; **21,301,248** backbone excluding MTP
-   realized params) with hierarchical coarse→fine heads and DeepSeek-style MTP causal-chain depths.
+5. **The AR backbone + MTP** (`trikaal.model`) — the Kronos_small *dimensions* (8 layers, `d_model`
+   512, `d_ff` 1024, 8 heads), written from scratch: **31,795,200** realized parameters at the FSQ
+   vocabulary (**21,301,248** excluding the MTP heads), with hierarchical coarse→fine heads and
+   DeepSeek-style MTP causal-chain depths.
 
 ## Pre-flight gates (§7.0)
 
@@ -82,4 +115,14 @@ coverage; unchecked `target_valid`/`ts`) and on §6.3 sampled-coarse conditionin
 - **Strict causal-safety** — every output for bar `t` is a pure function of raw data with
   effective timestamp `≤ t+1`; the divisor `σ_t` reads bars `≤ t`, the *label* may read `t+1`.
 - **One headline claim** — the FSQ tokenizer. MTP, vol-scaling, and the eval harness are secondary.
-- **Determinism is a deliverable** — one config + a pinned seed reproduces any run.
+- **Determinism is a deliverable, scoped honestly** — the data pipeline, frozen statistics and
+  prediction replay are bit-exact from one config file, a pinned seed and content-hashed inputs.
+  **GPU training is bit-exact only under the deterministic-attention fallback**, and deterministic
+  attention is necessary but *not* sufficient; every run records its mode.
+- **Full in-house independence** — no Kronos code or weights are part of Trikaal, and none are
+  ever pulled. Kronos's paper is cited prior art.
+
+## Licence
+
+Code and weights: **Apache-2.0** ([`LICENSE`](LICENSE)). Binance source data is **not**
+redistributed — the ingest pipeline and its content hashes are what reproduce the lake.
