@@ -235,7 +235,7 @@ def main() -> None:
         0.485,
         0.195,
         "PRIMARY — the mechanism finding\nthe tokenizer keeps the microstructure that\n"
-        "duplicates price and loses the rest",
+        "duplicates OHLCV and drops the signed channels",
         fc=pale_ok,
         ec=fs.PASS,
         lw=1.1,
