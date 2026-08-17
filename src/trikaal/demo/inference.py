@@ -67,6 +67,76 @@ PINNED_TRAIN_FRAC = 0.7
 # paths cannot detect a source both paths share — so the source is now pinned here and asserted.
 LAKE_ROOT = Path("processed/universe_bars")
 
+# ★ AND A PATH PIN IS NOT AN IDENTITY CHECK. The line above fixes WHERE we read; until these pins
+# landed, the only thing asserting WHAT we read was a fail-loud "no bars" error, which fires for an
+# absent symbol and stays silent for a lake that has the right name and the wrong contents. That is
+# the shared-input rule with the pin doing less work than it looks like it does: both arms of the
+# acceptance gate would inherit the wrong lake together and agree about it. So the identity is
+# pinned in TRACKED code and cross-checked against the lake's own manifest AND the partition tree,
+# which is what makes it a check rather than a restatement — a manifest copied onto a different
+# lake fails step 3, and a different 200-symbol lake fails on the Merkle.
+PINNED_LAKE_SYMBOLS = 200
+PINNED_LAKE_BARS = 304_625_181
+PINNED_LAKE_MERKLE = "sha256:5dfd667d05b97bda5a35946433b96d40738df8a926d5fa8a8d9dfc924f5a04b7"
+# The M4b universe manifest, a sibling of the lake rather than a child of it.
+LAKE_MANIFEST = Path("processed/universe/universe_manifest.json")
+
+_VERIFIED_LAKES: set[str] = set()
+
+
+class LakeIdentityError(RuntimeError):
+    """The lake at the pinned path is not the lake the money run scored."""
+
+
+def verify_lake_identity(lake_root: Path | None = None, *, manifest: Path | None = None) -> dict:
+    """Assert the lake is the 200-symbol / 304,625,181-bar universe the scored run used.
+
+    FILESYSTEM ONLY, BY DESIGN. ``SELECT COUNT(DISTINCT symbol), COUNT(*) FROM bars`` gives the
+    same two numbers and takes 16 s on this lake — as long as the whole forecast — so it would
+    have to be skipped in exactly the interactive path that most needs it. The partition tree and
+    the manifest are read in milliseconds and are checked AGAINST EACH OTHER, so neither alone is
+    trusted: the manifest supplies the bar count and the Merkle, the directory tree supplies the
+    symbols, and every symbol the manifest names must have a partition on disk.
+    """
+    root = Path(lake_root or LAKE_ROOT)
+    mf = Path(manifest) if manifest is not None else (root.parent / LAKE_MANIFEST.name)
+    if not mf.exists():  # the sibling layout, when the caller passed the lake root itself
+        mf = Path(manifest) if manifest is not None else (REPO / LAKE_MANIFEST)
+    key = f"{root.resolve()}|{mf.resolve() if mf.exists() else mf}"
+    if key in _VERIFIED_LAKES:
+        return {"lake_root": str(root), "cached": True}
+
+    parts = sorted(p.name[len("symbol=") :] for p in root.glob("symbol=*") if p.is_dir())
+    if len(parts) != PINNED_LAKE_SYMBOLS:
+        raise LakeIdentityError(
+            f"{root}: {len(parts)} symbol partitions, expected {PINNED_LAKE_SYMBOLS}. This is the "
+            f"defect the pin exists for — processed/bars holds ONE symbol and would otherwise "
+            f"serve forecasts off a 4x shorter normalization history."
+        )
+    if not mf.exists():
+        raise LakeIdentityError(f"no universe manifest at {mf}: lake identity cannot be checked")
+    doc = json.loads(mf.read_text())
+    got = (int(doc.get("n_symbols", -1)), int(doc.get("total_bars", -1)), doc.get("universe_hash"))
+    want = (PINNED_LAKE_SYMBOLS, PINNED_LAKE_BARS, PINNED_LAKE_MERKLE)
+    if got != want:
+        raise LakeIdentityError(f"{mf}: lake identity {got} != pinned {want}")
+    named = {s["symbol"] for s in doc["symbols"]}
+    missing = named - set(parts)
+    if missing:
+        raise LakeIdentityError(
+            f"{mf} names {len(missing)} symbols with no partition under {root} "
+            f"(e.g. {sorted(missing)[:3]}) — the manifest does not describe this lake"
+        )
+    _VERIFIED_LAKES.add(key)
+    return {
+        "lake_root": str(root),
+        "manifest": str(mf),
+        "n_symbol_partitions": len(parts),
+        "total_bars": PINNED_LAKE_BARS,
+        "universe_merkle": PINNED_LAKE_MERKLE,
+        "cached": False,
+    }
+
 
 @dataclass(frozen=True)
 class Unit:
@@ -268,6 +338,7 @@ def prepare_symbol(
 ) -> PreparedSymbol:
     """Load a symbol and tokenize it once per seed, the production way (whole series)."""
     cfg = _cfg(device)
+    verify_lake_identity(lake_root or LAKE_ROOT)  # BEFORE the connection, not after the answer
     con = connect_lake(lake_root or LAKE_ROOT)
     boundary = calendar_boundary_ms(cfg.window_start, cfg.window_end, cfg.train_frac)
     raw = load_symbol_arrays(con, symbol, boundary_ms=boundary, tail_bars=None)

@@ -9,10 +9,17 @@ inside every replicate — an unpaired CI would be wrongly wide (prereg §3, ame
 
 Pinned recipe (prereg §3a — do not parameterize away): B = 10,000 replicates, bootstrap RNG seed
 20260704, block length ⌈√T⌉, percentile CI (the one-sided lower bound is the α-quantile of the
-bootstrap ΔIR distribution, α = 0.05), SE_boot = the standard deviation of the same B replicates,
-MDE_paired = (z₀.₉₅ + z₀.₈₀)·SE_boot (§3 clause 2 — a variance/nuisance quantity, never a
-function of the effect's sign). The per-replicate statistic is IR(a*) − IR(b*) with the SHARED
-index draw — the exact ``metrics.information_ratio`` convention (population std, EPS_IR,
+bootstrap ΔIR distribution, α = 0.05), SE_boot = the standard deviation of the same B replicates.
+MDE_paired is §3 clause 2 — a variance/nuisance quantity, never a function of the effect's sign —
+and under the signed-off §7 v1.5 item-B amendment it is **(t₀.₉₅,ν + t₀.₈₀,ν)·SE_total** with
+SE_total = √(SE_boot² + SE_train²) at the Welch–Satterthwaite ν whenever per-seed contrasts are
+supplied; the pre-v1.5 **(z₀.₉₅ + z₀.₈₀)·SE_boot** survives only as the dual report's v1.2 leg and
+as the fallback when they are not. ★ THIS PARAGRAPH USED TO STATE THE z FORM AS THE RULE, two
+lines above the code that computes the t form — the same defect as the clause-2 rule string it
+sits beneath, in the same commit-worth of files. Prose about a formula is never the formula:
+``mde_terms`` below is the single site, and ``mde_rule_string`` is derived from it so a manifest
+cannot describe a recipe it did not run. The per-replicate statistic is IR(a*) − IR(b*) with the
+SHARED index draw — the exact ``metrics.information_ratio`` convention (population std, EPS_IR,
 √(525600/h) annualization).
 
 Determinism: ALL block starts are drawn in one RNG call before any chunking, so results are
@@ -60,6 +67,64 @@ def _row_ir(rows: np.ndarray, h: int) -> np.ndarray:
 
 
 @dataclass(frozen=True)
+class MdeTerms:
+    """The three numbers MDE_paired is the product of, plus the names of the recipe they came from.
+
+    ★ THIS TYPE EXISTS SO THE RULE STRING CANNOT LIE. Clause 2's persisted rule read
+    ``MDE_paired = (z0.95+z0.80)·SE_boot`` — the pre-v1.5 formula — inside the string that SHIPS
+    IN EVERY EMITTED VERDICT MANIFEST, while the code beside it computed t-quantiles at the
+    Welch–Satterthwaite ν over SE_total. The clause-5 comment in ``verdict.py`` had already named
+    the fix ("a rule string that cannot disagree with the recipe is the fix") and clause 5 was
+    rebuilt from its pins; clause 2's formula half was left standing. Fixing the named instance
+    and leaving its sibling is the class-rule failure, so the string is now *derived* from the
+    same call the number is.
+    """
+
+    quantile_family: str  # "t" (v1.5 amended) | "z" (pre-v1.5, and the dual report's v1.2 leg)
+    multiplier: float  # q_{1−α} + q_{power} in that family
+    se: float  # the standard error the multiplier is applied to
+    se_basis: str  # which SE that is, named
+    nu: float  # df of the quantiles (B−1 for the z leg, Welch–Satterthwaite for t)
+    mde: float  # multiplier · se — the operative threshold
+
+
+def mde_terms(
+    *,
+    se_boot: float,
+    se_train: float,
+    n_seeds: int,
+    b: int,
+    alpha: float,
+    power: float,
+) -> MdeTerms:
+    """THE SINGLE SITE where MDE_paired's recipe is decided. Both the number and its prose read it.
+
+    ``se_train > 0`` ⇔ per-seed contrasts were supplied ⇔ the §7 v1.5 item-B amendment applies.
+    That branch is the CONTRACT, not a convenience: with no per-seed input there is no training
+    variance to estimate and the historical scoring-only rule is the honest fallback, which is
+    also what the dual report's v1.2 leg needs.
+    """
+    if se_train > 0.0:
+        nu = welch_satterthwaite_df(se_boot, float(b - 1), se_train, float(n_seeds - 1))
+        multiplier = float(student_t_ppf(1.0 - alpha, nu) + student_t_ppf(power, nu))
+        se = float(np.sqrt(se_boot * se_boot + se_train * se_train))
+        family, basis = "t", "SE_total = sqrt(SE_boot^2 + SE_train^2)"
+    else:
+        nu = float(b - 1)
+        multiplier = float(norm_ppf(1.0 - alpha) + norm_ppf(power))
+        se = float(se_boot)
+        family, basis = "z", "SE_boot"
+    return MdeTerms(
+        quantile_family=family,
+        multiplier=multiplier,
+        se=se,
+        se_basis=basis,
+        nu=nu,
+        mde=float(multiplier * se),
+    )
+
+
+@dataclass(frozen=True)
 class PairedBootstrap:
     """One paired ΔIR bootstrap: the point estimate, CI bounds, SE, and the derived MDE."""
 
@@ -84,8 +149,48 @@ class PairedBootstrap:
     b: int
     seed: int
     alpha: float
+    power: float  # the power point inside MDE_paired — stored so the rule string can re-derive it
     passes_ci: bool  # clause 1: ci_lower > 0
     passes_mde: bool  # clause 2: delta_ir ≥ mde_paired
+
+    @property
+    def mde_terms(self) -> MdeTerms:
+        """Re-derive clause 2's recipe from this result's OWN inputs — never from a belief."""
+        return mde_terms(
+            se_boot=self.se_boot,
+            se_train=self.se_train,
+            n_seeds=self.n_seeds,
+            b=self.b,
+            alpha=self.alpha,
+            power=self.power,
+        )
+
+
+def mde_rule_string(pb: PairedBootstrap) -> str:
+    """§3 clause 2's rule, WRITTEN FROM THE REALIZED RECIPE, so it cannot describe another one.
+
+    The string carries the multiplier and the SE it multiplies, not just their names — so a reader
+    of the manifest can multiply the two stated numbers and land on the stated ``mde_paired``, and
+    ``tests/eval/test_mde_rule_string.py`` asserts exactly that identity. A rule string that only
+    NAMED its formula is what shipped the superseded one for a month.
+    """
+    m = pb.mde_terms
+    lo, hi = 1.0 - pb.alpha, pb.power
+    if m.quantile_family == "t":
+        qs = (
+            f"(t_{lo:g},nu + t_{hi:g},nu) x {m.se_basis}, "
+            f"nu = {m.nu:.6g} (Welch-Satterthwaite over S={pb.n_seeds} seeds)"
+        )
+    else:
+        qs = (
+            f"(z_{lo:g} + z_{hi:g}) x {m.se_basis} "
+            f"(no per-seed contrasts supplied, so no training-variance term)"
+        )
+    # The arithmetic tail is the checkable part and its shape is pinned: ":: A x B = C". The
+    # 12 significant figures are not decoration — a reader (and tests/eval/test_mde_rule_string.py)
+    # multiplies the first two and must land on the third, and .6f rounding broke that identity at
+    # the 1e-7 level the first time this was written.
+    return f"MDE_paired = {qs} :: {m.multiplier:.12g} x {m.se:.12g} = {m.mde:.12g}"
 
 
 def paired_delta_ir_bootstrap(
@@ -153,12 +258,11 @@ def paired_delta_ir_bootstrap(
             raise ValueError("per_seed_deltas contains non-finite values")
         se_train = float(np.std(psd, ddof=1) / np.sqrt(n_seeds))
     se_total = float(np.sqrt(se_boot * se_boot + se_train * se_train))
-    if se_train > 0.0:
-        nu = welch_satterthwaite_df(se_boot, float(b - 1), se_train, float(n_seeds - 1))
-        mde_paired = float((student_t_ppf(1.0 - alpha, nu) + student_t_ppf(power, nu)) * se_total)
-    else:  # no per-seed input → the historical scoring-only rule, unchanged
-        nu = float(b - 1)
-        mde_paired = mde_scoring_only
+    # ONE SITE decides the recipe, and the rule string reads the same one (see mde_terms).
+    terms = mde_terms(
+        se_boot=se_boot, se_train=se_train, n_seeds=n_seeds, b=b, alpha=alpha, power=power
+    )
+    nu, mde_paired = terms.nu, terms.mde
     return PairedBootstrap(
         delta_ir=float(delta_ir),
         ci_lower=ci_lower,
@@ -175,6 +279,7 @@ def paired_delta_ir_bootstrap(
         b=int(b),
         seed=int(seed),
         alpha=float(alpha),
+        power=float(power),
         passes_ci=bool(ci_lower > 0.0),
         passes_mde=bool(delta_ir >= mde_paired),
     )
@@ -185,8 +290,11 @@ __all__ = [
     "BOOT_B",
     "BOOT_POWER",
     "BOOT_SEED",
+    "MdeTerms",
     "PairedBootstrap",
     "block_length",
     "expand_block_starts",
+    "mde_rule_string",
+    "mde_terms",
     "paired_delta_ir_bootstrap",
 ]

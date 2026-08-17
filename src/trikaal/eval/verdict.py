@@ -36,6 +36,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from dataclasses import asdict
 from pathlib import Path
 
 import numpy as np
@@ -48,7 +49,11 @@ from trikaal.eval.conformance import (
 )
 from trikaal.eval.dsr import deflated_sharpe_ratio, expected_max_sharpe
 from trikaal.eval.metrics import information_ratio, periods_per_year
-from trikaal.eval.paired_bootstrap import PairedBootstrap, paired_delta_ir_bootstrap
+from trikaal.eval.paired_bootstrap import (
+    PairedBootstrap,
+    mde_rule_string,
+    paired_delta_ir_bootstrap,
+)
 from trikaal.eval.tdist import student_t_ppf, welch_satterthwaite_df
 from trikaal.eval.xsection import ablation_verdict
 from trikaal.train.arms import ARM_MICRO, ARM_OHLCV, arm_n_features
@@ -769,8 +774,6 @@ def dsr_unit_convention_failures(
 
 
 def _pb_dict(pb: PairedBootstrap) -> dict:
-    from dataclasses import asdict
-
     return {k: (float(v) if isinstance(v, float) else v) for k, v in asdict(pb).items()}
 
 
@@ -1102,11 +1105,26 @@ def assemble_verdict(
         "2_mde_paired": {
             # §7 v1.6.27: the SAME "ΔIR_info" defect as clause 4. The ruling named clause 4 only;
             # fixing the named instance and leaving its sibling is the class-rule failure.
-            "rule": "ΔIR(4-5) ≥ MDE_paired = (z0.95+z0.80)·SE_boot; no ceiling appeal — the "
+            #
+            # ★ AND THE FORMULA HALF WAS THE SECOND HALF OF THAT SAME FAILURE. This string read
+            # "MDE_paired = (z0.95+z0.80)·SE_boot" — the PRE-v1.5 recipe — while paired_bootstrap
+            # computed t-quantiles at the Welch–Satterthwaite ν over SE_total, the signed-off
+            # v1.5 item-B amendment that the paper's §4 prose describes correctly. Two lines below
+            # this one, clause 5's comment says in as many words that "a rule string that cannot
+            # disagree with the recipe is the fix", and clause 5 was rebuilt from its pins; this
+            # clause's formula was left restated. No verdict manifest was ever emitted, so nothing
+            # false has shipped to a reader — but the string was in the released artifact, and it
+            # asserted a recipe the code does not run. It is now BUILT, from the same
+            # ``mde_terms`` call the number is, and the numbers it quotes multiply out to
+            # ``mde_paired`` (asserted in tests/eval/test_mde_rule_string.py).
+            "rule": f"ΔIR(4-5) ≥ {mde_rule_string(pb45)}; no ceiling appeal — the "
             "operative threshold is the realized MDE_paired in either direction vs §2's table. "
             "ΔIR(4-5) carries (information) + (capacity handicap)",
             "delta_ir": pb45.delta_ir,
             "mde_paired": pb45.mde_paired,
+            # The recipe as DATA beside the recipe as prose: a reader who distrusts the sentence
+            # can multiply these two and land on mde_paired without parsing English.
+            "mde_terms": asdict(pb45.mde_terms),
             "tabled_mde_h15": float(tabled_mde_h15),
             "mde_paired_exceeds_tabled": bool(pb45.mde_paired > float(tabled_mde_h15)),
             "pass": pb45.passes_mde,
