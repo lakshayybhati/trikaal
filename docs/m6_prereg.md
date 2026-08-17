@@ -216,6 +216,51 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.45 (2026-08-17, ★★ THE PAPER WAS RIGHT AND THE FOUR DOCUMENTS A READER MEETS FIRST WERE
+  WRONG — AND THREE HAND-GREPS ALL MISSED THE ABSTRACT BECAUSE EACH WAS NARROWER THAN THE CLAIM.)**
+  - **★ THE SECOND HALF OF THE RULE, WHICH IS THE PART THAT MATTERS.** "Grep the superseded string"
+    catches **verbatim** survivals. It does not catch **the claim restated in different words**,
+    and that is what defeated all three of our instruments at once: my sweep ran over `sections/`
+    and **not `main.tex`, where the abstract lives**; the supervisor's matched the exact phrase
+    *"duplicates price"* where the abstract said *"duplicates what price already carries"*; and the
+    builder's matched *"vs"* where its own text said *"against"*. **Each was narrower than the
+    claim it was checking.** So: grep the claim's DISTINCTIVE TERMS — here, any sentence pairing
+    the eviction claim with "price" rather than "OHLCV".
+  - **SIX SITES CORRECTED, IN TWO CLASSES.** Where the sentence describes the OUTCOME — which
+    channels survive, what the shuffle destroys — *price* is simply **wrong**, because the
+    survivors co-vary with **volume**: the abstract (main.tex:103), §6.5 twice, §7.3's placebo
+    sentence. Where it states the general MECHANISM — *"a low-variance channel weakly covariant
+    with price"* — it was **not false**, and the builder was right to decline to call it a defect;
+    the referent is made explicit anyway (*"the high-variance channels already being coded"*),
+    because that exact ambiguity is what produced the wrong title in the first place.
+  - **★ AND THE INSTRUMENT FOUND ONE THE ROUTING DID NOT.** §6.5's closing sentence still read
+    *"the placebo is the one comparison in the design where capacity is constant and structure is
+    not"* — **the capacity-neutral claim withdrawn two commits ago, restated in the summary
+    sentence four paragraphs below the step that withdrew it.** The class again, on my own fix,
+    inside the same subsection.
+  - **`paper/check_claim_drift.py`: FIVE RULES, EACH PAIRING A CLAIM PATTERN WITH A FORBIDDEN ONE**
+    — price-referent, ladder-necessity, "essentially pass", the firing attributed to 200
+    instruments, and placebo-capacity-neutrality — over `sections/*.tex` **and `main.tex`**.
+    Exemptions carry the reason they are allowed, so a silence cannot outlive its justification.
+  - **ITS OWN FALSE-POSITIVE RATE IS A MEASURED PROPERTY, AND THE FIRST DRAFT HAD ONE OF TWO.** The
+    sentence splitter broke on **decimals** (`0.90` ended a sentence) and merged `%` comment lines
+    into surrounding prose once newlines collapsed, so it fired twice on a clean tree. **A gate
+    with false positives becomes decoration.** Fixed: comments stripped before flattening, and a
+    boundary requires a period followed by whitespace and a capital or a control sequence.
+  - **★★ AND THE MUTATION HARNESS LIED TO ME A THIRD TIME.** Rule 4 reported `EXIT 0` — a
+    failure to fail — and the rule was fine: **my `sed` targeted a phrase the rewritten abstract no
+    longer contains, so the mutation never landed.** Caught only by asserting the mutation was
+    present before believing the pass. A separate one silently `git checkout`-ed a file and
+    **reverted a fix I had made minutes earlier**, which the control run then surfaced. All five
+    rules are now observed to fail on landed mutations, with a comment-only no-op as negative
+    control.
+  - **★★ THE HIGHEST-VALUE ITEM IS STILL OUTSIDE THE WRITER'S DOMAIN AND IS NOW MORE URGENT.**
+    `README.md`, `docs/MODEL_CARD.md`, `scripts/m6_weights_release.py` and
+    `runs_manifest/m6_weights_release.json` all still say the tokenizer *"keeps microstructure that
+    duplicates PRICE"*. **The paper is now correct in all six places and the four documents a
+    reader meets FIRST are wrong** — the model card is the HuggingFace landing text and the release
+    receipt is what a downstream user quotes. Flagged, not touched.
+
 - **v1.6.44 (2026-08-17, THE THIRD FORM OF THE SAME CLASS — THE SWEEP COVERED SOURCES AND
   STOPPED AT EXPORTS — AND THE INSTRUMENT FOUND FOUR SHIPPING ARTIFACTS THAT ARE NOT OURS.)**
   - **THE CLASS, NOW COMPLETE AT THREE INSTANCES: A CORRECTION PROPAGATES TO WHAT YOU EDIT, NOT TO

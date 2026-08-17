@@ -75,7 +75,7 @@ sample size.
 \label{sec:lim-placebo}
 
 \Cref{sec:setup-placebo} states the confound and quantifies what it can: the shuffle destroys the
-microstructure block's covariance with price and its own serial structure, and it also makes the
+microstructure block's covariance with the OHLCV block and its own serial structure, and it also makes the
 block incompressible, so cell 5 reconstructs the byte-identical OHLCV targets $1.51\times$ worse
 than cell 4. \textbf{The residual difference between cells 4 and 5 is therefore information plus
 capacity, and we cannot separate them by subtraction.} No cell in the design brackets the capacity

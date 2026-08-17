@@ -245,7 +245,7 @@ $0.1632$, collapsing to within $0.10$ and $0.06$ of their majority-class base ra
 magnitude channels fall by $0.0059$, $0.0551$, $0.0271$ and $0.0635$ --- the smallest signed drop
 is $2.6$ times the largest magnitude drop. \textbf{A uniform capacity penalty does not produce a
 selective within-arm split along exactly the signed/unsigned line.} What the survivors have and the
-evicted channels lack is covariance with the price channels the objective already reconstructs.
+evicted channels lack is covariance with the OHLCV channels the objective already reconstructs.
 % artifact: runs_manifest/m6_ohlcv_recon_ratio.json :: comparison.ratio_cell5_over_cell4 =
 %   1.512811, arms.<arm>.ohlcv_recon_mae_by_dim (7 dims, every one worse in cell 5, per-dim ratios
 %   1.2426-1.8654), NON_GATING disclosure only, lambda_in_force 3.0. This is C-12, and it is the
@@ -269,9 +269,10 @@ stream; at this budget it is not in it.
 Capacity sets the \emph{size} of the loss: not all thirteen dimensions fit at this budget, and
 \cref{sec:mech-claim}'s arithmetic says so. Allocation determines its \emph{address}: which two of
 the six were given up, and why those two. Neither claim does the other's work. What this study adds
-is the second --- that the objective spends its bits on the microstructure that co-varies with price
+is the second --- that the objective spends its bits on the microstructure that co-varies with OHLCV
 and abandons the microstructure that does not --- and the placebo is what licenses it, because the
-placebo is the one comparison in the design where capacity is constant and structure is not.
+placebo is the one comparison in the design where the degradation can be read as a SHAPE within
+one arm rather than as a level between two.
 
 \textbf{The placebo turns out to be an eviction experiment in its own right.} The shuffled arm's
 microstructure block is, by construction, independent of its own bar's price. Comparing the two

@@ -83,7 +83,8 @@ assumption: that a representation good enough to reconstruct from is good enough
 We show that it fails in a specific, predictable direction. Reconstruction objectives allocate code
 capacity by variance and covariance and never by downstream value, so wherever the budget is tight
 and the competing dimensions are correlated enough to amortize one another, a low-variance channel
-that is weakly covariant with price is excluded deterministically rather than by chance. That is
+that is weakly covariant with the high-variance channels already being coded is excluded
+deterministically rather than by chance. That is
 the statistical profile of trade-flow microstructure against price.
 
 We establish the mechanism on an entropy-calibrated fixture, where a planted signal of known
@@ -100,7 +101,7 @@ while two of the four magnitude channels clear the gate outright and the other t
 $0.0025$ and $0.0038$; under a shuffled-microstructure placebo the signed channels collapse toward
 their base rates while the magnitude channels hold, and reading the whole $512$-bar window rather
 than one bar's token recovers nothing. \textbf{The tokenizer preserves the microstructure that
-duplicates what price already carries and loses the microstructure that is independent of it ---
+duplicates what OHLCV already carries and loses the microstructure that is independent of it ---
 which is the part a microstructure model would want.} That split was not anticipated, and it is
 the paper's result.
 
@@ -138,7 +139,7 @@ not carry the signed channels, not that none can.
 % inconclusive outcome is the most likely honest one, and it was pre-committed as publishable
 % before any result existed. The ablation is preceded by a finding that determines what it can
 % measure. Reconstruction objectives allocate code capacity by variance and covariance and never by
-% downstream value, so a low-variance channel weakly covariant with price --- which is what
+% downstream value, so a low-variance channel weakly covariant with the coded block --- which is what
 % microstructure is --- is evicted deterministically rather than by chance wherever the budget is
 % tight and the competing dimensions amortize one another. On an entropy-calibrated fixture,
 % per-dimension reconstruction sorts by variance class ($0.98$ for the return channel,
