@@ -216,6 +216,41 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.47 (2026-08-18, THE REPO WENT PUBLIC. TWO DATED PREMISES EXPIRED AND NEITHER WAS
+  REWRITTEN — THIS IS THE ONE FILE WHERE THE CORRECTION FORM IS DIFFERENT.)**
+  - **VERIFIED FIRST, UNAUTHENTICATED:** `lakshayybhati/trikaal` returns **HTTP 200**,
+    `"private": false`, `"visibility": "public"`.
+  - **★ WHY NOTHING WAS OVERWRITTEN, AND WHY THAT IS THE POINT.** §7 v1.6.43 split the correction
+    form by artifact: **this log records what we believed and when**, so a correction here must
+    SHOW the belief it replaced; **`paper/` teaches a finding**, so a correction there is just the
+    finding stated correctly. R1's premise — *"the repo is private, so scp a tarball"* — sits in
+    the entry dated **2026-08-03** and **was true on that date**. It is not a false statement to
+    overwrite; it is a **superseded operational premise**, and silently rewriting it would make
+    this log the one thing it cannot afford to be: a record whose entries change after the fact.
+    Both sites therefore keep their original wording and carry a dated addendum beneath it.
+  - **R1 ITSELF IS UNCHANGED AND IS NOW EASIER TO SATISFY.** A public repo clones with **no
+    credential at all**, so *"no token ever reaches a rented box"* holds trivially rather than by
+    the tarball workaround. **The mechanism got simpler; the rule did not move.** Verified — not
+    relayed — that the builder made the same correction in `docs/cloud_runbook.md` and
+    `docs/m6_fanout_runbook.md`, in the same struck-premise-plus-new-fact form.
+  - **★ AND THE SWEEP FOUND A SECOND EXPIRED PREMISE THAT NOBODY ROUTED, where the conclusion
+    survives and one supporting fact does not.** Line 1361 argued the M6 lake is not publicly
+    readable from two observations: a 401 on `trikaal-m6-snapshot`, **and** that the account lists
+    *"zero public repos"*. Re-checked: the **401 still holds on both `api/datasets/…` and
+    `api/models/…`, so the conclusion is unchanged** — but the account now lists
+    `lakshayybhati/trikaal-v1-baseline` with `"private": false`, created by our own weights
+    release. **One of the two supporting observations expired; the other and the conclusion did
+    not.** Recorded that way rather than as a blanket correction, because collapsing "one premise
+    expired" into "the claim was wrong" would overstate it — the same defect as the "artifacts
+    disagree" disclosure of v1.6.39.
+  - **THE CLASS, ONE MORE TIME AND FROM A NEW DIRECTION.** Every previous instance was a claim
+    that went stale because **we** changed something. This one went stale because **the world**
+    did: a repository's visibility is not a fact about our text, and no grep over our own diffs
+    would ever have surfaced it. It was found by an agent re-reading a runbook with the current
+    state in mind — which is the third clause of the rule (v1.6.46) arriving from the opposite
+    side: **an instrument scoped to what you edited cannot see a premise invalidated by something
+    you did not edit.**
+
 - **v1.6.46 (2026-08-17, ★★ FOURTH INSTRUMENT FAILURE OF THE DAY, AND IT WAS THE INSTRUMENT BUILT
   TO CATCH THE OTHER THREE. THE READING IS WHAT FOUND ALL FOUR.)**
   - **THE SITES.** §6.5 said the class weight *"takes nothing from the PRICE channels"* and *"costs
@@ -1360,7 +1395,15 @@ three stacked judgment calls = an unlimited re-run license):**
     snapshot` returns **HTTP 401 unauthenticated** on both `api/datasets/…` and `api/models/…`, and
     the account lists **zero public repos** — so the lake is **not publicly readable**. 401
     deliberately does not distinguish *private* from *absent*, and that is the strongest statement
-    the evidence supports; I am not claiming more. **Only the 40 pinned symbols are needed: 4.08 of
+    the evidence supports; I am not claiming more.
+    - **★ ADDENDUM 2026-08-18 — THE CONCLUSION SURVIVES, ONE SUPPORTING FACT DOES NOT, AND NOBODY
+      ROUTED THIS ONE.** Re-checked unauthenticated: `trikaal-m6-snapshot` still returns **HTTP
+      401** on both `api/datasets/…` and `api/models/…`, so **the lake is still not publicly
+      readable and the conclusion above stands unchanged**. But *"the account lists zero public
+      repos"* is **no longer true** — the weights release created
+      `lakshayybhati/trikaal-v1-baseline`, which returns `"private": false`. The dated sentence is
+      left as written; what is corrected is that one of its two supporting observations has since
+      expired while the other, and the conclusion, have not. **Only the 40 pinned symbols are needed: 4.08 of
     14.59 GiB, 27.9 % — 72 % of the lake never moves.** The existing token is write-scoped and NOT
     fine-grained and must never reach a rented box: the risk is INTEGRITY, not confidentiality —
     it can overwrite or delete the Merkle-`5dfd667d` anchor the whole reproducibility claim rests
@@ -1597,6 +1640,15 @@ three stacked judgment calls = an unlimited re-run license):**
     discovered again.** Standing lesson recorded: **cost a rental as `setup + compute`, never
     `compute`.** Credential rule R1 is explicit: the repo is private, so scp a tarball; no token
     ever reaches a rented box. R5 records the `destroy` trap verbatim.
+    - **★ ADDENDUM 2026-08-18 — THE PREMISE MOVED; THE RULE DID NOT.** `lakshayybhati/trikaal`
+      **WENT PUBLIC** (verified unauthenticated: HTTP 200, `"private": false`,
+      `"visibility": "public"`). The sentence above is **left standing because it was true when
+      written and this log records what we believed and when** — the entry is dated 2026-08-03.
+      **R1 itself is UNCHANGED and is now easier to satisfy, not harder**: a public repo clones
+      with no credential at all, so "no token ever reaches a rented box" holds trivially rather
+      than by the tarball workaround. The mechanism got simpler; the rule did not move. The
+      builder made the same correction in `docs/cloud_runbook.md` and `docs/m6_fanout_runbook.md`,
+      in the same form.
   - **CORRECTED 2026-08-03 (same day, supervisor-caught) — THE RUNBOOK CONTRADICTED ITSELF ON A
     ROW LABELLED "MEASURED".** The cost table's setup row read **0.6 h/box *(measured)*** — double
     the 0.28 GPU-h measured and stated two sections below in the same file, and supported by
