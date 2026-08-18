@@ -21,8 +21,9 @@ Verified against **vastai CLI 1.0.1** (key at `~/.config/vastai/vast_api_key`, a
 - **Phase B (tomorrow, with spend approval):** everything below the line. Rents a GPU.
 
 **Blocked on Lakshay before Phase B:** (a) paste the SSH public key into vast.ai → Account → Keys;
-(b) the W&B API key (pasted at `wandb login`, never committed); (c) explicit spend approval; (d) a
-short-lived **read-only GitHub token** to clone the private repo onto the box; (e) confirm the **full
+(b) the W&B API key (pasted at `wandb login`, never committed); (c) explicit spend approval;
+(d) ~~a short-lived read-only GitHub token to clone the private repo~~ — **NO LONGER NEEDED. The
+repo is PUBLIC as of 2026-08-18**, so the box clones with no credential; (e) confirm the **full
 M4b lake** has finished building locally (§3 precondition).
 
 ---
@@ -37,10 +38,19 @@ vastai create ssh-key "$(cat ~/.ssh/id_ed25519.pub)"
 vastai show ssh-keys           # confirm it's listed
 ```
 
-**GitHub read-only token** — the repo is private and contains code only (the lake/raw are gitignored
-and never pushed). Create a *fine-grained* PAT (Contents: Read-only, scoped to `lakshayybhati/trikaal`)
-at github.com → Settings → Developer settings. You pass it as `GH_TOKEN` at provision time — it is
-**never** committed, written here, or left in `.git/config` (the setup script scrubs it on every run).
+**★ GitHub token — NOT REQUIRED ANY MORE.** This section instructed creating a fine-grained
+read-only PAT, passed as `GH_TOKEN` at provision time and scrubbed from `.git/config` on every
+run, because **the repo was private**. It is **PUBLIC as of 2026-08-18**
+(`github.com/lakshayybhati/trikaal`; the lake and raw data remain gitignored and were never
+pushed). Clone with no credential:
+```bash
+git clone --depth 1 https://github.com/lakshayybhati/trikaal
+git -C trikaal checkout <PINNED_SHA>       # pin the revision; a bare clone gets branch HEAD
+```
+**Credential rule R1 — no credential ever reaches a rented box — is unchanged and is now easier
+to satisfy**: there is no token to pass, so none to scrub and none to verify was scrubbed. The
+retired token flow is described here rather than deleted so that a reader of the git history can
+see what the scrub machinery was for.
 
 ---
 

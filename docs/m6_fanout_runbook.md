@@ -140,7 +140,15 @@ done
 # money driver stops at m6_money_run.py:250 with "LAKE MISSING ... refusing to invent data",
 # BEFORE train_matrix (:363), so the cost is five boxes' setup (~$0.50), not a training run.
 # See §2a. Do not launch a shard until the lake path is settled.
-# The repo is PRIVATE. Do NOT clone on the box and do NOT ship a token — scp a tarball.
+# ★ THE REPO IS PUBLIC as of 2026-08-18 (github.com/lakshayybhati/trikaal). This line used to
+# read "the repo is PRIVATE. Do NOT clone on the box and do NOT ship a token — scp a tarball",
+# and the tarball existed to satisfy R1 WITHOUT a credential. A public repo satisfies R1 MORE
+# DIRECTLY: `git clone` needs no token at all, so there is no credential to ship, scrub or verify.
+#   git clone --depth 1 https://github.com/lakshayybhati/trikaal && git -C trikaal checkout <SHA>
+# Either route is R1-clean. The tarball is still correct and is the stricter one — it pins the
+# exact tree including uncommitted state, where a clone pins a commit. Cloning also removes the
+# reason TRIKAAL_GIT_COMMIT has to be exported (see utils/provenance._git_commit): with a .git on
+# the box, `git rev-parse` is the primary source rather than the fallback.
 # ★ TWO FILES WERE MISSING FROM THIS LINE AND EACH FAILS SILENTLY:
 #   m6_lake_subset_manifest.json — the sha256-per-file ground truth `--verify-only` reads. Absent,
 #     the lake cannot be content-verified on the box at all.
@@ -335,7 +343,7 @@ the bracket was not constructed. **That is an honest, publishable outcome and it
 
 | # | rule | why |
 |---|---|---|
-| R1 | **No credential ever reaches a rented box.** The repo is private; scp a tarball. | a write-capable token on a preemptible box is unrecoverable |
+| R1 | **No credential ever reaches a rented box.** ★ THE RULE STANDS; ITS MECHANISM GOT SIMPLER. This read "the repo is private; scp a tarball" — the tarball was the workaround for needing a token to clone. The repo is PUBLIC as of 2026-08-18, so `git clone` needs no credential at all and satisfies R1 more directly than the workaround did. The tarball remains valid and stricter (it pins the exact tree, not a commit). | a write-capable token on a preemptible box is unrecoverable |
 | R2 | **`TRIKAAL_IMAGE` AND `TRIKAAL_GIT_COMMIT` must be exported on every shard.** | both are identity keys; if *some* shards set them and others do not, that is a refusal — the correct outcome, and better than silence. The commit key exists because the surface recorded *which machine* and said nothing about *which code* (R6): a stale-payload shard training at the old 2,000-step budget would otherwise have assembled silently |
 | R3 | **Pin torch/numpy on every box.** | the image ships 2.5.1; ours is 2.12.1. A version split across shards refuses — correctly, and after paying for the compute |
 | R4 | **Pull and sha256-verify every scientific artifact before `destroy`.** | bulk checkpoints from a run declared INVALID are exempt, exemption recorded |

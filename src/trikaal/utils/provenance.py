@@ -67,6 +67,14 @@ def _git_commit() -> str:
     same mechanism as ``TRIKAAL_IMAGE`` — and the local `git rev-parse` is the fallback for runs
     that do have a checkout (CI, laptop, the dry runs).
 
+    ★ THE PREMISE ABOVE NARROWED ON 2026-08-18. The tarball was scp'd "precisely so no credential
+    ever reaches it" because the repository was PRIVATE and cloning needed a token. It is now
+    PUBLIC, so a box can `git clone` with no credential — which means a fan-out MAY have a .git,
+    and for those runs the fallback below is the primary source. Nothing in this function changes:
+    the env var still wins when set, and `git rev-parse` still answers when there is a checkout.
+    Recorded because the ORDER is deliberate and a reader would otherwise wonder why the weaker
+    source is first.
+
     Being an IDENTITY key, a fan-out where some shards stamp it and others do not is a REFUSAL.
     """
     env = os.environ.get("TRIKAAL_GIT_COMMIT")

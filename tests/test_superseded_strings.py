@@ -31,6 +31,25 @@ negation vector, generalized), and patterns narrowed to the phrasing that is act
 ``21.3M-parameter MODEL``, not every mention of the backbone count. The instrument's own
 false-positive rate is a property to measure, not to tolerate.
 
+★ ONE CLASS THIS INSTRUMENT CANNOT COVER, MEASURED RATHER THAN ASSERTED. On 2026-08-18 the code
+repository was made PUBLIC and four documents went stale IN THE SAME SECOND — no file touched,
+nothing to diff, and no superseded STRING to grep, because the string was not superseded until a
+person decided it was. A "retired fact about the world" entry was drafted here and then REMOVED,
+because it was run first: over the tree it produced **8 hits and 0 true positives**. Every one was
+a dated historical record where the fact was true when written, the correction text quoting the old
+wording, a NEGATION ("GH_TOKEN is NOT needed"), or a DIFFERENT repository — the HuggingFace lake,
+which is still private.
+
+That ratio is the argument, and it is the opposite of the working entries'. "Duplicates price" is
+never legitimately asserted, so any occurrence is a defect or a locatable record. "The repo is
+private" was TRUE for the project's whole history, appears throughout records, and names two
+repositories whose current states differ. Adding it would have made this file the boy who cried
+wolf a second time, on the same day the first instance was documented six paragraphs above.
+
+So the gap is stated rather than papered over: **a fact can change while every byte in the tree
+stays identical, and nothing here watches for that.** Registering such a change is a human step.
+A check that fires on everything would not have made it automatic; it would have made it ignored.
+
 WHAT IS BLOCKING AND WHAT IS REPORTED. ``paper/`` belongs to the writer, so its surviving hits are
 recorded in ``EXPECTED_HITS`` with a routing note rather than treated as build failures the builder
 cannot fix. Everything in the builder's domain is blocking. The distinction is about who can act,
