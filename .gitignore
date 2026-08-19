@@ -51,8 +51,5 @@ demo/index.html
 # Ignored so a local build tree cannot silently re-enter; the paper is distributed as a PDF.
 paper/
 
-# Local agent/editor tooling configuration — never part of the artifact.
-.claude/
-.cursor/
-.aider*
-.continue/
+# Local editor/tooling configuration is excluded per-clone via .git/info/exclude,
+# not here — naming those directories in a tracked file publishes what it is meant to hide.
