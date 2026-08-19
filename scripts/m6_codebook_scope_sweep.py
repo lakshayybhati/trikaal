@@ -21,7 +21,7 @@ import sys
 from pathlib import Path
 
 FILES = [
-    Path("docs/superpowers/specs/2026-06-18-trikaal-v1-design.md"),
+    Path("docs/specs/2026-06-18-trikaal-v1-design.md"),
     Path("docs/m6_prereg.md"),
     Path("docs/m6_design.md"),
 ]

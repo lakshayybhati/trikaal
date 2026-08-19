@@ -33,7 +33,7 @@ path unexamined.
 
 ### The design specifies a budget. The code does not implement it.
 
-From `docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`:
+From `docs/specs/2026-06-18-trikaal-v1-design.md`:
 
 | | designed (spec) | implemented (code) | shortfall |
 |---|---|---|---|

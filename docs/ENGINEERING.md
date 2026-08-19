@@ -6,17 +6,17 @@ Project overview, the non-negotiable invariants, and the engineering norms this 
 
 **Trikaal** — a **TOKENIZER STUDY**, not a foundation model. The object under study is the *tokenizer* for **crypto 1-minute K-lines**; the built-from-scratch decoder-only model (**31,795,200 realized params** at the FSQ vocab (891,1225); the **BSQ arms realize 31,725,568** — 69,632 fewer, **0.219% of the full model**, an artifact of vocabulary-dependent embedding/head rows, §7 v1.6.17/v1.6.34). **QUOTE THE REALIZED TOTAL: it is what a reader gets when they load the published checkpoint.** The **backbone excluding the MTP heads** is 21,301,248 / 21,231,616 — a NAMED SECONDARY, never the model size; the MTP heads are 10,493,952 params (33.03% of the artifact) and are identical across arms, which is why C-19's gap is 69,632 either way but 0.219% rather than the superseded 0.327% is the **measurement vehicle** — held fixed and matched across every ablation arm so the only varied factor is the quantizer × input arm. Released as a research artifact (code + weights on HuggingFace + a paper + a live demo). It is a *controlled* evolution of **Kronos** (Shi et al. 2025, arXiv:2508.02739) with exactly **one** novel research contribution: a **microstructure-aware FSQ tokenizer** for financial K-lines. Calling it a foundation model overstates the artifact and misdescribes what the ablation measures — do not reintroduce that framing.
 
-**Current phase: implementation underway.** M1 (synthetic vertical slice) and M2 (BTCUSDT single-symbol real slice + Stage-1 tokenizer) are complete; M3 (Stage-2 AR) is next. The live build order and per-milestone exit gates live in `docs/ROADMAP.md`. The authoritative *design* remains the blueprint spec — build against it, not against assumptions or against Kronos's code.
+**Current phase: the study is complete and the experiment it designed did not run.** M1 through M5 closed. M6 — the five-cell ablation — was stopped on 2026-08-12 by its own pre-registered micro-legibility gate, written thirteen days earlier; §7 v1.5 item E had bound that outcome in advance to make the mechanism finding the primary result. Cells 2–5 were never trained, and cell 1 (BSQ, OHLCV-only, seeds 0/2/4) is the only arm with scored artifacts. The build order and per-milestone exit gates are in `docs/ROADMAP.md`; what the weights are and are not is in `docs/MODEL_CARD.md`.
 
-## Sources of truth (read before doing any work)
+## Sources of truth
 
-- **Blueprint spec (design):** `docs/superpowers/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness). If anything here conflicts with the spec, the spec wins.
+- **Blueprint spec (design):** `docs/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness). If anything here conflicts with the spec, the spec wins.
 - **Execution roadmap (build order):** `docs/ROADMAP.md` — the milestone sequence from here to a shipped paper, each with a testable exit gate, plus the two binding M6 entry gates. Self-sequence against it; update it when a milestone closes.
-- **Parent paper:** `/Users/lakshaybhati/Downloads/2508.02739v1 copy.pdf` (Kronos). Trikaal inherits its two-stage tokenizer→autoregressive design and most of its training/eval scaffolding.
+- **Parent paper:** Kronos (arXiv 2508.02739), read locally and never redistributed. Trikaal inherits its two-stage tokenizer→autoregressive design and most of its training/eval scaffolding.
 
 ## Non-negotiable invariants
 
-These are the things that are easy to get wrong and that would sink either the paper or the model. Do not violate them without explicit user sign-off:
+These are the things that are easy to get wrong and that would sink either the paper or the model. They are fixed, and they change only on the operator's explicit sign-off:
 
 1. **TFI, never OFI.** Microstructure imbalance here is computed from free Binance aggTrades = signed *executed-volume* imbalance = **trade-flow imbalance (TFI)**. True order-flow imbalance (OFI) needs orderbook depth and is explicit **v2** future work. Use the name `TFI` in all code, configs, and prose — a reviewer who sees "OFI" computed from trades alone rejects on the technicality.
 2. **Causal-safety / no lookahead is a hard invariant.** Every feature, normalization statistic, volatility scale, and prediction target for bar *t* may use **only** data known by the close of bar *t*. This is enforced by a first-class CI unit test — never weaken, skip, or `xfail` it.
@@ -38,7 +38,7 @@ Supporting subsystems, each first-class:
 
 The **per-bar feature vector is the method foundation** — every downstream component depends on its exact definition and causal rules. Read the feature spec section first.
 
-## Tooling & commands (the standard to wire up; repo is pre-code)
+## Tooling and commands
 
 - Lint / format: `ruff check .` and `ruff format .`
 - Tests: `pytest` (full suite); single test: `pytest tests/<file>::<test_name> -q`
@@ -69,6 +69,6 @@ The **per-bar feature vector is the method foundation** — every downstream com
 
 Target training hardware: a single cloud A100/H100 (40–80 GB), bf16, single-process but DDP-ready.
 
-## Out of scope for v1 (firewalled — do not add)
+## Out of scope for v1 (firewalled)
 
 Equities / cross-asset data, Bybit/OKX sources, orderbook depth (→ true OFI), base-class (~100M) scale-up, MLA attention, and architecture-level latency micro-optimization (a serving concern, handled at export/serving). These are captured as v2/v3 in the spec's roadmap; keep them out of v1.

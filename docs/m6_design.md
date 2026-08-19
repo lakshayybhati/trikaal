@@ -2,7 +2,7 @@
 
 **Author:** Supervisor / research lead · **Date:** 2026-06-23
 **Status:** design locked; the eval decision rule (§2) is a PRE-REGISTRATION — committed before any M6 training number exists.
-**Reads against:** the blueprint spec (`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`) for the underlying architecture; this doc adds the M6 orchestration plan + the pre-registered eval. Where they conflict, the spec wins on architecture, this doc wins on M6 procedure.
+**Reads against:** the blueprint spec (`docs/specs/2026-06-18-trikaal-v1-design.md`) for the underlying architecture; this doc adds the M6 orchestration plan + the pre-registered eval. Where they conflict, the spec wins on architecture, this doc wins on M6 procedure.
 **Inputs:** the M6-readiness audit (`docs/m6_readiness_audit.md`) and the drift audit (`docs/drift_audit_2026-06-22.md`).
 
 ---

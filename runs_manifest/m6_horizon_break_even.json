@@ -79,8 +79,8 @@
       "micro_shuffled"
     ],
     "loader_verdict_by_dir": {
-      "runs_cloud/cuda_validation/run/eval": "REFUSED: VerdictInputError: no index.json in /Users/lakshaybhati/Downloads/trikaal/runs_cloud/cuda_validation/run/eval \u2014 artifacts must be indexed",
-      "runs_cloud/p2/eval": "REFUSED: VerdictInputError: no index.json in /Users/lakshaybhati/Downloads/trikaal/runs_cloud/p2/eval \u2014 artifacts must be indexed",
+      "runs_cloud/cuda_validation/run/eval": "REFUSED: VerdictInputError: no index.json in <repo>/runs_cloud/cuda_validation/run/eval \u2014 artifacts must be indexed",
+      "runs_cloud/p2/eval": "REFUSED: VerdictInputError: no index.json in <repo>/runs_cloud/p2/eval \u2014 artifacts must be indexed",
       "runs_cloud/results/r0": "MONEY \u2014 accepted (this is the quotable set)",
       "runs_cloud/results/r1": "MONEY \u2014 accepted (this is the quotable set)",
       "runs_cloud/results/r2": "MONEY \u2014 accepted (this is the quotable set)",
@@ -518,5 +518,6 @@
     "round_trip_fee_pct": 0.1,
     "n_seeds_clearing_round_trip_fee": 0,
     "spread_ratio_max_over_min": 8.962035193461427
-  }
+  },
+  "path_substitution_2026_08_19": "Absolute local paths were replaced with repo-relative equivalents on 2026-08-19 before publication. Only the machine-specific prefix changed; no measured value was touched. The substitution is recorded here rather than applied silently, because a receipt edited without a note is no longer a receipt."
 }

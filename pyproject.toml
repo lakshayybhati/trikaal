@@ -56,10 +56,6 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["E501"]
-# Manuscript figure rendering: label strings carry typographic dashes and middots on purpose
-# (RUF001), and sys.path must be extended before the package import so the scripts read the
-# repo's own constants rather than a hardcoded copy (E402). No measurement happens here.
-"paper/figures/*" = ["RUF001", "E402"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

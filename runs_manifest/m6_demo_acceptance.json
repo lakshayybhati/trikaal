@@ -15,7 +15,7 @@
       "torch": "2.12.1",
       "numpy": "2.4.6",
       "python": "3.11.7",
-      "python_executable": "/Users/lakshaybhati/Downloads/trikaal/.venv/bin/python",
+      "python_executable": "<repo>/.venv/bin/python",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "platform_abi": "macOS-26.5.1-arm64-arm-64bit",
       "attention_mode": "unknown",
@@ -27,7 +27,7 @@
     "lake_root": "processed/universe_bars",
     "lake_identity": {
       "lake_root": "processed/universe_bars",
-      "manifest": "/Users/lakshaybhati/Downloads/trikaal/processed/universe/universe_manifest.json",
+      "manifest": "<repo>/processed/universe/universe_manifest.json",
       "n_symbol_partitions": 200,
       "total_bars": 304625181,
       "universe_merkle": "sha256:5dfd667d05b97bda5a35946433b96d40738df8a926d5fa8a8d9dfc924f5a04b7",
@@ -157,5 +157,6 @@
     }
   ],
   "n_mismatch": 0,
-  "verdict": "PASS"
+  "verdict": "PASS",
+  "path_substitution_2026_08_19": "Absolute local paths were replaced with repo-relative equivalents on 2026-08-19 before publication. Only the machine-specific prefix changed; no measured value was touched. The substitution is recorded here rather than applied silently, because a receipt edited without a note is no longer a receipt."
 }

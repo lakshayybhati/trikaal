@@ -2,7 +2,7 @@
   "FINDING": "Three estimators of the same quantity, one model, one file: they DISAGREE ON THE MAJORITY SIGN, and seed 4 flips outright between expectation and the trajectory median. The directional signal is weak enough that the CHOICE OF ESTIMATOR CHANGES ITS SIGN.",
   "note": "expectation = predict_mu(estimator='expectation'); mc_mean_32 = the mean of the first 32 sampled trajectories' endpoints (bit-identical to production's mc_mean); trajectory_median = the median of that seed's 48 sampled endpoints. All from the SAME rollout at MC_SEED=20260704.",
   "input": {
-    "path_as_supplied": "/Users/lakshaybhati/Downloads/BTCUSDT_1m.csv",
+    "path_as_supplied": "<operator-supplied CSV, outside the repo>",
     "sha256": "fb43eacea7ba4f12c37e7bcc3077f71245d3461935affcfc6cf35e1dd2e9f335",
     "n_rows": 5999,
     "decision_ts_ms": 1786885860000,
@@ -39,5 +39,6 @@
   "pooled_p10_pct": -0.046936150576071256,
   "pooled_p90_pct": 0.04939186723984523,
   "WHY_IT_MATTERS": "The page previously rendered the pooled headline (trajectories) beside per-seed labels (expectation). A negative headline over two positive seeds reads as broken arithmetic. Fixed by putting ONE estimator on the page \u2014 the one the bands and median lines are drawn from.",
-  "LIMITS": "One file, one horizon (h=15), 3 seeds, cell 1. Illustrative of a measured property, not a new measurement of it."
+  "LIMITS": "One file, one horizon (h=15), 3 seeds, cell 1. Illustrative of a measured property, not a new measurement of it.",
+  "path_substitution_2026_08_19": "Absolute local paths were replaced with repo-relative equivalents on 2026-08-19 before publication. Only the machine-specific prefix changed; no measured value was touched. The substitution is recorded here rather than applied silently, because a receipt edited without a note is no longer a receipt."
 }

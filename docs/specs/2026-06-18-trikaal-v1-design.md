@@ -2099,7 +2099,7 @@ stage2:
 
 ---
 
-**Relevant file paths.** The target project directory `/Users/lakshaybhati/Downloads/MY AI MODEL/` contains only an empty `docs/superpowers/specs/` tree — there is no existing training code, config, or convention to conform to, so the schema, file names (`train.py`, `run_manifest.json`, `run.yaml`), and module interfaces above are proposed greenfield and are the section's normative contract.
+**Relevant file paths.** The target project directory (a local scratch path, since superseded) contained only an empty `docs/specs/` tree — there is no existing training code, config, or convention to conform to, so the schema, file names (`train.py`, `run_manifest.json`, `run.yaml`), and module interfaces above are proposed greenfield and are the section's normative contract.
 
 ---
 
@@ -2701,4 +2701,4 @@ This discipline is the point: a 27M model with one sharp, well-controlled claim 
 
 ---
 
-Relevant absolute path for this artifact: the repo root will be `/Users/lakshaybhati/Downloads/MY AI MODEL/trikaal/` (currently only `/Users/lakshaybhati/Downloads/MY AI MODEL/docs/` exists; this section defines the full tree to be scaffolded under that root).
+Relevant absolute path for this artifact: the repo root will be the `trikaal/` directory inside it (at the time of writing only a `docs/` directory existed; this section defines the full tree to be scaffolded under that root).

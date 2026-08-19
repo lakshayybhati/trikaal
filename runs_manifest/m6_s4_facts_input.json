@@ -187,22 +187,22 @@
         "value": "+inf if IR>0 across the whole grid; -inf if IR<=0 across it"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2233",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2233",
         "claim": "Spec statement of the 0.1\u20130.3% band and the 0.30% headline choice",
         "value": "round-trip execution cost in the 0.1%\u20130.3% band; headline reported at c_total = 0.30% upper bound; re-report at {0.10%, 0.20%, 0.30%}"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2233",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2233",
         "claim": "Spec rationale for the band's endpoints",
         "value": "\u22488 bps for BTC up to \u224830+ bps for mid-caps"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2221",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2221",
         "claim": "Spec f_taker rationale",
         "value": "0.04% (4 bps), Binance USDT-perp/spot taker at VIP-0\u20131"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2224",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2224",
         "claim": "Spec k_impact rationale",
         "value": "0.1 (10 bps per unit of Q/ADV participation)"
       },
@@ -527,7 +527,7 @@
         "value": "zero occurrences in src/trikaal/eval/xsection.py; it enters only via the imported harness._per_bar_cost"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:34",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:34",
         "claim": "Secondary diagnostics as pre-registered: IC / RankIC / MAE / R\u00b2 are secondary, never gating",
         "value": "IC / RankIC / MAE / R\u00b2 / discriminative-score / TSTR / pinball / coverage are secondary diagnostics"
       },
@@ -632,17 +632,17 @@
         "value": "incremental_ir(strategy, benchmark, h) = IR(strategy) - IR(benchmark)"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2278-2284",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2278-2284",
         "claim": "Spec's \u00a7B.4 benchmark set for the incremental headline",
         "value": "no-trade, trade-everything (filter off), passive buy-and-hold basket, price-momentum baseline"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2408",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2408",
         "claim": "Spec red-flag threshold on absolute performance",
         "value": "a backtest Q4 net Sharpe above ~3 is treated as a red flag for overfitting; live net-IR expected at 40\u201360% of backtest Q4"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:2272",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:2272",
         "claim": "Spec's cost-fragility rule for c_break",
         "value": "a strategy whose c_break sits inside or below the realistic 0.10\u20130.30% band is reported as cost-fragile, not alpha"
       },
@@ -1999,7 +1999,7 @@
         "value": "V_c = 891, V_f = 1225"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:869 (restated :1744, :1198)",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:869 (restated :1744, :1198)",
         "claim": "Coarse and fine sub-token bit budgets, and the total implicit FSQ vocabulary",
         "value": "bpt_coarse = 9.80 (V_c = 891), bpt_fine = 10.26 (V_f = 1225); total implicit vocab = 891 \u00d7 1225 = 1,091,475 \u2248 2^20.06 (BSQ ref 2^20 = 1,048,576)"
       },
@@ -2009,7 +2009,7 @@
         "value": "k_coarse = 10, k_fine = 10 (defaults); v_c = 2**10 = 1024, v_f = 2**10 = 1024; bpt = dim = 20 exactly"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:1837 (candidate table at :1010, :1014)",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:1837 (candidate table at :1010, :1014)",
         "claim": "How the FSQ levels were chosen, per the design spec \u2014 empirical selection on a held-out month by lowest val recon-MAE among in-band configs",
         "value": "[11,9,9,7,7,5,5] = 20.06 is the PRIMARY PARITY POINT; named in-band alternates: [9,9,9,9,7,5,5] = 20.13 and [9,9,9,7,7,5,5] = 19.77 (conservative FSQ \u2264 BSQ fallback)"
       },
@@ -2039,7 +2039,7 @@
         "value": "vocabulary-dependent embedding/head rows (2048 rows at BSQ vs 2116 at FSQ). It confounds the \u00a75 NULL-fallback IR(2)\u2212IR(1) (FSQ vs BSQ). The primary \u0394IR(4\u22125) is UNAFFECTED \u2014 both cells are FSQ at identical vocab"
       },
       {
-        "artifact": "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md:1265 (param-parity rule for the ablation)",
+        "artifact": "docs/specs/2026-06-18-trikaal-v1-design.md:1265 (param-parity rule for the ablation)",
         "claim": "Design-spec accounting of the vocab-bearing tables behind the 69,632",
         "value": "FSQ four V\u00d7d tables: 456,192 + 627,200 + 456,192 + 627,200 = 2,166,784; BSQ: 4\u00b71024\u00b7512 = 2,097,152; difference 69,632 (~0.3% of 21M)"
       },

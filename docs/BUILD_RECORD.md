@@ -40,7 +40,7 @@ artifact. Where an artifact and a recollection disagree, the artifact is the fac
 
 ### M0 — blueprint (2026-06-18, `026cf58`)
 
-`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`. Design drafted and adversarially verified
+`docs/specs/2026-06-18-trikaal-v1-design.md`. Design drafted and adversarially verified
 by a multi-agent workflow: 9 subsystem drafts → a 4-lens audit (causal-safety, architecture/math,
 financial-ML rigor, scope/consistency) → targeted revision → re-verification. The spec records that
 this audit caught real defects before any code existed: wrong FSQ bits-per-token tables, a bad-tick

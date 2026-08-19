@@ -46,3 +46,13 @@ runs_cloud/
 demo/index.html
 
 # CSV dashboard is a server, not a build — nothing to version but the code and its tests.
+
+# The manuscript was removed from the repository on 2026-08-19 by operator decision (60 files).
+# Ignored so a local build tree cannot silently re-enter; the paper is distributed as a PDF.
+paper/
+
+# Local agent/editor tooling configuration — never part of the artifact.
+.claude/
+.cursor/
+.aider*
+.continue/

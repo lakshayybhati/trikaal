@@ -1,6 +1,6 @@
 # Trikaal v1 — Execution Roadmap
 
-The **design** blueprint is the spec (`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`, 9 subsystems). This file is the **build order**: the sequence of milestones from here to a shipped paper, each with a testable exit gate. The builder self-sequences against this — it is the answer to "which way next?".
+The **design** blueprint is the spec (`docs/specs/2026-06-18-trikaal-v1-design.md`, 9 subsystems). This file is the **build order**: the sequence of milestones from here to a shipped paper, each with a testable exit gate. The builder self-sequences against this — it is the answer to "which way next?".
 
 **Standing discipline (overrides any tempt-to-expand).** v1 is **one** sharp, controlled, honestly-evaluated claim — the microstructure-aware FSQ tokenizer on a **31,795,200-parameter** realized backbone (21,301,248 excluding the MTP heads) — *not* a race to be "the best." No v2/v3 items pulled forward (regime-conditioning, OFI/L2 depth, meta-labeling/sizing, cross-asset, base-class scale). No new "novelty." **Honest over impressive; a clean null is a valid, publishable outcome.** Anything that tempts scope expansion: *parked, we build.*
 

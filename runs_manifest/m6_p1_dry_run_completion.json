@@ -367,7 +367,7 @@
       "numpy": "2.4.6",
       "platform": "macOS-26.5.1-arm64-arm-64bit",
       "python": "3.11.7",
-      "python_executable": "/Users/lakshaybhati/Downloads/trikaal/.venv/bin/python",
+      "python_executable": "<repo>/.venv/bin/python",
       "steps_stage1": 26003,
       "steps_stage2": 26003,
       "torch": "2.12.1"
@@ -426,7 +426,7 @@
   "money_run_manifest_sha256": "20202b71e0df91e4bfce6b3fdcf22d38a09d013c72399e63a8b92de7039f6c25",
   "p1_exit_code": 0,
   "receipt": "m6_p1_dry_run_completion",
-  "source_run_dir": "<local scratch dir, not preserved — the dry run's OUTPUTS are the receipt fields below>",
+  "source_run_dir": "<local scratch dir, not preserved \u2014 the dry run's OUTPUTS are the receipt fields below>",
   "stages_completed": [
     "conformance PASS (full money surface, 40 symbols, seeds 0-4) \u2014 first action",
     "symbol load + memory-strategy check",
@@ -445,5 +445,6 @@
     "money_run": false
   },
   "what": "P1 (fan-out runbook \u00a71a) \u2014 `m6_money_run.py --dry-run` ran to completion for the FIRST TIME in this project's history, at commit a9743938 with the R5 fix applied",
-  "why_retained": "the run directory is a scratch path and does not survive. The standing pre-teardown retention rule covers less than this, and this is the completion evidence for the driver that produces every M6 artifact"
+  "why_retained": "the run directory is a scratch path and does not survive. The standing pre-teardown retention rule covers less than this, and this is the completion evidence for the driver that produces every M6 artifact",
+  "path_substitution_2026_08_19": "Absolute local paths were replaced with repo-relative equivalents on 2026-08-19 before publication. Only the machine-specific prefix changed; no measured value was touched. The substitution is recorded here rather than applied silently, because a receipt edited without a note is no longer a receipt."
 }

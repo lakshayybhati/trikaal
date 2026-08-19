@@ -6,7 +6,7 @@ decoder-only backbone — **31,795,200 realized parameters** at the FSQ vocabula
 the BSQ one, of which 10,493,952 are the MTP heads — is the **measurement vehicle**, held fixed
 across every arm, not a product. A controlled evolution of Kronos; **no Kronos code or weights are
 part of it**. The authoritative design is the blueprint spec at
-[`docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`](docs/superpowers/specs/2026-06-18-trikaal-v1-design.md);
+[`docs/specs/2026-06-18-trikaal-v1-design.md`](docs/specs/2026-06-18-trikaal-v1-design.md);
 the live build order + milestone exit gates are in [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## ★ Status: the designed experiment did not run, and that is the result

@@ -50,23 +50,23 @@ So the gap is stated rather than papered over: **a fact can change while every b
 stays identical, and nothing here watches for that.** Registering such a change is a human step.
 A check that fires on everything would not have made it automatic; it would have made it ignored.
 
-WHAT IS BLOCKING AND WHAT IS REPORTED. ``paper/`` belongs to the writer, so its surviving hits are
-recorded in ``EXPECTED_HITS`` with a routing note rather than treated as build failures the builder
-cannot fix. Everything in the builder's domain is blocking. The distinction is about who can act,
-not about which is more important — the highest-value hit this instrument has found to date is in
-``paper/main.tex``, and it is in the abstract.
+EVERYTHING IS BLOCKING NOW. This file used to split its findings — manuscript hits were recorded
+and routed rather than failed, because they belonged to someone else. The manuscript left the
+repository on 2026-08-19 (60 files, operator decision), so there is nothing to route and every
+surviving hit is actionable here. The split is recorded because the instrument's best catch was
+found under it: a retired claim surviving in an abstract while the sections that carried the same
+sentence had all been corrected.
 
 ★ THE KNOWN BLIND SPOT, AND WHERE IT IS COVERED. This file matches SUPERSEDED STRINGS. It therefore
 catches verbatim survivals and near-misses of the wording it lists, and it does NOT catch a retired
 claim RESTATED IN DIFFERENT WORDS. That limit nearly bit on its first outing: the abstract said
 "duplicates what price already carries", and the only reason ``duplicates_price`` matched is that
 its pattern happens to carry an optional ``what`` — design and luck in roughly equal measure.
-``paper/check_claim_drift.py`` (the writer's) is the stronger construction for that failure mode:
-each of its rules pairs a CLAIM pattern with a FORBIDDEN pattern and fires on any sentence matching
-both, which is a statement about meaning rather than about wording. The two are complementary and
-neither subsumes the other — a string sweep sees restatements the claim/forbidden pairing has no
-rule for, and the pairing sees paraphrases a string sweep cannot. Read both before concluding a
-retired claim is gone.
+A companion instrument once covered that gap by pairing a CLAIM pattern with a FORBIDDEN pattern
+and firing on any sentence matching both — a statement about meaning rather than about wording. It
+lived with the manuscript and left with it. The two were complementary and neither subsumed the
+other, so the blind spot named above is now uncovered: THIS FILE CANNOT SEE A RETIRED CLAIM
+RESTATED IN DIFFERENT WORDS, and nothing else in the tree can either.
 """
 
 from __future__ import annotations
@@ -175,19 +175,10 @@ for _p in ("docs/m6_decisions_pending.md", "docs/m6_training_budget_decision.md"
     )
 _record(
     "backbone_is_the_model_size",
-    "docs/superpowers/specs/2026-06-18-trikaal-v1-design.md",
+    "docs/specs/2026-06-18-trikaal-v1-design.md",
     "the design record, using the design-time target; annotated with the realized totals",
     "PARAMETER-COUNT NOTE",
 )
-for _c in SUPERSEDED:
-    _record(
-        _c,
-        "paper/check_claim_drift.py",
-        "the writer's own drift checker, which names the retired claims it searches for — the "
-        "same exemption this file holds for itself, and read the note in the module docstring "
-        "about which of the two instruments is the stronger design",
-        "RETIRED CLAIMS",
-    )
 
 # --------------------------------------------------------------------------------------------
 # SURVIVING HITS OUTSIDE THE BUILDER'S DOMAIN. Exact — fixing one must FAIL this file.
@@ -341,12 +332,16 @@ def test_the_scan_reaches_the_tree() -> None:
     files = _tracked_files()
     assert len(files) > 100, f"scanner saw only {len(files)} tracked text files"
     assert any(f == "README.md" for f in files)
-    assert any(f.startswith("paper/") for f in files), "paper/ must be in scope, read-only"
 
 
 def test_no_superseded_claim_survives_in_the_builders_domain() -> None:
-    """BLOCKING. Anything outside paper/ is mine and must carry the corrected wording."""
-    live = {k: v for k, v in scan().items() if not k[1].startswith("paper/")}
+    """BLOCKING over the whole tracked tree.
+
+    ★ THE paper/ SPLIT IS GONE because paper/ is gone — 60 files untracked by operator decision on
+    2026-08-19. This test used to exclude them and route their hits; there is nothing left to
+    route, so every hit is now the builder's and every one blocks.
+    """
+    live = scan()
     unexpected = {k: v for k, v in live.items() if k not in EXPECTED_HITS}
     if unexpected:
         lines = []
