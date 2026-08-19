@@ -216,6 +216,50 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.51 (2026-08-19, THE RETIRED FILENAME IS GONE — AND A COMMIT WHOSE MESSAGE CLAIMS THAT
+  LANDED A CENSUS CORRECTION FOR A SOURCE STATE A LATER HISTORY REWRITE DESTROYED.)**
+  - **★★ PERMANENT ANNOTATION ON `a96fbb1`, WHICH CANNOT BE AMENDED AND WILL NOT BE REWRITTEN.**
+    Its message carries the rephrasing and read-back findings verbatim; **its tree touched ZERO
+    prereg files.** The rephrasing it describes was destroyed with the rest of the writer's later
+    work in the history rewrite that followed, but the paper-side census change it also carried
+    **survived**. A third rewrite is not acceptable, so the divergence is recorded here instead:
+    **`a96fbb1`'s message describes prose edits that its tree does not contain.**
+  - **★ THE DEFECT THAT LEFT BEHIND: THE PAPER OVER-COUNTED ITS OWN LOG BY ONE, IN FOUR PLACES.**
+    `a96fbb1` moved the paper from 64→65 tags and 61→62 entries. Those were the CORRECT values for
+    a tree containing v1.6.51 — measured while that entry existed. The entry was destroyed; the
+    correction was not. **A derived artifact was corrected to match a source state that a later
+    history operation then removed**, which is a new member of the propagation class: previously a
+    correction failed to reach a derived artifact; here it reached one and the source went away.
+  - **AND NO GUARD IN THE SUITE COUNTS THE LOG, so the battery was green throughout.** `tectonic`
+    exit 0, `check_claim_drift` CLEAN, `check_submission_build` PASS and `ruff` clean are all true
+    of a paper asserting a tag count its own log contradicts. **A green battery is evidence about
+    what is checked, not about what is right** — and nothing checked this.
+  - **THE REPHRASING, REDONE.** Seven occurrences in five passages. Pointers became *"the
+    engineering guide"*; subjects became descriptions rather than quotations; v1.6.48's restored
+    sentence reads *"the file it would replace is still in place"*; and the reconciliation line
+    states the file **was renamed on 2026-08-19**, so a path cited in an earlier entry reflects the
+    current filename rather than the one in force on that entry's date. **Where the rule needs the
+    name to stay legible, the bracketed form `[the retired filename]` is used** — the audit
+    region's own device, applied to the rule that governs it.
+  - **★ AND READING THE RESULT BACK CAUGHT THE SAME TWO DEFECTS TWICE, WHICH IS THE FINDING.** The
+    redo reproduced both, because I reapplied the FIRST-draft replacement text rather than the
+    corrected one: a collided sentence — *"rewrote v1.6.48's own sentence its assertion that…"* —
+    and a heading reading **"ONE LINE RECORDS THE OLD NAME"** above a line that by design no longer
+    did. **Recovering destroyed work from memory recovers the draft, not the fix**; the corrections
+    made after a passage was written are exactly what a redo loses. Both fixed again, and the
+    bullet rewrapped.
+  - **TWO EARLIER FINDINGS, KEPT BECAUSE THEY ARE TRUE OF ANY TREE.** (1) **The census sync
+    silently did nothing**: the `perl` substitution matched none of its patterns — the targets wrap
+    across lines in two of four files — and exited cleanly having changed nothing. **A substitution
+    reports success by not erroring, which is not the same as having substituted.** (2) **A write
+    reported success without writing**: a script printed *"§7 v1.6.51 written"* and the entry was
+    absent, and I committed a message describing it. **A script's own success message is not
+    evidence that the file changed** — only re-reading the file is.
+  - **AND THE ENTRY'S WRITE-GUARD FIRED CORRECTLY**, then and now: the first attempt refused
+    because the rephrased text above already cites `v1.6.51`, so a naive *"tag not present"* check
+    saw a duplicate. It tests for the **entry header** instead — a citation to an entry is not the
+    entry, the same reference-versus-subject distinction one level up.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
@@ -246,9 +290,9 @@ three stacked judgment calls = an unlimited re-run license):**
     the one retained-VERBATIM block here (the superseded G-§8.C.3 clause, line ~194) contains no
     in-map token. No revert-inside-annotate-beside was needed.
   - **THE TWO FILENAME MENTIONS WERE ALREADY DONE IN v1.6.49** — `06_results.tex:7` and
-    `make_fig5_design.py:11` both read `docs/ENGINEERING.md`. The 6 surviving `CLAUDE.md` strings
-    in this log are all **subjects** in the entries that define the distinction, and are correct as
-    they stand.
+    `make_fig5_design.py:11` both read `docs/ENGINEERING.md`. The mentions of the retired filename
+    that survived in this log were all **subjects** in the entries defining the distinction; v1.6.51
+    rephrased them so the facts survive without the retired string.
   - **NOT PUSHED, AND NOT MINE TO PUSH.** `origin` is absent from this clone: `git remote -v` is
     empty and `git ls-remote` fails. The work is committed locally and the tree is clean.
 
@@ -259,22 +303,24 @@ three stacked judgment calls = an unlimited re-run license):**
     `paper/` and 22 occurrences across 21 lines here. Zero dangling document citations remain:
     every `docs/*.md` path cited from my files resolves to a file that exists.
   - **★★ AND THE RENAME ITSELF PRODUCED A NEW INSTANCE OF THE CLASS, IN THE ONE FILE WHERE IT DOES
-    THE MOST DAMAGE.** A blanket `sed` over a **document of record** rewrote v1.6.48's own sentence
-    *"`CLAUDE.md` is still there"* into *"`docs/ENGINEERING.md` is still there"* — sitting beside
+    THE MOST DAMAGE.** A blanket `sed` over a **document of record** rewrote v1.6.48's own assertion
+    that the old file was still present into one naming the NEW path instead — sitting beside
     *"`docs/ENGINEERING.md` exists neither locally nor at origin"*. **The entry now asserted that a
     file both did not exist and was still there.** The sentence was not CITING the old name, it was
     ABOUT it, and a mechanical rename cannot tell those apart. Restored, and marked with its date.
   - **THE DISTINCTION THAT SURVIVES: A RENAME IS SAFE FOR A CITATION AND UNSAFE FOR A MENTION.**
-    Where the old name is a **pointer** — *"per `CLAUDE.md`'s standing rules"* — renaming it is
-    correct and keeps the pointer followable. Where the old name is the **subject** — *"`CLAUDE.md`
-    is still there"*, *"`CLAUDE.md` → `docs/ENGINEERING.md`"* — renaming destroys the statement.
+    Where the old name is a **pointer** — *"per `[the retired filename]`'s standing rules"* —
+    renaming it is correct and keeps the pointer followable. Where the old name is the **subject**
+    — *"`[the retired filename]` is still there"*, or the rename statement itself — renaming
+    destroys the claim.
     **In a log whose purpose is recording what was true when, the second kind is common**, which is
     why a blanket rename is more dangerous here than anywhere else in the tree. Every remaining
     occurrence was re-checked and all are pointers.
-  - **ONE LINE RECORDS THE OLD NAME so dated entries stay reconcilable:** the standing-rules file
-    was called **`CLAUDE.md` from the project's start until 2026-08-19**, when it became
-    `docs/ENGINEERING.md`. That is what lets a reader square an entry dated 2026-07-04 with a path
-    created six weeks later, at the cost of one line rather than twenty-three annotations.
+  - **ONE LINE KEEPS DATED ENTRIES RECONCILABLE:** the standing-rules file **was renamed on
+    2026-08-19**, so a path cited in any entry dated before then reflects the current filename
+    rather than the one in force on that entry's date. That is what lets a reader square an entry
+    dated 2026-07-04 with a path created six weeks later, at the cost of one line rather than
+    twenty-three annotations.
   - **★ AND THE SHA RE-STAMP IS NOW A MEASURED FACT RATHER THAN A PENDING ASSUMPTION — THE OLD
     COMMITS ARE GENUINELY ORPHANED.** `b964428` re-stamped 329 SHAs from the commit map, which
     means it rewrote history. Checked directly: `448e4fe`, `2c72fff`, `46c6a9d` and `2012acc` —
@@ -307,7 +353,8 @@ three stacked judgment calls = an unlimited re-run license):**
     constant and has been observed to. **Both halves now cite the thing that can check them; a
     single citation to the manifest would have covered one and implied two.**
   - **★ THE RENAME IS HELD AND THIS IS THE REASON.** *(As of this entry's date, 2026-08-18:)*
-    `docs/ENGINEERING.md` exists **neither locally nor at origin**; `CLAUDE.md` is still there.
+    `docs/ENGINEERING.md` exists **neither locally nor at origin**; the file it would replace is
+    still in place.
     Repointing 23 citations — 3 in `paper/`,
     20 here — at a file that does not exist would replace a correct citation with a **dangling**
     one, which is the defect class this project has spent two days on, in a new costume: *a
