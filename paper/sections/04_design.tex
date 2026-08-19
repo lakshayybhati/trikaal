@@ -102,7 +102,7 @@ values on valid bars and real values on masked ones --- a defect found in review
 any training. And the permutation is derived from the run seed and the symbol together, so the
 train and evaluation paths shuffle identically.
 % src: src/trikaal/eval/placebo.py — block permutation, cell5_seed(seed, symbol) = (seed << 16) ^ crc32(symbol)
-% artifact: docs/BUILD_RECORD.md D6 — the (value, mask) pairing defect, closed d64b42e
+% artifact: docs/BUILD_RECORD.md D6 — the (value, mask) pairing defect, closed 2cac96f
 
 \Cref{fig:design} reports what the shuffle measurably does. It destroys the contemporaneous link
 between microstructure and price shape, from mean absolute correlation $0.2037$ to $0.0005$, and

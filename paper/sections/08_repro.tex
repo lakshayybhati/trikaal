@@ -53,7 +53,7 @@ bit-identical set of active decisions.
 GPU training is not bit-exact by default, and the honest version of that sentence took us a
 correction to write. The production path now sets deterministic algorithms explicitly, at a
 measured throughput cost of $13.175\%$, and every run records the mode it ran in.
-% artifact: docs/BUILD_RECORD.md §2 D20 — fixed at 591ec44, deterministic_algorithms=True on the production path; penalty 13.175% per docs/m6_cuda_probe_report.md
+% artifact: docs/BUILD_RECORD.md §2 D20 — fixed at 0b9c804, deterministic_algorithms=True on the production path; penalty 13.175% per docs/m6_cuda_probe_report.md
 
 The correction is worth stating because it is the kind of error a reproducibility section normally
 hides. For a period, $49$ of $49$ run records carried an assertion of bit-exactness beside a
@@ -116,7 +116,7 @@ The decision surface --- clauses, thresholds, horizon, cost, the $\kappa$ grid, 
 the trial count --- was fixed before any of its inputs existed, and the design was frozen before
 the run. Amendments are not forbidden; unlogged amendments are. Every change is recorded with its
 date, its reason and, crucially, a \emph{direction-blind} test: before looking at whether the
-amendment helps, we record whether it tightens or loosens the criterion. The log carries $63$
+amendment helps, we record whether it tightens or loosens the criterion. The log carries $64$
 distinct revision tags.
 
 \textbf{One of those amendments was made after the run began, and it is flagged as such wherever

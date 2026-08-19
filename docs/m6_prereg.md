@@ -216,6 +216,42 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
+  POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
+  - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
+    in `paper/` (including both `git show` commands in `make_fig4_legibility.py`) and 20 here.
+    Every substitution came from `restamp_map.json`; a token absent from the map was never touched.
+  - **★ 6 OCCURRENCES DELIBERATELY LEFT, ON THE RULE THIS LOG DERIVED ONE ENTRY AGO.** A SHA cited
+    as a **pointer** — *"landed at `c4cd082`"* — is re-stamped, and the reference stays followable.
+    A SHA that is the **subject** of its sentence is not, because re-stamping it destroys the
+    statement:
+    - **line 244** — v1.6.49's *"`448e4fe`, `2c72fff`, `46c6a9d` and `2012acc` … no longer
+      resolve"*. Re-stamped, that sentence becomes **false**: the new SHAs resolve. The whole point
+      of the sentence is that the old ones do not.
+    - **lines 355 and 358** — v1.6.46's record that *"`845106d` and `96c1f3b` carried identical
+      subjects"* and *"`845106d` → `f050236`"*. Both sides are the subject; re-stamping either
+      turns a history record into a false claim about commits that never had those names.
+    - **`845106d` was excluded by the supervisor** and independently is not in the map: unreachable
+      from any ref, so `filter-repo` never mapped it. It is cited as the record of an amendment,
+      not as a live pointer.
+  - **VERIFIED IN THREE DIRECTIONS, because one direction would not have been a check.** All **17
+    distinct new SHAs resolve** as commits; all **7 left-alone SHAs still dangle**, which is
+    precisely what their sentences assert; and every **content hash is untouched** — `3f86882a`
+    (Gate-A anchor, 18 occurrences), `5eead7b`, `5dfd667d` (lake Merkle), `1d3ec4f8`, `6d118ede`,
+    `05b97bda`. **A pattern-based re-stamp would have destroyed all six**, which is why the map is
+    the only admissible instrument and why v1.6.49 flagged that my own probe could not tell them
+    apart.
+  - **THE VERBATIM CASE DOES NOT ARISE IN THIS DOMAIN, CHECKED RATHER THAN ASSUMED.** The builder's
+    `tests/test_audit_findings_complete.py` guards `docs/m6_readiness_audit_findings.md` only, and
+    the one retained-VERBATIM block here (the superseded G-§8.C.3 clause, line ~194) contains no
+    in-map token. No revert-inside-annotate-beside was needed.
+  - **THE TWO FILENAME MENTIONS WERE ALREADY DONE IN v1.6.49** — `06_results.tex:7` and
+    `make_fig5_design.py:11` both read `docs/ENGINEERING.md`. The 6 surviving `CLAUDE.md` strings
+    in this log are all **subjects** in the entries that define the distinction, and are correct as
+    they stand.
+  - **NOT PUSHED, AND NOT MINE TO PUSH.** `origin` is absent from this clone: `git remote -v` is
+    empty and `git ls-remote` fails. The work is committed locally and the tree is clean.
+
 - **v1.6.49 (2026-08-19, THE RENAME LANDED AND WAS APPLIED — AND MY OWN BLANKET `sed` CORRUPTED A
   DATED ENTRY BY OVERWRITING THE NAME THAT ENTRY WAS ABOUT.)**
   - **THE HOLD IN v1.6.48 IS RELEASED: `docs/ENGINEERING.md` NOW EXISTS** (the builder renamed it
@@ -710,7 +746,7 @@ three stacked judgment calls = an unlimited re-run license):**
     over the plain-IC pair**: "differ by 2.4× (0.0431 against 0.0665)", internally inconsistent
     since 0.0665/0.0431 = 1.54. The RankIC pair is **0.0254/0.0622 = 2.45×**; both pairs now
     printed with the earlier error named. (4) §6.5 said item E was pre-written *"months earlier"*;
-    **git says 13 days** — 46c6a9d 2026-07-30 against a 2026-08-12 firing — and the error ran in
+    **git says 13 days** — dcdc50e 2026-07-30 against a 2026-08-12 firing — and the error ran in
     the FLATTERING direction in the one sentence whose job is provenance. (5) §7.1 still denied the
     title; rewritten around the distinction that actually holds — the fixture establishes the
     CAUSAL statement, the gate establishes its CONSEQUENCE on markets, and the causal direction on
@@ -1082,7 +1118,7 @@ three stacked judgment calls = an unlimited re-run license):**
 
 - **v1.6.31 (2026-08-12, ★★ THE MICRO-LEGIBILITY GATE FIRED ON REAL DATA. ITEM E TAKES EFFECT.
   THE PRIMARY IS NOW THE MECHANISM FINDING. ★★ No threshold moved. No rescope. No re-run.)**
-  - **THE FIRING.** `runs_manifest/m6_micro_legibility_stop.json`, git_commit `448e4fe`.
+  - **THE FIRING.** `runs_manifest/m6_micro_legibility_stop.json`, git_commit `e307309`.
     `stage2_entered: false`, `artifacts_produced: 0`, `ALL_FILES_VERIFIED: true` over 6 files with
     byte totals and sha256 reconciled against on-box production time. Both gated arms refused
     before any Stage-2 spend, at `min_acc = 0.90`, n = 150,000 per dimension, 40 symbols,
@@ -1161,7 +1197,7 @@ three stacked judgment calls = an unlimited re-run license):**
   - **★ WHAT WAS KNOWN WHEN THIS WAS MADE, STATED FIRST BECAUSE A HOSTILE REVIEWER OPENS HERE.**
     The run had started. **Two cell-1 evaluations existed at the pinned budget** —
     `runs_cloud/results/r0/cell1_seed0_eval.json` and `runs_cloud/results/r2/cell1_seed4_eval.json`,
-    both `steps_stage2 = 26003`, both `dry_run: false`, both stamped `git_commit 055d14f`. Every
+    both `steps_stage2 = 26003`, both `dry_run: false`, both stamped `git_commit 95fc017`. Every
     prior entry in this log was written before any unit existed; this one was not. That difference
     is the reason the disclosure leads.
   - **THE INFORMATION THOSE TWO ARTIFACTS LEAK, AND IN WHICH DIRECTION.** They are not bare
@@ -1337,7 +1373,7 @@ three stacked judgment calls = an unlimited re-run license):**
 
 - **v1.6.28 (2026-08-11, ★ RULING — THE DEGENERACY GUARD'S ACTIVITY LEG IS **NOT** BANDED.
   $0, documentation only. NO GATE VALUE MOVES.)**
-  - **Ruling of record:** `docs/degeneracy_guard_activity_leg_RULING.md`, commit `2012acc`. This
+  - **Ruling of record:** `docs/degeneracy_guard_activity_leg_RULING.md`, commit `a13bed3`. This
     entry is the log's copy; the ruling document is the long form. **The ruling previously existed
     only as that side document and named a tag that was not in this log** — caught by the paper's
     own count, which reported what the log CONTAINED rather than what the ruling ASSERTED. The
@@ -1362,7 +1398,7 @@ three stacked judgment calls = an unlimited re-run license):**
     corner case. This ruling does **not** find the exposure acceptable; it finds that **banding
     this scalar does not close it**. The closure is the disclosure plus the three reads below.
   - **TWO CORRECTIONS THE VERIFICATION PRODUCED AGAINST `docs/degeneracy_guard_band_decision.md`
-    (`5c9ab3f`), BOTH CONSERVATIVE — the memo understated its own finding.**
+    (`cefca3b`), BOTH CONSERVATIVE — the memo understated its own finding.**
     1. **`std(y_15)` = 0.003504 over n = 2,103,825**, not 0.004238 over n = 1,051,199. Measured on
        `processed/universe_bars/symbol=BTCUSDT` over the FULL 48 symbol-months, respecting segment
        boundaries and counting only complete 15-bar windows. **Independently reproduced at
@@ -1372,7 +1408,7 @@ three stacked judgment calls = an unlimited re-run license):**
        out — **8.5 / 11.6 / 22.2 sd** at IC = 0.027, κ=1 across the modeled-cost range rather than
        7.0 / 9.6 / 18.4 — and raises the IC a calibrated forecast needs to trade 5% of bars from
        0.096–0.253 to **0.116–0.306**, four to eleven times our own prior.
-    2. **The memo's "7.7% of compute-optimal" hedge is STALE**, superseded by `591ec44`
+    2. **The memo's "7.7% of compute-optimal" hedge is STALE**, superseded by `0b9c804`
        (2026-08-03). The pinned budget is 26,003 steps = **426,033,152 tokens = 20.00
        tokens/param**, independently recorded at `docs/BUILD_RECORD.md:422`. **A model trained to
        compute-optimal is MORE likely to be calibrated, not less**, so the no-trades branch is MORE
@@ -1406,7 +1442,7 @@ three stacked judgment calls = an unlimited re-run license):**
     unable to reach that conclusion would be the defective one.
   - **PAPER TOUCH-POINTS:** §7.5 carries both `std(y)` measurements with both sample windows named
     and the direction stated; Appendix D.2 records the leg as endpoint-only **by ruling, not by
-    omission**, cites `2012acc`, and names the three reads above. The paper's amendment-tag count
+    omission**, cites `a13bed3`, and names the three reads above. The paper's amendment-tag count
     moves 41 → 42 **only now that this entry exists**, which is the ordering the discipline
     requires.
 
@@ -1483,7 +1519,7 @@ three stacked judgment calls = an unlimited re-run license):**
     codebook gate — the fourth instance of "specified but not enforced", the one whose closure was
     the compensating control for dropping the C-4 external gate — SHIPPED BELOW ITS FUNCTION'S
     `return bad` AND WAS UNREACHABLE FROM THE MOMENT IT WAS WRITTEN.** `verdict.py:270`. It was
-    born dead in `591ec44`, the commit that implemented all four approved decisions in one pass,
+    born dead in `0b9c804`, the commit that implemented all four approved decisions in one pass,
     and 601 tests stayed green because not one of them fed the gate an artifact it was supposed to
     reject. **The class was declared closed by a fix that never executed once.** The `return` now
     sits below the block, and `tests/eval/test_codebook_gate.py` rejects a collapsed codebook
@@ -1614,7 +1650,7 @@ three stacked judgment calls = an unlimited re-run license):**
     25 units trained, 25 checkpoints reloaded, **25 eval artifacts + index written**, and
     `money_run_manifest.json` produced — the file the re-audit observed did not exist anywhere.
     Verified on the REAL artifacts, not a fixture: **16/16 identity keys stamped, ONE distinct
-    stamp across all 25**, `git_commit = 27dfb724…` (the exact commit — R6's stamping proven
+    stamp across all 25**, `git_commit = a9743938…` (the exact commit — R6's stamping proven
     end-to-end), `steps_stage1/2 = 26,003`, and `load_cell_evals` **REFUSED** the set with
     *"DRY-RUN artifact (money_run=False, grid_pinned=False)"*, which is the C-5 A9 contract
     working. Four keys read `unavailable` — `image`, `gpu_name`, `cuda_build`, `driver_version` —
@@ -1666,7 +1702,7 @@ three stacked judgment calls = an unlimited re-run license):**
   - **MY SUPERVISOR'S OWN FINDING, WHICH IS THE REASON R1 SHIPPED, RECORDED BECAUSE IT GENERALISES:
     they verified the codebook fix by GREPPING FOR `PINNED_CODEBOOK_MIN_UTILIZATION` AND FINDING
     IT.** Confirming that a symbol exists is not confirming that a gate fires. Everyone audited the
-    findings; nobody audited the fixes — and `591ec44`, which implemented four approved decisions
+    findings; nobody audited the fixes — and `0b9c804`, which implemented four approved decisions
     in one pass, got the least scrutiny in the repository because both of us were busy verifying
     its report. **The new code in a remediation pass is written fast, by the person whose blind
     spots caused the defects, and is the least-reviewed code in the project.**
@@ -1674,7 +1710,7 @@ three stacked judgment calls = an unlimited re-run license):**
 - **v1.6.23 (2026-08-03, RUN PREPARATION — fan-out refusal, runbook, assembly dry run. No new
   investigation; the re-audit is external and none of it is the builder's.)** Local, $0.
   - **★ A CORRECTION IN A COMMIT MESSAGE, WHICH MAKES IT PERMANENT — AND IT RUNS HARSHER THAN ITS
-    OWN RECEIPT.** `591ec44` says the measured eval leg was *"up to 2.5x the banked figure"*. That
+    OWN RECEIPT.** `0b9c804` says the measured eval leg was *"up to 2.5x the banked figure"*. That
     **mixes endpoints**: measured-at-$0.40 against inferred-at-the-bottom. **At matched rates it is
     1.60–1.64×** ($50.67/$30.98 = 1.64; $77.95/$48.69 = 1.60). Still a serious underestimate and
     still the right catch — but the number as written overstates it. **This is the same defect as
@@ -1858,7 +1894,7 @@ three stacked judgment calls = an unlimited re-run license):**
     - `steps_stage1 = steps_stage2 = 2000` is the design spec's **G1 overfit-a-single-batch SMOKE
       GATE** threshold (`:1762-1763`, *"within ≤ 2000 steps"*). No sizing argument exists anywhere
       in design, prereg, roadmap or commit history.
-    - **It entered in commit `a4d242e` in the SAME dataclass literal as `seeds = (0,1,2)` and
+    - **It entered in commit `64f728c` in the SAME dataclass literal as `seeds = (0,1,2)` and
       `seq_len = 128`** — the two values C-6 later identified as the train/eval split-brain. Those
       two had pinned counterparts and were corrected; the step budget had none, so it survived, and
       **§7 v1.6.15 C-18 then pinned it.** There is now a mutation KAT defending a rehearsal value.
@@ -2955,7 +2991,7 @@ three stacked judgment calls = an unlimited re-run license):**
     drift under our own fixes. **The instance:** the audit cited a false rule string at
     `verdict.py:519-521`; I read the CURRENT file, found `_per_seed_delta` there, and reported the
     audit wrong. My own C-2 fix had added **64 lines** (758 → 822), moving the string from 520 to
-    584. `git show 74b6094:src/trikaal/eval/verdict.py | sed -n '520p'` returns it verbatim. **The
+    584. `git show 7a4d13b:src/trikaal/eval/verdict.py | sed -n '520p'` returns it verbatim. **The
     auditor's citation was accurate; my correction is WITHDRAWN** (struck in the v1.6.2 entry
     below). The supervisor caught it before it propagated. Landed in `docs/ENGINEERING.md` beside the other
     five.
@@ -3024,7 +3060,7 @@ three stacked judgment calls = an unlimited re-run license):**
     - **WITHDRAWN (2026-08-01) — MY CORRECTION TO THE AUDIT'S CITATION WAS ITSELF WRONG.** This
       entry first read: *"The audit located this at `verdict.py:519-521`; the actual site is the
       `5_dsr` block (pre-fix `583-585`) — `519-521` is inside `_per_seed_delta` and carries no rule
-      string."* **That is false and is withdrawn.** `git show 74b6094:src/trikaal/eval/verdict.py |
+      string."* **That is false and is withdrawn.** `git show 7a4d13b:src/trikaal/eval/verdict.py |
       sed -n '520p'` returns exactly
       `f"series; SR0 from N={DSR_N_TRIALS} enumerated trials; var_sr over the 180 "`. The
       auditor's citation was accurate against the commit they read. I checked it against the
@@ -4031,11 +4067,11 @@ three stacked judgment calls = an unlimited re-run license):**
      publishable papers containing this finding."*
   8. **NON-CONTAMINATION (item 8) — the interface fix is GENERAL, not tuned to the plant.** (a) The
      weighting keys on `MICRO_DIMS_IDX = (7..12)` BY DIM INDEX (the aggTrades-derived channels;
-     `constants.py`), never on the plant's shape/lag/functional form — landed c4cd082 (§7 v1.4,
-     pointwise-fine + per-bar bottleneck) and 7da3dc0 (§7 v1.4.1). (b) λ\* = 3 was calibrated
+     `constants.py`), never on the plant's shape/lag/functional form — landed a1729b8 (§7 v1.4,
+     pointwise-fine + per-bar bottleneck) and 39be8ba (§7 v1.4.1). (b) λ\* = 3 was calibrated
      against CHANNEL-VALUE LEGIBILITY (`id_legibility_sign_acc`, gates.py:125 — the logistic
      sign-accuracy of the dim's value from bar t's OWN id), never against detection of the planted
-     rule (7da3dc0). (c) Cell 5 receives IDENTICAL treatment — same fine_pointwise, same λ, same
+     rule (39be8ba). (c) Cell 5 receives IDENTICAL treatment — same fine_pointwise, same λ, same
      dims (forced in `build_cell_tokenizer`, cells.py:82-84) — so generic capacity effects are
      SHARED and ΔIR(4−5) still isolates information. ONE HONEST CAVEAT: λ's magnitude was tuned on a
      synthetic fixture whose micro-slot dim is iid unit-variance, while real TFI has different
@@ -4100,11 +4136,11 @@ three stacked judgment calls = an unlimited re-run license):**
   the record): (1) a formatter re-wrap silently defeated the patches wiring
   ``w_feat_point``/``point_loss_coef`` into the bottleneck loss, so the first canonical
   λ-search ran entirely at λ=1 — those runs are retained as λ=1 replicates and the
-  normalization-asymptote analysis derived from them is WITHDRAWN; (2) commit e8d2a06's
+  normalization-asymptote analysis derived from them is WITHDRAWN; (2) commit d9e1b53's
   "anchor re-proven" claim was FALSE — the unconditional ``w_feat_point`` buffer broke
   old-schema checkpoint loading and the M5 anchor run FAILED, but a ``| grep | tail``
   pipeline masked the exit-1, letting the unverified claim into the commit message;
-  corrected in b55fffc (buffer registered only under ``fine_pointwise``; anchor genuinely
+  corrected in bb1e17c (buffer registered only under ``fine_pointwise``; anchor genuinely
   re-proven exit-0, results_hash 5eead7b6 bit-identical; the exit-masking cause is now
   policed by the pipefail rider); (3) the calibration harness seeded torch only INSIDE the
   training loop, AFTER model construction, so every canonical calibration triplet carried
@@ -4195,7 +4231,7 @@ three stacked judgment calls = an unlimited re-run license):**
   weakened; every new clause binds the analyst, not the data.
 - **v1.1 (2026-07-04, supervisor/research lead) — BEFORE any real training** (only the
   meaningless-by-design SMOKE had run; no cell model existed beyond toy scale). Original v1.0
-  (commit `2c72fff`) rule 2 read: *"ΔIR_info ≥ MDE_pooled = 3.209 (h=15)"* — the UNPAIRED
+  (commit `d5c6aad`) rule 2 read: *"ΔIR_info ≥ MDE_pooled = 3.209 (h=15)"* — the UNPAIRED
   (ρ₄₅ = 0) fixed threshold — and the CI clause did not specify pairing. Why amended: Cell 4 and
   Cell 5 are paired by construction (identical draw/seeds/grid; they differ only in the micro
   information), so the unpaired 3.209 as a decision threshold conflates a conservative power

@@ -58,12 +58,12 @@ $\rho = \cos\bigl(\pi(1-a)\bigr)$, so the $a = 0.90$ we will require costs at le
 $-\tfrac12\log_2(1-\rho^2) = 1.69$ bits for that dimension alone by the Gaussian rate--distortion
 bound, and more under any realizable scalar quantizer. Thirteen live dimensions at that fidelity
 would need at least $22.0$ bits --- more than the entire per-bar budget, at any coarse/fine split.
-% artifact: git show c4cd082:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.capacity_arithmetic.{sign_acc_0.9_requires_rho=0.951, fine_bits_available=10.26, total_bpt_pinned=20.058}
+% artifact: git show a1729b8:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.capacity_arithmetic.{sign_acc_0.9_requires_rho=0.951, fine_bits_available=10.26, total_bpt_pinned=20.058}
 % RULING (2026-08-09). The receipt's 1.78 bits/dim and 23.1 bits are UNSOURCED and are not published:
 % no derivation of either exists anywhere in the object database, they were hand-authored into a
 % diagnosis block the producing script never constructs, and 1.78 contradicts its own sibling field.
 % Evidence: scripts/m6_interface_respec.py contains no occurrence of 'bit', 'rho', 'log2', 'cos' or
-% 'capacity' at ANY of its four revisions (c4cd082, 4a8fb48, e8d2a06, 7da3dc0) and its main() writes
+% 'capacity' at ANY of its four revisions (a1729b8, e1feb64, d9e1b53, 39be8ba) and its main() writes
 % only the keys artifact/tokenizers/g_parity_new_layout/gates/wall_s, so gate2_blocked_diagnosis was
 % added to the JSON by hand; a scan of all 1,781 objects (reachable + dangling) finds the arithmetic
 % in exactly two blobs, the receipt itself and BUILD_RECORD prose restating it; 47 principled
@@ -180,7 +180,7 @@ and we report the correction it forced because it changes the strength of the cl
 fixture whose dimensions were exchangeable i.i.d.\ draws --- no cross-dimensional dependence at all
 --- the allocation was arbitrary: across three initializations the set of dimensions clearing $0.9$
 changed completely, and the dimension of interest cleared in one seed of three.
-% artifact: git show c4cd082:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.three_seed_winner_receipt (index 9: 0.91 / 0.26 / 0.10; note: tiny shells d64, 600 steps)
+% artifact: git show a1729b8:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.three_seed_winner_receipt (index 9: 0.91 / 0.26 / 0.10; note: tiny shells d64, 600 steps)
 That reading makes the phenomenon an initialization lottery, which is a substantially weaker and
 less actionable claim. Introducing the dependence structure the real data actually has replaced the
 lottery with deterministic exclusion, because the correlated block then offers an amortization the
@@ -335,7 +335,7 @@ are untouched.
 % src: src/trikaal/tokenizer/model.py:82--89 (PointwiseEncoder, w_in_fine), :136--144 (latent() overwrites the fine latent dims)
 Alone this changed nothing --- legibility $0.5202$, at chance. The optimizer routed the state
 through the contextual coarse smear and spent the fine bits elsewhere.
-% artifact: git show c4cd082:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.iteration_history.iter1_pointwise_encoder_only
+% artifact: git show a1729b8:runs_manifest/m6_interface_respec_design_pass.json :: gate2_blocked_diagnosis.iteration_history.iter1_pointwise_encoder_only
 
 \paragraph{(ii) A per-bar bottleneck decode leg.}
 A pointwise decode head must reconstruct bar $t$ from bar $t$'s fine code alone, with zero cross-bar
@@ -346,7 +346,7 @@ not select \emph{which} dimensions win: legibility $0.5136$ and $0.5037$ at cano
 $0.5014$, $0.4995$, $0.5182$ across three seeds on the entropy-calibrated fixture, a $3/3$ failure
 against the $0.90$ threshold. That failure is the measurement plotted in \cref{fig:eviction}: the
 leg works, and the objective still spends its budget on variance and covariance.
-% artifact: git show c4cd082:... :: iteration_history.iter2_added_per_bar_bottleneck_leg; runs_manifest/m6_interface_respec_design_pass.json :: gates.gate2_legibility.{new_by_seed={0:0.5014,1:0.4995,2:0.5182}, threshold=0.9, pass=false, protocol}
+% artifact: git show a1729b8:... :: iteration_history.iter2_added_per_bar_bottleneck_leg; runs_manifest/m6_interface_respec_design_pass.json :: gates.gate2_legibility.{new_by_seed={0:0.5014,1:0.4995,2:0.5182}, threshold=0.9, pass=false, protocol}
 
 \paragraph{(iii) Class weighting, with objective separation.}
 The bottleneck loss weights the six microstructure dimensions as a class by a factor $\lambda$, and

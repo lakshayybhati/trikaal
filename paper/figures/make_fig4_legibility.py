@@ -6,7 +6,7 @@ VERDICT THE FIGURE MUST CARRY WITHOUT ITS CAPTION
     on every seed. The threshold sits at the achievable ceiling, not comfortably above it.
 
 ARTIFACTS — loaded at render time; nothing transcribed.
-    git show c4cd082:runs_manifest/m6_interface_respec_design_pass.json
+    git show a1729b8:runs_manifest/m6_interface_respec_design_pass.json
         .gate2_blocked_diagnosis.iteration_history       -> pointwise-only and +leg values
         .gates.gate2_legibility.{old, old_at_discovery}  -> the contextual baseline
     runs_manifest/m6_interface_respec_design_pass.json
@@ -64,7 +64,7 @@ ACC = json.loads((RM / "m6_acceptance_stage1_manifest.json").read_text())
 STOP = json.loads((RM / "m6_micro_legibility_stop.json").read_text())
 PRE = json.loads(
     subprocess.run(
-        ["git", "show", "c4cd082:runs_manifest/m6_interface_respec_design_pass.json"],
+        ["git", "show", "a1729b8:runs_manifest/m6_interface_respec_design_pass.json"],
         cwd=ROOT,
         capture_output=True,
         text=True,
