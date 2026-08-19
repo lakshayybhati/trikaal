@@ -31,6 +31,15 @@ and correctly refused to reconstruct it.
 > | baseline commit `74b6094` | `7a4d13b` |
 > | the old engineering-guide filename | `docs/ENGINEERING.md` |
 >
+> **★ THREE SQUARE-BRACKET SUBSTITUTIONS WERE MADE INSIDE THE VERBATIM REGION (2026-08-19),
+> and this is the record of them.** Where the audit named the engineering guide by its
+> pre-rename filename, the text now reads `[the engineering guide]`. Bracketed substitution is
+> the established convention for altering a quotation while flagging the alteration — the
+> reader sees precisely where our hand touched it, which is what separates it from the silent
+> edit the DO-NOT-EDIT markers forbid. Omission was rejected because it hides that anything was
+> there; leaving it was rejected because the filename is the thing being retired. Nothing else
+> in the region changed, and its bytes are re-pinned in `tests/test_audit_findings_complete.py`.
+>
 > `git show 7a4d13b:<path>` is the baseline-rule command for disputing any line reference below.
 > **A re-stamp pass DID edit this region once**, on 2026-08-19, and `test_the_verbatim_region_is_
 > byte_identical_to_what_was_recovered` caught it and named the revert as the correct response.
@@ -99,8 +108,8 @@ power_guard:      armed=True halted=False
 **HOW VERIFIED:** probe 4 — under a placebo whose *annualized* VAL IRs have SD 0.25 / 0.5 / 1.0, the mixed-horizon `var_sr` is **7.8× / 3.0× / 4.0×** the same-unit (h=15-only) variance, inflating SR₀ by 1.7–2.8×. In the degenerate case the project has already observed (all placebo VAL IRs bit-identical at −7.56), `var_sr` = 5.804e-4 and SR₀ = 0.0565 is **100% artifact** — reproduced exactly by hand: the three de-annualized values are −0.02332 / −0.04039 / −0.08078, variance 5.8056e-4.
 **WHAT BREAKS:** clause 5's bar is set by *which horizons were enumerated* rather than by search dispersion. It errs conservative in the scenarios tested, but the direction is not guaranteed and has never been measured. `verdict_dsr_failures` re-derives the same wrong quantity, so the "independent statement of the constants" cannot catch it. In a paper, a reviewer who checks the units kills clause 5.
 ## C-4 · G-§8.C.3 — the Kronos external validation gate has no implementation
-`docs/m6_prereg.md:178-190` · `CLAUDE.md` invariant 4
-**CLAIMED:** a **binding gate**: "Fails iff Cell 1's RankIC < 0.85 × published Kronos-small RankIC … with Kronos-small run through its own published preprocessing on the same bars", whose failure "halts the ablation before any Cell-2–5 eval statistic is computed". CLAUDE.md: Cell 1 is "**externally validated** against published Kronos-small (validation lives only in the eval harness)".
+`docs/m6_prereg.md:178-190` · `[the engineering guide]` invariant 4
+**CLAIMED:** a **binding gate**: "Fails iff Cell 1's RankIC < 0.85 × published Kronos-small RankIC … with Kronos-small run through its own published preprocessing on the same bars", whose failure "halts the ablation before any Cell-2–5 eval statistic is computed". [the engineering guide]: Cell 1 is "**externally validated** against published Kronos-small (validation lives only in the eval harness)".
 **TRUE:** grep across `src/`, `scripts/`, `tests/` finds **no** code that loads external weights, runs Kronos preprocessing, or compares against a published RankIC. No `from_pretrained`, no `hf_hub`, no transcribed published number anywhere. `src/trikaal/eval/harness.py` computes our own RankIC only.
 **WHAT BREAKS:** the paper's central legitimacy claim for the BSQ baseline — that Cell 1 is anchored to published Kronos-small rather than being a private re-implementation of unknown quality — is unimplemented. Cell 1 is also the NULL-fallback's comparator (§5 claims `IR(2)−IR(1)`). Without it, a weak Cell 1 manufactures a positive FSQ result and nothing detects it.
 ## C-5 · No driver runs the pre-registered money configuration
@@ -171,7 +180,7 @@ The line at `verdict.py:519-521` is not a comment: it is the `rule` string **per
 `pyproject.toml:10` / `uv.lock:3` — `requires-python = ">=3.11"` with no `.python-version`; the interpreter is still unpinned (the known 3.14-vs-3.11 hazard is unfixed). `OrchestratorConfig.steps_stage1/2 = 2000` — the Stage-1/2 step budget is a code default, referenced by no spec, gate or receipt. `predict_mu(estimator="expectation")` is a function default (`predict.py:58`) that `score_cell` relies on implicitly; no gate asserts it.
 ## C-19 · The realized backbone differs between quantizer arms
 `src/trikaal/train/cells.py:88-118`
-FSQ cells (2/4/5): **21,301,248**. BSQ cells (1/3): **21,231,616** — 69,632 fewer (0.327%), from the 2048 vs 2116 embedding/head rows. Inside the documented ±2% band and disclosed in the code comment, but `CLAUDE.md` and the paper quote "21,301,248 realized params" as *the* measurement vehicle, which is true for three of the five cells.
+FSQ cells (2/4/5): **21,301,248**. BSQ cells (1/3): **21,231,616** — 69,632 fewer (0.327%), from the 2048 vs 2116 embedding/head rows. Inside the documented ±2% band and disclosed in the code comment, but `[the engineering guide]` and the paper quote "21,301,248 realized params" as *the* measurement vehicle, which is true for three of the five cells.
 ## C-20 · Two disclosed-but-load-bearing scope facts
 - **The headline is one calendar year.** `runs_manifest/m6_mde_inputs.json:primary_region_ms = [1704132000000, 1735689600000]` = 2024-01-01 → 2025-01-01. T = 35,063 periods, but one macro regime.
 - **`embargo_flatness` — described in `folds.py:88` as "the leakage gate" — is never called by anything.** `folds.py` is imported only by `harness.py` (M5). The M6 embargo *geometry* is applied on the training side via `universe_loader.fold_valid_starts` (E=120, verified), so the invariant holds structurally; but the flatness verification that would *demonstrate* it is not part of M6.

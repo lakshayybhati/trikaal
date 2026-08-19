@@ -29,7 +29,14 @@ END = "<!-- ===== END VERBATIM AUDIT ===== -->"
 
 # Re-pin ONLY with a deliberate, reviewable diff. This is what stops the auditor's prose from
 # being silently "improved".
-VERBATIM_SHA256 = "c440b4a8755bbb7cb5863470d971b2d7d13b3c36f5a38915730decb0fb184dd7"
+# ★ RE-PINNED 2026-08-19. The region now carries THREE SQUARE-BRACKET SUBSTITUTIONS —
+# `[the engineering guide]` where the audit named a file that has since been renamed. Bracketed
+# substitution is the convention for altering a quotation VISIBLY, which is definitionally not
+# the silent editing this pin exists to forbid: the reader sees exactly where the text was
+# touched. Omission was rejected (it hides that anything was there) and so was leaving it (the
+# rename's whole purpose). The previous pin was c440b4a8755bbb7cb5863470d971b2d7d13b3c36f5a389
+# 15730decb0fb184dd7; the substitution and its reason are recorded beside the region in the doc.
+VERBATIM_SHA256 = "85e7f7be8072c9818493c0a2525d6591249b56dbd7f427015e43e64e1252e355"
 
 REQUIRED_IDS = tuple(f"C-{i}" for i in range(1, 21)) + tuple(f"S-{i}" for i in range(1, 5))
 MIN_BODY_CHARS = 200  # a heading with a stub under it is not a body
