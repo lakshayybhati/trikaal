@@ -3,7 +3,7 @@
   "byte_verification_receipt": "runs_manifest/m6_rescue_inventory.json \u2014 each file's on-box SHA-256 vs its local SHA-256 after transfer, all matching",
   "bytes_inference_only": 435610761,
   "bytes_total": 1742480863,
-  "git_head": "f7cb50d47a50",
+  "git_head": "f953745ce32fde466294071844053065cf5e2dae",
   "how_to_verify": "sha256sum each file and compare against .units[seed].files[name].sha256; then load predictor.pt and sum numel() over state_dict to reproduce n_params_realized_total, and over keys starting 'mtp.' for n_params_mtp.",
   "license_code": "Apache-2.0 (LICENSE)",
   "license_weights": "Apache-2.0 \u2014 same terms as the code; Binance source data is NOT redistributed, only the pipeline and its content hashes (M8 gate, docs/ROADMAP.md)",
