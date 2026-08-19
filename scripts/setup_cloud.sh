@@ -8,11 +8,14 @@
 #   python/torch no longer matter) → wandb + flash-attn → VERIFY (nvidia-smi, torch CUDA+bf16,
 #   flash_attn, ruff, pytest -m "not slow") → READY banner (GPU name + VRAM).
 #
-# Usage (on the instance — see docs/cloud_runbook.md for the full sequence). The repo is PRIVATE,
-# so pass a short-lived read-only GitHub token via env (NEVER hard-code it):
-#   export GH_TOKEN=<fine-grained-read-only-token>
+# Usage (on the instance — see docs/cloud_runbook.md for the full sequence).
+# ★ NO CREDENTIAL IS NEEDED. The repo is PUBLIC as of 2026-08-18. This block used to read "the repo
+# is PRIVATE, so pass a short-lived read-only GitHub token via env" — that requirement is gone, and
+# its removal serves credential rule R1 (no credential ever reaches a rented box) more directly
+# than the token-scrubbing it replaces. The GH_TOKEN path below is OPTIONAL and retained only for a
+# private fork; the script already treated it as optional, so no logic changed here.
 #   export TRIKAAL_COMMIT=<exact-sha>            # pin for reproducibility
-#   git clone https://$GH_TOKEN@github.com/lakshayybhati/trikaal.git /workspace/trikaal \
+#   git clone https://github.com/lakshayybhati/trikaal.git /workspace/trikaal \
 #     && bash /workspace/trikaal/scripts/setup_cloud.sh
 # (The script re-clones/refreshes idempotently, so running the in-repo copy again is fine.)
 #
@@ -43,8 +46,10 @@ nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader \
   || log "WARN: nvidia-smi query failed (driver/GPU may be wedged) — continuing to the torch check"
 
 # ----------------------------------------------------------------- 1. clone/refresh @ pinned commit
-# The token is injected ONLY into a transient URL and scrubbed from .git/config immediately after, on
-# BOTH the clone and the fetch path (a private repo can't fetch from the scrubbed token-free origin).
+# GH_TOKEN is OPTIONAL and is unset for the public repo — the plain URL clones and fetches fine.
+# When it IS set (a private fork), it is injected ONLY into a transient URL and scrubbed from
+# .git/config immediately after, on BOTH the clone and the fetch path (a private repo cannot fetch
+# from the scrubbed token-free origin).
 mkdir -p "$(dirname "$WORKDIR")"
 if [ -d "$WORKDIR/.git" ]; then
   log "repo present → fetch"
