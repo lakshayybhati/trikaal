@@ -330,6 +330,33 @@ three stacked judgment calls = an unlimited re-run license):**
     the log now explains all three — and the reconciliation that makes the census add up is the
     same fact that closes two of them.
 
+  - **★★ `paper/` WAS REMOVED FROM THIS REPOSITORY ON 2026-08-19, BY OPERATOR DECISION.** Sixty
+    tracked files: the manuscript sources, the eleven figure generators and their rendered outputs,
+    the two build targets, and the writer's own guards. The paper will be read through publication
+    rather than through this repository. The decision is Lakshay's, reaffirmed after one push-back,
+    and it is recorded here as a decision rather than argued with.
+  - **★ WHAT THAT DOES TO THIS LOG, WHICH IS THE PART THAT BELONGS IN IT.** Sixteen occurrences
+    across fifteen lines of this file name paths under `paper/`. **They are now records of a state,
+    not followable pointers** — each was true when written, and none of them resolves today. They
+    are left exactly as they stand. **This is this log's own reference-versus-subject rule applying
+    to itself:** a pointer may be re-stamped so the reference stays followable; a subject may not
+    be rewritten, because rewriting it destroys the statement. With the target gone there is
+    nothing to re-stamp *toward*, so every one of these becomes a subject, and the correct action
+    is the one the rule already prescribes — leave them, and say once, here, why they no longer
+    resolve.
+  - **AND THE SAME RULE REACHES THE GUARD REPORTS, WHICH I DID NOT ANTICIPATE.** Two of the five
+    guards whose exit codes this log has been reporting — `check_claim_drift` and
+    `check_submission_build` — were files *inside* `paper/`, and were removed with it. Earlier
+    entries recording *"claim_drift 0, submission 0"* now name instruments that no longer exist in
+    the repository. Those readings were measured and remain true of the trees they were taken on;
+    they are records of a state on exactly the same footing as the paths. **An exit code was
+    already a fact about a tree rather than a standing property — removing the instrument makes
+    that literal.**
+  - **RECOVERABLE, AND WORTH STATING ONCE.** This is a deletion from the working tree and the
+    index, not from history: every removed file remains reachable in this branch's earlier commits
+    and can be restored with `git checkout <commit> -- paper/`. What changed is what the repository
+    presents, which is what the decision was about.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
