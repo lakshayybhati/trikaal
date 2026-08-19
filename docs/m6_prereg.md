@@ -216,6 +216,44 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.49 (2026-08-19, THE RENAME LANDED AND WAS APPLIED — AND MY OWN BLANKET `sed` CORRUPTED A
+  DATED ENTRY BY OVERWRITING THE NAME THAT ENTRY WAS ABOUT.)**
+  - **THE HOLD IN v1.6.48 IS RELEASED: `docs/ENGINEERING.md` NOW EXISTS** (the builder renamed it
+    in `b964428`, correctly leaving `paper/` and this log alone). **23 references updated** — 2 in
+    `paper/` and 22 occurrences across 21 lines here. Zero dangling document citations remain:
+    every `docs/*.md` path cited from my files resolves to a file that exists.
+  - **★★ AND THE RENAME ITSELF PRODUCED A NEW INSTANCE OF THE CLASS, IN THE ONE FILE WHERE IT DOES
+    THE MOST DAMAGE.** A blanket `sed` over a **document of record** rewrote v1.6.48's own sentence
+    *"`CLAUDE.md` is still there"* into *"`docs/ENGINEERING.md` is still there"* — sitting beside
+    *"`docs/ENGINEERING.md` exists neither locally nor at origin"*. **The entry now asserted that a
+    file both did not exist and was still there.** The sentence was not CITING the old name, it was
+    ABOUT it, and a mechanical rename cannot tell those apart. Restored, and marked with its date.
+  - **THE DISTINCTION THAT SURVIVES: A RENAME IS SAFE FOR A CITATION AND UNSAFE FOR A MENTION.**
+    Where the old name is a **pointer** — *"per `CLAUDE.md`'s standing rules"* — renaming it is
+    correct and keeps the pointer followable. Where the old name is the **subject** — *"`CLAUDE.md`
+    is still there"*, *"`CLAUDE.md` → `docs/ENGINEERING.md`"* — renaming destroys the statement.
+    **In a log whose purpose is recording what was true when, the second kind is common**, which is
+    why a blanket rename is more dangerous here than anywhere else in the tree. Every remaining
+    occurrence was re-checked and all are pointers.
+  - **ONE LINE RECORDS THE OLD NAME so dated entries stay reconcilable:** the standing-rules file
+    was called **`CLAUDE.md` from the project's start until 2026-08-19**, when it became
+    `docs/ENGINEERING.md`. That is what lets a reader square an entry dated 2026-07-04 with a path
+    created six weeks later, at the cost of one line rather than twenty-three annotations.
+  - **★ AND THE SHA RE-STAMP IS NOW A MEASURED FACT RATHER THAN A PENDING ASSUMPTION — THE OLD
+    COMMITS ARE GENUINELY ORPHANED.** `b964428` re-stamped 329 SHAs from the commit map, which
+    means it rewrote history. Checked directly: `448e4fe`, `2c72fff`, `46c6a9d` and `2012acc` —
+    all cited in my files — **no longer resolve** as commits. **The probe was controlled before it
+    was believed**: it first reported *41 of 41 dangling*, which is a red flag rather than a
+    result, because the token set includes **content hashes that are not commits and must not
+    resolve** — the lake Merkle root `05b97bda` and the Gate-A anchor `3f86882a` among them. With
+    live commits `310b234` and `b964428` as the positive control and those hashes as the negative,
+    the orphaning is confirmed for commits and the false positives are explained.
+  - **THE RE-STAMP IS HELD, PER INSTRUCTION AND FOR THE REASON v1.6.48 GAVE.** A wrong SHA is worse
+    than a stale one: a stale SHA fails loudly on `git show`, a wrong one resolves to the wrong
+    commit and lies quietly. The map decides these, not me — **and my probe cannot cleanly separate
+    commit SHAs from content hashes, which is a second reason the map is needed rather than a
+    heuristic.**
+
 - **v1.6.48 (2026-08-18, THE PARAMETER CITATION NOW POINTS AT WHAT A READER CAN RECOMPUTE. THE
   RENAME IS HELD, BECAUSE THE TARGET DOES NOT EXIST YET.)**
   - **★ THE RECOMMENDATION IS RIGHT AND IT IS INDEPENDENT OF THE RENAME, WHICH IS WHY IT WAS DONE
@@ -232,8 +270,9 @@ three stacked judgment calls = an unlimited re-run license):**
     and asserted at render time by `make_fig5_design.py::_verify_params()`, which raises on a wrong
     constant and has been observed to. **Both halves now cite the thing that can check them; a
     single citation to the manifest would have covered one and implied two.**
-  - **★ THE RENAME IS HELD AND THIS IS THE REASON.** `docs/ENGINEERING.md` exists **neither
-    locally nor at origin**; `CLAUDE.md` is still there. Repointing 23 citations — 3 in `paper/`,
+  - **★ THE RENAME IS HELD AND THIS IS THE REASON.** *(As of this entry's date, 2026-08-18:)*
+    `docs/ENGINEERING.md` exists **neither locally nor at origin**; `CLAUDE.md` is still there.
+    Repointing 23 citations — 3 in `paper/`,
     20 here — at a file that does not exist would replace a correct citation with a **dangling**
     one, which is the defect class this project has spent two days on, in a new costume: *a
     citation whose artifact is not there*. The references stay pointed at what exists. **The moment
@@ -755,7 +794,7 @@ three stacked judgment calls = an unlimited re-run license):**
     that file's neighbours to verify the bootstrap pins. I verified the NUMBERS (t and −0.1545 both
     reproduce exactly) and did not verify the **LEVEL THEY WERE COMPUTED AT**, which is the one
     thing that made them incomparable. *Checking that a number is correct is not checking that it
-    is the right number.* That is a distinct failure mode from the ones already in CLAUDE.md and it
+    is the right number.* That is a distinct failure mode from the ones already in docs/ENGINEERING.md and it
     is why the level now travels with every bound.
   - **UNCHANGED FROM v1.6.36 AND RE-CONFIRMED:** 3 of 3 seeds; the bias explanation predicting the
     WRONG SIGN for seeds 0 and 2; the V_p substitution caveat dropping for seed 4 ONLY; the exact
@@ -873,10 +912,10 @@ three stacked judgment calls = an unlimited re-run license):**
     `model.num_backbone_params()` — backbone, excluding MTP — against
     `PINNED_BACKBONE_PARAMS = 21,301,248` (`conformance.py:48`), and the assertion message says
     *"backbone base params"*. **The pin is correctly named and correctly scoped.** The defect is
-    that the PAPER, CLAUDE.md and the design docs promoted a BACKBONE count to a MODEL count. So
+    that the PAPER, docs/ENGINEERING.md and the design docs promoted a BACKBONE count to a MODEL count. So
     the pin stays exactly as it is; what changes is what we call it.
   - **THE RULING (supervisor, 2026-08-14): quote the REALIZED TOTAL as the model size, with the
-    backbone-excluding-MTP figure as a NAMED SECONDARY.** CLAUDE.md's own instruction is *"quote
+    backbone-excluding-MTP figure as a NAMED SECONDARY.** docs/ENGINEERING.md's own instruction is *"quote
     the realized number"*, and 21.2M is not it. Applied across §2, §4, §7, both appendices and the
     conformance table; the pin's description is corrected to *"backbone excluding the MTP heads"*
     rather than *"the realized parameter count"*.
@@ -898,7 +937,7 @@ three stacked judgment calls = an unlimited re-run license):**
   - **WHY IT MUST CLOSE BEFORE THE HF RELEASE.** Publishing the weights makes the total checkable
     with one line of torch. A reader who runs it must find the discrepancy **already described by
     us**, not discover it.
-  - **OUT OF SCOPE FOR THIS ENTRY AND FLAGGED, NOT TOUCHED:** `CLAUDE.md` (invariant text and the
+  - **OUT OF SCOPE FOR THIS ENTRY AND FLAGGED, NOT TOUCHED:** `docs/ENGINEERING.md` (invariant text and the
     architecture section), `docs/m6_design.md`, `docs/paper_skeleton.md`, `docs/v2_and_limitations.md`
     and the audit docs all still carry 21.2M/21.3M as the model size. They are outside the writer's
     domain (`paper/` and `docs/m6_prereg.md`); the class is named here so the sweep is not mistaken
@@ -1160,7 +1199,7 @@ three stacked judgment calls = an unlimited re-run license):**
       ablation arm** … itself **a result to report**."* Reported, not gated, and named as a result.
     - **design `:986`** — *"We monitor usage as a **health diagnostic** (§f), **not as a failure
       mode** to be engineered around."*
-    - **`CLAUDE.md:13`** — *"If anything here conflicts with the spec, **the spec wins**."* The
+    - **`docs/ENGINEERING.md:13`** — *"If anything here conflicts with the spec, **the spec wins**."* The
       conflict is pre-committed in our favour, and not by this entry.
     - **THE ORIGIN OF THE OVER-BROAD GATE IS IN THIS LOG.** §7 v1.6.22(e) reads *"enforces the
       spec's own **≥95% utilization**"* — **with no quantizer scope**. That transcription dropped
@@ -1591,7 +1630,7 @@ three stacked judgment calls = an unlimited re-run license):**
     timings carry ~8x variance and MPS is not CUDA" rule applies).
   - **★ NEW STANDING NORM, SUPERVISOR-DIRECTED — "HAS NEVER BEEN EXECUTED" IS NOT AN OPERATIONAL
     STATE; IT IS AN UNMEASURED RISK, AND EXECUTION IS THE ONLY INSTRUMENT THAT MEASURES IT.**
-    Landed in `CLAUDE.md` beside the remediation rule. The supervisor recorded it as their own
+    Landed in `docs/ENGINEERING.md` beside the remediation rule. The supervisor recorded it as their own
     ninth error and the pair with R1 is exact: **R1 — the SYMBOL was confirmed to exist, not that
     the GATE FIRED. R5 — the driver was confirmed to be BUILT, not that it RAN.** Both are
     verifying EXISTENCE instead of BEHAVIOUR, the class this project has spent three weeks
@@ -1805,7 +1844,7 @@ three stacked judgment calls = an unlimited re-run license):**
     time-critical) → budget (unlocks C-4) → C-4 → B1 (price then known).
   - **THE AUTHORITY CORRECTION IS RECORDED AS THE SUPERVISOR'S**, accepted by them: "no prereg
     constant states it, therefore a budget decision" was right about the freeze and **wrong about
-    the authority** — the design spec states the budget and CLAUDE.md makes the spec a source of
+    the authority** — the design spec states the budget and docs/ENGINEERING.md makes the spec a source of
     truth, so **raising it IMPLEMENTS the blueprint and leaving 2,000 is a standing undisclosed
     DEVIATION.** Also theirs, found while verifying: the spec's Stage-2 **eval interval is every
     5,000 steps against a 2,000-step budget — the designed schedule's first evaluation never
@@ -1865,7 +1904,7 @@ three stacked judgment calls = an unlimited re-run license):**
       are comparing crypto-1m against equities-15m.
     - **THIS ALSO KILLS STEPS 1–2/4 AS A METRIC CROSS-CHECK, INDEPENDENTLY.** Validating our
       metrics by reproducing Kronos's published numbers would need **SSE 15-minute equity bars**,
-      which CLAUDE.md firewalls out of v1. **The external metric check as specified is unavailable
+      which docs/ENGINEERING.md firewalls out of v1. **The external metric check as specified is unavailable
       at any price** — not merely unscheduled.
     - **THE BAND ITSELF IS RESOLVABLE, AND MY OWN SPECULATION IS WITHDRAWN.** Measured with the
       project's `ic_screen.effective_sample_size` on the pinned 40 symbols over the pinned region:
@@ -1936,12 +1975,12 @@ three stacked judgment calls = an unlimited re-run license):**
   sites, one numerical routine rewritten for provenance, two values pinned that were only ever
   described. No clause touched; the MDE is BIT-IDENTICAL across the rewrite.)** Local, $0.
   - **★ THE MICROSTRUCTURE CLAIM WAS WRONG IN THE TWO MOST-READ SENTENCES IN THE PROJECT.** The
-    design spec's contribution sentence and `CLAUDE.md`'s architecture line both named *"trade-flow
+    design spec's contribution sentence and `docs/ENGINEERING.md`'s architecture line both named *"trade-flow
     imbalance (TFI), funding, open interest"* as what the per-bar vector carries. **Funding and
     open interest are constant-zero and masked on 100% of the 304,625,181 bars we publish from**
     (§7 v1.6.16). The masking DECISION is documented and sound (the OI retention trap,
     `milestone4b_universe_ingest.md:129`); the CLAIM built on top of it was not. Corrected at all
-    three named sites — design spec §contribution, `CLAUDE.md` (both the tokenizer line and the
+    three named sites — design spec §contribution, `docs/ENGINEERING.md` (both the tokenizer line and the
     data-pipeline line), and `paper_skeleton.md` §2 as a **binding** note. What is now stated: the
     v1 microstructure leg is **TFI plus the aggTrades trade-flow statistics, six live dims (7–12)**;
     funding/OI are **specified and wired at dims 13–15 with a tripwire, structurally absent**; the
@@ -1995,7 +2034,7 @@ three stacked judgment calls = an unlimited re-run license):**
   - **C-19 — THE BSQ COUNT IS NOW AN ASSERTION.** `test_orchestrator_m6.py` bounded it only by the
     ±2% band, so **21,231,616 appeared in the audit and in reports while no artifact pinned it** —
     in the very pass whose headline was about things that pass without measuring. Now asserted
-    exactly, with `21_301_248 − 21_231_616 == 69_632`. `CLAUDE.md` quotes both numbers.
+    exactly, with `21_301_248 − 21_231_616 == 69_632`. `docs/ENGINEERING.md` quotes both numbers.
   - **S-3 — the non-independence is now IN THE SHIPPED DISCLOSURE**, not only in an adjudication:
     `decode_agreement_disclosure` carries `not_independent_of_the_expectation_estimator`, recording
     that the expectation decode's delta-method error is evaluated in the **same** out-of-distribution
@@ -2233,7 +2272,7 @@ three stacked judgment calls = an unlimited re-run license):**
     (proven by construction with a witness); the auditor's figure illustrated those rather than
     founding them. Closest construction agrees to **0.026% at |IR| = 7.56**; no repo value sits in
     the interval that would display as 5.8056e-4.
-  - **NEW STANDING NORM — FIX THE CLASS, NOT THE INSTANCE** (CLAUDE.md, ninth in the family).
+  - **NEW STANDING NORM — FIX THE CLASS, NOT THE INSTANCE** (docs/ENGINEERING.md, ninth in the family).
     When a defect is found at a named site, sweep every site of that class before closing it. Both
     citing instances came from the C-17 pass itself: §3 clause 5's body, half a sentence from an
     edit I made, and `enumerate_dsr_trials`'s docstring, in the very file whose module docstring
@@ -2496,14 +2535,14 @@ three stacked judgment calls = an unlimited re-run license):**
     |Δ| at **1.246× the in-window sd** — a decode collapsed to a constant. Without the flag the
     primary would have read `|diff| = 0.1338 → ASYMMETRIC` on an artifact. This is the project's
     own pathology (frac_neg lock, activity pinned at 0/1) reappearing **inside a metric** rather
-    than inside a result. Landed in `CLAUDE.md`.
+    than inside a result. Landed in `docs/ENGINEERING.md`.
   - **NEW STANDING NORM — DO NOT INVENT A BAND; SCALE AGAINST THE CLAIM OR THE STATISTIC'S OWN
     SPREAD.** My first C-1 symmetry reading used a hand-chosen **0.05** band and the value landed
     at **0.0469** — the conclusion rested on a convention I had invented. Replaced with the
     self-scaling form: the between-arm gap is compared to the **across-seed spread of the same
     statistic**, the shape `verdict.power_guard` already uses when it refuses to report a ΔIR
     smaller than its own inputs' wobble. A difference inside its own measurement noise is not a
-    measured difference. Landed in `CLAUDE.md`.
+    measured difference. Landed in `docs/ENGINEERING.md`.
   - **★ THE SELF-SCALING RULING REVERSED A CONCLUSION I HAD REPORTED — AND THEN THE STATISTIC IT
     SPECIFIED TURNED OUT TO BE THE WRONG ONE. C-1 LEG (ii) IS RECORDED AS INDETERMINATE. ★**
     Re-measured at 3 seeds (receipt `runs_manifest/m6_c1_pinset_decode.json`):
@@ -2888,7 +2927,7 @@ three stacked judgment calls = an unlimited re-run license):**
   - **THE SHADOWED-FIELD SWEEP, as ordered.** Two more fields held standing commitments with **no
     pin at all**, both now pinned and asserted: `micro_legibility_min = 0.9` (the §7 v1.4 standing
     six-micro-dims gate — a **HARD STOP** whose threshold nothing guarded) and
-    `expect_backbone_params = 21_301_248` (the realized count, a `CLAUDE.md` invariant).
+    `expect_backbone_params = 21_301_248` (the realized count, a `docs/ENGINEERING.md` invariant).
     `enforce_parity` must be True on a money run. **REPORTED, NOT PINNED:** `steps_stage1`/
     `steps_stage2` (2000), `peak_lr_stage1/2`, `warmup_frac`, `batch_size` and `alpha` shadow
     **nothing** — no prereg constant states them. §7 v1.6 records the step budget as *read from
@@ -2918,7 +2957,7 @@ three stacked judgment calls = an unlimited re-run license):**
     audit wrong. My own C-2 fix had added **64 lines** (758 → 822), moving the string from 520 to
     584. `git show 74b6094:src/trikaal/eval/verdict.py | sed -n '520p'` returns it verbatim. **The
     auditor's citation was accurate; my correction is WITHDRAWN** (struck in the v1.6.2 entry
-    below). The supervisor caught it before it propagated. Landed in `CLAUDE.md` beside the other
+    below). The supervisor caught it before it propagated. Landed in `docs/ENGINEERING.md` beside the other
     five.
   - **A SUPERVISOR CLAIM CORRECTED AND OWNED, recorded with attribution as directed.** The C-2
     ruling stated *"both HALT guards were silently non-functional."* **That is false.**
@@ -3111,9 +3150,9 @@ three stacked judgment calls = an unlimited re-run license):**
     3.518**; 4.3475 is reached only once `se_train ≥ 0.685×se_boot`, unknowable pre-run.
   - **ITEM 1 — REFRAME (done; the anchor rule fired and was honoured).** "Foundation model" removed
     at all six sites the ruling named plus a re-grep of my own (`pyproject.toml`, `README.md`,
-    `CLAUDE.md`, the design spec ×2, `src/trikaal/__init__.py`); repo-wide re-grep now returns only
+    `docs/ENGINEERING.md`, the design spec ×2, `src/trikaal/__init__.py`); repo-wide re-grep now returns only
     the prohibition itself. **Trikaal is a TOKENIZER STUDY; the backbone is the measurement
-    vehicle.** Param count corrected `~27M` → **21,301,248** at `CLAUDE.md:7`, `CLAUDE.md:33`, the
+    vehicle.** Param count corrected `~27M` → **21,301,248** at `docs/ENGINEERING.md:7`, `docs/ENGINEERING.md:33`, the
     design spec's "~27M-class" and its §3 body text — **and at `m6_prereg.md`'s R3 text**, which is a
     *publishable outcome sentence* and would have shipped the wrong number. Because `src/` and
     `pyproject.toml` changed, **Gate-A was re-proven: exit-0 ×2, manifest byte-identical to the
@@ -3346,7 +3385,7 @@ three stacked judgment calls = an unlimited re-run license):**
     fixture is now cell-dependent, **and the test asserts `_var_all_arms(full) != _var0(full)`
     before using it** — a mutation check must first prove its own fixture can tell the two cases
     apart. Same family as the control-arm norm: a check that cannot fail is not a check.
-    - **LANDED AS A STANDING NORM (2026-07-31, `CLAUDE.md` "Tooling & commands", beside the
+    - **LANDED AS A STANDING NORM (2026-07-31, `docs/ENGINEERING.md` "Tooling & commands", beside the
       control-arm rule).** **A mutation or negative check must first prove that its own fixture can
       discriminate the cases it claims to separate; an assertion that would pass equally against a
       gate that does nothing is not a check.** It is filed there as the third costume of a single
@@ -3463,7 +3502,7 @@ three stacked judgment calls = an unlimited re-run license):**
       ~25 min of box time for a quotable forced-vs-unforced pair. To be conclusive it also needs a
       same-seed twice-run weight-hash comparison — confirming forcing DELIVERS bit-identity rather
       than merely claiming it.
-    - **POSTURE NOT CHANGED, AND NOT THE SUPERVISOR'S CALL EITHER.** CLAUDE.md invariant 7 embeds the
+    - **POSTURE NOT CHANGED, AND NOT THE SUPERVISOR'S CALL EITHER.** docs/ENGINEERING.md invariant 7 embeds the
       false premise in its own text, so amending it is **Lakshay's sign-off**. Both candidate
       amendments are drafted with the measured facts in `docs/invariant7_amendment_decision.md` —
       **(A)** force deterministic algorithms (invariant text unchanged, cost PENDING, degrades to

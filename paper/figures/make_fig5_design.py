@@ -8,7 +8,8 @@ VERDICT THE FIGURE MUST CARRY WITHOUT ITS CAPTION
     and leaves the within-block correlation standing, which is why the headline difference carries
     a capacity handicap that the design discloses rather than removes.
 
-CONTEXT-STRIPPING RULE (CLAUDE.md standing rules; BUILD_RECORD.md section 5). Until 2026-08-10 the
+CONTEXT-STRIPPING RULE (docs/ENGINEERING.md standing rules; BUILD_RECORD.md §5).
+Until 2026-08-10 the
     red annotation block read "Cell 6 ... is conditional on a pre-committed probe" while the LaTeX
     caption had already been corrected to "future work rather than a committed contingency". Cell 6
     appears nowhere in docs/m6_prereg.md -- verified by exhaustive case-insensitive search -- so the
