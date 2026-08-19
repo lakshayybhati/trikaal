@@ -151,6 +151,9 @@ def build() -> dict:
             "n_bars": 84153600,
             "n_bars_note": "DISTINCT bars in the 40 drawn symbols (each carries the full "
             "2,103,840-bar span); ledger sum over draw.drawn_by_symbol_stage1",
+            "selection": "the 40 DEEPEST symbols, not a random subsample -- only 42 of "
+            "the 200 qualify, so the draw is survivorship-selected toward coins listed "
+            "before 2021-01 and still trading at 2025-01",
             "n_bar_positions_consumed": 426033152,
             "n_bar_positions_note": "n_windows x seq_len = 26,003 steps x batch 32 x 512; "
             "this is TRAINING THROUGHPUT, not the size of the draw",
