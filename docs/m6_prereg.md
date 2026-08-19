@@ -216,6 +216,35 @@ three stacked judgment calls = an unlimited re-run license):**
 
 ## 7. Amendment log
 
+- **v1.6.48 (2026-08-18, THE PARAMETER CITATION NOW POINTS AT WHAT A READER CAN RECOMPUTE. THE
+  RENAME IS HELD, BECAUSE THE TARGET DOES NOT EXIST YET.)**
+  - **★ THE RECOMMENDATION IS RIGHT AND IT IS INDEPENDENT OF THE RENAME, WHICH IS WHY IT WAS DONE
+    FIRST.** `04_design.tex:66` cited an instruction document for **realized parameter counts**.
+    An instruction document **ASSERTS** a measured quantity; a manifest lets a reader **VERIFY**
+    one. The citation now points at the artifacts, and the norms file is cited only for the norms
+    it is actually authoritative for.
+  - **AND THE MANIFEST COVERS HALF THE SENTENCE, NOT ALL OF IT — CHECKED RATHER THAN ASSUMED.**
+    `runs_manifest/m6_weights_release.json` carries **31,725,568 / 10,493,952 / 21,231,616** and a
+    `how_to_verify` field printing the recipe verbatim: *"load predictor.pt and sum numel() over
+    state_dict to reproduce n_params_realized_total"*. **Those are the BSQ figures, because the
+    released units are cell 1.** The manifest does **NOT** contain **31,795,200** — the FSQ total
+    the same sentence quotes. That half is summed from `runs_cloud/ckpt_cell4_seed0/predictor.pt`
+    and asserted at render time by `make_fig5_design.py::_verify_params()`, which raises on a wrong
+    constant and has been observed to. **Both halves now cite the thing that can check them; a
+    single citation to the manifest would have covered one and implied two.**
+  - **★ THE RENAME IS HELD AND THIS IS THE REASON.** `docs/ENGINEERING.md` exists **neither
+    locally nor at origin**; `CLAUDE.md` is still there. Repointing 23 citations — 3 in `paper/`,
+    20 here — at a file that does not exist would replace a correct citation with a **dangling**
+    one, which is the defect class this project has spent two days on, in a new costume: *a
+    citation whose artifact is not there*. The references stay pointed at what exists. **The moment
+    the rename lands the change is mechanical and I will make it in one pass**, and for this log it
+    is a straight rename rather than the document-of-record form — the referent is being renamed,
+    not retired, and **nothing here expired**, which is the distinction v1.6.47 turned on.
+  - **THE COMMIT RE-STAMPING IS PENDING THE BUILDER'S MAP AND WILL NOT BE GUESSED.** Twenty
+    commits cited across my files need new SHAs. A re-stamped SHA that is wrong is worse than a
+    stale one, because a stale SHA fails loudly on `git show` and a wrong one resolves to the
+    wrong commit — which is exactly the failure mode the baseline rule was written for.
+
 - **v1.6.47 (2026-08-18, THE REPO WENT PUBLIC. TWO DATED PREMISES EXPIRED AND NEITHER WAS
   REWRITTEN — THIS IS THE ONE FILE WHERE THE CORRECTION FORM IS DIFFERENT.)**
   - **VERIFIED FIRST, UNAUTHENTICATED:** `lakshayybhati/trikaal` returns **HTTP 200**,

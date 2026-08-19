@@ -63,7 +63,18 @@ quantity on either basis. The backbone
 is otherwise identical across all five cells: eight layers, model width $512$, feed-forward width
 $1024$, eight heads, and a context of $512$ bars. It is held fixed on purpose. The tokenizer is
 the object under study; the backbone is the instrument that measures it.
-% artifact: CLAUDE.md §7 v1.6.17 realized parameter counts; percentage computed here
+% artifact: THE COUNTS ARE CITED TO WHAT A READER CAN RECOMPUTE, not to an instruction document.
+%   BSQ arm (the released weights): runs_manifest/m6_weights_release.json ::
+%     units.{0,2,4}.predictor_parameter_groups.{n_params_realized_total = 31725568,
+%     n_params_mtp = 10493952, backbone = 21231616}, and .how_to_verify prints the recipe --
+%     "load predictor.pt and sum numel() over state_dict to reproduce n_params_realized_total".
+%   FSQ arm: the released manifest does NOT carry 31,795,200, because the shipped units are cell 1
+%     (BSQ). That figure is summed from runs_cloud/ckpt_cell4_seed0/predictor.pt and is asserted
+%     at render time by paper/figures/make_fig5_design.py::_verify_params(), which raises on a
+%     wrong constant and has been observed to do so.
+%   The engineering-norms file remains the authority for the NORMS it states; it is not cited for
+%   a measured quantity, because an instruction document ASSERTS a number where a manifest lets a
+%   reader VERIFY one. Percentages computed here.
 
 Every cell trains under the same budget: $26{,}003$ steps at batch $32$ and context $512$, on the
 same draw. That budget is matched and fixed rather than chosen per cell by early stopping. The
