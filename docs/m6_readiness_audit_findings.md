@@ -22,14 +22,14 @@ and correctly refused to reconstruct it.
 # PART 1 — THE AUDIT, VERBATIM
 
 > **★ TRANSLATION TABLE FOR THE VERBATIM TEXT BELOW (added 2026-08-19, BESIDE it and never
-> inside it).** History was rewritten on 2026-08-19: `CLAUDE.md` became `docs/ENGINEERING.md` and
-> every commit SHA changed. The auditor's prose below still uses the pre-rewrite names, **and that
-> is correct** — it is what they wrote. Read it with this table:
+> inside it).** History was rewritten on 2026-08-19: the engineering guide was renamed and every
+> commit SHA changed. The auditor's prose below still uses the pre-rewrite names, **and that is
+> correct** — it is what they wrote. Read it with this table:
 >
 > | the audit says | now |
 > |---|---|
 > | baseline commit `74b6094` | `7a4d13b` |
-> | `CLAUDE.md` | `docs/ENGINEERING.md` |
+> | the old engineering-guide filename | `docs/ENGINEERING.md` |
 >
 > `git show 7a4d13b:<path>` is the baseline-rule command for disputing any line reference below.
 > **A re-stamp pass DID edit this region once**, on 2026-08-19, and `test_the_verbatim_region_is_
