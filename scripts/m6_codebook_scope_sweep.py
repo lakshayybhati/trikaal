@@ -91,7 +91,7 @@ def main() -> int:
         help="git revision to read the corpus AT. ★ THE ANSWER DEPENDS ON THIS. Run against the "
         "working tree AFTER §7 v1.6.30 landed and the sweep reads the AMENDMENT ITSELF quoting "
         "the evidence for the amendment — 50 hits, 2 BSQ-scoped, both inside the new prereg "
-        "entry. The finding that justified the amendment was measured at 055d14f (37 hits, ZERO "
+        "entry. The finding that justified the amendment was measured at 95fc017 (37 hits, ZERO "
         "BSQ-scoped) and must be re-checked there, never here. Baseline rule: check a claim "
         "against the commit the claim was made about.",
     )

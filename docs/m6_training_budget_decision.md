@@ -28,7 +28,7 @@ path unexamined.
 | refutation attempted | result |
 |---|---|
 | "2000 was deliberately sized for M6 somewhere in design/prereg/roadmap" | **NO.** The only occurrence of 2000 as a *step budget* in the design spec is `:1762-1763`, the **G1 overfit-a-single-batch SMOKE GATE** threshold: *"within ≤ 2000 steps"*. |
-| "the commit that introduced it shows a sizing argument" | **NO — and it is worse.** `steps_stage1: int = 2000` entered in `a4d242e` (2026-07-04) **in the same dataclass literal as `seeds = (0,1,2)` and `seq_len = 128`** — the two values C-6 later identified as the train/eval split-brain. Those two had pinned counterparts and were corrected. The step budget had none, so it survived; **§7 v1.6.15 C-18 then pinned it, and there is now a mutation KAT defending a rehearsal value.** |
+| "the commit that introduced it shows a sizing argument" | **NO — and it is worse.** `steps_stage1: int = 2000` entered in `64f728c` (2026-07-04) **in the same dataclass literal as `seeds = (0,1,2)` and `seq_len = 128`** — the two values C-6 later identified as the train/eval split-brain. Those two had pinned counterparts and were corrected. The step budget had none, so it survived; **§7 v1.6.15 C-18 then pinned it, and there is now a mutation KAT defending a rehearsal value.** |
 | "the design never specified a budget, so 2000 is as good as anything" | **NO, AND THIS IS THE STRONGEST FORM OF THE FINDING.** The design **does** specify one. |
 
 ### The design specifies a budget. The code does not implement it.

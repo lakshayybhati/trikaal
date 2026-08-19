@@ -21,7 +21,7 @@ from trikaal.utils.provenance import PROVENANCE_IDENTITY_KEYS, identity_referenc
 # The live pool's actual stamp, so the fixture is the thing the gate will really see.
 REFERENCE = {
     "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
-    "git_commit": "055d14fbf51ec3575b753267b2fe6a668176a3f8",
+    "git_commit": "95fc0177b9b3cab4f38044431018a15f176e178c",
     "steps_stage1": 26003,
     "steps_stage2": 26003,
     "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",

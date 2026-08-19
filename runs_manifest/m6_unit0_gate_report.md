@@ -1,6 +1,6 @@
 # UNIT 0 CLOSED — GATE REPORT
 
-**2026-08-12 · HEAD 055d14fbf51ec3575b753267b2fe6a668176a3f8 · no commits made · production boxes untouched**
+**2026-08-12 · HEAD 95fc0177b9b3cab4f38044431018a15f176e178c · no commits made · production boxes untouched**
 
 ---
 
@@ -493,8 +493,8 @@ I wrote: *"Two authorities in this repo state opposite things about the same num
 true, but it implies a symmetry that does not exist, and it could lead a reader to treat the GATE
 as the accident. It was not. Dated:
 
-    docstring "never thresholded"   c605312  2026-07-18  diagnostic introduced, purely diagnostic
-    the 0.95 gate                   27dfb72  2026-08-03  the re-audit fix pass, 16 days LATER
+    docstring "never thresholded"   b5a7b5e  2026-07-18  diagnostic introduced, purely diagnostic
+    the 0.95 gate                   a974393  2026-08-03  the re-audit fix pass, 16 days LATER
 
 **The gate is the deliberate later decision; the docstring is stale.** `verdict.py:278-281` states
 the intent explicitly — *"the codebook diagnostic is REQUIRED per-(cell, seed) and its utilization

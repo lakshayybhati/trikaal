@@ -525,7 +525,7 @@
   "receipt": "m6_bit_exact_claim_correction",
   "remediation_status": {
     "code": "bit_exact_preconditions_met + bit_exact_caveat ADDED in v1.4.6; the historical bit_exact_claim field is deliberately NOT redefined.",
-    "posture": "NOT changed by the builder. Forcing deterministic algorithms is a throughput/cost decision and CLAUDE.md invariant 7 embeds the false sufficiency premise in its own text; amending it is Lakshay's sign-off. Two candidate amendments are drafted in prereg s7 v1.4.7."
+    "posture": "NOT changed by the builder. Forcing deterministic algorithms is a throughput/cost decision and docs/ENGINEERING.md invariant 7 embeds the false sufficiency premise in its own text; amending it is Lakshay's sign-off. Two candidate amendments are drafted in prereg s7 v1.4.7."
   },
   "scope": {
     "false": "The GPU-TRAINING bit-exactness clause of invariant 7, for the enumerated records.",

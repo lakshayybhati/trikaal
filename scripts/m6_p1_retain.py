@@ -68,7 +68,7 @@ def main(run_dir: str) -> int:
         "receipt": "m6_p1_dry_run_completion",
         "what": (
             "P1 (fan-out runbook §1a) — `m6_money_run.py --dry-run` ran to completion for the "
-            "FIRST TIME in this project's history, at commit 27dfb724 with the R5 fix applied"
+            "FIRST TIME in this project's history, at commit a9743938 with the R5 fix applied"
         ),
         "why_retained": (
             "the run directory is a scratch path and does not survive. The standing pre-teardown "

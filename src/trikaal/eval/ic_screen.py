@@ -1,7 +1,7 @@
 """Causal information-coefficient screen — pure statistics (Milestone-2 diagnostic).
 
 Every metric here is written from scratch over NumPy (no scipy/statsmodels) — IC/RankIC are
-listed in CLAUDE.md as eval metrics we own. The functions are deliberately I/O-free and
+listed in docs/ENGINEERING.md as eval metrics we own. The functions are deliberately I/O-free and
 deterministic so they unit-test without the lake: lake reads, feature/horizon assembly, and
 reporting live in ``scripts/m2_feature_ic.py``.
 

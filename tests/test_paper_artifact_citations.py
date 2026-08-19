@@ -49,7 +49,7 @@ _DIR_PREFIXES = (
     "processed",
 )
 # Repo-root files that are cited without a directory component.
-_ROOT_FILES = ("CLAUDE.md", "README.md", "LICENSE", "pyproject.toml", "uv.lock")
+_ROOT_FILES = ("docs/ENGINEERING.md", "README.md", "LICENSE", "pyproject.toml", "uv.lock")
 
 # Gitignored evidence trees. Each MUST name a tracked mirror, asserted below.
 UNTRACKABLE_PREFIXES: dict[str, str] = {

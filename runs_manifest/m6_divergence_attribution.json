@@ -48,7 +48,7 @@
   "receipt": "m6_divergence_attribution",
   "run_provenance": {
     "acceptance": {
-      "commit": "f2a4792",
+      "commit": "36560dc",
       "from_setup_log": {
         "attention_mode": null,
         "cuda_version_smi": null,
@@ -65,7 +65,7 @@
       ]
     },
     "moneyleg": {
-      "commit": "a441cfa",
+      "commit": "7784df2",
       "from_setup_log": {
         "present": false
       },

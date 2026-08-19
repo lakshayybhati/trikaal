@@ -2,8 +2,8 @@
 
 > ## ⚠️ THE BOUNDARY IN THIS FILE IS LOAD-BEARING. READ THIS BEFORE QUOTING ANYTHING FROM IT.
 > **PART 1 is the EXTERNAL AUDITOR'S OWN TEXT, unedited.** Not ours. Not paraphrased. Its line
-> references are against baseline commit **`74b6094`** and have since drifted under our own fixes —
-> per the standing baseline rule, `git show 74b6094:<path>` before disputing any of them. **The
+> references are against baseline commit **`7a4d13b`** and have since drifted under our own fixes —
+> per the standing baseline rule, `git show 7a4d13b:<path>` before disputing any of them. **The
 > drifted numbers are LEFT AS WRITTEN**; where a reference has moved it is annotated *beside* the
 > verbatim text, never inside it.
 > **PART 2 is OUR VERDICTS.** A reader — including a re-auditor — must not read Part 2 as the
@@ -28,13 +28,13 @@ and correctly refused to reconstruct it.
      THIS IS THE EXTERNAL AUDITOR'S OWN TEXT, UNEDITED. It was never committed at the time —
      that omission is the supervisor's defect and is why the builder could not answer the
      S-2..S-4 question in the Tier-4 triage.
-     Audit baseline commit: 74b6094. Line references are against THAT commit and have since
-     drifted; per the baseline rule, `git show 74b6094:<path>` before disputing any of them.
+     Audit baseline commit: 7a4d13b. Line references are against THAT commit and have since
+     drifted; per the baseline rule, `git show 7a4d13b:<path>` before disputing any of them.
      NOTHING below is builder-authored or supervisor-authored. Do not edit the body. -->
 
 Read-only audit complete. Full test suite run (337 passed), Gate-A anchor reproduced, ruff verified, and 14 targeted probes executed. Nothing in the repo was changed — one receipt (`runs_manifest/m6_claims_sweep.json`) was regenerated as a side effect of running its own script and I restored it to HEAD.
 ---
-# INDEPENDENT AUDIT — Trikaal M6, branch `real-data-slice` @ `74b6094`
+# INDEPENDENT AUDIT — Trikaal M6, branch `real-data-slice` @ `7a4d13b`
 ## Baseline facts — verified, not assumed
 | Claim | Verdict |
 |---|---|
@@ -84,8 +84,8 @@ power_guard:      armed=True halted=False
 **HOW VERIFIED:** probe 4 — under a placebo whose *annualized* VAL IRs have SD 0.25 / 0.5 / 1.0, the mixed-horizon `var_sr` is **7.8× / 3.0× / 4.0×** the same-unit (h=15-only) variance, inflating SR₀ by 1.7–2.8×. In the degenerate case the project has already observed (all placebo VAL IRs bit-identical at −7.56), `var_sr` = 5.804e-4 and SR₀ = 0.0565 is **100% artifact** — reproduced exactly by hand: the three de-annualized values are −0.02332 / −0.04039 / −0.08078, variance 5.8056e-4.
 **WHAT BREAKS:** clause 5's bar is set by *which horizons were enumerated* rather than by search dispersion. It errs conservative in the scenarios tested, but the direction is not guaranteed and has never been measured. `verdict_dsr_failures` re-derives the same wrong quantity, so the "independent statement of the constants" cannot catch it. In a paper, a reviewer who checks the units kills clause 5.
 ## C-4 · G-§8.C.3 — the Kronos external validation gate has no implementation
-`docs/m6_prereg.md:178-190` · `CLAUDE.md` invariant 4
-**CLAIMED:** a **binding gate**: "Fails iff Cell 1's RankIC < 0.85 × published Kronos-small RankIC … with Kronos-small run through its own published preprocessing on the same bars", whose failure "halts the ablation before any Cell-2–5 eval statistic is computed". CLAUDE.md: Cell 1 is "**externally validated** against published Kronos-small (validation lives only in the eval harness)".
+`docs/m6_prereg.md:178-190` · `docs/ENGINEERING.md` invariant 4
+**CLAIMED:** a **binding gate**: "Fails iff Cell 1's RankIC < 0.85 × published Kronos-small RankIC … with Kronos-small run through its own published preprocessing on the same bars", whose failure "halts the ablation before any Cell-2–5 eval statistic is computed". docs/ENGINEERING.md: Cell 1 is "**externally validated** against published Kronos-small (validation lives only in the eval harness)".
 **TRUE:** grep across `src/`, `scripts/`, `tests/` finds **no** code that loads external weights, runs Kronos preprocessing, or compares against a published RankIC. No `from_pretrained`, no `hf_hub`, no transcribed published number anywhere. `src/trikaal/eval/harness.py` computes our own RankIC only.
 **WHAT BREAKS:** the paper's central legitimacy claim for the BSQ baseline — that Cell 1 is anchored to published Kronos-small rather than being a private re-implementation of unknown quality — is unimplemented. Cell 1 is also the NULL-fallback's comparator (§5 claims `IR(2)−IR(1)`). Without it, a weak Cell 1 manufactures a positive FSQ result and nothing detects it.
 ## C-5 · No driver runs the pre-registered money configuration
@@ -156,7 +156,7 @@ The line at `verdict.py:519-521` is not a comment: it is the `rule` string **per
 `pyproject.toml:10` / `uv.lock:3` — `requires-python = ">=3.11"` with no `.python-version`; the interpreter is still unpinned (the known 3.14-vs-3.11 hazard is unfixed). `OrchestratorConfig.steps_stage1/2 = 2000` — the Stage-1/2 step budget is a code default, referenced by no spec, gate or receipt. `predict_mu(estimator="expectation")` is a function default (`predict.py:58`) that `score_cell` relies on implicitly; no gate asserts it.
 ## C-19 · The realized backbone differs between quantizer arms
 `src/trikaal/train/cells.py:88-118`
-FSQ cells (2/4/5): **21,301,248**. BSQ cells (1/3): **21,231,616** — 69,632 fewer (0.327%), from the 2048 vs 2116 embedding/head rows. Inside the documented ±2% band and disclosed in the code comment, but `CLAUDE.md` and the paper quote "21,301,248 realized params" as *the* measurement vehicle, which is true for three of the five cells.
+FSQ cells (2/4/5): **21,301,248**. BSQ cells (1/3): **21,231,616** — 69,632 fewer (0.327%), from the 2048 vs 2116 embedding/head rows. Inside the documented ±2% band and disclosed in the code comment, but `docs/ENGINEERING.md` and the paper quote "21,301,248 realized params" as *the* measurement vehicle, which is true for three of the five cells.
 ## C-20 · Two disclosed-but-load-bearing scope facts
 - **The headline is one calendar year.** `runs_manifest/m6_mde_inputs.json:primary_region_ms = [1704132000000, 1735689600000]` = 2024-01-01 → 2025-01-01. T = 35,063 periods, but one macro regime.
 - **`embargo_flatness` — described in `folds.py:88` as "the leakage gate" — is never called by anything.** `folds.py` is imported only by `harness.py` (M5). The M6 embargo *geometry* is applied on the training side via `universe_loader.fold_valid_starts` (E=120, verified), so the invariant holds structurally; but the flatness verification that would *demonstrate* it is not part of M6.

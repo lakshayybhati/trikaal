@@ -8,7 +8,7 @@ Two proposals were before me and they conflict:
 
 - **External integration review:** band the activity leg `[0.05, 0.95]` to match its sibling —
   HALT-only widening, direction-safe, cannot manufacture a positive or a negative.
-- **`docs/degeneracy_guard_band_decision.md` (`5c9ab3f`, 2026-08-10):** do not band, because
+- **`docs/degeneracy_guard_band_decision.md` (`cefca3b`, 2026-08-10):** do not band, because
   `activity_decisions` at κ\* is the wrong statistic to band.
 
 I verified the load-bearing evidence for both. **The memo is right and the review's recommendation
@@ -102,7 +102,7 @@ finding.**
 The memo offers two branches and hedges with: *"If they are over-dispersed (**plausible at 7.7% of
 compute-optimal**) they trade."*
 
-**That figure was superseded on 2026-08-03 by `591ec44`.** The pinned budget is now 26,003 steps =
+**That figure was superseded on 2026-08-03 by `0b9c804`.** The pinned budget is now 26,003 steps =
 426,033,152 tokens = **20.00 tokens/param = 100% of compute-optimal** — verified from
 `PINNED_STEPS_STAGE2` at HEAD.
 
@@ -193,7 +193,7 @@ pre-written, pre-dated interpretation branches the paper already handles.
 | The blind spot is real | **ACCEPTED** — disclosed, not closed by banding |
 | The filter may admit no trades (§2) | **ACCEPTED, does not block** — HALT is a pre-written branch |
 | Memo's `std(y) = 0.004238` | **CORRECTED** to 0.003504 on my measurement; finding strengthens |
-| Memo's "7.7% of compute-optimal" | **STALE** — superseded by `591ec44`; branch (a) more likely |
+| Memo's "7.7% of compute-optimal" | **STALE** — superseded by `0b9c804`; branch (a) more likely |
 | The κ grid | **UNCHANGED** — κ ≥ 1 is principled; an empty filter is a result |
 | Three reporting changes (§4) | **ADOPTED** — $0, no gate value moves |
 | Paper touch-points D.2 and §7.5 | **UPDATE REQUIRED** — see §7 |

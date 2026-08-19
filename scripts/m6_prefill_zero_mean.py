@@ -89,7 +89,7 @@ Z95 = 1.959963984540054
 
 
 def _two_sided_p(z: float) -> float:
-    """Normal two-sided tail. Self-written: eval statistics are not imported (CLAUDE.md)."""
+    """Normal two-sided tail. Self-written: eval stats are not imported (docs/ENGINEERING.md)."""
     return math.erfc(abs(z) / math.sqrt(2.0))
 
 

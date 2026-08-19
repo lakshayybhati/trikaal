@@ -17,7 +17,7 @@ that would move `git_commit`, identity key #2, and re-cut the matrix — so the 
 in its place. When the post-run batch commits it, the committed bytes can be verified against a
 hash published before the data existed.
 
-**The net line (15.6616) has a stronger anchor already:** it is inside pushed commit `448e4fe`,
+**The net line (15.6616) has a stronger anchor already:** it is inside pushed commit `e307309`,
 which provably predates both units. The gross section does not, which is why this note exists.
 
 ---

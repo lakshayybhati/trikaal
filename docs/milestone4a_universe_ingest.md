@@ -34,7 +34,7 @@ list — it never asserts delisting dates from memory (that would be a survivors
 Generalizing 1 symbol → N has exactly one classic failure mode: **a cross-symbol or universe-wide
 normalization statistic leaks** (e.g. fitting a global z-score, or pooling the large-trade `tau`
 percentile across symbols). That silently destroys the causal guarantee the whole project rests on
-(CLAUDE.md invariant 2).
+(docs/ENGINEERING.md invariant 2).
 
 The generalization is built so this is **structurally impossible, not just tested-against**:
 

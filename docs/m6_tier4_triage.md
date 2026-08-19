@@ -108,7 +108,7 @@ The auditor's 21,231,616 is exact.
 non-FSQ vocabs instead of exact equality, because embedding/head rows differ with vocab size
 (2048 vs 2116 rows).
 
-**So the defect is in the prose, and it is not cosmetic.** `CLAUDE.md` and the design doc quote
+**So the defect is in the prose, and it is not cosmetic.** `docs/ENGINEERING.md` and the design doc quote
 *"21,301,248 realized params"* as one number for the matched backbone, and invariant 4 requires the
 backbone *"held fixed and matched across every ablation arm"*. It is matched to ±0.327%, not
 exactly. **Where this bites:** the §5 NULL-fallback claim is `IR(2) − IR(1)` — FSQ vs BSQ — so that

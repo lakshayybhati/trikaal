@@ -57,7 +57,7 @@ and replaced by the table above.
 ### Finding
 
 `steps_stage1 = steps_stage2 = 2000` is the design spec's **G1 overfit-a-single-batch SMOKE GATE**
-threshold (`:1762-1763`, *"within ≤ 2000 steps"*). It entered in commit `a4d242e` **in the same
+threshold (`:1762-1763`, *"within ≤ 2000 steps"*). It entered in commit `64f728c` **in the same
 dataclass literal as `seeds = (0,1,2)` and `seq_len = 128`** — the two values later caught as the
 C-6 train/eval split-brain. Those had pinned counterparts and were corrected; the step budget had
 none, so it survived, and the C-18 fix then **pinned** it.
@@ -72,7 +72,7 @@ ruled Tier-1 blocking for C-10, at the scale of the whole experiment.
 ### The authority question — corrected
 
 **This is not discretion. The design spec states the budget** (`:1912`, `:1924`): Stage-2 *"1–3
-passes over a ≤1B-bar corpus"* at ≈0.5M tokens/step with early-stop on val-NLL saturation. CLAUDE.md
+passes over a ≤1B-bar corpus"* at ≈0.5M tokens/step with early-stop on val-NLL saturation. docs/ENGINEERING.md
 makes the spec a source of truth — *"if anything here conflicts with the spec, the spec wins."*
 
 > **Raising the budget IMPLEMENTS the blueprint. Leaving 2,000 is a standing, undisclosed DEVIATION

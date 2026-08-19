@@ -736,7 +736,8 @@ def plain_english(f: CsvForecast) -> str:
     """One line, forecast only. NEVER a recommendation, a side, or a size.
 
     ★ THE AGREEMENT CLAUSE CARRIES A DEGENERACY GUARD, AND IT MUST. The degeneracy rule
-    (CLAUDE.md, from C-1): "A PERFECT AGREEMENT SCORE IS AS SUSPICIOUS AS A FAILING ONE. Any
+    (docs/ENGINEERING.md, from C-1): "A PERFECT AGREEMENT SCORE IS AS SUSPICIOUS AS A FAILING
+    ONE. Any
     agreement statistic must carry a degeneracy check on its own inputs BEFORE its value is read."
     A COLLAPSED INPUT SCORES PERFECT AGREEMENT FOR FREE.
 

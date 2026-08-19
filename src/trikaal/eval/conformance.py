@@ -61,7 +61,7 @@ PINNED_BACKBONE_PARAMS = 21_301_248  # backbone EXCLUDING MTP; see the note abov
 PINNED_MU_ESTIMATOR = "expectation"  # §7 v1.4.2: the conditional-MEAN decode
 # §7 v1.6.22 — THE TRAINING BUDGET, SET BY LAKSHAY 2026-08-03. This IMPLEMENTS THE BLUEPRINT.
 # WHAT IT WAS: 2000, the design spec's G1 overfit-a-single-batch SMOKE GATE threshold
-# (spec :1762-1763). It entered in commit a4d242e in the SAME dataclass literal as `seeds=(0,1,2)`
+# (spec :1762-1763). It entered in commit 64f728c in the SAME dataclass literal as `seeds=(0,1,2)`
 # and `seq_len=128` -- the two values C-6 caught as the train/eval split-brain. Those had pinned
 # counterparts and were corrected; this had none, so it survived, and §7 v1.6.15 C-18 pinned it.
 # At 2000 steps a cell saw 32,768,000 tokens = 1.54 tokens/param = 7.69% of compute-optimal =

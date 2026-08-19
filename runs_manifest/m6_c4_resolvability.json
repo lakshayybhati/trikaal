@@ -20,7 +20,7 @@
     "dataset_in_the_caption": "Shanghai Stock Exchange, 15-minute frequency",
     "ic_price_series": 0.0431,
     "ic_return_forecasting": 0.0665,
-    "kills_steps_1_2_4": "the stated purpose was validating OUR METRICS against an external reference by reproducing Kronos's published numbers. You cannot reproduce an SSE number on a BTC slice; it would need SSE 15-min equity bars, which CLAUDE.md firewalls out of v1. The external metric check as specified is unavailable at any price.",
+    "kills_steps_1_2_4": "the stated purpose was validating OUR METRICS against an external reference by reproducing Kronos's published numbers. You cannot reproduce an SSE number on a BTC slice; it would need SSE 15-min equity bars, which docs/ENGINEERING.md firewalls out of v1. The external metric check as specified is unavailable at any price.",
     "problem": "TWO RankIC rows differing by 2.4x; the prereg does not say which. Thresholds would be 0.02159 vs 0.05287 -- a spread far larger than the 15% band the gate is made of.",
     "rankic_price_series": 0.0254,
     "rankic_return_forecasting": 0.0622,

@@ -216,7 +216,7 @@ tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
 model = Kronos.from_pretrained("NeoQuasar/Kronos-small")
 ```
 
-**Running the weights requires Kronos's `model.py`.** And CLAUDE.md invariant 8 says:
+**Running the weights requires Kronos's `model.py`.** And docs/ENGINEERING.md invariant 8 says:
 
 > No Kronos code or weights are ever part of Trikaal … its public weights appear in exactly one
 > place: the eval harness, as an external validation target.
@@ -330,7 +330,7 @@ you are comparing a crypto-1m model against an equities-15m figure.
 purpose was to *"validate OUR METRIC IMPLEMENTATIONS against an external reference"* by reproducing
 Kronos's published numbers. You cannot reproduce a Shanghai-Stock-Exchange number on a BTC slice.
 Doing it properly would need **SSE 15-minute equity bars**, which we do not have and which
-CLAUDE.md firewalls out of v1 (*"Equities / cross-asset data"*, out of scope). **The external
+docs/ENGINEERING.md firewalls out of v1 (*"Equities / cross-asset data"*, out of scope). **The external
 metric check, as specified, is not available to us at any price.**
 
 ## (c) THE BAND ITSELF IS RESOLVABLE — I WAS WRONG ABOUT THIS

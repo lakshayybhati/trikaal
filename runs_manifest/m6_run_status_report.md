@@ -8,7 +8,7 @@ longer fits the budget even with the promised $20 top-up.** That last point is a
 is not mine.
 
 ## WHAT IS HEALTHY — and it is most things
-- **Launch SHA `055d14f`**, rev-list 0, tree clean, HEAD frozen. No commits since.
+- **Launch SHA `95fc017`**, rev-list 0, tree clean, HEAD frozen. No commits since.
 - Pre-launch: `ruff check` **EXIT 0** · `ruff format --check` **EXIT 0** · suite **753 passed EXIT 0**.
 - **All 16 identity keys AGREE across all three boxes.** Verified twice for r2, once from a fresh
   mid-run stamp that came back byte-identical to its provisioning stamp after ~8 h of load.

@@ -37,7 +37,7 @@
       "sha256": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25"
     }
   },
-  "git_commit": "448e4fe407fa10ef7125ec3cf15872f2e3946181",
+  "git_commit": "e307309ec134e916d6aba0faa1c121a03e772bc1",
   "legibility_receipt": {
     "cell4_fsq_micro_seed0": {
       "min_acc": 0.9,

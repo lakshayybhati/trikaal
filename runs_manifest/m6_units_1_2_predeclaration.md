@@ -1,6 +1,6 @@
 # PRE-DECLARATION — UNITS 1 AND 2 (cell 4 seed 0, cell 5 seed 0)
 
-**Written BEFORE the units run. HEAD `3e86e22`. A reading declared after the number is a story.**
+**Written BEFORE the units run. HEAD `507f8c9`. A reading declared after the number is a story.**
 
 ---
 
@@ -24,7 +24,7 @@ Measured, not argued. Provenance of every number in it:
 | tabled MDE | 3.518 | `runs_manifest/m6_mde_inputs.json:h15_pooled` |
 
 All three artifacts sha256-verified against their on-box production-time hashes, all three
-produced at `git_commit 055d14f`, all 19 provenance keys identical except the recorded kernel on
+produced at `git_commit 95fc017`, all 19 provenance keys identical except the recorded kernel on
 r2. **All three now validate CLEAN under the shipped v1.6.30 gate.**
 
 This belongs in the paper's methods whatever the verdict word turns out to be.
@@ -36,7 +36,7 @@ This belongs in the paper's methods whatever the verdict word turns out to be.
 Units 1 and 2 are **cell 4 seed 0** (machine 19883) and **cell 5 seed 0** (r1, machine 13450), run
 **in PARALLEL on two physical machines verified identical on ALL 19 RECORDED KEYS including the
 kernel** — `Linux-5.15.0-52-generic-x86_64-with-glibc2.35`, driver `590.48.01`, at
-`git_commit 448e4fe`, both passing the pre-flight identity gate on all 16 compared keys.
+`git_commit e307309`, both passing the pre-flight identity gate on all 16 compared keys.
 
 *(This paragraph originally read "sequentially on r1", written before machine 19883 — r0's own
 machine, on the host that supplied both r0 and r1 — was found available and verified. Corrected

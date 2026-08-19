@@ -1,6 +1,6 @@
 # Invariant 7 — a decision for Lakshay (drafted 2026-07-30, §7 v1.4.7)
 
-**This is not a builder decision and not a supervisor decision.** CLAUDE.md invariant 7 embeds a
+**This is not a builder decision and not a supervisor decision.** docs/ENGINEERING.md invariant 7 embeds a
 false premise **in its own text**, so amending it needs the person who owns that file. Two candidate
 amendments are drafted below with the measured facts attached. **Neither is recommended yet** — the
 CUDA feasibility measurement is PENDING and it is the input that separates them.
@@ -9,7 +9,7 @@ CUDA feasibility measurement is PENDING and it is the input that separates them.
 
 ## What was found
 
-Invariant 7 currently reads (CLAUDE.md, emphasis added):
+Invariant 7 currently reads (docs/ENGINEERING.md, emphasis added):
 
 > **GPU training is bit-exact only under the deterministic-attention fallback** (FlashAttention-2 is
 > otherwise non-deterministic) and every run records its mode.

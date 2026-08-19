@@ -63,18 +63,18 @@ the figure. Neither of us opened the receipt.
 
 | # | Claim | Artifact → field | Commit |
 |---|---|---|---|
-| 1.1 | Gate-A anchor `results_hash` = `sha256:3f86882a…`, causal sweep **420/420** | `runs_manifest/gate_a_run_manifest.json` → `results_hash`, `gate_a_causal_sweep` | `4561ee9`, re-proven this pass |
-| 1.2 | Backbone realized params **21,301,248** | `runs_manifest/m6_interface_respec_design_pass.json` → `g_parity_new_layout`; enforced by `train/cells.py` construction gate | `4a8fb48` |
-| 1.3 | Bits-per-token parity FSQ **20.058** / BSQ **20.000** | `eval/conformance.py` pins + `m6_interface_respec_design_pass.json` | `4a8fb48` |
-| 1.4 | Lake: **200 symbols / 304,625,181 bars / 7,024 parquet**, Merkle `5dfd667d`, push verified 100% | `runs_manifest/m6_lake_push_verification.json` → `verdict_parquets`, `manifest_ledger_verdict` | `c4cd082` |
-| 1.5 | Token-control branch (a) DETECT: probe Spearman crossed 0.3 at step 2,000, final val = H0 − 0.8496 (94% of planted nats) | `runs_manifest/m6_token_control_run_manifest.json` | `3b49f4d` |
-| 1.6 | h-sweep: planted cell4 IR **+65.098 / +43.461 / +28.878 / +15.008** at h ∈ {2,3,5,15}; noise arm quiet at every h | `runs_manifest/m6_h_sweep.json` → `cells.*.by_h.*` | `60a50dc` |
-| 1.7 | Guard band stability: worst frac_negative drift **0.0077** across n = 4,000 → 140,013 | `runs_manifest/m6_guard_band_stability.json` → `variants.*` | `60a50dc` |
-| 1.8 | Run-to-run divergence: same seed, byte-identical recipe → frac_neg **0.5662** vs **0.99883** | `runs_manifest/m6_h_sweep.json` + `m6_moneyleg_rerun_manifest.json` | `60a50dc`, `a441cfa` |
-| 1.9 | **49 of 49** determinism records assert `bit_exact_claim` beside `deterministic_algorithms=False` | `runs_manifest/m6_divergence_attribution.json` → `bit_exact_claim_contradiction` | `d92f0a8` |
-| 1.10 | Estimator: traded-set sign agreement **0.9102**; mc@32 own noise floor **0.8164** | `runs_manifest/m6_estimator_forensics.json` | `f67fb1f` |
-| 1.11 | Eviction mechanism: per-dim point-decoder corr — return **0.98**, fillers **0.82–0.92**, independent state dim **0.001–0.014** (3 seeds) | `runs_manifest/m6_interface_respec_design_pass.json` → `gates` | `4a8fb48` |
-| 1.12 | Analytic MDE at h=15 = **3.518** annualized IR, reproduced to 3dp from `T_eff` = 35,002.3 | `runs_manifest/m6_mde_inputs.json`; reproduction in `m6_mde_floor_verification.json` | `be89816` |
+| 1.1 | Gate-A anchor `results_hash` = `sha256:3f86882a…`, causal sweep **420/420** | `runs_manifest/gate_a_run_manifest.json` → `results_hash`, `gate_a_causal_sweep` | `c1786f4`, re-proven this pass |
+| 1.2 | Backbone realized params **21,301,248** | `runs_manifest/m6_interface_respec_design_pass.json` → `g_parity_new_layout`; enforced by `train/cells.py` construction gate | `e1feb64` |
+| 1.3 | Bits-per-token parity FSQ **20.058** / BSQ **20.000** | `eval/conformance.py` pins + `m6_interface_respec_design_pass.json` | `e1feb64` |
+| 1.4 | Lake: **200 symbols / 304,625,181 bars / 7,024 parquet**, Merkle `5dfd667d`, push verified 100% | `runs_manifest/m6_lake_push_verification.json` → `verdict_parquets`, `manifest_ledger_verdict` | `a1729b8` |
+| 1.5 | Token-control branch (a) DETECT: probe Spearman crossed 0.3 at step 2,000, final val = H0 − 0.8496 (94% of planted nats) | `runs_manifest/m6_token_control_run_manifest.json` | `2c41b67` |
+| 1.6 | h-sweep: planted cell4 IR **+65.098 / +43.461 / +28.878 / +15.008** at h ∈ {2,3,5,15}; noise arm quiet at every h | `runs_manifest/m6_h_sweep.json` → `cells.*.by_h.*` | `ea8ab5f` |
+| 1.7 | Guard band stability: worst frac_negative drift **0.0077** across n = 4,000 → 140,013 | `runs_manifest/m6_guard_band_stability.json` → `variants.*` | `ea8ab5f` |
+| 1.8 | Run-to-run divergence: same seed, byte-identical recipe → frac_neg **0.5662** vs **0.99883** | `runs_manifest/m6_h_sweep.json` + `m6_moneyleg_rerun_manifest.json` | `ea8ab5f`, `7784df2` |
+| 1.9 | **49 of 49** determinism records assert `bit_exact_claim` beside `deterministic_algorithms=False` | `runs_manifest/m6_divergence_attribution.json` → `bit_exact_claim_contradiction` | `a0a870c` |
+| 1.10 | Estimator: traded-set sign agreement **0.9102**; mc@32 own noise floor **0.8164** | `runs_manifest/m6_estimator_forensics.json` | `d0bbaeb` |
+| 1.11 | Eviction mechanism: per-dim point-decoder corr — return **0.98**, fillers **0.82–0.92**, independent state dim **0.001–0.014** (3 seeds) | `runs_manifest/m6_interface_respec_design_pass.json` → `gates` | `e1feb64` |
+| 1.12 | Analytic MDE at h=15 = **3.518** annualized IR, reproduced to 3dp from `T_eff` = 35,002.3 | `runs_manifest/m6_mde_inputs.json`; reproduction in `m6_mde_floor_verification.json` | `4525543` |
 
 **1.11 carries a binding framing commitment:** it is measured on a **SYNTHETIC fixture**, not on
 real microstructure. It must not be elevated to headline anywhere.

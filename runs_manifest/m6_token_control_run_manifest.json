@@ -401,7 +401,7 @@
     "logistic_sign_accuracy": 0.5135,
     "meaning": "the v6 feature-space state is nearly invisible in single-bar (c_id, f_id) while v6 dim-9 WINDOW-decode recon was non-degenerate \u2014 the state is smeared across the window's ids (causal encoder writes state_t into later tokens), not present in bar t's own id: standing mechanistic H-T evidence",
     "mlp_state_pearson_corr": 0.0142,
-    "source": "runs_manifest/m6_token_control_step0.json (commit c4e5e72)",
+    "source": "runs_manifest/m6_token_control_step0.json (commit e891d8c)",
     "stream": "regenerated v6 PLANTED, symbol 0, first 300,000 bars"
   },
   "plant_from_step0": {

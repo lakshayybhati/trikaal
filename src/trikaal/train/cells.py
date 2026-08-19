@@ -10,7 +10,8 @@
 
 ★ CELL 1 IS NOT EXTERNALLY VALIDATED, and this table said it was. The §8.C.3 Kronos gate was found
 unexecutable and DROPPED AS BINDING (2026-08-03, prereg §7 v1.6.22); no Kronos weights were ever
-pulled and invariant 8 forbids it. CLAUDE.md has called the old wording "a false statement of what
+pulled and invariant 8 forbids it. docs/ENGINEERING.md has called the old wording "a false
+statement of what
 validation we performed" since then — and this docstring, which defines the cell matrix every arm
 is built from, kept asserting it. Found by grepping the SUPERSEDED string rather than re-reading
 the corrected files (``tests/test_superseded_strings.py``); two hand-sweeps and two audits had

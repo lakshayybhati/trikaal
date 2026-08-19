@@ -81,7 +81,7 @@
     "rule": "standing ~8x local-timing variance -- may not be quoted as a cost",
     "why": "the recipe pins chunk=512, which OOM'd locally (19.69 GiB KV cache > 20.13 GiB); the only local datum is a chunk=64 FLOOR on mps, explicitly labelled 'PENDING the 4090'"
   },
-  "finding": "steps_stage1=steps_stage2=2000 is the G1 overfit-a-single-batch SMOKE GATE threshold (design spec :1762-1763). It entered in commit a4d242e in the SAME dataclass literal as seeds=(0,1,2) and seq_len=128 -- the C-6 split-brain values -- and survived because it had no pinned counterpart. The v1.6.15 C-18 fix then PINNED it.",
+  "finding": "steps_stage1=steps_stage2=2000 is the G1 overfit-a-single-batch SMOKE GATE threshold (design spec :1762-1763). It entered in commit 64f728c in the SAME dataclass literal as seeds=(0,1,2) and seq_len=128 -- the C-6 split-brain values -- and survived because it had no pinned counterpart. The v1.6.15 C-18 fix then PINNED it.",
   "headline": "13x the training budget (2,000 -> 26,003 steps = compute-optimal) costs +$15.73 to +$24.20; total $33-50 -> ~$49-74",
   "receipt": "m6_training_budget",
   "refutation_attempted_and_failed": {

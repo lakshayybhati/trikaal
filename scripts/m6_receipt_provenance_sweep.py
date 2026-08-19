@@ -18,7 +18,7 @@ runtime. The strong signal is a whole top-level block none of whose keys appear 
 producing code: that is what a hand-edit looks like.
 
 THE TOOL IS SUSPECT UNTIL SHOWN CAPABLE OF FAILING. --self-test runs three controls:
-  POSITIVE  the known defect at git commit c4cd082 must be flagged. If it is not, the sweep is
+  POSITIVE  the known defect at git commit a1729b8 must be flagged. If it is not, the sweep is
             broken and says so rather than reporting a clean bill.
   NEGATIVE  a receipt written end-to-end by its script must come back clean, so the detector is
             not simply flagging everything.
@@ -287,21 +287,21 @@ def self_test() -> bool:
     ok = True
     print("SELF-TEST — the sweep must be shown capable of failing before its output means anything")
 
-    # POSITIVE CONTROL: the known hand-authored block at c4cd082
+    # POSITIVE CONTROL: the known hand-authored block at a1729b8
     doc = json.loads(
         subprocess.run(
-            ["git", "show", "c4cd082:runs_manifest/m6_interface_respec_design_pass.json"],
+            ["git", "show", "a1729b8:runs_manifest/m6_interface_respec_design_pass.json"],
             cwd=ROOT,
             capture_output=True,
             text=True,
             check=True,
         ).stdout
     )
-    res = audit(doc, ["scripts/m6_interface_respec.py"], at_commit="c4cd082")
+    res = audit(doc, ["scripts/m6_interface_respec.py"], at_commit="a1729b8")
     blocks = [b["block"] for b in res["hand_authored_blocks"]]
     hit = "gate2_blocked_diagnosis" in blocks
     print(
-        f"  positive control  c4cd082 gate2_blocked_diagnosis flagged : {'PASS' if hit else 'FAIL'}"
+        f"  positive control  a1729b8 gate2_blocked_diagnosis flagged : {'PASS' if hit else 'FAIL'}"
         f"   (blocks flagged: {blocks})"
     )
     ok &= hit
@@ -392,7 +392,7 @@ def main() -> int:
         "method": "a key is reported only if it appears as no string literal in ANY script or "
         "library module in the repository; runtime-built data keys (indices, symbols, "
         "hashes, paths, prose labels) excluded. Corpus-wide by design: see corpus_vocab()",
-        "controls": "positive = c4cd082 gate2_blocked_diagnosis must flag; "
+        "controls": "positive = a1729b8 gate2_blocked_diagnosis must flag; "
         "negative = script-built blocks in the same file must not",
         "receipts_scanned": len(report),
         "receipts_flagged": flagged,

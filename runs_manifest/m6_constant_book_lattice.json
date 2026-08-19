@@ -379,8 +379,8 @@
     "ohlcv_only_off_lattice": 0
   },
   "provenance": {
-    "acceptance": "f2a4792 runs_manifest/m6_acceptance_stage2_manifest.json",
-    "moneyleg": "a441cfa runs_manifest/m6_moneyleg_rerun_manifest.json",
+    "acceptance": "36560dc runs_manifest/m6_acceptance_stage2_manifest.json",
+    "moneyleg": "7784df2 runs_manifest/m6_moneyleg_rerun_manifest.json",
     "recipes_byte_identical": true
   },
   "receipt": "m6_constant_book_lattice",

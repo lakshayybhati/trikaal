@@ -4,7 +4,7 @@
     "all_stamped": true,
     "deterministic_algorithms": true,
     "distinct_stamps_across_units": 1,
-    "git_commit": "27dfb724252f2355285e425b8ab939487d0c7093",
+    "git_commit": "a9743938332e9ca803607fff567083398053a12a",
     "keys": [
       "image",
       "git_commit",
@@ -360,7 +360,7 @@
       "deterministic_algorithms": true,
       "device": "cpu",
       "driver_version": "unavailable",
-      "git_commit": "27dfb724252f2355285e425b8ab939487d0c7093",
+      "git_commit": "a9743938332e9ca803607fff567083398053a12a",
       "gpu_name": "unavailable",
       "image": "unavailable",
       "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
@@ -426,7 +426,7 @@
   "money_run_manifest_sha256": "20202b71e0df91e4bfce6b3fdcf22d38a09d013c72399e63a8b92de7039f6c25",
   "p1_exit_code": 0,
   "receipt": "m6_p1_dry_run_completion",
-  "source_run_dir": "/private/tmp/claude-502/-Users-lakshaybhati-Downloads-trikaal/cbc4ebdb-b283-4a40-a7f6-eb46373b7cda/scratchpad/m6_dry2",
+  "source_run_dir": "<local scratch dir, not preserved — the dry run's OUTPUTS are the receipt fields below>",
   "stages_completed": [
     "conformance PASS (full money surface, 40 symbols, seeds 0-4) \u2014 first action",
     "symbol load + memory-strategy check",
@@ -444,6 +444,6 @@
     "loader_refusal_reexecuted": "- cell1_seed0_eval.json: DRY-RUN artifact (money_run=False, grid_pinned=False) \u2014 produced on a shortened grid to prove the path, and can never be assembled into a verdict",
     "money_run": false
   },
-  "what": "P1 (fan-out runbook \u00a71a) \u2014 `m6_money_run.py --dry-run` ran to completion for the FIRST TIME in this project's history, at commit 27dfb724 with the R5 fix applied",
+  "what": "P1 (fan-out runbook \u00a71a) \u2014 `m6_money_run.py --dry-run` ran to completion for the FIRST TIME in this project's history, at commit a9743938 with the R5 fix applied",
   "why_retained": "the run directory is a scratch path and does not survive. The standing pre-teardown retention rule covers less than this, and this is the completion evidence for the driver that produces every M6 artifact"
 }

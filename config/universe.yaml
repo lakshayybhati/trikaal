@@ -6,7 +6,7 @@
 # (`trikaal.data.universe.bootstrap_universe`) directly from the data — ranked by
 # cumulative quote volume over the window, with listing/delisting dates resolved from a
 # first/last-kline probe against Binance exchangeInfo. Do NOT hand-curate the full list:
-# memory-sourced delisting dates are a survivorship-leak risk (CLAUDE.md invariant 2/§1.3).
+# memory-sourced delisting dates are a survivorship-leak risk (docs/ENGINEERING.md invariant 2/§1.3).
 #
 # CAUSAL INVARIANT (the one that breaks when you go 1 symbol → N): every normalization,
 # volatility, and tau statistic is computed STRICTLY PER-SYMBOL and causally. There is no

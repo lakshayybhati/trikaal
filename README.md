@@ -112,7 +112,7 @@ This scope was confirmed by a 4-dimension adversarial review (causal-safety / FS
 / spec-invariants); its high-severity findings on the harness (sparse sampling → exhaustive
 coverage; unchecked `target_valid`/`ts`) and on §6.3 sampled-coarse conditioning were fixed here.
 
-## Non-negotiable invariants (from `CLAUDE.md`)
+## Non-negotiable invariants (from `docs/ENGINEERING.md`)
 
 - **TFI, never OFI** — imbalance is signed executed-volume from aggTrades, not orderbook OFI.
 - **Strict causal-safety** — every output for bar `t` is a pure function of raw data with

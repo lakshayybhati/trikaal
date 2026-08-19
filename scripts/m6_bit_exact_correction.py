@@ -153,7 +153,8 @@ def main() -> int:
             ),
             "posture": (
                 "NOT changed by the builder. Forcing deterministic algorithms is a "
-                "throughput/cost decision and CLAUDE.md invariant 7 embeds the false sufficiency "
+                "throughput/cost decision and docs/ENGINEERING.md invariant 7 embeds the false "
+                "sufficiency "
                 "premise in its own text; amending it is Lakshay's sign-off. Two candidate "
                 "amendments are drafted in prereg s7 v1.4.7."
             ),

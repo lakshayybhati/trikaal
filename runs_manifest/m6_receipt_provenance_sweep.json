@@ -1,5 +1,5 @@
 {
-  "controls": "positive = c4cd082 gate2_blocked_diagnosis must flag; negative = script-built blocks in the same file must not",
+  "controls": "positive = a1729b8 gate2_blocked_diagnosis must flag; negative = script-built blocks in the same file must not",
   "method": "a key is reported only if it appears as no string literal in ANY script or library module in the repository; runtime-built data keys (indices, symbols, hashes, paths, prose labels) excluded. Corpus-wide by design: see corpus_vocab()",
   "per_receipt": {
     "gate_a_run_manifest.json": {
@@ -3186,13 +3186,13 @@
         "ROBUSTNESS_OF_THE_INTERVAL.two_sided_95_STRICTER_THAN_PREREGISTERED.normal_approx_lower",
         "ROBUSTNESS_OF_THE_INTERVAL.two_sided_95_STRICTER_THAN_PREREGISTERED.normal_p_value",
         "ROBUSTNESS_OF_THE_INTERVAL.why_this_is_here",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.credit",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.the_value_shipped_was_always_right",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.verification.2*(1-Phi(t))",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.verification.the_scratch_bug",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.what_was_wrong",
-        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_76e46a3.why_this_is_recorded_rather_than_shrugged_off",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.credit",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.the_value_shipped_was_always_right",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.verification.2*(1-Phi(t))",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.verification.the_scratch_bug",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.what_was_wrong",
+        "ROBUSTNESS_OF_THE_INTERVAL.\u2605_CORRECTION_TO_A_DIAGNOSIS_IN_COMMIT_d27b084.why_this_is_recorded_rather_than_shrugged_off",
         "ROBUSTNESS_OF_THE_INTERVAL.\u2605_LIKE_FOR_LIKE_AT_THE_PINNED_LEVEL"
       ],
       "producing_scripts": [

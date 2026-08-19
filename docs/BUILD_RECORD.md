@@ -1,6 +1,6 @@
 # Trikaal — Build Record
 
-**Canonical build history. Reconstructed from artifacts on 2026-08-05 at HEAD `7bd6083`.**
+**Canonical build history. Reconstructed from artifacts on 2026-08-05 at HEAD `0cffb4f`.**
 
 **Method.** This document was reconstructed from the git log (121 commits, 2026-06-18 → 2026-08-05),
 the milestone reports, the pre-registration amendment log (`docs/m6_prereg.md` §7, entries v1.1 →
@@ -19,26 +19,26 @@ artifact. Where an artifact and a recollection disagree, the artifact is the fac
 
 | milestone | dates | commits | outcome |
 |---|---|---|---|
-| M0 blueprint | 2026-06-18 | `5896fac` | v1 design frozen as research baseline |
-| M1 synthetic slice | 2026-06-18 | `2e92f74`, `1b554ab` | G0/G1/G2 green; adversarial review found 5 defects |
-| M2 single-symbol | 2026-06-19 | `53ca6d6` … `2108e76` | Stage-1 converges on real BTCUSDT 2023; causal IC screen |
-| M3 Stage-2 AR | 2026-06-19 | `0a67d3f` | backbone fits real tokens; KV-cache rollout |
-| M5 eval harness | 2026-06-19 | `c260277` | Gate A satisfied — apparatus validated, produces no meaningful number |
-| M4a scaffolding | 2026-06-20 | `c64a2f1` | N-symbol generalization, local dry-run |
-| M4b universe lake | 2026-06-20 → 06-22 | `c6434f1` … `abe796c` | 200/200 symbols, 304,625,181 bars |
-| M6 Phase 0 | 2026-07-04 | `909d901` … `8245036` | environment pinned, prereg timestamped, Gate-A anchor set |
-| M6 Phase 1 | 2026-07-04 | `7d47d80` … `2c72fff` | BSQ arm, cell arms, loader, orchestrator, SMOKE gate |
-| audit round 1 | 2026-07-06 | `6a9308b` … `1193877` | six findings fixed pre-training |
-| CO2 pass | 2026-07-18 | `34dc9d6` … `c467c87` | verdict assembler, DSR conformance pins |
-| canary campaign | 2026-07-19 → 07-22 | `a507688` … `a441cfa` | v3 → v6 full stop → token control → interface re-spec |
-| adjudication | 2026-07-29 → 07-30 | `5395a3e` … `f67fb1f` | canary gate closed 8/8, B1 attached |
-| v1.5 freeze | 2026-07-30 | `89e08e3` | last specification change; design frozen |
-| pre-flight | 2026-07-31 → 08-01 | `ae34610` … `5f3510c` | claims audit, CUDA probe, prefill |
-| audit round 2 | 2026-08-01 → 08-03 | `aad74e7` … `d5f65cb` | 20 findings, tiered and closed |
-| re-audit | 2026-08-03 → 08-04 | `27dfb72`, `401f3f4` | 12 findings; NOT READY; all blockers closed |
-| run preparation | 2026-08-04 → 08-05 | `eab30ee` … `7bd6083` | fan-out, lake provisioning, C-12 |
+| M0 blueprint | 2026-06-18 | `026cf58` | v1 design frozen as research baseline |
+| M1 synthetic slice | 2026-06-18 | `59dea1c`, `302d651` | G0/G1/G2 green; adversarial review found 5 defects |
+| M2 single-symbol | 2026-06-19 | `0061243` … `9f72047` | Stage-1 converges on real BTCUSDT 2023; causal IC screen |
+| M3 Stage-2 AR | 2026-06-19 | `eae303c` | backbone fits real tokens; KV-cache rollout |
+| M5 eval harness | 2026-06-19 | `e6c8030` | Gate A satisfied — apparatus validated, produces no meaningful number |
+| M4a scaffolding | 2026-06-20 | `d80a5ca` | N-symbol generalization, local dry-run |
+| M4b universe lake | 2026-06-20 → 06-22 | `33637fb` … `58bef30` | 200/200 symbols, 304,625,181 bars |
+| M6 Phase 0 | 2026-07-04 | `8b0e4b7` … `49b1b22` | environment pinned, prereg timestamped, Gate-A anchor set |
+| M6 Phase 1 | 2026-07-04 | `4b58da6` … `d5c6aad` | BSQ arm, cell arms, loader, orchestrator, SMOKE gate |
+| audit round 1 | 2026-07-06 | `122716d` … `541ac9b` | six findings fixed pre-training |
+| CO2 pass | 2026-07-18 | `ba94856` … `3581c92` | verdict assembler, DSR conformance pins |
+| canary campaign | 2026-07-19 → 07-22 | `81bf02b` … `7784df2` | v3 → v6 full stop → token control → interface re-spec |
+| adjudication | 2026-07-29 → 07-30 | `eb0b9e3` … `d0bbaeb` | canary gate closed 8/8, B1 attached |
+| v1.5 freeze | 2026-07-30 | `6b2ad82` | last specification change; design frozen |
+| pre-flight | 2026-07-31 → 08-01 | `8ef5568` … `d15584a` | claims audit, CUDA probe, prefill |
+| audit round 2 | 2026-08-01 → 08-03 | `9ac2943` … `d5aa20c` | 20 findings, tiered and closed |
+| re-audit | 2026-08-03 → 08-04 | `a974393`, `dedfe4c` | 12 findings; NOT READY; all blockers closed |
+| run preparation | 2026-08-04 → 08-05 | `9bd102f` … `0cffb4f` | fan-out, lake provisioning, C-12 |
 
-### M0 — blueprint (2026-06-18, `5896fac`)
+### M0 — blueprint (2026-06-18, `026cf58`)
 
 `docs/superpowers/specs/2026-06-18-trikaal-v1-design.md`. Design drafted and adversarially verified
 by a multi-agent workflow: 9 subsystem drafts → a 4-lens audit (causal-safety, architecture/math,
@@ -50,24 +50,24 @@ filter, an inert trailing embargo. Two residuals were patched during assembly (p
 
 **Cost: $0.**
 
-### M1 — synthetic vertical slice (2026-06-18, `2e92f74` → `1b554ab`)
+### M1 — synthetic vertical slice (2026-06-18, `59dea1c` → `302d651`)
 
 End-to-end path on synthetic data. Gates G0 (shape/causality), G1 (overfit a single batch), G2
 (determinism smoke) green; leak-free on synthetic.
 
-A second adversarial review then confirmed **five findings**, four in scope, all fixed in `1b554ab`.
+A second adversarial review then confirmed **five findings**, four in scope, all fixed in `302d651`.
 These are the first entries in the defect ledger (D1–D4) and the origin of the exhaustive causal
 sweep that has gated every subsequent milestone.
 
 **Cost: $0.**
 
-### M2 — BTCUSDT single-symbol slice (2026-06-19, `53ca6d6` → `2108e76`)
+### M2 — BTCUSDT single-symbol slice (2026-06-19, `0061243` → `9f72047`)
 
 Real data pipeline (§2–§4). Stage-1 tokenizer converges on real BTCUSDT 2023 bars. Exhaustive
 truncation sweep — every bar a boundary, 100% coverage — passes on real data
 (`docs/milestone2_btcusdt_stage1.md`).
 
-The per-feature causal IC screen (`2108e76`) is the origin of the project's central prior. Measured
+The per-feature causal IC screen (`9f72047`) is the origin of the project's central prior. Measured
 RankIC with 95% CI, BTCUSDT 2023:
 
 | feature | h=5 | h=15 |
@@ -79,12 +79,12 @@ RankIC with 95% CI, BTCUSDT 2023:
 TFI carries signal at a magnitude comparable to price features, and it is thin in absolute terms —
 |RankIC| ≈ 0.02–0.03. Every power discussion in this project descends from that table.
 
-`48f9faf` encoded Tier-1 review decisions into the spec: the placebo requirement, train-once /
+`ada5980` encoded Tier-1 review decisions into the spec: the placebo requirement, train-once /
 eval-forward, the independence framing, survivorship handling, and the cost model.
 
 **Cost: $0.**
 
-### M3 — Stage-2 AR (2026-06-19, `0a67d3f`)
+### M3 — Stage-2 AR (2026-06-19, `eae303c`)
 
 Backbone learns real K-line tokens on BTCUSDT-2023; KV-cache rollout implemented. Exit gate:
 **beats both trivial baselines** on best-val, per coarse and fine
@@ -93,9 +93,9 @@ demonstrably fits real tokens; nothing about generalization is claimed.
 
 **Cost: $0.**
 
-### M5 — eval harness (2026-06-19, `c260277`)
+### M5 — eval harness (2026-06-19, `e6c8030`)
 
-Built before M4 by a deliberate re-ordering (`c321133`). The full §8 harness — purged walk-forward
+Built before M4 by a deliberate re-ordering (`c37eacd`). The full §8 harness — purged walk-forward
 folds, Q1–Q4 quadrants, cost-aware net IR, placebo machinery, DSR/PBO, secondary diagnostics — runs
 end-to-end and leak-free on the M3 checkpoint. Every metric passes a known-answer test. The
 §8.A.5/§8.E.5 causal exhaustive sweep passes on a Q4 sample.
@@ -108,10 +108,10 @@ This is **Gate A**, and its `results_hash` became the project's reproducibility 
 
 ### M4a / M4b — the universe lake (2026-06-20 → 06-22)
 
-M4a (`c64a2f1`): ingest scaffolding, local dry-run, N-symbol generalization, exit gate in
+M4a (`d80a5ca`): ingest scaffolding, local dry-run, N-symbol generalization, exit gate in
 `docs/milestone4a_universe_ingest.md`. Reviewer B verified regression byte-equivalence bit-exact.
 
-M4b (`c6434f1` → `d89c4be`): full ingest at scale.
+M4b (`33637fb` → `6bc88aa`): full ingest at scale.
 
 | metric | realized |
 |---|---|
@@ -125,8 +125,8 @@ M4b (`c6434f1` → `d89c4be`): full ingest at scale.
 The throughput shortfall is recorded in the milestone doc as a corrected projection: the home link's
 *sustained* rate, not its burst, set the wall clock, so the earlier ~15 h projection was optimistic.
 
-`936946a` hard-gated the real-bar causal sweep (live + tail) and added an orchestrator-independence
-test. `abe796c` added hash-preserving lake compaction.
+`11652bd` hard-gated the real-bar causal sweep (live + tail) and added an orchestrator-independence
+test. `58bef30` added hash-preserving lake compaction.
 
 **Cost: $0** (local ingest; bandwidth only).
 
@@ -134,46 +134,46 @@ test. `abe796c` added hash-preserving lake compaction.
 
 Six commits in one day, in a deliberate order:
 
-- `909d901` — environment pinned: exact numpy/torch pins, committed lockfile
-- `40b0c3c` — the six governing docs committed (**this is the pre-registration timestamp**)
-- `5a49dc3` — eval-instrument fixes (m6_design §6 item 10 a–f), each with a KAT
-- `7ad9068` — **new Gate-A anchor**, 2× bit-identical under the committed environment
-- `1b74ae2` — CI gate for invariant 2; `setup_cloud` installs from the lockfile
-- `8245036` — doc refresh
+- `8b0e4b7` — environment pinned: exact numpy/torch pins, committed lockfile
+- `f933623` — the six governing docs committed (**this is the pre-registration timestamp**)
+- `d87aa2b` — eval-instrument fixes (m6_design §6 item 10 a–f), each with a KAT
+- `631bcfd` — **new Gate-A anchor**, 2× bit-identical under the committed environment
+- `d42d57c` — CI gate for invariant 2; `setup_cloud` installs from the lockfile
+- `49b1b22` — doc refresh
 
 The ordering matters and is deliberate: the environment is pinned *before* the anchor is set, so the
 anchor means something.
 
 ### M6 Phase 1 — the ablation machinery (2026-07-04)
 
-`7d47d80` BSQ quantizer + G-parity gate · `5204c77` feature-arm switch + Cell-5 shuffled-micro arm ·
-`7e21c33` multi-symbol universe loader (fold-aligned draw) · `6565e0e` resumable atomic
-checkpointing, kill-resume proven · `3b3a154` determinism / attention-mode hook · `e68490f`
-tripwires + abort rule · `a4d242e` 5-cell × N-seed orchestrator · `42a6e94` cross-sectional eval
-driver · `2c72fff` **SMOKE gate PASSED, MDE_prereg computed, `docs/m6_prereg.md` LOCKED**.
+`4b58da6` BSQ quantizer + G-parity gate · `a5fa402` feature-arm switch + Cell-5 shuffled-micro arm ·
+`e8dcb18` multi-symbol universe loader (fold-aligned draw) · `4be2a4d` resumable atomic
+checkpointing, kill-resume proven · `f021d48` determinism / attention-mode hook · `32646f1`
+tripwires + abort rule · `64f728c` 5-cell × N-seed orchestrator · `b79e259` cross-sectional eval
+driver · `d5c6aad` **SMOKE gate PASSED, MDE_prereg computed, `docs/m6_prereg.md` LOCKED**.
 
-`a4d242e` is also the origin of three defects (D14 seed split-brain, D15 seq_len, D16 step budget) —
+`64f728c` is also the origin of three defects (D14 seed split-brain, D15 seq_len, D16 step budget) —
 all three entered in the same dataclass literal, four lines apart.
 
 ### Audit round 1 (2026-07-06)
 
-Six items, all fixed pre-training: Cell-5 shuffle pairing (`d64b42e`), the paired moving-block
-bootstrap (`69c1eef`), per-symbol spread deciles (`e7349cb`), MDE recomputed on the pinned blocks-1-5
-region (`be89816`), money mode + §3a conformance gate (`8b43ca7`), micro-alignment lag-sharpness
-audit (`1193877`).
+Six items, all fixed pre-training: Cell-5 shuffle pairing (`2cac96f`), the paired moving-block
+bootstrap (`374c284`), per-symbol spread deciles (`68c4081`), MDE recomputed on the pinned blocks-1-5
+region (`4525543`), money mode + §3a conformance gate (`669d2d6`), micro-alignment lag-sharpness
+audit (`541ac9b`).
 
 ### The canary campaign (2026-07-19 → 07-22)
 
 The longest and most consequential phase. Fully documented in §4 (Mechanism narrative).
 
-Sequence: toy-CUDA rehearsal (`24d5bbc`, ~$5, 7 of 8 gates green, canary FULL STOP) → canary v3
-(`a73b0b8`) → v5 (`d1e592a`, `bd0b953`, ~$0.70, INCONCLUSIVE) → v6 (`47970c1`, `db2c33e`, ~$0.60,
-**architectural full stop**) → token-space control (`c4e5e72`, `8fe16fc`, `3b49f4d`, ~$0.60, **branch
-(a) DETECT**) → interface re-spec (`c4cd082`) → gate-2 rider (`4a8fb48`, **the eviction measurement**)
-→ calibration campaign (`e8d2a06`, `b55fffc`, `7da3dc0`) → acceptance run (`f2a4792`, ~$0.90) →
-μ̂ correction (`4561ee9`) → money-leg re-run (`a441cfa`, ~$0.60).
+Sequence: toy-CUDA rehearsal (`77ca29a`, ~$5, 7 of 8 gates green, canary FULL STOP) → canary v3
+(`89fcac6`) → v5 (`90157c1`, `fbc1cf2`, ~$0.70, INCONCLUSIVE) → v6 (`02c438f`, `6feb60f`, ~$0.60,
+**architectural full stop**) → token-space control (`e891d8c`, `7675393`, `2c41b67`, ~$0.60, **branch
+(a) DETECT**) → interface re-spec (`a1729b8`) → gate-2 rider (`e1feb64`, **the eviction measurement**)
+→ calibration campaign (`d9e1b53`, `bb1e17c`, `39be8ba`) → acceptance run (`36560dc`, ~$0.90) →
+μ̂ correction (`c1786f4`) → money-leg re-run (`7784df2`, ~$0.60).
 
-### v1.5 freeze (2026-07-30, `89e08e3`)
+### v1.5 freeze (2026-07-30, `6b2ad82`)
 
 *"THE LAST SPECIFICATION CHANGE BEFORE THE RUN; the design is now FROZEN."* Six amendments A–F,
 signed off. Detailed in §3.
@@ -181,7 +181,7 @@ signed off. Detailed in §3.
 ### Audit round 2 — the independent audit (2026-08-01 → 08-03)
 
 An external auditor, read-only, reported **20 confirmed findings (C-1 … C-20)** plus **4 suspected
-(S-1 … S-4)** against commit `74b6094`. Persisted verbatim at
+(S-1 … S-4)** against commit `7a4d13b`. Persisted verbatim at
 `docs/m6_readiness_audit_findings.md`. Full ledger in §2.
 
 Tiering (supervisor ruling): **Tier 1** blocking (C-2, C-5, C-6, C-7) → **Tier 2** measure-only
@@ -191,9 +191,9 @@ Tiering (supervisor ruling): **Tier 1** blocking (C-2, C-5, C-6, C-7) → **Tier
 
 A second independent pass returned **NOT READY** with 12 findings (R1–R12). Its central observation:
 *"everyone audited the findings, and nobody audited the fixes."* Four of the five blocking findings
-were in `591ec44` — the commit that implemented four supervisor decisions in one pass.
+were in `0b9c804` — the commit that implemented four supervisor decisions in one pass.
 
-### Current position (2026-08-05, `7bd6083`)
+### Current position (2026-08-05, `0cffb4f`)
 
 727 tests green · `ruff check` exit 0 · `ruff format --check` exit 0 · Gate-A anchor
 `sha256:3f86882a63dd06c7…` byte-identical, exit 0 ×2 · mutations 15/15 with a passing negative
@@ -214,42 +214,42 @@ by the builder or supervisor outside a formal pass).
 
 | # | defect | sev | layer | status |
 |---|---|---|---|---|
-| D1 | Causal gate sampled ~2.5% of bars | CRITICAL | DESIGN-REVIEW | closed `1b554ab` |
-| D2 | `target_valid` unverified and used to skip the target check | CRITICAL | DESIGN-REVIEW | closed `1b554ab` |
-| D3 | `ts` outside the checked set | HIGH | DESIGN-REVIEW | closed `1b554ab` |
-| D4 | Fine-head loss conditioned on ground-truth coarse | HIGH | DESIGN-REVIEW | closed `1b554ab` |
-| D5 | Environment drift / no lockfile | HIGH | SELF | closed `909d901` |
-| D6 | Cell-5 shuffle broke (value, mask) pairing | CRITICAL | AUDIT-1 | closed `d64b42e` |
-| D7 | No paired-bootstrap machinery for ΔIR | HIGH | AUDIT-1 | closed `69c1eef` |
-| D8 | Encoder causality leak, 41.8% | CRITICAL | CANARY | closed `b3d4165` |
-| D9 | v6: zero nats extracted from a 1.15-nat plant | CRITICAL | CANARY | closed `c4cd082` |
-| D10 | Capacity eviction — state dim priced out | CRITICAL | CANARY | mitigated `7da3dc0` |
-| D11 | μ̂ mode-vs-mean decode bias | CRITICAL | EXECUTION | closed `4561ee9` |
-| D12 | `w_feat_point` wiring bug; λ-search invalidated | HIGH | SELF | closed `e8d2a06` |
-| D13 | Anchor claim entered a commit unverified (pipefail) | HIGH | SELF | closed `b55fffc` |
-| D14 | Seed split-brain — S=5 never reached training | CRITICAL | AUDIT-1 (C-6) | closed `ae170ca` |
-| D15 | `seq_len` 128 train vs 512 eval | HIGH | AUDIT-1 (C-6) | closed `ae170ca` |
-| D16 | Training budget was the smoke-test step count | CRITICAL | SELF | closed `591ec44` |
-| D17 | Degeneracy guard reported `armed: true` blind | CRITICAL | AUDIT-1 (C-2) | closed `aad74e7` |
-| D18 | Three decision constants under no gate | CRITICAL | AUDIT-1 (C-7) | closed `188238f` |
-| D19 | No driver ran the pre-registered money config | CRITICAL | AUDIT-1 (C-5) | closed `0b50e10` |
-| D20 | 49/49 records asserted bit-exactness falsely | HIGH | SELF | closed `591ec44` |
-| D21 | Micro-legibility gate passed measuring nothing | CRITICAL | AUDIT-1 (C-10) | closed `f982219` |
-| D22 | Legibility gate read 1 of 200 symbols | CRITICAL | SELF | closed `f982219` |
-| D23 | 12 fail-open guards | CRITICAL | SELF | closed `f982219` |
-| D24 | Lake-admitting sweep vacuous on 2 of 8 surfaces | HIGH | RE-AUDIT (C-15) | closed `e4298bc` |
-| D25 | `_betacf` transcribed from Numerical Recipes | MEDIUM | AUDIT-1 (S-4) | closed `d5f65cb` |
-| D26 | Codebook gate shipped below `return bad` | CRITICAL | RE-AUDIT (R1) | closed `27dfb72` |
-| D27 | C-3 pin and revert-KAT never shipped | HIGH | RE-AUDIT (R2) | closed `27dfb72` |
-| D28 | v1.2 dual-spec leg was a mislabelled hybrid | HIGH | RE-AUDIT (R3) | closed `27dfb72` |
-| D29 | Kronos verdict + BSQ disclosure discarded | HIGH | RE-AUDIT (R4) | closed `27dfb72` |
-| D30 | Identity surface self-referential; no git sha | CRITICAL | RE-AUDIT (R6) | closed `27dfb72` |
-| D31 | `score_cell` full return dropped both diagnostics | CRITICAL | EXECUTION (P1) | closed `401f3f4` |
-| D32 | Runbook had no lake-provisioning step | HIGH | EXECUTION (P2) | closed `9af81fc` |
-| D33 | `driver_version` placeholder on a real 4090 | HIGH | EXECUTION (P2) | closed `9ad50d9` |
-| D34 | Offer filter had no driver constraint | MEDIUM | EXECUTION (P2) | closed `9ad50d9` |
-| D35 | Three clause strings named the quantity `ΔIR_info` | CRITICAL | AUDIT-3 (C-12) | closed `498892e` |
-| D36 | Invariants 4 and 8 asserted a validation never performed | HIGH | SELF | closed `7bd6083` |
+| D1 | Causal gate sampled ~2.5% of bars | CRITICAL | DESIGN-REVIEW | closed `302d651` |
+| D2 | `target_valid` unverified and used to skip the target check | CRITICAL | DESIGN-REVIEW | closed `302d651` |
+| D3 | `ts` outside the checked set | HIGH | DESIGN-REVIEW | closed `302d651` |
+| D4 | Fine-head loss conditioned on ground-truth coarse | HIGH | DESIGN-REVIEW | closed `302d651` |
+| D5 | Environment drift / no lockfile | HIGH | SELF | closed `8b0e4b7` |
+| D6 | Cell-5 shuffle broke (value, mask) pairing | CRITICAL | AUDIT-1 | closed `2cac96f` |
+| D7 | No paired-bootstrap machinery for ΔIR | HIGH | AUDIT-1 | closed `374c284` |
+| D8 | Encoder causality leak, 41.8% | CRITICAL | CANARY | closed `85c740b` |
+| D9 | v6: zero nats extracted from a 1.15-nat plant | CRITICAL | CANARY | closed `a1729b8` |
+| D10 | Capacity eviction — state dim priced out | CRITICAL | CANARY | mitigated `39be8ba` |
+| D11 | μ̂ mode-vs-mean decode bias | CRITICAL | EXECUTION | closed `c1786f4` |
+| D12 | `w_feat_point` wiring bug; λ-search invalidated | HIGH | SELF | closed `d9e1b53` |
+| D13 | Anchor claim entered a commit unverified (pipefail) | HIGH | SELF | closed `bb1e17c` |
+| D14 | Seed split-brain — S=5 never reached training | CRITICAL | AUDIT-1 (C-6) | closed `4dbe27f` |
+| D15 | `seq_len` 128 train vs 512 eval | HIGH | AUDIT-1 (C-6) | closed `4dbe27f` |
+| D16 | Training budget was the smoke-test step count | CRITICAL | SELF | closed `0b9c804` |
+| D17 | Degeneracy guard reported `armed: true` blind | CRITICAL | AUDIT-1 (C-2) | closed `9ac2943` |
+| D18 | Three decision constants under no gate | CRITICAL | AUDIT-1 (C-7) | closed `d4384e6` |
+| D19 | No driver ran the pre-registered money config | CRITICAL | AUDIT-1 (C-5) | closed `e76853e` |
+| D20 | 49/49 records asserted bit-exactness falsely | HIGH | SELF | closed `0b9c804` |
+| D21 | Micro-legibility gate passed measuring nothing | CRITICAL | AUDIT-1 (C-10) | closed `234a013` |
+| D22 | Legibility gate read 1 of 200 symbols | CRITICAL | SELF | closed `234a013` |
+| D23 | 12 fail-open guards | CRITICAL | SELF | closed `234a013` |
+| D24 | Lake-admitting sweep vacuous on 2 of 8 surfaces | HIGH | RE-AUDIT (C-15) | closed `614200c` |
+| D25 | `_betacf` transcribed from Numerical Recipes | MEDIUM | AUDIT-1 (S-4) | closed `d5aa20c` |
+| D26 | Codebook gate shipped below `return bad` | CRITICAL | RE-AUDIT (R1) | closed `a974393` |
+| D27 | C-3 pin and revert-KAT never shipped | HIGH | RE-AUDIT (R2) | closed `a974393` |
+| D28 | v1.2 dual-spec leg was a mislabelled hybrid | HIGH | RE-AUDIT (R3) | closed `a974393` |
+| D29 | Kronos verdict + BSQ disclosure discarded | HIGH | RE-AUDIT (R4) | closed `a974393` |
+| D30 | Identity surface self-referential; no git sha | CRITICAL | RE-AUDIT (R6) | closed `a974393` |
+| D31 | `score_cell` full return dropped both diagnostics | CRITICAL | EXECUTION (P1) | closed `dedfe4c` |
+| D32 | Runbook had no lake-provisioning step | HIGH | EXECUTION (P2) | closed `bb644b7` |
+| D33 | `driver_version` placeholder on a real 4090 | HIGH | EXECUTION (P2) | closed `31dbffc` |
+| D34 | Offer filter had no driver constraint | MEDIUM | EXECUTION (P2) | closed `31dbffc` |
+| D35 | Three clause strings named the quantity `ΔIR_info` | CRITICAL | AUDIT-3 (C-12) | closed `af3164d` |
+| D36 | Invariants 4 and 8 asserted a validation never performed | HIGH | SELF | closed `0cffb4f` |
 
 ### D1 — the causal gate checked ~2.5% of bars
 
@@ -297,8 +297,8 @@ stage-2 still converges (CE < 0.05).
 **What.** No lockfile; numpy/torch versions unpinned. `[recollection — no artifact]`: the drift was
 noticed when results moved without code changing. The artifact records only the fix.
 
-**Fixed.** `909d901` — exact numpy/torch pins, committed lockfile, `setup_cloud` installs from it.
-The Gate-A anchor was then re-set *under* the pinned environment (`7ad9068`), in that order.
+**Fixed.** `8b0e4b7` — exact numpy/torch pins, committed lockfile, `setup_cloud` installs from it.
+The Gate-A anchor was then re-set *under* the pinned environment (`631bcfd`), in that order.
 
 **Prevention.** `lockfile_sha256` is one of the 16 provenance identity keys; a shard whose lockfile
 differs refuses to assemble.
@@ -313,7 +313,7 @@ differs refuses to assemble.
 paired with the wrong validity flags. The one cell whose job is to be a clean negative would have
 been corrupt in a way no other cell was.
 
-**Fixed.** `d64b42e` — the shuffle moves (value, mask) pairs together.
+**Fixed.** `2cac96f` — the shuffle moves (value, mask) pairs together.
 
 **Prevention.** `assert_perp_dims_masked` (`placebo.py:38`) fails loudly if funding/OI ever activate
 without the shuffle set widening; the shuffle is verified `(symbol, seed)`-seeded and train/eval
@@ -323,7 +323,7 @@ identical.
 
 **What.** The decision rule required a paired ΔIR statistic; no paired bootstrap existed.
 
-**Fixed.** `69c1eef` — paired moving-block ΔIR bootstrap (B=10,000, seed 20260704, ⌈√T⌉ blocks,
+**Fixed.** `374c284` — paired moving-block ΔIR bootstrap (B=10,000, seed 20260704, ⌈√T⌉ blocks,
 percentile CI) plus Item-8 calibration KATs.
 
 **Note.** The pairing is not cosmetic: cells 4 and 5 share market exposure, and the common factor
@@ -341,7 +341,7 @@ token-lookahead leak**.
 been invalid and the leak would not have shown up as an error — only as unrealistically good
 forecasts.
 
-**Fixed.** `b3d4165` — `encoder_causal=True` forced for all M6 cells; `PINNED_ENCODER_CAUSAL` in
+**Fixed.** `85c740b` — `encoder_causal=True` forced for all M6 cells; `PINNED_ENCODER_CAUSAL` in
 conformance.
 
 ### D9 — v6: zero nats from a 1.15-nat plant
@@ -350,7 +350,7 @@ Detailed in §4. **The single most consequential finding in the project.**
 
 ### D10 — capacity eviction
 
-Detailed in §4. Mitigated by `PINNED_MICRO_POINT_WEIGHT = 3.0` (`7da3dc0`); the mechanism itself is
+Detailed in §4. Mitigated by `PINNED_MICRO_POINT_WEIGHT = 3.0` (`39be8ba`); the mechanism itself is
 a permanent property of reconstruction training and is a result, not a bug.
 
 ### D11 — the μ̂ mode-vs-mean decode bias
@@ -358,19 +358,19 @@ a permanent property of reconstruction training and is a result, not a bug.
 **What.** `predict_mu` defaulted to greedy-argmax (mode) decoding. Compounded over a rollout this
 produced a systematic sign bias: mean −0.097 against std 0.036 — a ×15 drift.
 
-**How found.** The acceptance run (`f2a4792`). Every noise cell returned a **bit-identical IR of
+**How found.** The acceptance run (`36560dc`). Every noise cell returned a **bit-identical IR of
 −7.56** across both quantizers. Bit-identical results across arms that should differ is a
 degeneracy signature, not a result.
 
 **If unfound.** Every cell's forecasts would have been sign-saturated. The verdict would have been
 computed on an artifact.
 
-**Fixed.** `4561ee9` — default MODE → MEAN (expectation decode). Fixture receipt: h=15 argmax mean
+**Fixed.** `c1786f4` — default MODE → MEAN (expectation decode). Fixture receipt: h=15 argmax mean
 −0.051 / frac_neg 0.929 → expectation −0.004 / 0.534; corr(μ, state) 0.858 → 0.898. Skewed-toy
 known-answer KAT (argmax = mode, expectation = true mean). Gate-A re-anchored `5eead7b6` →
 `3f86882a`, bit-identical ×2 — `predict.py` is inside the anchored instrument.
 
-**Confirmed by re-run.** `a441cfa`: the saturation is gone, cells discriminate, and `planted_fires`
+**Confirmed by re-run.** `7784df2`: the saturation is gone, cells discriminate, and `planted_fires`
 flipped False → True.
 
 ### D12 / D13 — the λ-search wiring bug, and the false anchor claim
@@ -378,11 +378,11 @@ flipped False → True.
 D12: `loss_point` read `w_feat` rather than `w_feat_point`. The first λ-search was invalidated and
 retained only as λ=1 replicates; an asymptote analysis built on it was withdrawn.
 
-D13: `e8d2a06`'s commit message claimed the anchor was re-proven. **It was false.** An unconditional
+D13: `d9e1b53`'s commit message claimed the anchor was re-proven. **It was false.** An unconditional
 `w_feat_point` buffer broke old-schema checkpoint loading, and a `| grep | tail` pipeline masked the
 exit-1, so the claim entered the commit message unverified.
 
-**Fixed.** `b55fffc` — buffer registered only under `fine_pointwise`; anchor genuinely re-proven,
+**Fixed.** `bb1e17c` — buffer registered only under `fine_pointwise`; anchor genuinely re-proven,
 exit 0.
 
 **Prevention.** This is the origin of the **pipefail rider** (§5). It recurred three more times, in
@@ -399,12 +399,12 @@ surface said `(0,1,2,3,4)` and `512`.
 training code.** The run would have produced three seeds and reported five. Separately, models
 trained at 128 would have been evaluated at 512 — a regime mismatch.
 
-**Fixed.** `ae170ca` — the eval side is authoritative; the orchestrator **asserts** the pins rather
+**Fixed.** `4dbe27f` — the eval side is authoritative; the orchestrator **asserts** the pins rather
 than defaulting to them; the second copy of every pinned value removed; a shadowed-field sweep run.
 
 ### D16 — the training budget was the smoke-test step count
 
-**What.** `steps_stage1 = steps_stage2 = 2000`. Traced to `a4d242e` — **the same dataclass literal
+**What.** `steps_stage1 = steps_stage2 = 2000`. Traced to `64f728c` — **the same dataclass literal
 as `seeds=(0,1,2)` and `seq_len=128`, four lines apart.** The design spec uses "≤ 2000 steps" as the
 threshold for the **G1 overfit-a-single-batch smoke gate** (spec :1763). The prereg records that
 `steps_stage2` *"shadows nothing — no prereg constant states them"* (:1215) and that every driver
@@ -419,7 +419,7 @@ supervisor noticed it applies to all five cells and traced the literal's origin.
 **If unfound.** All five cells would have been trained at ~1/13 of compute-optimal. A flat ΔIR(4−5)
 could not have distinguished *"microstructure does not help"* from *"we stopped before it could."*
 
-**Fixed.** `591ec44` — 26,003 steps, matched and fixed across all units. 20.00 tokens/param.
+**Fixed.** `0b9c804` — 26,003 steps, matched and fixed across all units. 20.00 tokens/param.
 
 **Corrective note (2026-08-05).** The commit and the supervisor's brief both described this as
 *"1.399 passes — the spec's own 1–3 passes."* **That is wrong.** `m6_money_run.py:116` records that
@@ -439,7 +439,7 @@ reporting armed while examining nothing.**
 **If unfound.** A degenerate cell — the exact pathology this project has hit repeatedly — would have
 passed into a published verdict with a guard asserting it had been checked.
 
-**Fixed.** `aad74e7` — fixed at four layers, mutation-proven. `armed` is now computed from whether
+**Fixed.** `9ac2943` — fixed at four layers, mutation-proven. `armed` is now computed from whether
 every (cell, seed) yielded finite values; the guard fails closed; `mu_diag` is a **required** artifact
 field and the writer refuses a missing/empty/None value.
 
@@ -452,7 +452,7 @@ the unit test that was supposed to catch it (D21).
 `ECON_FLOOR_IR`, `BOOT_POWER`, `PLACEBO_DISPERSION_TRIPWIRE` were unpinned; four `PINNED_DSR` keys
 were decorative — present but read by nothing.
 
-**Fixed.** `188238f` — every pinned value unchanged; what changed is that they are now **read**.
+**Fixed.** `d4384e6` — every pinned value unchanged; what changed is that they are now **read**.
 Eight separate mutations, all exit 1.
 
 ### D19 — no driver ran the pre-registered money configuration
@@ -460,7 +460,7 @@ Eight separate mutations, all exit 1.
 **What.** `write_cell_eval_artifact` was called from exactly three places, none of them a money
 driver. The pre-registered configuration had no executable path.
 
-**Fixed.** `0b50e10` — `src/trikaal/run/matrix.py` and `scripts/m6_money_run.py`, built to an A1–A9
+**Fixed.** `e76853e` — `src/trikaal/run/matrix.py` and `scripts/m6_money_run.py`, built to an A1–A9
 scope: conformance first (AST-enforced), no pin-shaped flags, `mu_diag` required, dry-run artifacts
 structurally refused.
 
@@ -479,7 +479,7 @@ Deterministic attention is necessary, not sufficient.
 frozen-stats and prediction-replay clause and the Gate-A anchor were intact; no prior result was
 invalidated.
 
-**Fixed.** `591ec44` — `deterministic_algorithms=True` on the production path. Measured penalty
+**Fixed.** `0b9c804` — `deterministic_algorithms=True` on the production path. Measured penalty
 **13.175%** (`docs/m6_cuda_probe_report.md`).
 
 **Secondary finding.** Same-seed runs diverged (frac_neg 0.5662 vs 0.99883 at identical
@@ -499,7 +499,7 @@ named receipt entry, **never trivially passed**"* and a body asserting only
 **This is the sharpest instance in the project: the defect was not an oversight, it was the written
 contract, and its guard was itself a check that could not fail.**
 
-**Fixed.** `f982219` — a skipped dim can never contribute to a pass; the test rewritten as
+**Fixed.** `234a013` — a skipped dim can never contribute to a pass; the test rewritten as
 `test_a_masked_everywhere_dim_HALTS_the_gate` using `pytest.raises`, with the diagnostic preserved.
 
 ### D22 — the legibility gate read one symbol of 200
@@ -513,7 +513,7 @@ symbol-ordered concatenation, with a contiguous 80/20 split.
 **If unfound.** The hard stop deciding whether Stage-2 spend proceeds would have been reading 0.05%
 of the data from a single symbol.
 
-**Fixed.** `f982219` — a per-symbol **stratified blocked** split: every symbol contributes, and
+**Fixed.** `234a013` — a per-symbol **stratified blocked** split: every symbol contributes, and
 within each symbol train is the earlier block and val the later one. Both properties preserved —
 coverage and time-blocking — where the naive fix (shuffling) would have broken the second.
 
@@ -538,7 +538,7 @@ died of the same `TypeError` — both arms failing alike, which is `PROBE INVALI
 before the harness was right, 12 after. A defect count is worthless until the probe can separate its
 own bugs from its findings.**
 
-**Fixed.** `f982219` — all 12 closed, 0/84 remain, verified by the supervisor re-running the sweep
+**Fixed.** `234a013` — all 12 closed, 0/84 remain, verified by the supervisor re-running the sweep
 against the pre-fix commit in an isolated worktree.
 
 ### D24 — the sweep that admitted the lake could not fail on 2 of its 8 surfaces
@@ -552,7 +552,7 @@ not fail.
 *vacuous*, not stronger — the warm-up exceeds the fixture and no bar has a valid target for a leak
 to flip.
 
-**Fixed retrospectively.** `e4298bc` — the production-parameter planted-leak battery run on real
+**Fixed retrospectively.** `614200c` — the production-parameter planted-leak battery run on real
 BTCUSDT bars past the warm-up: **1,600 anchors, 12,798 checks, coverage 1.0, zero failures**, and
 both planted leaks caught including `localized_validity_next`, the surface that could not fire
 before.
@@ -567,14 +567,14 @@ new defect, and the receipt states it flatly where the report softened it.
 **What.** `tdist._betacf` was the NR modified-Lentz `betacf` in structure. NR carries a restrictive
 licence; a released artifact should not transcribe it.
 
-**Fixed.** `d5f65cb` — rewritten from the published continued-fraction definition (A&S/DLMF backward
+**Fixed.** `d5aa20c` — rewritten from the published continued-fraction definition (A&S/DLMF backward
 recurrence), verified against mpmath at 50 dps (worst 5.8e-12; design range ~1e-13), **MDE outputs
 bit-identical** and both pinned multipliers bit-identical.
 
 ### D26 — the codebook gate shipped below `return bad`
 
 **What.** The entire ≥0.95 codebook-utilization enforcement block sat **after** `_validate_artifact`'s
-`return bad`. Born dead in `591ec44`, the commit claiming to close the defect class.
+`return bad`. Born dead in `0b9c804`, the commit claiming to close the defect class.
 
 **How found.** Re-audit R1. Reproduced by execution: a document with `utilization: 0.01`, or no
 codebook key at all, loaded clean through the real write → load → assemble path. Every test fixture
@@ -583,7 +583,7 @@ supplied a healthy codebook, so no test could ever have fired.
 **If unfound.** A collapsed cell-5 or BSQ tokenizer would have assembled into a verdict unflagged,
 and the stated compensating control for dropping the Kronos gate would not have existed at runtime.
 
-**Fixed.** `27dfb72` — block moved above the return; 8 of 9 codebook tests fail without it.
+**Fixed.** `a974393` — block moved above the return; 8 of 9 codebook tests fail without it.
 
 **Supervisor note.** The builder reported this gate closed. The supervisor verified it by grepping
 for `PINNED_CODEBOOK_MIN_UTILIZATION` and finding it, and **never checked it was reachable** — the
@@ -611,7 +611,7 @@ a loader that refuses their absence.
 **D30 (R6).** The provenance identity tests parametrized over `PROVENANCE_IDENTITY_KEYS` — the live
 tuple they were meant to pin — so deleting a key deleted its own test (49/49 still passed). Only
 `image` and `lockfile_sha256` were literal-asserted. Missing: the **git commit sha** and the
-**training step counts**, so a box launched on a pre-`591ec44` checkout (2,000 steps) would have
+**training step counts**, so a box launched on a pre-`0b9c804` checkout (2,000 steps) would have
 shared all 13 identity values and assembled silently. Fixed: 16 keys including `git_commit`,
 `steps_stage1`, `steps_stage2`; the expected key list pinned in a KAT independent of the live tuple;
 plus `test_the_stamper_POPULATES_every_identity_key`, because a key the stamper never writes is
@@ -632,7 +632,7 @@ the driver had never been run to completion at this configuration.
 
 **If unfound.** Every unit would have trained for hours on rented hardware and died at first eval.
 
-**Fixed.** `401f3f4` — the new test is parametrized over **both** returns, so repairing one and
+**Fixed.** `dedfe4c` — the new test is parametrized over **both** returns, so repairing one and
 leaving the other cannot pass.
 
 **This defect is the empirical justification for the execution rule (§5).** The supervisor had
@@ -669,22 +669,22 @@ would have asserted that the information effect cleared the floor.
 
 **How found.** A third external reviewer named clause 4. The builder found all three.
 
-**Fixed.** `498892e` — all three now name ΔIR(4−5) and state that it carries (information) +
+**Fixed.** `af3164d` — all three now name ΔIR(4−5) and state that it carries (information) +
 (capacity handicap).
 
 ### D36 — invariants 4 and 8 asserted a validation never performed
 
-**What.** `CLAUDE.md` invariant 4 stated Cell 1 is *"externally validated against published
+**What.** `docs/ENGINEERING.md` invariant 4 stated Cell 1 is *"externally validated against published
 Kronos-small"*; invariant 8 stated the weights *"appear in exactly one place: the eval harness, as an
 external validation target."* `external_validation.GATE_IS_BINDING = False` and no weights are ever
 pulled.
 
-**Why it persisted.** `CLAUDE.md` is loaded at the start of every session. A false statement there is
+**Why it persisted.** `docs/ENGINEERING.md` is loaded at the start of every session. A false statement there is
 not believed once — it is re-read continuously. `[recollection — no artifact]`: the supervisor
 carried the "externally validated" framing into its own briefings for roughly a month for exactly
 this reason.
 
-**Fixed.** `7bd6083` — both invariants now state what is true, and both record that they previously
+**Fixed.** `0cffb4f` — both invariants now state what is true, and both record that they previously
 carried a false statement rather than being silently rewritten.
 
 ---
@@ -693,28 +693,28 @@ carried a false statement rather than being silently rewritten.
 
 | # | decision | date | commit / doc |
 |---|---|---|---|
-| K1 | One headline claim; v2/v3 firewall | 2026-06-18 | `5896fac`, CLAUDE.md inv. 3 |
-| K2 | TFI, never OFI | 2026-06-18 | CLAUDE.md inv. 1 |
-| K3 | Train-once / eval-forward | 2026-06-19 | `48f9faf` |
-| K4 | M5 before M4 | 2026-06-19 | `c321133` |
-| K5 | 200 pairs, multi-year lake | 2026-06-20 | `c6434f1` |
-| K6 | Environment pinned before the anchor | 2026-07-04 | `909d901` → `7ad9068` |
-| K7 | Paired decision rule | 2026-07-04 | `e14fda5` (v1.1) |
-| K8 | Causal encoder forced | 2026-07-19 | `b3d4165` (v1.3) |
-| K9 | Interface re-spec: pointwise fine | 2026-07-20 | `c4cd082` (v1.4) |
-| K10 | λ = 3.0 | 2026-07-21 | `7da3dc0` (v1.4.1) |
-| K11 | μ̂ estimator MODE → MEAN | 2026-07-21 | `4561ee9` (v1.4.2) |
-| K12 | Canary gate closed 8/8, B1 attached | 2026-07-30 | `f67fb1f` (v1.4.7) |
-| K13 | v1.5: N 180→60, var_sr basis, S=5, two-term MDE | 2026-07-30 | `89e08e3` |
-| K14 | "Foundation model" dropped | 2026-07-31 | `ae34610` |
-| K15 | Determinism paid at 13.175% | 2026-08-03 | `591ec44` |
-| K16 | Kronos gate dropped as binding | 2026-08-03 | `c940e7d`, `7bd6083` |
-| K17 | C-3 unit fix, pre-data | 2026-08-03 | `591ec44` |
-| K18 | Training budget → 26,003 steps | 2026-08-03 | `591ec44` |
-| K19 | `embargo_flatness` deleted | 2026-08-03 | `e4298bc` |
+| K1 | One headline claim; v2/v3 firewall | 2026-06-18 | `026cf58`, docs/ENGINEERING.md inv. 3 |
+| K2 | TFI, never OFI | 2026-06-18 | docs/ENGINEERING.md inv. 1 |
+| K3 | Train-once / eval-forward | 2026-06-19 | `ada5980` |
+| K4 | M5 before M4 | 2026-06-19 | `c37eacd` |
+| K5 | 200 pairs, multi-year lake | 2026-06-20 | `33637fb` |
+| K6 | Environment pinned before the anchor | 2026-07-04 | `8b0e4b7` → `631bcfd` |
+| K7 | Paired decision rule | 2026-07-04 | `1583048` (v1.1) |
+| K8 | Causal encoder forced | 2026-07-19 | `85c740b` (v1.3) |
+| K9 | Interface re-spec: pointwise fine | 2026-07-20 | `a1729b8` (v1.4) |
+| K10 | λ = 3.0 | 2026-07-21 | `39be8ba` (v1.4.1) |
+| K11 | μ̂ estimator MODE → MEAN | 2026-07-21 | `c1786f4` (v1.4.2) |
+| K12 | Canary gate closed 8/8, B1 attached | 2026-07-30 | `d0bbaeb` (v1.4.7) |
+| K13 | v1.5: N 180→60, var_sr basis, S=5, two-term MDE | 2026-07-30 | `6b2ad82` |
+| K14 | "Foundation model" dropped | 2026-07-31 | `8ef5568` |
+| K15 | Determinism paid at 13.175% | 2026-08-03 | `0b9c804` |
+| K16 | Kronos gate dropped as binding | 2026-08-03 | `90e4b64`, `0cffb4f` |
+| K17 | C-3 unit fix, pre-data | 2026-08-03 | `0b9c804` |
+| K18 | Training budget → 26,003 steps | 2026-08-03 | `0b9c804` |
+| K19 | `embargo_flatness` deleted | 2026-08-03 | `614200c` |
 | K20 | The three BSQ marginals withdrawn as claims | 2026-08-03 | v2_and_limitations B1 |
 | K21 | The run-blocking bar | 2026-08-03 | v2_and_limitations |
-| K22 | Cell 6 conditional on a $0.50 probe | 2026-08-05 | `7bd6083` |
+| K22 | Cell 6 conditional on a $0.50 probe | 2026-08-05 | `0cffb4f` |
 
 ### K1 — one headline claim, and the firewall
 
@@ -736,20 +736,20 @@ The name is enforced in code, configs and prose.
 
 ### K3 — train-once / eval-forward
 
-Adopted `48f9faf` from Tier-1 review. Models are trained once on the train region and evaluated
+Adopted `ada5980` from Tier-1 review. Models are trained once on the train region and evaluated
 forward through purged walk-forward folds with a leading embargo. The alternative — refitting per
 fold — multiplies compute and introduces per-fold researcher freedom.
 
 ### K4 — M5 before M4 (a reversal)
 
-The roadmap originally sequenced M4 (universe) before M5 (harness). `c321133` reversed it: build and
+The roadmap originally sequenced M4 (universe) before M5 (harness). `c37eacd` reversed it: build and
 validate the measuring instrument on the M3 single-symbol checkpoint *first*, because an instrument
 validated after the data exists can be tuned to the data. The same commit fixed the M5/M6
 Cell-1-validation ordering.
 
 ### K7 — the paired decision rule (v1.1)
 
-`e14fda5`, pre-training. The headline moved to a **paired** ΔIR statistic. Cells 4 and 5 share market
+`1583048`, pre-training. The headline moved to a **paired** ΔIR statistic. Cells 4 and 5 share market
 exposure; the common factor cancels in the paired series, which is the only way a thin effect is
 detectable at this cross-section.
 
@@ -761,7 +761,7 @@ re-derived on corrected instruments after D12 invalidated the first search.
 
 ### K13 — the v1.5 amendment window
 
-Six amendments, signed off `89e08e3`, described in the commit as **the last specification change
+Six amendments, signed off `6b2ad82`, described in the commit as **the last specification change
 before the run**:
 
 - **N 180 → 60.** Seeds are *replicates*, not configurations. A multiple-testing adjustment cannot
@@ -787,7 +787,7 @@ cannot be quoted.
 
 ### K14 — "foundation model" dropped
 
-`ae34610`. The artifact is a 21.3M-parameter tokenizer study. Calling it a foundation model
+`8ef5568`. The artifact is a 21.3M-parameter tokenizer study. Calling it a foundation model
 overstates the artifact and misdescribes what the ablation measures.
 
 ### K15 — determinism paid
@@ -835,7 +835,7 @@ collapsed from non-collapsed, not crippled from competent.
 
 Raised 2,000 → 26,003 steps. **The decisive argument is that the design spec already specified a
 budget and the code ignored it** — the spec sets 1–3 corpus passes at ≈0.5M tokens/step with
-early-stop on val-NLL saturation, and `CLAUDE.md` makes the spec a source of truth. Raising the
+early-stop on val-NLL saturation, and `docs/ENGINEERING.md` makes the spec a source of truth. Raising the
 budget **implements the blueprint**; leaving 2,000 is a standing undisclosed deviation from it.
 
 Corroborating detail: the spec sets `eval interval = every 5000 steps` against a total budget of
@@ -913,7 +913,7 @@ forecast from.** Everything below is the measurement of that assumption failing.
 
 ### 4.2 v6 — a planted signal, and zero extraction
 
-**Commit `db2c33e`, 2026-07-20, ~$0.60, box destroyed.**
+**Commit `6feb60f`, 2026-07-20, ~$0.60, box destroyed.**
 
 Design: a sub-epoch stream of **42M bars** (0.75 epochs, so memorization is not available as an
 explanation), two arms — one carrying a planted lag-2 conditional worth **~1.15 nats**, one noise —
@@ -937,20 +937,20 @@ The v6 result admits two explanations: **H-T**, the tokenizer's id geometry hide
 the AR cannot learn thin conditionals at canonical scale. These are separated by planting the signal
 **directly in token space**, bypassing the tokenizer.
 
-**Step 0 (`c4e5e72`, $0) blocked the first attempt and produced its own finding.** The coarse digits
+**Step 0 (`e891d8c`, $0) blocked the first attempt and produced its own finding.** The coarse digits
 are **99.2–99.8% max-entropy**, so a dense graded translation plant maxes at **0.2769 nats exact** —
 below the 0.7–1.1 band the branch condition needs. The same probe measured per-bar id visibility:
 **logistic 0.5135, MLP correlation 0.0142** — the v6 state is nearly invisible in per-bar ids
 *despite non-degenerate window reconstruction.* **That is the first direct evidence for H-T**, and it
 arrived from a gate that refused to run.
 
-**Step 0 re-gate (`8fe16fc`, $0).** Translation retired as info-poor by physics on uniform marginals.
+**Step 0 re-gate (`7675393`, $0).** Translation retired as info-poor by physics on uniform marginals.
 Adopted: a **noisy-monotone-map** plant — the target digit redrawn from a concentrated distribution
 centered monotonically on the source level, σ tuned so exact information lands in band. Receipt:
 σ 1.0077 → **exact 0.9000 nats** (MC 0.9009, agreeing), KL 0.00476, ΔH −0.0054 (no stacking needed),
 oracle ceiling 0.926.
 
-**The run (`3b49f4d`, ~$0.60, box destroyed): branch (a) DETECT.**
+**The run (`2c41b67`, ~$0.60, box destroyed): branch (a) DETECT.**
 
 | quantity | measured |
 |---|---|
@@ -974,7 +974,7 @@ per-bar illegible.*
 
 ### 4.5 The architectural fix
 
-**`c4cd082` (§7 v1.4), 2026-07-20.** The **fine** subtoken becomes a per-bar **pointwise** encoding of
+**`a1729b8` (§7 v1.4), 2026-07-20.** The **fine** subtoken becomes a per-bar **pointwise** encoding of
 bar t's own features; the coarse subtoken keeps the contextual causal encoder. Both properties
 preserved in one token pair. Pinned as `PINNED_FINE_POINTWISE`, with extended flip-KATs and
 anti-vacuity tests.
@@ -985,7 +985,7 @@ on a 3-seed receipt; all-13 coverage would need 23 bits against 20.06 bits/token
 
 ### 4.6 The eviction measurement — the project's second result
 
-**`4a8fb48`, 2026-07-20, local $0.**
+**`e1feb64`, 2026-07-20, local $0.**
 
 The fixture was first calibrated to the real lake: **0.4631 nats/dim measured on 3.9M bars** →
 AR(1) ρ = 0.7993, receipt in-band. Then the standing micro-legibility gate landed. Then the gate was
@@ -1012,7 +1012,7 @@ than incidental.
 
 ### 4.7 The calibration and the pin
 
-**`e8d2a06` (2026-07-21):** a wiring bug found, fixed and disclosed — `loss_point` read `w_feat`, not
+**`d9e1b53` (2026-07-21):** a wiring bug found, fixed and disclosed — `loss_point` read `w_feat`, not
 `w_feat_point`. The first λ-search was invalidated (retained only as λ=1 replicates) and an asymptote
 analysis withdrawn. A **detach amendment** landed: window losses see fine channels detached, which
 separates the objectives and stabilizes collateral damage.
@@ -1021,7 +1021,7 @@ separates the objectives and stabilizes collateral damage.
 threshold at the achievable ceiling **while the state is demonstrably carried** — dim 9 at 0.77–0.96,
 class 0.86–0.92, return 0.96+.
 
-**`7da3dc0` (2026-07-21):** adjudication. Three disclosures including an **unseeded-init defect** that
+**`39be8ba` (2026-07-21):** adjudication. Three disclosures including an **unseeded-init defect** that
 invalidated the λ=2 literal. λ re-derived on corrected, seeded instruments → **`PINNED_MICRO_POINT_WEIGHT = 3.0`**
 (λ=2 fails the restated gate at mean 0.8517; λ=3 passes 0.9060 / 0.9142 / 0.9000). The formal
 cell-path re-run passes at mean 0.9047 with direct == cell-path bit-identity proven at fixed OMP
@@ -1069,7 +1069,7 @@ Every rule below exists because of a specific failure. None is a general princip
 | **Reporting rule** — state every routine verification's exit code explicitly, pass or fail | a report silently dropped its `ruff` line and `ruff check` was exit 1. **An omitted claim is harder to catch than a false one:** a missing green line must be *noticed*, a wrong one only has to be *read* |
 | **Anchor rule** — the Gate-A anchor is procedure-anchored, re-proven from an unpiped command, twice | D13, and the two legitimate re-anchorings (`5eead7b6` → `3f86882a`) when a file inside the anchored instrument changed |
 | **Verify, don't relay** — the supervisor verifies every claim in source before ruling | recurring; §7 enumerates what it caught and what it missed |
-| **$0 gate** — post the exact invocation and a cost estimate before any spend | the CUDA-probe tooling commit (`505851d`) records the gate *catching a defect* before money moved |
+| **$0 gate** — post the exact invocation and a cost estimate before any spend | the CUDA-probe tooling commit (`845c287`) records the gate *catching a defect* before money moved |
 | **Teardown rule** — `vastai destroy -y`, then **re-list** | `destroy` prompts, aborts, and returns exit 0 with the box still running. Extended after P2: **re-list after `create` too** — `create` printed nothing and still created a box |
 | **Cost a rental as setup + compute** | setup was 90% of a $0.14 probe; provisioning ranged 29 s to 45 min on hosts with reliability 0.992–0.9987 |
 | **No silent caps** | a bounded scope that is not stated reads as complete coverage |
@@ -1083,7 +1083,7 @@ Every rule below exists because of a specific failure. None is a general princip
 
 | | |
 |---|---|
-| HEAD | `7bd6083`, branch `real-data-slice`, pushed, rev-list 0 |
+| HEAD | `0cffb4f`, branch `real-data-slice`, pushed, rev-list 0 |
 | tests | **727 passed, exit 0** |
 | lint | `ruff check` exit 0 · `ruff format --check` exit 0 |
 | Gate-A anchor | **`sha256:3f86882a63dd06c7…`**, byte-identical, exit 0 ×2 |
@@ -1108,15 +1108,15 @@ Every pin carries a mutation KAT proving the gate rejects its predecessor.
 
 | phase | amount |
 |---|---|
-| toy-CUDA rehearsal (`24d5bbc`) | ~$5.00 `[recollection — figure appears in the commit message, not a receipt]` |
-| canary v5 (`bd0b953`) | ~$0.70 |
-| canary v6 (`db2c33e`) | ~$0.60 |
-| token control (`3b49f4d`) | ~$0.60 |
-| acceptance run (`f2a4792`) | ~$0.90 (incl. $0.15 on two bad hosts) |
-| money-leg re-run (`a441cfa`) | ~$0.60 |
-| CUDA probe (`19706d4`) | **$0.80** |
-| eval-throughput probe (`591ec44`) | **$0.14** |
-| P2 attempt (`e235e5f`) | **$0.426** (three stalled boxes) |
+| toy-CUDA rehearsal (`77ca29a`) | ~$5.00 `[recollection — figure appears in the commit message, not a receipt]` |
+| canary v5 (`fbc1cf2`) | ~$0.70 |
+| canary v6 (`6feb60f`) | ~$0.60 |
+| token control (`2c41b67`) | ~$0.60 |
+| acceptance run (`36560dc`) | ~$0.90 (incl. $0.15 on two bad hosts) |
+| money-leg re-run (`7784df2`) | ~$0.60 |
+| CUDA probe (`2a320a0`) | **$0.80** |
+| eval-throughput probe (`0b9c804`) | **$0.14** |
+| P2 attempt (`2559c5c`) | **$0.426** (three stalled boxes) |
 
 **Current balance recorded at HEAD: $2.30 of $8 spent, ~$5.70 remaining.** The earlier phases were
 funded separately; `[recollection — no artifact]`: the $2.30 figure is the current wallet accounting
@@ -1150,9 +1150,9 @@ Stage-1 probe + the pre-committed decision** → real shard 0 → **P3** (16 ide
 
 | claim | withdrawn because |
 |---|---|
-| `e8d2a06`'s "anchor re-proven" | false; a `\| grep \| tail` masked exit-1 (`b55fffc`) |
-| the first λ-search and its asymptote analysis | `loss_point` read the wrong weight (`e8d2a06`) |
-| "the lazy dry run will also be killed" | it was not killed — macOS **swapped**, the more dangerous failure mode (`061c4b8`) |
+| `d9e1b53`'s "anchor re-proven" | false; a `\| grep \| tail` masked exit-1 (`bb1e17c`) |
+| the first λ-search and its asymptote analysis | `loss_point` read the wrong weight (`d9e1b53`) |
+| "the lazy dry run will also be killed" | it was not killed — macOS **swapped**, the more dangerous failure mode (`4dd3d0a`) |
 | a `verdict.py:519-521` provenance correction | withdrawn under the baseline rule; `git show` proved the auditor right |
 | a Z1 half-width | 5× too strict |
 | the C-4 retrain contingency at "~$66–100, roughly doubling" | assumed training was ~half of spend; measured 2.6–6.1%. True figure **+$1.51–2.32** |
@@ -1276,7 +1276,7 @@ Registered as C8.
 
 ---
 
-*End of record. Reconstructed 2026-08-05 at `7bd6083`. Every numeric claim above is traceable to a
+*End of record. Reconstructed 2026-08-05 at `0cffb4f`. Every numeric claim above is traceable to a
 commit, a milestone document, a receipt under `runs_manifest/`, or a line of source; statements
 without such backing carry `[recollection — no artifact]`.*
 
@@ -1366,7 +1366,7 @@ ratios and unable to recompute them. §7.5's activity figures reproduce to the d
 published Kronos-small"*, that *"the public weights appear only inside the eval harness as a
 validation target"*, and that the metric cross-check was *"deferred to M6 (weights load there
 anyway)"*. **No Kronos weights were ever pulled and none ever will be.** The gate was dropped as
-binding on 2026-08-03; `external_validation.GATE_IS_BINDING = False`. CLAUDE.md has called that
+binding on 2026-08-03; `external_validation.GATE_IS_BINDING = False`. docs/ENGINEERING.md has called that
 wording *"a false statement of what validation we performed"* for two weeks — in the file every
 session reads first — and the roadmap, which is the file a newcomer reads second, kept saying it.
 Corrected at all four sites, plus `docs/m6_design.md`'s cell table and the two occurrences in the

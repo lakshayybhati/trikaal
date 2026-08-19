@@ -86,7 +86,7 @@ complete.
 
 ## G. Re-audit 2026-08-03 — what did NOT block, and why (§7 v1.6.25)
 
-The re-audit landed five days early and returned **NOT READY at `5da9ae4`**. Five findings cleared
+The re-audit landed five days early and returned **NOT READY at `c83e0d1`**. Five findings cleared
 the pre-committed bar and were fixed in one pass (R1 dead codebook gate, R3 hybrid dual-spec leg,
 R4 the discarded G-§8.C.3 record, R6 the self-referential identity surface, R12e the placebo
 diagnostics on unshuffled micro); three more were free and done in the same pass (R2, R7, R10a).

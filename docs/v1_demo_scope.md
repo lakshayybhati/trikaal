@@ -55,7 +55,7 @@ state per seed is training-resume material and does not belong in a demo image.
 ### One thing found while measuring, which is NOT a demo issue but is a paper issue
 
 The shipped `predictor.pt` realizes **31,725,568 parameters**. The figure quoted throughout the
-repo and CLAUDE.md — **21,231,616** (BSQ arm) — is exactly `TOTAL − MTP`:
+repo and docs/ENGINEERING.md — **21,231,616** (BSQ arm) — is exactly `TOTAL − MTP`:
 
 ```
 blocks       16,785,408   52.91%
@@ -70,7 +70,7 @@ TOTAL - MTP  21,231,616   == the quoted number, to the parameter
 ```
 
 The quoted count **excludes the MTP heads, which are 33.1 % of the shipped model**. MTP is not an
-optional extra — CLAUDE.md lists it inside the same `trikaal/model/` component whose size that
+optional extra — docs/ENGINEERING.md lists it inside the same `trikaal/model/` component whose size that
 number labels. **The moment we publish weights, any reader can load the checkpoint and get 31.7 M.**
 Whether the quoted figure is redefined, or restated as "backbone excluding MTP heads", is the
 writer's and supervisor's call — I am reporting the decomposition, not ruling on it. Flagged here

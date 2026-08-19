@@ -1,6 +1,6 @@
 """PIPEFAIL RIDER (gate-2 calibration adjudication, 2026-07-21) — exit-code masking KAT.
 
-The incident: commit e8d2a06's "anchor re-proven" claim entered the record unverified because
+The incident: commit d9e1b53's "anchor re-proven" claim entered the record unverified because
 a ``python | grep | tail`` pipeline returned the LAST command's exit code, masking the
 harness's exit-1 (the M5 anchor had actually FAILED to load the old-schema checkpoint).
 Standing rule: any gate whose exit code feeds a claim must run under pipefail (or capture the
@@ -23,7 +23,7 @@ def test_every_committed_shell_script_sets_pipefail():
         text = sh.read_text()
         assert re.search(r"set\s+-[A-Za-z]*o\s+pipefail|set\s+-o\s+pipefail", text), (
             f"{sh.name}: no pipefail — a masked pipeline exit can turn a failed gate into "
-            "an unverified claim (the e8d2a06 incident class)"
+            "an unverified claim (the d9e1b53 incident class)"
         )
 
 

@@ -644,7 +644,7 @@ def run_guard_stability(args) -> int:
 
 # ------------------------------------------- L1/L2/L4 regeneration on the pinned .venv (C1 fix)
 # The cloud money-leg noise IRs at kappa*, at full float64 precision, from
-# runs_manifest/m6_moneyleg_rerun_manifest.json (a441cfa).
+# runs_manifest/m6_moneyleg_rerun_manifest.json (7784df2).
 CLOUD_NOISE_IR = {
     1: -7.240328510778865,
     2: -7.563377128272953,

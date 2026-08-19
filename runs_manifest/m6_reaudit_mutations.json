@@ -15,7 +15,7 @@
         "tests/eval/test_codebook_gate.py"
       ],
       "verdict": "CLOSED \u2014 the pre-fix code fails the new tests",
-      "what": "the codebook >=95% gate sits below `return bad` \u2014 born dead in 591ec44"
+      "what": "the codebook >=95% gate sits below `return bad` \u2014 born dead in 0b9c804"
     },
     {
       "baseline_exit": 0,

@@ -27,12 +27,12 @@ OUT = Path("runs_manifest/m6_divergence_attribution.json")
 
 RUNS = {
     "acceptance": {
-        "commit": "f2a4792",
+        "commit": "36560dc",
         "setup_log": "runs_cloud/acceptance/setup.log",
         "stage2_manifest": "runs_manifest/m6_acceptance_stage2_manifest.json",
     },
     "moneyleg": {
-        "commit": "a441cfa",
+        "commit": "7784df2",
         "setup_log": "runs_cloud/moneyleg/setup.log",  # EXPECTED ABSENT — that is the finding
         "stage2_manifest": "runs_manifest/m6_moneyleg_rerun_manifest.json",
     },

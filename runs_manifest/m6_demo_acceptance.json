@@ -4,7 +4,7 @@
   "provenance": {
     "environment": {
       "image": "unavailable",
-      "git_commit": "f31a8e2e8f2962d0efd71c5e168d70f5b8fd9e65",
+      "git_commit": "1e011b5afe2b4901dd8801675294017a5c05513d",
       "steps_stage1": 26003,
       "steps_stage2": 26003,
       "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",

@@ -2,8 +2,8 @@
 
     PYTHONPATH=src .venv/bin/python scripts/m6_lattice_observation.py
 
-WHAT THIS IS. Across the two full 10-cell Stage-2 runs on disk (acceptance f2a4792 and money-leg
-a441cfa, whose recipes are byte-identical) there are 20 (run, arm, cell) headline-IR
+WHAT THIS IS. Across the two full 10-cell Stage-2 runs on disk (acceptance 36560dc and money-leg
+7784df2, whose recipes are byte-identical) there are 20 (run, arm, cell) headline-IR
 observations. Most of them land on a SMALL SET OF REPEATED float64 values that recur ACROSS the
 two runs at full precision. A repeated exact value is the signature of a CONSTANT-DIRECTION BOOK:
 when every scored bar trades in the same direction, the pooled net series — and therefore the IR
@@ -120,8 +120,8 @@ def main() -> int:
         "receipt": "m6_constant_book_lattice",
         "status": "OBSERVATION — n=2 runs, no error bars, NOT a hypothesis test",
         "provenance": {
-            "acceptance": "f2a4792 runs_manifest/m6_acceptance_stage2_manifest.json",
-            "moneyleg": "a441cfa runs_manifest/m6_moneyleg_rerun_manifest.json",
+            "acceptance": "36560dc runs_manifest/m6_acceptance_stage2_manifest.json",
+            "moneyleg": "7784df2 runs_manifest/m6_moneyleg_rerun_manifest.json",
             "recipes_byte_identical": json.dumps(
                 json.loads(RUNS["acceptance"].read_text())["recipe"], sort_keys=True
             )

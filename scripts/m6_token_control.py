@@ -139,7 +139,7 @@ ID_VISIBILITY_RECEIPT = {
     "while v6 dim-9 WINDOW-decode recon was non-degenerate — the state is smeared across "
     "the window's ids (causal encoder writes state_t into later tokens), not present in "
     "bar t's own id: standing mechanistic H-T evidence",
-    "source": "runs_manifest/m6_token_control_step0.json (commit c4e5e72)",
+    "source": "runs_manifest/m6_token_control_step0.json (commit e891d8c)",
 }
 
 TOY_BB_KW = dict(

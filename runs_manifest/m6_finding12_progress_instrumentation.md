@@ -1,6 +1,6 @@
 # TASK C — EVAL PROGRESS INSTRUMENTATION: DIFF FOR REVIEW, NOT A COMMIT
 
-**HEAD `055d14f` is untouched. Nothing below is applied. No file in the repo was modified.**
+**HEAD `95fc017` is untouched. Nothing below is applied. No file in the repo was modified.**
 
 Finding 12, now costed: **the eval leg emitted nothing for 14.65 h**, and a 14-hour silent GPU
 loop is indistinguishable from a hung one. That is what made this episode unreadable.

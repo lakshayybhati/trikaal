@@ -2,7 +2,7 @@
 
 **WHY THIS FILE EXISTS, AND WHY IT COULD NOT HAVE EXISTED BEFORE.** v1.6.22 declared the
 "specified but not enforced" class closed for the fourth time by gating codebook utilization at the
-spec's own ≥ 95 %. The gate shipped in `591ec44` **below `_validate_artifact`'s `return bad`**. It
+spec's own ≥ 95 %. The gate shipped in `0b9c804` **below `_validate_artifact`'s `return bad`**. It
 was unreachable from the moment it was written, so the compensating control for dropping the C-4
 external-validation gate never executed once — and 601 tests stayed green, because not one of them
 fed the gate an artifact it was supposed to reject. A gate is not closed by the existence of its

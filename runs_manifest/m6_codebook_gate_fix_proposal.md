@@ -1,6 +1,6 @@
 # PROPOSAL FOR REVIEW — ONE COMMIT, THREE CHANGES, ONE §7 TAG
 
-**NOT A COMMIT. HEAD `055d14f` unmoved, no repo file modified.**
+**NOT A COMMIT. HEAD `95fc017` unmoved, no repo file modified.**
 **Change A is a gate RELAXATION and lands only after §7 v1.6.30 from the writer, as v1.6.29 did.
 Changes B and C move no gate value and mint no tag — described in the commit message and
 BUILD_RECORD, tagged: no.**

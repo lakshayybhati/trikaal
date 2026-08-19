@@ -39,7 +39,7 @@ from trikaal.utils.provenance import (
 # the real values P2 observed on the box, minus the one that failed
 CUDA_PROV = {
     "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
-    "git_commit": "cc8a816edd0cadb66d5d71d952dd2cb47eeb28ca",
+    "git_commit": "532a6691426e5b644109da32461ef269d573c501",
     "steps_stage1": 26003,
     "steps_stage2": 26003,
     "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",

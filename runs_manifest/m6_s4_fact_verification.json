@@ -2112,7 +2112,7 @@
           "artifact": "docs/BUILD_RECORD.md:714 (decision table row K19) and docs/BUILD_RECORD.md:855-867",
           "claim": "K19 decision: the `embargo_flatness` empirical leak gate was DELETED",
           "status": "MANUAL",
-          "value": "deleted 2026-08-03, commit e4298bc",
+          "value": "deleted 2026-08-03, commit 614200c",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
@@ -2302,7 +2302,7 @@
           "artifact": "runs_manifest/m6_training_budget.json \u2192 \"finding\"; src/trikaal/eval/conformance.py:57-60",
           "claim": "Provenance of the 2,000-step default \u2014 it was the G1 overfit-a-single-batch SMOKE GATE threshold, entered in the same dataclass literal as seeds=(0,1,2) and seq_len=128",
           "status": "MANUAL",
-          "value": "commit a4d242e; spec :1762-1763",
+          "value": "commit 64f728c; spec :1762-1763",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
@@ -2422,7 +2422,7 @@
           "artifact": "docs/m6_prereg.md:2037-2046; docs/BUILD_RECORD.md:708 and :767-768",
           "claim": "N 180 \u2192 60 amendment, dated",
           "status": "MANUAL",
-          "value": "\u00a77 v1.5 item A.5, 2026-07-30 (commit 89e08e3, decision K13)",
+          "value": "\u00a77 v1.5 item A.5, 2026-07-30 (commit 6b2ad82, decision K13)",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
@@ -3385,7 +3385,7 @@
         },
         {
           "artifact": "src/trikaal/eval/verdict.py:282-286 (the disclosure comment); confirmed by reading: codebook block :287-304, `return bad` :305",
-          "claim": "The codebook gate was BORN DEAD and was moved above the function's `return` at \u00a77 v1.6.25 (RE-AUDIT R1) \u2014 it shipped in 591ec44 below `return bad` and had never executed once",
+          "claim": "The codebook gate was BORN DEAD and was moved above the function's `return` at \u00a77 v1.6.25 (RE-AUDIT R1) \u2014 it shipped in 0b9c804 below `return bad` and had never executed once",
           "status": "MANUAL",
           "value": "fixed at \u00a77 v1.6.25; the block now sits at verdict.py:287-304 with `return bad` at :305",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
@@ -4054,10 +4054,10 @@
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
-          "artifact": "git show 5da9ae4:src/trikaal/train/arms.py (lines 51-64)",
-          "claim": "Baseline-rule check on the auditor's line citation: at the audited commit 5da9ae4, arms.py:51-64 is indeed shuffle_micro (the citation is correct; the lines have since moved because the arm registry was inserted above)",
+          "artifact": "git show c83e0d1:src/trikaal/train/arms.py (lines 51-64)",
+          "claim": "Baseline-rule check on the auditor's line citation: at the audited commit c83e0d1, arms.py:51-64 is indeed shuffle_micro (the citation is correct; the lines have since moved because the arm registry was inserted above)",
           "status": "MANUAL",
-          "value": "git show 5da9ae4:src/trikaal/train/arms.py lines 51-64 = 'def shuffle_micro(...)' through 'return block_time_permute(...)'",
+          "value": "git show c83e0d1:src/trikaal/train/arms.py lines 51-64 = 'def shuffle_micro(...)' through 'return block_time_permute(...)'",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
@@ -4095,10 +4095,10 @@
           "value": "\"Measured (BTCUSDT, 300k bars, seed 0)\""
         },
         {
-          "artifact": "git log --diff-filter=A -- docs/m6_c12_placebo_mechanism.md \u2192 bd67574; git show --name-only bd67574",
+          "artifact": "git log --diff-filter=A -- docs/m6_c12_placebo_mechanism.md \u2192 3e6ac6c; git show --name-only 3e6ac6c",
           "claim": "NO RECEIPT EXISTS for the 0.2037 \u2192 0.0005 measurement. The commit that introduced the C-12 write-up added only two markdown files \u2014 no script, no runs_manifest artifact",
           "status": "MANUAL",
-          "value": "bd67574 'AUDIT TIER-2 C-12 + C-4: write-ups only...' touched exactly docs/m6_c12_placebo_mechanism.md and docs/m6_c4_kronos_gate_requirements.md",
+          "value": "3e6ac6c 'AUDIT TIER-2 C-12 + C-4: write-ups only...' touched exactly docs/m6_c12_placebo_mechanism.md and docs/m6_c4_kronos_gate_requirements.md",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {
@@ -4219,7 +4219,7 @@
           "artifact": "docs/BUILD_RECORD.md:251 (ledger row) and :660-673 (narrative)",
           "claim": "D35 \u2014 the blocking half of C-12: three shipped clause rule strings named the tested quantity the information effect",
           "status": "MANUAL",
-          "value": "\"Three clause strings named the quantity \u0394IR_info | CRITICAL | AUDIT-3 (C-12) | closed 498892e\"",
+          "value": "\"Three clause strings named the quantity \u0394IR_info | CRITICAL | AUDIT-3 (C-12) | closed af3164d\"",
           "why": "code snippet: symbols present, exact text differs \u2014 needs human reading"
         },
         {

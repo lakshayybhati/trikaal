@@ -18,7 +18,8 @@ that is precisely how C-2, C-10 and C-15 happened.
 **THE INVARIANT-8 PROBLEM (NEEDS-RULING, LAKSHAY'S).** The prereg requires Kronos-small to be
 *"run through its own published preprocessing on the same bars"*. The published weights are a bare
 `state_dict` — the model card's own loading instructions are ``from model import Kronos,
-KronosTokenizer`` — so **running them requires Kronos's model code**. CLAUDE.md invariant 8 says
+KronosTokenizer`` — so **running them requires Kronos's model code**. docs/ENGINEERING.md
+invariant 8 says
 *"No Kronos code or weights are ever part of Trikaal … its public weights appear in exactly one
 place: the eval harness."* Weights are permitted there; **code is not permitted anywhere.** The
 gate as specified cannot be executed without resolving that, and it is not a scheduling problem.

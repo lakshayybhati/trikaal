@@ -10,7 +10,7 @@
       "eval/cell1_seed0_eval.json": "ab687718b351e508a35b0ad1f5a9dd8683b7e92c7ce58f3beb90ce39efbc12ee",
       "money_run_manifest.json": "7c0be4457182c39c6415e24249d02f3a9fb1a64b73f1f99e7b0431eae2a40450"
     },
-    "tree_state": "bedd403dcf3fb0068651aa8b007d5dd937b47775"
+    "tree_state": "9525a572c4604700d1d8677915aec25521aa09af"
   },
   "payload_sha256": "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc",
   "provenance_stamp_all_16_keys": {
@@ -21,7 +21,7 @@
     "deterministic_algorithms": false,
     "device": "cuda",
     "driver_version": "595.71.05",
-    "git_commit": "8f6b3fdbfc3f6aef6110a82df627e574968641dc",
+    "git_commit": "d8a28f625df3c5ade68990523dd96c72816bff21",
     "gpu_name": "NVIDIA GeForce RTX 4090",
     "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
     "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
@@ -38,16 +38,16 @@
   "stamp_taken_via": "scripts/m6_money_run.py::preflight_provenance('cuda') \u2014 the DRIVER'S OWN function, not a near-relative of it, so the recorded values are byte-for-byte what the gate will compare on a re-rent",
   "superseded": {
     "commit_history": [
-      "811ed991e48b2cfc4086d87c1903c6b1d3cc2df3",
-      "bedd403dcf3fb0068651aa8b007d5dd937b47775",
-      "8f6b3fdbfc3f6aef6110a82df627e574968641dc"
+      "0efbcbbac27e219e34bf8bacce24198166fed6d7",
+      "9525a572c4604700d1d8677915aec25521aa09af",
+      "d8a28f625df3c5ade68990523dd96c72816bff21"
     ],
     "payload_history": [
       "8e7e065eb0512850d57e491c001633b0bf7b1955842aff9fb900d9d1ce5e1cbc",
       "b088fe108a8b6a964a7c591216939a89c3994835667acb08106bc65565ebff0d",
       "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc"
     ],
-    "why": "TWO pre-run commits, both before the first unit, so neither refuses anything: bedd403 made the pre-flight identity gate reachable on CUDA; 8f6b3fd gave the micro_constant arm a real transform (cell 6 was silently cell 4). HEAD IS NOW FROZEN until all 25 units are written."
+    "why": "TWO pre-run commits, both before the first unit, so neither refuses anything: 9525a57 made the pre-flight identity gate reachable on CUDA; d8a28f6 gave the micro_constant arm a real transform (cell 6 was silently cell 4). HEAD IS NOW FROZEN until all 25 units are written."
   },
   "vast": {
     "cuda_max_good": 13.2,

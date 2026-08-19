@@ -284,7 +284,7 @@ def _validate_artifact(doc: dict, name: str) -> list[str]:
     # gated at the spec's own >= 95% (design :1859). It was optional and unvalidated -- and we are
     # about to lean on it for the BSQ disclosure, so a disclosure with no data behind it is the
     # defect this project has closed four times.
-    # §7 v1.6.25 (RE-AUDIT R1) — THIS BLOCK WAS BORN DEAD. It shipped in 591ec44 BELOW the
+    # §7 v1.6.25 (RE-AUDIT R1) — THIS BLOCK WAS BORN DEAD. It shipped in 0b9c804 BELOW the
     # function's `return bad`, so from the moment the "fourth instance of specified-not-enforced"
     # was declared closed, its fix had never executed once. The compensating control for dropping
     # the C-4 external gate was unreachable code. Nothing above this line changed; the `return`

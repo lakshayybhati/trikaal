@@ -59,7 +59,7 @@ FILES = ("pyproject.toml", "uv.lock")
 MUTATIONS: list[dict] = [
     {
         "finding": "R1",
-        "what": "the codebook >=95% gate sits below `return bad` — born dead in 591ec44",
+        "what": "the codebook >=95% gate sits below `return bad` — born dead in 0b9c804",
         "file": "src/trikaal/eval/verdict.py",
         "post": _CB_TAIL + "    return bad\n",
         "pre": _CB_TAIL,
