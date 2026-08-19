@@ -1,9 +1,9 @@
 {
-  "WHAT_THIS_IS": "Three trained units from CELL 1 of the M6 design: BSQ quantizer, OHLCV-only inputs, seeds 0/2/4, trained on the 200-symbol / 304,625,181-bar universe lake (Merkle sha256:5dfd667d...). Each unit is a Stage-1 tokenizer plus a Stage-2 AR backbone with MTP heads.",
+  "WHAT_THIS_IS": "Three trained units from CELL 1 of the M6 design: BSQ quantizer, OHLCV-only inputs, seeds 0/2/4. Each unit is a Stage-1 tokenizer plus a Stage-2 AR backbone with MTP heads. THE DRAW IS NOT THE LAKE: they were trained on a 40-symbol draw of 832,096 windows x 512 bars = 84,153,600 bars (5.06 passes at 26,003 steps x batch 32), drawn FROM the 200-symbol / 304,625,181-bar universe lake (Merkle sha256:5dfd667d...) -- 27.6% of it. See .training_draw below.",
   "byte_verification_receipt": "runs_manifest/m6_rescue_inventory.json \u2014 each file's on-box SHA-256 vs its local SHA-256 after transfer, all matching",
   "bytes_inference_only": 435610761,
   "bytes_total": 1742480863,
-  "git_head": "f953745ce32fde466294071844053065cf5e2dae",
+  "git_head": "b6c5786f7c47c313752e294bf61d3588e50b6679",
   "how_to_verify": "sha256sum each file and compare against .units[seed].files[name].sha256; then load predictor.pt and sum numel() over state_dict to reproduce n_params_realized_total, and over keys starting 'mtp.' for n_params_mtp.",
   "license_code": "Apache-2.0 (LICENSE)",
   "license_weights": "Apache-2.0 \u2014 same terms as the code; Binance source data is NOT redistributed, only the pipeline and its content hashes (M8 gate, docs/ROADMAP.md)",
@@ -14,6 +14,25 @@
   ],
   "schema": "m6_weights_release_v1",
   "script": "scripts/m6_weights_release.py",
+  "training_draw": {
+    "held_out": "2023-10-20T16:48:00+00:00 -> 2025-01-01, i.e. ALL OF 2024 is out-of-sample",
+    "n_bar_positions_consumed": 426033152,
+    "n_bar_positions_note": "n_windows x seq_len = 26,003 steps x batch 32 x 512; this is TRAINING THROUGHPUT, not the size of the draw",
+    "n_bars": 84153600,
+    "n_bars_note": "DISTINCT bars in the 40 drawn symbols (each carries the full 2,103,840-bar span); ledger sum over draw.drawn_by_symbol_stage1",
+    "n_symbols": 40,
+    "n_windows": 832096,
+    "passes_over_the_draw": 5.0625659745988285,
+    "read_it_back_from": "draw.drawn_by_symbol_stage1 in each unit's run_manifest.json -- identical across seeds 0/2/4",
+    "seq_len": 512,
+    "share_of_the_200_symbol_lake": 0.2762530689418587,
+    "train_frac": 0.7,
+    "train_through": "2023-10-20T16:48:00+00:00",
+    "window": [
+      "2021-01-01",
+      "2025-01-01"
+    ]
+  },
   "units": {
     "0": {
       "arm": "ohlcv",
@@ -148,5 +167,5 @@
       "source_path": "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4"
     }
   },
-  "\u2605_WHAT_THIS_IS_NOT": "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell 1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 and \u00a77 v1.5 item E took effect: the ablation does not run as designed, cells 3/4/5 were never trained, and the paper's primary result is the MECHANISM finding: the tokenizer keeps the microstructure that DUPLICATES OHLCV and DROPS THE SIGNED CHANNELS. 97.3% of the shortfall sits on TFI and signed_count_imbalance, while the four magnitude channels -- the ones that co-vary with VOLUME, not with price -- essentially clear the gate. These weights demonstrate the measurement vehicle, not the claim."
+  "\u2605_WHAT_THIS_IS_NOT": "NOT the artifact of the 2x2 ablation, and NOT a microstructure-aware tokenizer. Cell 1 is the BASELINE arm. The micro-legibility gate fired on real data on 2026-08-12 and \u00a77 v1.5 item E took effect: the ablation does not run as designed, Stage 2 was never entered for cells 2-5 and none of them produced a scored artifact (cells 4 and 5 did run through Stage 1, and that run produced the legibility receipt), and the paper's primary result is the MECHANISM finding: the tokenizer keeps the microstructure that DUPLICATES OHLCV and DROPS THE SIGNED CHANNELS. 97.3% of CELL 4's shortfall (one seed; the 18 stored calibration replicates in runs_manifest/m6_lambda_sweep.json span 77-93%) sits on TFI and signed_count_imbalance, while the four magnitude channels -- the ones that co-vary with VOLUME, not with price -- essentially clear the gate. These weights demonstrate the measurement vehicle, not the claim."
 }

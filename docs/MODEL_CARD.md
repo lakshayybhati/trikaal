@@ -9,8 +9,11 @@ what they are not, and the gap between the two is the whole result.
 | **Cell** | 1 — **BSQ** quantizer, **OHLCV-only** inputs. The baseline arm. |
 | **Seeds** | 0, 2, 4 |
 | **Realized parameters** | **31,725,568** total per predictor (10,493,952 in the MTP heads; 21,231,616 backbone excluding them) |
-| **Training data** | 200 USDT-perpetual symbols, 1-minute bars, 2021-01-01 → 2025-01-01, 304,625,181 bars, lake Merkle `sha256:5dfd667d…` |
+| **Training draw** | **40 symbols**, **84,153,600 bars** — each drawn symbol carries the full 2,103,840-bar span. Training consumed 832,096 windows × 512 = 426,033,152 bar-positions at the pinned 26,003 steps × batch 32, i.e. **5.06 passes** over the draw. Read it back from any unit: `draw.drawn_by_symbol_stage1` in `run_manifest.json` (identical across all three seeds). |
+| **Source corpus** | The **200-symbol / 304,625,181-bar** universe lake, 1-minute bars, 2021-01-01 → 2025-01-01, Merkle `sha256:5dfd667d…`. The draw above is **27.6% of it** — these units never saw the other 160 symbols. |
+| **Train / holdout** | `train_frac = 0.7` (`PINNED_TRAIN_FRAC`) over the pinned window ⇒ trained on **2021-01-01 → 2023-10-20**. **2023-10-20 → 2025-01-01 is held out** — so all of 2024 is out-of-sample. |
 | **Licence** | Apache-2.0, same as the code (`LICENSE`). Binance source data is **not** redistributed — the pipeline and its content hashes are. |
+| **Repository** | <https://github.com/lakshayybhati/trikaal> — **public**. Every `runs_manifest/…`, `scripts/…` and `docs/…` path on this card resolves there. |
 | **Release manifest** | `runs_manifest/m6_weights_release.json` — per-file SHA-256, byte counts, and the recomputed parameter arithmetic |
 | **Byte verification** | `runs_manifest/m6_rescue_inventory.json` — on-box vs post-transfer SHA-256 for every file, all matching |
 
@@ -22,15 +25,19 @@ tokenizer, tested by a 2×2 design {BSQ, FSQ} × {OHLCV-only, +microstructure} p
 shuffled-microstructure placebo. **That design did not run.** A pre-registered micro-legibility
 gate — written 2026-07-30, thirteen days before it fired — refused the microstructure arms on real
 data on 2026-08-12, and §7 v1.5 item E took effect: gate fires → stop; the primary result becomes
-the **mechanism finding**. Cells 2, 3, 4 and 5 were never trained. Stage 2 was never entered for
-them. There are no microstructure weights to release, and there will not be.
+the **mechanism finding**. **Stage 2 was never entered for cells 2–5**, and no cell 2–5 unit produced
+a scored artifact (`artifacts_produced: 0`). Cells 4 and 5 *did* run through **Stage 1** on the money
+path — that run is what produced the legibility receipt this whole finding rests on
+(`runs_manifest/m6_micro_legibility_stop.json`), so the numbers below are measured, not inferred.
+Cell 2 has a separate Stage-1 probe that is explicitly not a unit (`runs_manifest/m6_cell2_stage1_probe.json`).
+There are no microstructure weights to release, and there will not be.
 
 So cell 1 is the only arm with scored artifacts, and it is the arm the claim was supposed to be
 measured *against*. These weights demonstrate the **measurement vehicle** — the held-fixed backbone
 — not the contribution.
 
-**They are also not a trading model.** See "Intended use" below; the measured economics are in the
-paper and they are negative by a factor of 4.8–43×.
+**They are also not a trading model.** See "Intended use" and "Out of scope" below, where the
+measured economics are stated in full: they are negative by a factor of 4.8–43×.
 
 ## What the mechanism finding is
 
@@ -39,17 +46,44 @@ Which channels survive is the finding, and they are not the ones price would pre
 **magnitude** dims (`trade_count`, `mean_trade_size`, `trade_size_dispersion`, `large_trade_share`)
 co-vary with **volume** — which the OHLCV arm already carries as `log_volume` and `log_amount` —
 and they essentially clear the gate. The two **signed** dims (`TFI`, `signed_count_imbalance`)
-carry 97.3% of the shortfall, and they are exactly the channels invariant 1 scopes the claim to.
+carry **97.3% of *cell 4's* shortfall** — one cell, one seed, one run — and they are exactly the
+channels invariant 1 scopes the claim to. **Cell 4's weights are not published** (see above), so
+that number is recomputed below from the receipt rather than asserted.
 
 Measured three ways that do not share an input: a synthetic fixture (return dim reconstructs at
 0.98, the correlated filler dims 0.82–0.92, an independent low-variance dim 0.001–0.014), a canary
 (1.151 nats planted in feature space → **zero** extracted; 0.900 nats planted in token space →
-94.4% extracted), and real data (40 symbols, n=150k/dim: TFI 0.8223 and signed-count 0.7528
-against magnitude dims 0.8975–0.9320, with 97.3% of the shortfall in the two *signed* channels).
+94.4% extracted), and real data (40 symbols, n=150k/dim, cell 4 seed 0).
 The cause is that an MSE reconstruction objective allocates capacity by variance **and
 covariance**, which makes an independent low-variance channel the worst per-bit investment
 available. A 512-bar windowed read recovers nothing beyond the per-bar read, so this is eviction
 rather than smearing.
+
+### The 97.3%, so you can recompute it
+
+Every number here is in `runs_manifest/m6_micro_legibility_stop.json` under
+`legibility_receipt.cell4_fsq_micro_seed0.per_dim`. Shortfall is `max(0, 0.90 − sign_acc)` against
+the gate's pinned `min_acc = 0.90`; each dim is measured at n = 150,000 rows over 40 symbols.
+
+| dim | channel | kind | sign_acc | shortfall vs 0.90 |
+|---|---|---|---|---|
+| 7 | `TFI` | **signed** | 0.8223 | 0.0777 |
+| 8 | `signed_count_imbalance` | **signed** | 0.7528 | 0.1472 |
+| 9 | `trade_count` | magnitude | 0.8975 | 0.0025 |
+| 10 | `mean_trade_size` | magnitude | 0.9076 | — clears |
+| 11 | `trade_size_dispersion` | magnitude | 0.8962 | 0.0038 |
+| 12 | `large_trade_share` | magnitude | 0.9320 | — clears |
+
+Total shortfall 0.2312; the two signed dims contribute 0.0777 + 0.1472 = 0.2249. 0.2249 / 0.2312 =
+**0.9728**. The magnitude dims span **0.8962–0.9320** — note that two of the four (9 and 11) sit
+*just* under 0.90, which is what "essentially clear" means here and is why the word is hedged.
+
+**How stable is 97.3%?** It is a single seed of a single cell (cell 4, seed 0). The 18 stored calibration replicates
+from the spent λ re-derivation (`runs_manifest/m6_lambda_sweep.json`, λ ∈ {5, 8, 12} × 3 seeds × 2
+arms) put the same signed share between **77% and 93%** (cell 4 alone: 88–93%). That file declares
+itself `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN` and it is not being compared to it — it is quoted only
+as the spread of the statistic across replicates. **The direction is robust across all 18; the exact
+percentage is not.**
 
 ## Intended use
 
@@ -96,9 +130,20 @@ diagnostics, and re-running the demo. That is the whole of it.
 
 ## Provenance and reproduction
 
-Every unit carries a `run_manifest.json` stamping its environment (image, git commit, lockfile
-SHA-256, GPU, CUDA build, driver, torch/numpy/python versions, platform ABI, attention mode). The
-demo asserts checkpoint identity on load by recomputing both content hashes from the live modules,
+Every unit carries a `run_manifest.json` stamping its environment. Measured against the 16 keys in
+`PROVENANCE_IDENTITY_KEYS` (`src/trikaal/utils/provenance.py`), these three units carry **12**:
+GPU name, CUDA build, driver version, torch / numpy / python versions, both step budgets, attention
+mode, and the three determinism flags.
+
+**Four identity keys were never captured on these runs, and we are not back-filling them:**
+`image`, `git_commit`, `lockfile_sha256`, `platform_abi`. `driver_version` holds the placeholder
+string `"unavailable: AttributeError"` rather than a version — the lookup failed on the box and the
+code records a placeholder instead of a plausible default, by design. Stamping any of this in
+after the fact would be manufacturing a receipt for a run that never took the measurement, so the
+gap is stated instead. The full 16-key surface is enforced for future runs, where a mismatch
+refuses rather than passing quietly.
+
+The demo asserts checkpoint identity on load by recomputing both content hashes from the live modules,
 and refuses to serve if either differs. `scripts/m6_demo_acceptance.py` re-proves that the demo's
 single-decision assembly lands on the same float64 bits as the production whole-symbol path, and
 is itself proven capable of failing by a negative control that injects a one-bar off-by-one.

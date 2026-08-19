@@ -80,7 +80,7 @@ complete.
 
 | # | item |
 |---|---|
-| F1 | **`image` and `lockfile_sha256` were missing from `PROVENANCE_IDENTITY_KEYS`.** Two boxes can carry identical torch/numpy/driver strings and still differ in container image or resolved dependency set. Added; all 13 keys mutation-proven to refuse. Non-blocking under the bar (it *strengthens* a refusal), recorded because the gap existed while fan-out was already planned. |
+| F1 | **`image` and `lockfile_sha256` were missing from `PROVENANCE_IDENTITY_KEYS`.** Two boxes can carry identical torch/numpy/driver strings and still differ in container image or resolved dependency set. Added; all 13 keys mutation-proven to refuse. Non-blocking under the bar (it *strengthens* a refusal), recorded because the gap existed while fan-out was already planned. **[13 was the count at v1.6.23 and this row is left as written. The set later grew to the 16 of `PROVENANCE_IDENTITY_KEYS` — v1.6.25 added `git_commit`, `steps_stage1`, `steps_stage2`, and `platform` was subsequently split into `platform_abi`. G4 below says 16 for that reason; neither number is wrong at its own date.]** |
 | F2 | **Setup overhead must be costed, not discovered.** Measured 2026-08-03: ~17 min per box (10 min image pull + 6m41s pinned-torch install). It was **90 % of the probe's cost**. Across 5 boxes it is ~1.4 GPU-h ≈ $0.41–0.56 — trivial when planned. **Standing lesson: cost a rental as `setup + compute`.** |
 | F3 | **The image ships torch 2.5.1; we pin 2.12.1.** Not a defect — but a shard that skips the install produces an identity-key refusal *after* paying for the compute. R3 in the runbook. |
 

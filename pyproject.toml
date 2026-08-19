@@ -59,6 +59,11 @@ ignore = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# The repo root must be importable: a few tests reuse fixtures from a sibling module via
+# `from tests.eval.test_verdict import ...`. `python -m pytest` puts CWD on sys.path and the
+# `pytest` console script does not, so without this the suite passed locally under one
+# invocation and failed CI under the other — 88 consecutive red runs from a single import.
+pythonpath = ["."]
 markers = [
     "slow: tests that touch real Parquet / long training (excluded from fast CI)",
     "gate: pre-flight G0/G1/G2 gate tests",

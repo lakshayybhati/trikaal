@@ -90,7 +90,7 @@ SUPERSEDED: dict[str, dict[str, str]] = {
         "why": (
             "the four magnitude dims (trade_count, mean_trade_size, trade_size_dispersion, "
             "large_trade_share) co-vary with log_volume/log_amount, not with price; the two "
-            "SIGNED dims carry 97.3% of the shortfall"
+            "SIGNED dims carry 97.3% of CELL 4's shortfall (one seed)"
         ),
     },
     "price_correlated_channel": {

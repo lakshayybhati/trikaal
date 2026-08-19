@@ -15,22 +15,34 @@ the live build order + milestone exit gates are in [`docs/ROADMAP.md`](docs/ROAD
 2026-07-30 — thirteen days earlier, before any of the data it refused had been seen — and §7 v1.5
 item E pre-committed the response: gate fires → **stop**, and the primary result becomes the
 **mechanism finding**. So the 5-cell {BSQ,FSQ}×{OHLCV,+micro}+placebo ablation **does not run as
-designed**. Cells 2–5 were never trained; Stage 2 was never entered for them. Cell 1 (BSQ +
-OHLCV-only, seeds 0/2/4) is the only arm with scored artifacts.
+designed**. **Stage 2 was never entered for cells 2–5** and none of them produced a scored
+artifact; cells 4 and 5 did run through **Stage 1**, and that run is what produced the legibility
+receipt the finding rests on. Cell 1 (BSQ + OHLCV-only, seeds 0/2/4) is the only arm with scored
+artifacts.
 
 **The finding the gate produced:** the tokenizer keeps the microstructure that *duplicates OHLCV*
 and **drops the signed channels** — because an MSE reconstruction objective allocates capacity by
 variance **and covariance**, making an independent low-variance channel the worst per-bit
-investment available. The gate named the channels: 97.3% of the shortfall sits on `TFI` and
-`signed_count_imbalance`, the two **signed** channels, while the four **magnitude** channels — the
-ones that co-vary with **volume**, not with price — essentially clear it. Measured three ways that
-share no input (a synthetic fixture, a planted-information canary, and 40 real symbols at
-n=150k/dim), and a 512-bar windowed read recovers nothing beyond the per-bar read — so it is
-eviction, not smearing.
+investment available. The gate named the channels: **97.3% of *cell 4's* shortfall** — one seed,
+one run — sits on `TFI` and `signed_count_imbalance`, the two **signed** channels, while the four
+**magnitude** channels — the ones that co-vary with **volume**, not with price — essentially clear
+it. The per-dim arithmetic is printed in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) and every
+number is in `runs_manifest/m6_micro_legibility_stop.json`; the 18 stored calibration replicates
+put the same signed share between 77% and 93%, so the direction is robust and the exact percentage
+is not. Measured three ways that share no input (a synthetic fixture, a planted-information canary,
+and 40 real symbols at n=150k/dim), and a 512-bar windowed read recovers nothing beyond the per-bar
+read — so it is eviction, not smearing.
 
 Milestones M1–M5 (synthetic slice → BTCUSDT real slice → Stage-2 AR → eval harness → the full
 200-symbol / 304,625,181-bar universe lake, Merkle `5dfd667d…`) are complete. The environment is
 **pinned** (committed `uv.lock`; `uv sync --locked --extra data --extra dev`).
+
+**What the released units were actually trained on — it is not the whole lake.** The draw is **40
+of the 200 symbols** and **84,153,600 bars** — 27.6% of the lake. Training consumed 832,096
+windows × 512 = 426,033,152 bar-positions at the pinned 26,003 steps × batch 32, i.e. **5.06
+passes** over the draw. `train_frac = 0.7` over the 2021-01-01 → 2025-01-01
+window puts the split at **2023-10-20**: everything after that date, **including all of 2024, is
+held out**. Read the draw back from `draw.drawn_by_symbol_stage1` in any unit's `run_manifest.json`.
 
 ## Where to start
 

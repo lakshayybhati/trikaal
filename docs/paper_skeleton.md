@@ -23,7 +23,8 @@ the tokenizer discarded. That is the claim the paper is organised around.
 > **★ THE GATE HAS SINCE SPOKEN, AND THE SENTENCE ABOVE WAS WRONG IN A SPECIFIC AND INSTRUCTIVE
 > WAY. LEFT STANDING DELIBERATELY.** *"which is exactly what microstructure is"* over-generalizes:
 > on real data only the **two signed** channels (`TFI`, `signed_count_imbalance`) behave that way
-> and carry 97.3% of the shortfall. The **four magnitude** channels co-vary with **volume** — which
+> and carry 97.3% of *cell 4's* shortfall (one seed; the 18 stored calibration replicates span
+> 77–93%). The **four magnitude** channels co-vary with **volume** — which
 > the OHLCV arm already carries — and essentially clear the gate. The corrected statement is *the
 > tokenizer keeps the microstructure that duplicates OHLCV and drops the signed channels*
 > (prereg §7 v1.6.43). **This paragraph is not being rewritten to match the outcome.** It is a
