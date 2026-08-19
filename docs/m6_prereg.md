@@ -260,6 +260,76 @@ three stacked judgment calls = an unlimited re-run license):**
     saw a duplicate. It tests for the **entry header** instead — a citation to an entry is not the
     entry, the same reference-versus-subject distinction one level up.
 
+  - **★★ THE SAME ANNOTATION A THIRD TIME, AND NOW IT HAS A MECHANISM.** `171a5b2` carries a
+    message describing the log-counting guard; **its tree is the prereg rephrasing recorded above
+    plus the two rebuilt PDFs, and contains no test file at all.** The guard that message describes
+    is genuinely committed — in `2ff24f7`, one commit earlier, whose message `171a5b2` reuses
+    **verbatim**. So the divergence here is not a lost deliverable but a **duplicated message
+    stamped onto another seat's tree**: the third instance of the `a96fbb1` shape, recorded rather
+    than amended because amending it would be a fourth rewrite. Permanent, like the first.
+  - **`254f20b` IS ORPHANED** — `git merge-base --is-ancestor 254f20b HEAD` returns **1**. Its
+    content is in the tree, swept into `171a5b2`, and its finding is the entry you are reading;
+    what did not survive is the message itself, quoted here so the record outlives its commit:
+
+    > THE RETIRED FILENAME IS GONE — and a96fbb1's census correction was left pointing at a source
+    > state the history rewrite destroyed.
+    >
+    > ★★ PERMANENT ANNOTATION ON a96fbb1, which cannot be amended and will not be rewritten. Its
+    > message carries the rephrasing and read-back findings verbatim; ITS TREE TOUCHED ZERO PREREG
+    > FILES. […]
+    >
+    > ★ THE DEFECT IT LEFT: THE PAPER OVER-COUNTED ITS OWN LOG BY ONE, IN FOUR PLACES. […] A
+    > DERIVED ARTIFACT WAS CORRECTED TO MATCH A SOURCE STATE A LATER HISTORY OPERATION THEN
+    > REMOVED — a new member of the propagation class: previously a correction failed to REACH a
+    > derived artifact; here it reached one and the source went away.
+    >
+    > ★ AND THE READ-BACK CAUGHT THE SAME TWO DEFECTS TWICE. The redo reproduced both, because I
+    > reapplied the FIRST-draft replacement text rather than the corrected one […] RECOVERING
+    > DESTROYED WORK FROM MEMORY RECOVERS THE DRAFT, NOT THE FIX.
+    >
+    > (c) MEASURED, THEN SET — not inferred. 62 entries / 65 tags, reconciled as 62 headers + 3
+    > in-body-only (v1.0, v1.6.24, v1.6.27) = 65 exact. NO .tex FILE NEEDED CHANGING […] Guards,
+    > unpiped, at this tree: tectonic 0, check_claim_drift 0, check_submission_build 0, ruff check
+    > . 0, ruff format --check . 0. 42 pp internal / 39 submission.
+
+  - **★ THE CAUSE, WHICH IS THE NEW PART: TWO SEATS COMMITTING TO ONE BRANCH CONCURRENTLY.** One
+    seat's commit captured the other seat's working-tree files under its own message. **Both
+    `a96fbb1` and `171a5b2` are this.** The remedy is **sequencing — one seat commits at a time —
+    not tooling**: at commit time the two seats' edits are one tree, and no hook, guard or check
+    can attribute a working-tree file to the seat that wrote it. This is a process rule, and it is
+    the only thing that prevents the shape.
+  - **AND THE MECHANISM IS SHARPER THAN A RACE: `171a5b2` REPLACED `254f20b` RATHER THAN FOLLOWING
+    IT.** Measured, not inferred: identical parent (`2ff24f7`), **byte-identical tree**
+    (`860a6597…`), identical author timestamp (15:13:23 +0530), committer timestamp three seconds
+    later. Two commits cannot share both a parent and a tree by racing — had the second seat
+    committed after the first, its parent would be `254f20b`, and against an unchanged tree a plain
+    commit would have found nothing to commit. That fingerprint — same parent, same tree, author
+    date preserved, committer date moved — is what `git commit --amend` leaves. **I did not observe
+    the command and do not assert it; I am reporting the fingerprint.** It strengthens the ruling
+    rather than weakening it: a replacement is invisible to every instrument the project owns, and
+    sequencing is what prevents it.
+  - **THE NUMBERING GAP, ESTABLISHED RATHER THAN GUESSED: THE NUMBER WAS SKIPPED, NOT REMOVED.**
+    The header sequence runs 19, 20, **22**, 23. The missing number is written here as `1.6.21`,
+    without its leading letter, **deliberately** — the literal tag would mint a 66th distinct tag
+    and move the very census this entry pins, which is the same class of self-interference the
+    write-guard above caught. Three lines of evidence: (1) `git log --all -S` for that string over
+    `docs/m6_prereg.md` returns **empty** — no reachable commit ever changed its count in this
+    file, and a removed entry would appear as a decrement; (2) the string occurs **zero** times in
+    the log at HEAD; (3) the only place it has ever existed is a *citation* in
+    `docs/m6_decisions_pending.md` §7, whose header was corrected on 2026-08-04 and which records
+    at that time that the tag *"has never existed in the amendment log"* — the substance it pointed
+    at had landed in **v1.6.22**. **The one caveat, stated rather than buried:** this history has
+    been rewritten repeatedly, so *"no reachable commit"* is not *"no commit that ever existed"*.
+    Line (3) is independent of the rewrites, and is why this reads as established rather than
+    merely unrefuted.
+  - **AND THERE ARE THREE HEADER GAPS, NOT ONE — TWO OF WHICH ALREADY HAVE THEIR ANSWER.** The
+    header sequence also skips 24 and 27. Those two are exactly two of the three **in-body-only**
+    tags in this entry's own census reconciliation (`v1.0`, `v1.6.24`, `v1.6.27`; 62 headers + 3 =
+    65): they are cited inside the body of other entries and never carried a header of their own.
+    **Only the gap at 21 is a true absence.** A referee counting headers will find all three, so
+    the log now explains all three — and the reconciliation that makes the census add up is the
+    same fact that closes two of them.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
