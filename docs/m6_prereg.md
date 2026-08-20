@@ -508,6 +508,81 @@ three stacked judgment calls = an unlimited re-run license):**
     `premise_supported_for_ABS_returns = False`. Routed to the builder with the measured values;
     the file is theirs and I did not touch it.
 
+  - **★★ THE INSTRUMENT FINDING, AND IT IS THE SHARPEST INSTANCE THIS PROJECT HAS OF ITS OWN
+    STANDING RULE.** A privacy item was reported closed on the strength of
+    `git grep -E '\b(...)\b'` returning nothing. It was open: **four routable third-party
+    addresses were live** in two tracked receipts under `public_ipaddr` — verified here by
+    counting, not by reading the report, three in one manifest and one in the other at the commit
+    before the fix, and zero in both after it. **An instrument that cannot fail reports success
+    indistinguishably from a clean result**, and the independent audit's own ACCEPT command for
+    that item was the same pattern, so it could not have failed either. Neither the sweep nor the
+    check on the sweep could have found anything.
+  - **AND THE MECHANISM IS WORSE THAN "POSIX ERE HAS NO `\b`", WHICH IS HOW I FIRST RECORDED
+    IT.** `git grep`'s ERE is the **platform's** regex engine: glibc implements `\b` as a GNU
+    extension and matches, BSD/macOS does not. **The same sweep therefore returns different
+    answers on different machines** — not reliably empty, which would eventually be noticed, but
+    quietly disagreeing with itself across the team. Confirmed here on one platform with the
+    control that makes it a proof rather than an observation: `git grep -E 'word'` matches while
+    `git grep -E '\bword\b'` returns nothing and exits 1, so the failure is the `\b` and not the
+    file, the repository or the tool; `git grep -P` matches. **The portable rule is the explicit
+    character-class form, or matching in a real regex engine and classifying with a library** —
+    and the first attempt to pin this lesson asserted the macOS answer as universal, passed
+    locally, and failed in CI, which is how the platform split was found at all.
+  - **★★ AND I MUST CORRECT MY OWN LAST ENTRY: THE TWO PARTICULARS I SAID DID NOT REPRODUCE, DO.**
+    I reported that the second affected symbol was BNXUSDT rather than YFIIUSDT and that no
+    segment of 72,378 bars existed. **Both statements were wrong, and the fault was in my scan.**
+    Lake rows are not stored in `bar_open_ms` order — not even within one parquet file — so my
+    concatenation put non-adjacent bars next to each other, and every run length I measured was
+    taken over a shuffled series. Compounding it, I grouped segments by *consecutive runs* of
+    `segment_id` rather than by the id itself: HOTUSDT has four segments and my method saw
+    fourteen, which invents segment ends and hides the real ones. **Re-run correctly — sorted by
+    timestamp, grouped by segment identity — the receipt reproduces exactly**: HOTUSDT segment 0
+    (72,378 bars) trailing 2 on dims 9 and 10 and 1 on dim 0; YFIIUSDT segment 2 (13,503 bars)
+    trailing 2 on dims 6 and 10; worst trailing run **2**; **no affected symbol in the draw**; zero
+    non-finite persisted; 304,625,181 bars. BNXUSDT does not appear at all.
+  - **THE CONCLUSION SURVIVED BOTH A WRONG METHOD AND A RIGHT ONE, WHICH IS NOT A DEFENCE OF THE
+    WRONG ONE.** *No published number depended on the old behaviour* was true before and is true
+    now, and the two orderings happen to agree on the headline because the effect is enormous —
+    2 bars against segments of 72,378 and 1,445,760. **An answer that is right for a broken reason
+    is one input away from being wrong for the same reason**, and the only thing that exposed the
+    method was comparing it against an artifact.
+  - **WHICH IS THE RECEIPT ARGUMENT, RESTATED PROPERLY.** I recorded last time that a
+    304-million-bar production claim existed only as prose in a commit message. That still stands
+    and the receipt now exists. But the lesson I drew from it was the wrong one: I said the
+    receipt would have pinned two particulars that had drifted, **and nothing had drifted.** The
+    real cost of the missing artifact is larger and less comfortable: with nothing to check
+    against, the only way to verify was to rebuild the measurement from scratch, my rebuild was
+    wrong in a way invisible from inside itself, and the error surfaced as **a false accusation
+    against work that was correct**. A receipt is not only a record of what was measured; it is
+    the thing a second measurement can be wrong *against*.
+  - **★ THE RECEIPT DOES CARRY ONE WRONG NUMBER, AND IT IS THE ONE ILLUSTRATING THE METHOD.**
+    `longest_mid_segment_run_dim0` records 3,018 consecutive bars of exactly −5.0 on DOGEUSDT,
+    segment 0, dim 0. **Measured: that run is 9 bars.** The longest mid-segment run anywhere in
+    the lake is **265** (RNDRUSDT, segment 0, dim 6), and **no run of exactly 3,018 exists on any
+    symbol or dim**. The claim it supports is unharmed — the point is that a scan for "−5.0
+    anywhere" would be swamped by legitimate clipping, and 265 against a trailing 2 is still a
+    132× separation — but the figure is wrong by a factor of 335 and it is the figure a reader
+    would quote. Routed to the builder.
+  - **AND ONE MORE OF MINE, WHICH IS THE EXACT DEFECT I WAS DOCUMENTING.** I checked the lag-240
+    ACF figure against the all-200 basis (0.1597) and called the published 0.15 an understatement
+    of 0.16. **The pinned-40 value is 0.1837**, and it was in the artifact the whole time under
+    `lake.abs_return_acf_volatility_clustering` — a block I never opened because `.reading` looked
+    like the whole summary. **I quoted the basis that gave the smaller number while writing the
+    entry about quoting the basis that gives the smaller number.** The corrected row now names a
+    basis for every figure: signed 0.0072 pinned / 0.0067 all-200; \|return\| 0.2323 pinned /
+    0.2097 all-200 / 0.3604 worst symbol; lag 240 0.1837 pinned / 0.1597 all-200. All verified
+    against the artifact.
+  - **★ THE GUARD CLASS IN ITS CORRECT FORM — FIVE INSTANCES, ONE ROOT CAUSE, TWO OPPOSITE
+    MODES.** All five judged a claim by the whole document instead of by its own site, but they
+    failed in opposite directions and a record naming only one leaves the other standing. **Two
+    passed vacuously** — `assert GOOD in text` satisfied by a page that merely discusses the
+    topic: the tilde required "somewhere in the file" and met by the sentence explaining the
+    tilde, and `cell 4` met by an unrelated neighbouring sentence. **Three fired wrongly** —
+    `assert BAD not in text` firing on the fix, because every correction names what it retires.
+    **Repairing only the false positives leaves two checks that cannot fail**, which is the same
+    shape as the sweep above. One remedy covers both: judge a mention by its own paragraph or its
+    own code block; a mention whose own paragraph retires it is a record, not a claim.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
