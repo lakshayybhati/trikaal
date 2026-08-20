@@ -23,8 +23,19 @@ MODE B — fires on the correction (the check cannot pass):
 5. ``deliberately not started here`` banned as a string, firing on the docstring that quotes it in
    order to say it was false.
 
+6. ``tests/test_no_routable_addresses.py`` flagged ITSELF: its docstring quotes CUDA versions that
+   parse as addresses, and its negative control must plant a REAL routable address (RFC-5737
+   documentation ranges report ``is_global=False``, which would make the control vacuous). Mode B
+   again, in the file whose whole subject is this distinction — and it could not see itself until
+   it was committed, because the sweep walks ``git ls-files``.
+
 Both modes have one cause — the document was the unit of judgement instead of the claim — so both
 are fixed by the same move, and a repair that addresses only Mode B leaves Mode A intact.
+
+★ AND A GUARD THAT EXEMPTS ITSELF MUST CHECK THE EXEMPTION. Instance 6 is exempt from its own
+sweep, so it asserts that every routable value it carries sits in a docstring or a test body and
+never in a data field, and that removing the exemption WOULD have caught it. An unchecked
+self-exemption is just Mode A with extra steps.
 
 The discipline is the same in all five: a mention is judged by the PARAGRAPH it sits in, or by the
 code block it sits in, and never by the document as a whole. A mention whose own paragraph retires

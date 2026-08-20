@@ -39,11 +39,21 @@ TEXT_SUFFIXES = {".md", ".py", ".txt", ".json", ".jsonl", ".yml", ".yaml", ".sh"
 VERSION_CONTEXT = re.compile(r"version\s*=|\.whl|\.tar\.gz|files\.pythonhosted\.org|upload-time")
 
 
-def _tracked_text_files() -> list[Path]:
+#: THIS FILE IS EXEMPT FROM ITS OWN SWEEP, and that is the sixth instance of the class in
+#: ``tests/claim_site.py`` — Mode B, a check firing on the document that describes it. It carries
+#: a routable address ON PURPOSE (the negative control must use one; RFC-5737 documentation ranges
+#: report ``is_global=False`` and would make the control vacuous) and quotes CUDA versions in its
+#: docstring. It could not see itself until it was committed, because the sweep walks
+#: ``git ls-files``. The exemption is CHECKED below rather than trusted.
+SELF = Path(__file__).resolve()
+
+
+def _tracked_text_files(*, include_self: bool = False) -> list[Path]:
     out = subprocess.run(
         ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
     ).stdout.split("\n")
-    return [REPO / p for p in out if p and Path(p).suffix in TEXT_SUFFIXES]
+    files = [REPO / p for p in out if p and Path(p).suffix in TEXT_SUFFIXES]
+    return files if include_self else [f for f in files if f.resolve() != SELF]
 
 
 def _routable_hits(path: Path) -> list[tuple[int, str]]:
@@ -121,7 +131,11 @@ def test_git_grep_cannot_be_used_for_this() -> None:
 
 
 def test_no_test_or_script_passes_a_word_boundary_to_git_grep() -> None:
-    """Nothing in the repo may inherit the defect. Measured: no git grep exists here at all."""
+    """Nothing in the repo may inherit the defect. Measured: no git grep exists here at all.
+
+    This file is exempt: its docstring QUOTES the broken pattern in order to explain it, which is
+    a record and not a usage — the reference-vs-subject distinction in ``tests/claim_site.py``.
+    """
     offenders = []
     for f in _tracked_text_files():
         if f.suffix not in {".py", ".sh"}:
@@ -171,3 +185,58 @@ def test_the_ssh_hostport_is_gone() -> None:
     text = RUNBOX.read_text()
     assert "HostPort REDACTED" in text
     assert not re.search(r"HostPort\s+\d+", text), "an SSH HostPort survives"
+
+
+# ── the self-exemption, checked rather than trusted ───────────────────────────────────────────
+def test_this_files_own_addresses_are_fixtures_and_nothing_else() -> None:
+    """The exemption above must rot loudly. Every routable value in this file has to sit in a
+    docstring or a test body — never in a data field like ``public_ipaddr`` — or the file has
+    become the very thing it exists to prevent."""
+    import ast
+
+    src = SELF.read_text()
+    lines = src.splitlines()
+    tree = ast.parse(src)
+
+    # docstring line spans, resolved by AST rather than guessed from how a line starts — a
+    # continuation line of a docstring begins with a word, not a quote, which is what a
+    # line-shape heuristic gets wrong.
+    doc_spans = []
+    for node in [tree, *ast.walk(tree)]:
+        if isinstance(node, (ast.Module, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            d = node.body[0] if node.body else None
+            if isinstance(d, ast.Expr) and isinstance(d.value, ast.Constant):
+                if isinstance(d.value.value, str):
+                    doc_spans.append((d.lineno, d.end_lineno))
+    fn_spans = [
+        (n.lineno, n.end_lineno)
+        for n in ast.walk(tree)
+        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+    ]
+
+    def inside(lineno, spans):
+        return any(lo <= lineno <= hi for lo, hi in spans)
+
+    for lineno, addr in _routable_hits(SELF):
+        line = lines[lineno - 1]
+        if inside(lineno, fn_spans):
+            continue  # inside a test body it IS a fixture — that is what a control is
+        assert inside(lineno, doc_spans), (
+            f"line {lineno} carries {addr} at module scope, outside any docstring or test body — "
+            f"which is the shape of real data, not of an example: {line.strip()}"
+        )
+        assert not re.search(r'"(public_ipaddr|endpoint|host|ip)"\s*:\s*"', line), (
+            f"line {lineno} carries {addr} in a DATA field: {line.strip()}"
+        )
+
+
+def test_the_sweep_would_see_this_file_if_it_were_not_exempt() -> None:
+    """ANTI-VACUITY FOR THE EXEMPTION ITSELF. If the exemption were silently doing nothing, or if
+    the file stopped carrying a control address, this would pass for the wrong reason."""
+    with_self = {f.resolve() for f in _tracked_text_files(include_self=True)}
+    without = {f.resolve() for f in _tracked_text_files()}
+    assert with_self - without == {SELF}, "the exemption is not excluding exactly this file"
+    assert _routable_hits(SELF), (
+        "this file no longer carries a routable control address — the negative control above is "
+        "vacuous, and the exemption is no longer needed"
+    )
