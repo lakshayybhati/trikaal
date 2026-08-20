@@ -1,43 +1,54 @@
-"""The amendment log must account for every revision tag it contains.
+"""The amendment log must account for every revision tag it contains — checked against a COUNT.
 
-THE IDENTITY: ``headers + in-body-only == total distinct tags``.
+★ WHAT THIS FILE USED TO DO, AND WHY IT WAS WORTHLESS. It asserted an "identity":
+``len(headers) + len(in_body_only) == len(tags)``, plus ``headers.isdisjoint(in_body_only)`` and
+``headers | in_body_only == tags``. But ``in_body_only`` is DEFINED as ``tags - headers``, so all
+three reduce to ``headers ⊆ tags`` and are otherwise true of every possible input. Measured: the
+identity holds on the empty string, on 200 random strings, and on the real log **with every header
+line stripped out**. Its only non-tautological behaviour was a LATENT FALSE POSITIVE — ``TAG`` was
+anchored to ``v1.`` while ``HEADER`` accepted any major version, so the first legitimate ``v2.0``
+entry would have failed it. I specified that identity and called it the durable win of the day.
 
-WHY THIS SHAPE. Its predecessor compared the log against numbers the manuscript asserted. That
-caught a real one-off error, and it had a structural weakness the writer named: **equality between
-two documents can hold while both are wrong**, and it dies the moment either side goes away — which
-is exactly what happened when the manuscript left the repository on 2026-08-19. This identity is
-INTERNAL. It needs no second document, so it cannot be defeated by one going missing, and it
-catches the failure that started the whole episode: **a tag silently gaining or losing a header.**
+WHAT SURVIVES. The file was not worthless: its ``>10k`` / ``>=40`` / ``>=40`` bounds do reject an
+emptied log, a truncated log and a header-stripped log, which is exactly the vacuity the identity
+waves through. Those are kept.
 
-WHAT EACH TERM MEANS. A *header* is a top-level list item whose first bold token is the tag — an
-entry with its own dated body. An *in-body-only* tag is one referenced inside another entry's prose
-without an entry of its own; there are legitimately three (``v1.0``, ``v1.6.24``, ``v1.6.27``). Any
-tag must be exactly one of the two. If a header is deleted while its tag survives in prose, or a
-new tag appears with no entry, the sum stops matching the total and this fails.
+WHAT REPLACES THE IDENTITY. Two checks that can actually fail:
 
-★ IT REFUSES RATHER THAN PASSING VACUOUSLY. Its predecessor's most useful moment was asserting
-``0 >= 4`` and FAILING when its input vanished, instead of reporting "no disagreements found" over
-an empty scan. That property is preserved deliberately: ``test_the_log_is_actually_populated``
-requires a plausible number of headers and tags before any identity is believed, so an emptied,
-truncated or renamed log fails loudly instead of going quiet.
+1. **A CENSUS**, pinned as numbers. 62 entry headers, 65 distinct tags, and three named
+   in-body-only tags. Any drift fails and must be updated deliberately, which is the point — a
+   count that moves silently is how an entry gets deleted without anyone noticing.
+2. **SEQUENCE CONTINUITY**, derived from the tags themselves and independent of the header regex.
+   Amendments are numbered, so a deleted entry leaves a HOLE: ``v1.6`` runs 1–51 with exactly one
+   justified gap at 21, ``v1.4`` runs 1–7 with none. An unexplained gap is a missing amendment,
+   and no arrangement of headers can hide it.
 
-★ THE TAG PATTERN IS TWO-PART AWARE, and a three-part pattern is wrong. Tags come as ``v1.6.49``
-and as ``v1.5``. A ``v\\d+\\.\\d+\\.\\d+`` pattern silently drops ``v1.0 v1.1 v1.2 v1.3 v1.4 v1.5
-v1.6`` — seven tags, an undercount that looks like a plausible answer.
+``TAG`` is also no longer anchored to major version 1, so it and ``HEADER`` see the same universe
+and the false positive is gone.
 """
 
 from __future__ import annotations
 
 import re
+from collections import defaultdict
 from pathlib import Path
+
+import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 PREREG = REPO / "docs" / "m6_prereg.md"
 
-# Greedy optional third group: `v1.6.49` matches whole; a bare `v1.5` still matches.
-TAG = re.compile(r"\bv1\.\d+(?:\.\d+)?\b")
-# A top-level entry: list item whose first bold token is the tag. Not anchored to a major version.
+# Greedy optional third group: `v1.6.49` matches whole; a bare `v1.5` still matches. NOT anchored
+# to major version 1 — that mismatch against HEADER was the old file's one live defect.
+TAG = re.compile(r"\bv\d+\.\d+(?:\.\d+)?\b")
 HEADER = re.compile(r"^- \*\*(v\d+\.\d+(?:\.\d+)?)", re.M)
+
+# ── THE CENSUS. Measured 2026-08-20; update deliberately, never to make a failure go away. ────
+EXPECTED_HEADERS = 62
+EXPECTED_TAGS = 65
+EXPECTED_IN_BODY_ONLY = {"v1.0", "v1.6.24", "v1.6.27"}
+#: Numbering holes that are real and accounted for. A gap NOT listed here is a deleted amendment.
+JUSTIFIED_GAPS = {"v1.6": {21}}
 
 
 def headers(text: str) -> set[str]:
@@ -52,25 +63,76 @@ def in_body_only(text: str) -> set[str]:
     return tags(text) - headers(text)
 
 
+def families(text: str) -> dict[str, set[int]]:
+    """``{"v1.6": {1, 2, ...}}`` — patch numbers per major.minor family."""
+    fam: dict[str, set[int]] = defaultdict(set)
+    for tag in tags(text):
+        parts = tag[1:].split(".")
+        if len(parts) == 3:
+            fam[f"v{parts[0]}.{parts[1]}"].add(int(parts[2]))
+    return dict(fam)
+
+
 def _log() -> str:
     return PREREG.read_text()
 
 
+# ── the subject exists and is real ────────────────────────────────────────────────────────────
 def test_the_log_exists() -> None:
     assert PREREG.exists(), "the amendment log is the subject; without it this proves nothing"
 
 
 def test_the_log_is_actually_populated() -> None:
-    """★ REFUSE RATHER THAN PASS VACUOUSLY. An empty log satisfies every identity below."""
+    """★ REFUSE RATHER THAN PASS VACUOUSLY — and these bounds are the part of the old file that
+    genuinely worked, so they are kept verbatim in spirit."""
     t = _log()
     assert len(t) > 10_000, f"log is {len(t)} bytes — implausibly small, refusing to check it"
     assert len(headers(t)) >= 40, f"only {len(headers(t))} entry headers found; the scan is broken"
     assert len(tags(t)) >= 40, f"only {len(tags(t))} distinct tags found; the scan is broken"
 
 
+# ── the census ────────────────────────────────────────────────────────────────────────────────
+def test_the_entry_census_matches() -> None:
+    t = _log()
+    h, a, ib = len(headers(t)), len(tags(t)), in_body_only(t)
+    assert (h, a) == (EXPECTED_HEADERS, EXPECTED_TAGS), (
+        f"census moved: {h} headers / {a} tags, expected "
+        f"{EXPECTED_HEADERS} / {EXPECTED_TAGS}. If an amendment was genuinely added or removed, "
+        "update the constants in this file in the same commit and say so."
+    )
+    assert ib == EXPECTED_IN_BODY_ONLY, (
+        f"the in-body-only set changed: {sorted(ib)} vs {sorted(EXPECTED_IN_BODY_ONLY)} — a header "
+        "was probably deleted while its tag survived in another entry's prose"
+    )
+
+
+# ── sequence continuity: independent of the header regex ─────────────────────────────────────
+def test_no_amendment_number_is_missing() -> None:
+    """A DELETED ENTRY LEAVES A HOLE, and no arrangement of headers can conceal it."""
+    holes = {}
+    for fam, patches in sorted(families(_log()).items()):
+        gaps = {i for i in range(1, max(patches) + 1) if i not in patches}
+        unexplained = gaps - JUSTIFIED_GAPS.get(fam, set())
+        if unexplained:
+            holes[fam] = sorted(unexplained)
+    assert not holes, f"amendment numbers missing from the log: {holes}"
+
+
+def test_the_justified_gaps_are_still_gaps() -> None:
+    """An allow-list must rot loudly: if v1.6.21 ever appears, this exemption is stale."""
+    fam = families(_log())
+    for name, gaps in JUSTIFIED_GAPS.items():
+        assert name in fam, f"family {name} vanished from the log"
+        for g in gaps:
+            assert g not in fam[name], (
+                f"{name}.{g} now EXISTS — remove it from JUSTIFIED_GAPS rather than leaving a "
+                "dead exemption behind"
+            )
+
+
 def test_the_tag_pattern_sees_two_part_tags() -> None:
     """A three-part pattern undercounts by seven and looks plausible while doing it."""
-    for t in ("v1.0", "v1.1", "v1.5", "v1.6"):
+    for t in ("v1.0", "v1.1", "v1.5", "v1.6", "v2.0"):
         assert TAG.fullmatch(t), f"{t} must match — two-part tags are real tags"
     for t in ("v1.6.49", "v1.2.1"):
         assert TAG.fullmatch(t), f"{t} must match whole, not as its two-part prefix"
@@ -81,59 +143,45 @@ def test_the_tag_pattern_sees_two_part_tags() -> None:
     )
 
 
-def test_every_tag_is_either_a_header_or_an_in_body_reference() -> None:
-    """THE IDENTITY. headers + in-body-only == total distinct tags."""
-    t = _log()
-    h, ib, all_t = headers(t), in_body_only(t), tags(t)
-    assert len(h) + len(ib) == len(all_t), (
-        f"{len(h)} headers + {len(ib)} in-body-only != {len(all_t)} distinct tags"
-    )
-    assert h.isdisjoint(ib), f"a tag counted twice: {sorted(h & ib)}"
-    assert h | ib == all_t
-
-
-def test_the_in_body_only_set_is_small_and_named() -> None:
-    """In-body-only tags are legitimate but should stay few; a jump means a header was lost."""
-    ib = in_body_only(_log())
-    assert len(ib) <= 6, (
-        f"{len(ib)} tags have no entry of their own ({sorted(ib)}) — a header was probably deleted "
-        f"while its tag survived in prose, which is the failure this identity exists to catch"
+def test_TAG_and_HEADER_see_the_same_universe() -> None:
+    """THE OLD FILE'S ONE LIVE DEFECT: TAG was anchored to v1 and HEADER was not, so the first v2
+    entry would have failed a check that was otherwise true of every input."""
+    v2 = "- **v2.0 (2099-01-01):** the first v2 entry.\n"
+    assert headers(v2) == {"v2.0"} and tags(v2) == {"v2.0"}
+    assert not (headers(_log() + v2) - tags(_log() + v2)), (
+        "a v2 header is not seen as a tag — the anchoring mismatch is back"
     )
 
 
-def test_a_tag_without_a_header_is_caught() -> None:
-    """MUTATION 1 — plant a tag in prose with no entry; in-body-only must grow."""
-    t = _log()
-    before = len(in_body_only(t))
-    planted = t + "\n  Some prose mentioning v1.9.9 with no entry of its own.\n"
-    after = len(in_body_only(planted))
-    assert after == before + 1, f"a headerless tag was NOT caught: {before} -> {after}"
-    assert "v1.9.9" in in_body_only(planted)
+# ── a deliberately corrupted log must FAIL ────────────────────────────────────────────────────
+@pytest.mark.parametrize(
+    ("name", "corrupt"),
+    [
+        ("emptied", lambda t: ""),
+        ("truncated", lambda t: t[:5000]),
+        (
+            "headers stripped",
+            lambda t: "\n".join(ln for ln in t.split("\n") if not ln.startswith("- **v")),
+        ),
+        ("one entry deleted", lambda t: re.sub(r"^- \*\*v1\.6\.30.*$", "", t, count=1, flags=re.M)),
+    ],
+)
+def test_a_corrupted_log_fails(name, corrupt) -> None:
+    """★ THE ACCEPT. The old identity survived every one of these."""
+    t = corrupt(_log())
+    populated = len(t) > 10_000 and len(headers(t)) >= 40 and len(tags(t)) >= 40
+    census = (len(headers(t)), len(tags(t))) == (EXPECTED_HEADERS, EXPECTED_TAGS)
+    assert not (populated and census), f"a {name} log passed both checks"
 
 
-def test_a_header_without_its_tag_in_the_body_is_still_counted(tmp_path) -> None:
-    """MUTATION 2 — plant an entry header; headers must grow and the identity must hold."""
-    t = _log()
-    h0, all0 = len(headers(t)), len(tags(t))
-    planted = t + "\n- **v1.9.8 (2099-01-01, A PLANTED ENTRY):** not a real amendment.\n"
-    assert len(headers(planted)) == h0 + 1, "planting an entry must move the header count"
-    assert len(tags(planted)) == all0 + 1, "its tag must also join the total"
-    assert len(headers(planted)) + len(in_body_only(planted)) == len(tags(planted))
+def test_the_old_identity_would_have_passed_all_of_those() -> None:
+    """NEGATIVE CONTROL, and the reason this file was rewritten. Kept so nobody reintroduces it."""
 
+    def old_identity(t: str) -> bool:
+        h, ib, a = headers(t), in_body_only(t), tags(t)
+        return len(h) + len(ib) == len(a) and h.isdisjoint(ib) and (h | ib) == a
 
-def test_deleting_a_header_while_its_tag_survives_breaks_the_identity() -> None:
-    """★ MUTATION 3 — THE ACTUAL FAILURE THIS EXISTS FOR, and the identity must move.
-
-    Strip one entry's header line while its tag still appears in another entry's prose. The tag
-    total is unchanged; the header count drops; the tag migrates into in-body-only. The identity
-    still SUMS — that is what makes it an identity — so what must be caught is the MIGRATION, which
-    is why ``test_the_in_body_only_set_is_small_and_named`` bounds that set rather than trusting
-    the sum alone. Both halves are needed; neither alone would see this.
-    """
-    t = _log()
-    victim = sorted(headers(t))[0]
-    h0, ib0 = len(headers(t)), len(in_body_only(t))
-    mutated = re.sub(rf"^- \*\*{re.escape(victim)}", f"  (was {victim})", t, count=1, flags=re.M)
-    assert len(headers(mutated)) == h0 - 1, f"header removal not detected for {victim}"
-    assert len(in_body_only(mutated)) == ib0 + 1, "the orphaned tag did not migrate as expected"
-    assert victim in in_body_only(mutated)
+    stripped = "\n".join(ln for ln in _log().split("\n") if not ln.startswith("- **v"))
+    assert old_identity("") and old_identity("nonsense") and old_identity(stripped), (
+        "the old identity no longer passes on empty input — re-read this file's premise"
+    )

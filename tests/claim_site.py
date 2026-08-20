@@ -6,14 +6,25 @@ WHOLE PURPOSE WAS TO CATCH THAT KIND OF MISTAKE.
 Every time a defect gets corrected, the correction NAMES the thing it retired — that is what makes
 a correction legible. So the corrected document contains the retired string, and a guard written
 as ``assert BAD not in text`` fires on the fix, while ``assert GOOD in text`` passes on a page that
-merely discusses the topic. The five instances, all in this repository, all mine:
+merely discusses the topic. ★ FIVE INSTANCES IN **TWO OPPOSITE MODES**, and that distinction was itself a correction to my
+own account of it. I first described these as one failure — checks firing on the fix — and that
+covered only three of them. Repairing only the false positives would have left two checks that
+CANNOT FAIL, which is the worse half: a noisy guard gets investigated, a silent one never does.
+
+MODE A — passes vacuously (the check cannot fail):
 
 1. a tilde required "somewhere in the file", satisfied by the sentence EXPLAINING the tilde;
-2. ``cell 4`` required within 200 characters, satisfied by an unrelated neighbouring sentence;
+2. ``cell 4`` required within 200 characters, satisfied by an unrelated neighbouring sentence.
+
+MODE B — fires on the correction (the check cannot pass):
+
 3. ``weights_only=False`` banned as a string, firing on the sentence WARNING against it;
 4. ``the spec wins`` banned as a string, firing on the line quoting it as superseded;
 5. ``deliberately not started here`` banned as a string, firing on the docstring that quotes it in
    order to say it was false.
+
+Both modes have one cause — the document was the unit of judgement instead of the claim — so both
+are fixed by the same move, and a repair that addresses only Mode B leaves Mode A intact.
 
 The discipline is the same in all five: a mention is judged by the PARAGRAPH it sits in, or by the
 code block it sits in, and never by the document as a whole. A mention whose own paragraph retires

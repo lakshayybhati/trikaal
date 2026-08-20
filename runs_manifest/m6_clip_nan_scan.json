@@ -1,0 +1,94 @@
+{
+  "METHOD": "The signature is a TRAILING run of exactly -5.0 reaching the END of a segment, not a run of -5.0 anywhere. The EWMA state updates as mu <- mu + alpha*(f[i]-mu), so a single non-finite input makes mu non-finite and it CAN NEVER RECOVER; every later live bar in that segment then reads -5.0. Poisoning therefore always runs to the segment end, which is what makes this a COMPLETE test rather than an indicative one.",
+  "VERDICT": "NO LAUNDERING. Zero non-finite values are persisted anywhere in the lake, and the longest trailing run of exactly -5.0 on any z-scored dim is 2 bar(s) on a segment of 13503 bars \u2014 ordinary tail clipping, not a poisoned segment, which would cover the whole tail. No published number depended on the old behaviour.",
+  "WHY_THE_DISTINCTION_MATTERS": "Ordinary quiet-period clipping reaches 3,018 consecutive bars of exactly -5.0 mid-segment (DOGEUSDT, segment 0, dim 0). A scan for '-5.0 anywhere' would be swamped by legitimate clipping; only the trailing form is diagnostic.",
+  "any_affected_symbol_in_the_training_draw": [],
+  "clip_lo": -5.0,
+  "lake": {
+    "n_bars": 304625181,
+    "n_symbols": 200
+  },
+  "longest_mid_segment_run_dim0": {
+    "bars": 3018,
+    "segment_id": 0,
+    "symbol": "DOGEUSDT"
+  },
+  "non_finite_persisted_by_dim": {},
+  "non_finite_persisted_total": 0,
+  "receipt": "m6_clip_nan_scan",
+  "script": "scripts/m6_clip_nan_scan.py",
+  "symbols_with_any_trailing_run": [
+    "HOTUSDT",
+    "YFIIUSDT"
+  ],
+  "trailing_runs_by_dim": {
+    "x_0": [
+      {
+        "fraction_of_segment": 1.3816353035452762e-05,
+        "segment_bars": 72378,
+        "segment_id": 0,
+        "symbol": "HOTUSDT",
+        "trailing_bars": 1
+      }
+    ],
+    "x_1": [],
+    "x_10": [
+      {
+        "fraction_of_segment": 0.0001481152336517811,
+        "segment_bars": 13503,
+        "segment_id": 2,
+        "symbol": "YFIIUSDT",
+        "trailing_bars": 2
+      },
+      {
+        "fraction_of_segment": 2.7632706070905525e-05,
+        "segment_bars": 72378,
+        "segment_id": 0,
+        "symbol": "HOTUSDT",
+        "trailing_bars": 2
+      }
+    ],
+    "x_11": [],
+    "x_14": [],
+    "x_15": [],
+    "x_5": [],
+    "x_6": [
+      {
+        "fraction_of_segment": 0.0001481152336517811,
+        "segment_bars": 13503,
+        "segment_id": 2,
+        "symbol": "YFIIUSDT",
+        "trailing_bars": 2
+      }
+    ],
+    "x_9": [
+      {
+        "fraction_of_segment": 2.7632706070905525e-05,
+        "segment_bars": 72378,
+        "segment_id": 0,
+        "symbol": "HOTUSDT",
+        "trailing_bars": 2
+      }
+    ]
+  },
+  "training_draw_available": true,
+  "what": "Whether the pre-fix _clip ever laundered a non-finite value into the published lake. _clip was min(CLIP_HI, max(CLIP_LO, x)); comparisons against NaN are False, so NaN returned CLIP_LO = -5.0 and the isfinite tripwire in compute_features could not fire.",
+  "worst_trailing_run": {
+    "fraction_of_segment": 0.0001481152336517811,
+    "segment_bars": 13503,
+    "segment_id": 2,
+    "symbol": "YFIIUSDT",
+    "trailing_bars": 2
+  },
+  "z_scored_dims": [
+    0,
+    1,
+    5,
+    6,
+    9,
+    10,
+    11,
+    14,
+    15
+  ]
+}

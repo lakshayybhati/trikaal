@@ -1,66 +1,71 @@
 {
-  "DO_NOT_COMMIT_DURING_THE_RUN": "git_commit is identity key #2; a commit moves HEAD and refuses all 25 units. Commit this file AFTER the verdict.",
-  "ON_RESUME": "re-rent offer_id 45758017, re-stamp all 16 keys, and PROVE every one matches provenance_stamp_all_16_keys BEFORE resuming. Any difference => STOP AND REPORT; do not resume onto a different instrument.",
-  "RE_RENT_COMPARISON_CAVEAT": "COMPARE LIKE WITH LIKE. The stamp recorded here was taken via `m6_money_run.py::preflight_provenance`, which does NOT call orchestrator.set_determinism, so keys 14/15 read deterministic_algorithms=False / cudnn_deterministic=False. The RUN's artifacts stamp AFTER set_determinism and read True/True (verified in the P2 manifest). Both are correct for their site. On a re-rent, re-stamp with preflight_provenance and compare to THIS record; do NOT compare this record against a production artifact, or keys 14 and 15 will look like a machine mismatch when they are a call-site difference.",
-  "lake_subset_manifest_sha256": "20dee91e6f1b0cce3c0124e175eb52e91813bbaab3867e5a8ef4da661f0f7ef5",
-  "p2_green_at": {
-    "P2_EXIT": 0,
-    "all_16_identity_keys_real": true,
-    "artifacts_sha256": {
-      "eval/cell1_seed0_eval.json": "ab687718b351e508a35b0ad1f5a9dd8683b7e92c7ce58f3beb90ce39efbc12ee",
-      "money_run_manifest.json": "7c0be4457182c39c6415e24249d02f3a9fb1a64b73f1f99e7b0431eae2a40450"
-    },
-    "tree_state": "9525a572c4604700d1d8677915aec25521aa09af"
+ "ADDRESS_REDACTION": "REDACTED, NOT DELETED. Each rented box's public IPv4 was replaced by sha256(address)[:16]. THE CLAIM THIS FILE MAKES IS DISTINCTNESS -- that the shards ran on different physical machines, which host_id cannot establish because one host_id is a provider ACCOUNT operating many machines -- and three distinct digests carry it exactly as well as three addresses. NOT A CRYPTOGRAPHIC GUARANTEE: IPv4 is a 32-bit space, so the digest is recoverable by exhaustive search; what the substitution buys is removal from the plaintext surface that code search and automated scanners read. The instances were destroyed in August 2026. The SSH HostPort was dropped entirely -- it proved nothing.",
+ "DO_NOT_COMMIT_DURING_THE_RUN": "git_commit is identity key #2; a commit moves HEAD and refuses all 25 units. Commit this file AFTER the verdict.",
+ "ON_RESUME": "re-rent offer_id 45758017, re-stamp all 16 keys, and PROVE every one matches provenance_stamp_all_16_keys BEFORE resuming. Any difference => STOP AND REPORT; do not resume onto a different instrument.",
+ "RE_RENT_COMPARISON_CAVEAT": "COMPARE LIKE WITH LIKE. The stamp recorded here was taken via `m6_money_run.py::preflight_provenance`, which does NOT call orchestrator.set_determinism, so keys 14/15 read deterministic_algorithms=False / cudnn_deterministic=False. The RUN's artifacts stamp AFTER set_determinism and read True/True (verified in the P2 manifest). Both are correct for their site. On a re-rent, re-stamp with preflight_provenance and compare to THIS record; do NOT compare this record against a production artifact, or keys 14 and 15 will look like a machine mismatch when they are a call-site difference.",
+ "address_digests": {
+  "algorithm": "sha256(address)[:16]",
+  "n_distinct": 1
+ },
+ "lake_subset_manifest_sha256": "20dee91e6f1b0cce3c0124e175eb52e91813bbaab3867e5a8ef4da661f0f7ef5",
+ "p2_green_at": {
+  "P2_EXIT": 0,
+  "all_16_identity_keys_real": true,
+  "artifacts_sha256": {
+   "eval/cell1_seed0_eval.json": "ab687718b351e508a35b0ad1f5a9dd8683b7e92c7ce58f3beb90ce39efbc12ee",
+   "money_run_manifest.json": "7c0be4457182c39c6415e24249d02f3a9fb1a64b73f1f99e7b0431eae2a40450"
   },
-  "payload_sha256": "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc",
-  "provenance_stamp_all_16_keys": {
-    "attention_mode": "sdpa_deterministic",
-    "cuda_build": "13.0",
-    "cudnn_benchmark": false,
-    "cudnn_deterministic": false,
-    "deterministic_algorithms": false,
-    "device": "cuda",
-    "driver_version": "595.71.05",
-    "git_commit": "d8a28f625df3c5ade68990523dd96c72816bff21",
-    "gpu_name": "NVIDIA GeForce RTX 4090",
-    "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
-    "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
-    "numpy": "2.4.6",
-    "platform": "Linux-5.15.0-179-generic-x86_64-with-glibc2.35",
-    "python": "3.11.10",
-    "python_executable": "/opt/conda/bin/python",
-    "steps_stage1": 26003,
-    "steps_stage2": 26003,
-    "torch": "2.12.1+cu130"
-  },
-  "receipt": "m6_run_box_identity",
-  "recorded_at_utc": "2026-08-11T09:0x (batch 2, this session)",
-  "stamp_taken_via": "scripts/m6_money_run.py::preflight_provenance('cuda') \u2014 the DRIVER'S OWN function, not a near-relative of it, so the recorded values are byte-for-byte what the gate will compare on a re-rent",
-  "superseded": {
-    "commit_history": [
-      "0efbcbbac27e219e34bf8bacce24198166fed6d7",
-      "9525a572c4604700d1d8677915aec25521aa09af",
-      "d8a28f625df3c5ade68990523dd96c72816bff21"
-    ],
-    "payload_history": [
-      "8e7e065eb0512850d57e491c001633b0bf7b1955842aff9fb900d9d1ce5e1cbc",
-      "b088fe108a8b6a964a7c591216939a89c3994835667acb08106bc65565ebff0d",
-      "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc"
-    ],
-    "why": "TWO pre-run commits, both before the first unit, so neither refuses anything: 9525a57 made the pre-flight identity gate reachable on CUDA; d8a28f6 gave the micro_constant arm a real transform (cell 6 was silently cell 4). HEAD IS NOW FROZEN until all 25 units are written."
-  },
-  "vast": {
-    "cuda_max_good": 13.2,
-    "dph_total_billed": 0.35555555555555557,
-    "endpoint": "public_ipaddr 76.121.3.151 + ports['22/tcp'][0].HostPort 36018 (NOT ssh_host/ssh_port -- that is vast's proxy and returns 255 on a healthy box)",
-    "geolocation": "Washington, US",
-    "gpu_name": "RTX 4090",
-    "host_id": 22965,
-    "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
-    "instance_id": 47450688,
-    "machine_id": 11581,
-    "offer_id": 45758017,
-    "reliability2": 0.99843
-  },
-  "what": "THE MACHINE THE ENTIRE M6 MONEY RUN EXECUTES ON. N=1, so this is a single point of failure and THIS FILE IS ITS ONLY MITIGATION. Offer-ID -> machine was MEASURED stable (offers 45758017 and 43144760 each reproduced their exact kernel across two rentals ~1 h apart), so a dead b0 is RE-RENTABLE AS THE SAME MACHINE via offer_id. A lost offer_id makes N=1 unrecoverable."
+  "tree_state": "9525a572c4604700d1d8677915aec25521aa09af"
+ },
+ "payload_sha256": "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc",
+ "provenance_stamp_all_16_keys": {
+  "attention_mode": "sdpa_deterministic",
+  "cuda_build": "13.0",
+  "cudnn_benchmark": false,
+  "cudnn_deterministic": false,
+  "deterministic_algorithms": false,
+  "device": "cuda",
+  "driver_version": "595.71.05",
+  "git_commit": "d8a28f625df3c5ade68990523dd96c72816bff21",
+  "gpu_name": "NVIDIA GeForce RTX 4090",
+  "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+  "lockfile_sha256": "bd1297e1ba67afafc5c3edb3559df2fcdd17f42f1b715b914c3aa69f0fe2dff4",
+  "numpy": "2.4.6",
+  "platform": "Linux-5.15.0-179-generic-x86_64-with-glibc2.35",
+  "python": "3.11.10",
+  "python_executable": "/opt/conda/bin/python",
+  "steps_stage1": 26003,
+  "steps_stage2": 26003,
+  "torch": "2.12.1+cu130"
+ },
+ "receipt": "m6_run_box_identity",
+ "recorded_at_utc": "2026-08-11T09:0x (batch 2, this session)",
+ "stamp_taken_via": "scripts/m6_money_run.py::preflight_provenance('cuda') \u2014 the DRIVER'S OWN function, not a near-relative of it, so the recorded values are byte-for-byte what the gate will compare on a re-rent",
+ "superseded": {
+  "commit_history": [
+   "0efbcbbac27e219e34bf8bacce24198166fed6d7",
+   "9525a572c4604700d1d8677915aec25521aa09af",
+   "d8a28f625df3c5ade68990523dd96c72816bff21"
+  ],
+  "payload_history": [
+   "8e7e065eb0512850d57e491c001633b0bf7b1955842aff9fb900d9d1ce5e1cbc",
+   "b088fe108a8b6a964a7c591216939a89c3994835667acb08106bc65565ebff0d",
+   "8a3b8eead7e2d582d5f5102e7b17c1d23505a056f783dec357b5881b923b64dc"
+  ],
+  "why": "TWO pre-run commits, both before the first unit, so neither refuses anything: 9525a57 made the pre-flight identity gate reachable on CUDA; d8a28f6 gave the micro_constant arm a real transform (cell 6 was silently cell 4). HEAD IS NOW FROZEN until all 25 units are written."
+ },
+ "vast": {
+  "cuda_max_good": 13.2,
+  "dph_total_billed": 0.35555555555555557,
+  "endpoint": "public_ipaddr sha256:158f150ccaae5c28 + [HostPort REDACTED] (NOT ssh_host/ssh_port -- that is vast's proxy and returns 255 on a healthy box)",
+  "geolocation": "Washington, US",
+  "gpu_name": "RTX 4090",
+  "host_id": 22965,
+  "image": "pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel",
+  "instance_id": 47450688,
+  "machine_id": 11581,
+  "offer_id": 45758017,
+  "reliability2": 0.99843
+ },
+ "what": "THE MACHINE THE ENTIRE M6 MONEY RUN EXECUTES ON. N=1, so this is a single point of failure and THIS FILE IS ITS ONLY MITIGATION. Offer-ID -> machine was MEASURED stable (offers 45758017 and 43144760 each reproduced their exact kernel across two rentals ~1 h apart), so a dead b0 is RE-RENTABLE AS THE SAME MACHINE via offer_id. A lost offer_id makes N=1 unrecoverable."
 }

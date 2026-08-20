@@ -130,3 +130,49 @@ def test_the_readme_does_not_call_shipped_subsystems_deferred() -> None:
     text = README.read_text()
     m = re.search(r"## Deferred to later milestones", text)
     assert m is None, "the deferred-milestones block is back; four of its entries have shipped"
+
+
+# ── tests asserted as landed that do not exist ────────────────────────────────────────────────
+def test_every_test_file_named_in_the_docs_is_tracked_or_marked_unbuilt() -> None:
+    """THREE TESTS WERE DESCRIBED AS LANDED AND AS ENFORCING CI, AND NONE IS TRACKED.
+
+    ``docs/BUILD_RECORD.md`` said ``tests/test_paper_artifact_citations.py`` "reproduced the
+    auditor's finding independently" and that ``tests/test_paper_pins.py`` made a claim
+    "operationally true, since a drifted pin now fails CI". The blueprint spec said a custom lint
+    was "implemented as a ``tests/data/test_no_unsafe_ops.py`` AST check". Nothing failed CI,
+    because none of the three files existed — and ``paper/`` has since left the repository, so two
+    of them would sweep an empty directory even if written.
+
+    A mention marked NOT LANDED / NOT IMPLEMENTED is a record and is allowed; an unmarked one is a
+    claim about the current tree and must be true.
+    """
+    import subprocess
+
+    tracked = set(
+        subprocess.run(
+            ["git", "ls-files"], cwd=REPO, capture_output=True, text=True, check=True
+        ).stdout.split()
+    )
+    docs = [*sorted(REPO.joinpath("docs").rglob("*.md")), REPO / "README.md"]
+    unmarked = []
+    for doc in docs:
+        text = doc.read_text()
+        for m in re.finditer(r"`(tests/[\w/]+\.py)`", text):
+            if m.group(1) in tracked:
+                continue
+            lo = text.rfind("\n\n", 0, m.start()) + 2
+            hi = text.find("\n\n", m.end())
+            para = text[lo : hi if hi != -1 else len(text)]
+            if re.search(r"NOT LANDED|NOT IMPLEMENTED|proposed|does not run", para, re.I):
+                continue  # a record of something unbuilt, correctly labelled
+            unmarked.append(f"{doc.relative_to(REPO)}: {m.group(1)}")
+    assert not unmarked, f"docs assert these tests exist, and they are not tracked: {unmarked}"
+
+
+def test_the_three_known_phantoms_are_still_labelled() -> None:
+    """Anti-vacuity: if the mentions were simply deleted, the sweep above would pass by absence
+    and the record of what was over-claimed would be gone."""
+    br = (REPO / "docs/BUILD_RECORD.md").read_text()
+    spec = (REPO / "docs/specs/2026-06-18-trikaal-v1-design.md").read_text()
+    assert br.count("NOT LANDED") >= 2, "the BUILD_RECORD relabels are gone"
+    assert "NOT IMPLEMENTED" in spec, "the spec's unbuilt-lint annotation is gone"

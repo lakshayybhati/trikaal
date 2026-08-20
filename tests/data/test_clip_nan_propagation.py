@@ -28,6 +28,7 @@ rather than an indicative one.
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -109,3 +110,44 @@ def test_NEGATIVE_CONTROL_the_old_behaviour_would_have_written_clip_lo_to_the_en
     old = np.where(np.isnan(z), CLIP_LO, z)  # what the laundering produced
     assert (old[after] == CLIP_LO).all()
     assert np.all(np.isfinite(old)), "the old output was fully finite — invisible to the guard"
+
+
+# ── 4.9 — the SAME defect on the other branch of the same function ────────────────────────────
+def test_the_bounded_path_also_propagates_an_infinity() -> None:
+    """★ THE HALF I FOUND WHILE FIXING THE FIRST HALF, AND THEN LEFT OPEN FOR A TIER.
+
+    ``np.clip`` propagates NaN — which is why the z-scored path's laundering was the visible
+    half — but it CLAMPS ±inf to the bounds. So an infinity on any of the seven BOUNDED dims
+    (2, 3, 4, 7, 8, 12, 13 — including both signed microstructure channels) reached the guard in
+    ``compute_features`` as a finite ±5, and a message that says "NaN/**Inf** in emitted features"
+    could only ever fire on the NaN half. Sixteen dims claimed the protection; nine had it.
+    """
+    col = np.array([np.inf, -np.inf, np.nan, 7.0, -7.0, 0.5])
+    guarded = np.where(np.isfinite(col), np.clip(col, CLIP_LO, CLIP_HI), np.nan)
+    assert np.isnan(guarded[:3]).all(), "a non-finite value is still being clamped to a bound"
+    assert (guarded[3:] == [CLIP_HI, CLIP_LO, 0.5]).all(), "finite clipping must be unchanged"
+
+
+def test_NEGATIVE_CONTROL_bare_np_clip_swallows_an_infinity() -> None:
+    """Fixture discrimination: prove the defect was real on this numpy."""
+    bare = np.clip(np.array([np.inf, -np.inf]), CLIP_LO, CLIP_HI)
+    assert (bare == [CLIP_HI, CLIP_LO]).all(), "np.clip no longer clamps inf — re-read this file"
+    assert np.isfinite(bare).all(), "and it was FINITE, which is why the guard could not fire"
+
+
+def test_the_two_halves_of_the_function_now_agree() -> None:
+    """The defect in both halves was the same one: a non-finite input silently became a bound.
+    Bounded and z-scored dims must answer identically for every non-finite input."""
+    for bad in NON_FINITE:
+        z_scored = _clip(bad)
+        bounded = float(np.where(np.isfinite(bad), np.clip(bad, CLIP_LO, CLIP_HI), np.nan))
+        assert math.isnan(z_scored) and math.isnan(bounded), (bad, z_scored, bounded)
+
+
+def test_the_production_path_carries_the_guard() -> None:
+    """Asserted against the SOURCE, because the array-level check above would also pass if
+    features.py had never been changed."""
+    src = (Path(__file__).resolve().parents[2] / "src/trikaal/data/features.py").read_text()
+    assert "np.where(np.isfinite(col)" in src, (
+        "the bounded loop no longer guards non-finite input — an infinity is invisible again"
+    )

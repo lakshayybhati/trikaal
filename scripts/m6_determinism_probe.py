@@ -28,6 +28,7 @@ import torch
 from trikaal.model.attention_mode import MODE_SDPA, determinism_record, set_attention_backend
 from trikaal.model.predictor import TrikaalAR
 from trikaal.tokenizer.model import TokenizerAE
+from trikaal.utils.receipts import ReceiptRefused, write_receipt
 from trikaal.utils.seeding import set_determinism
 from trikaal.utils.throughput import BASIS_COMPUTE_ONLY, throughput_record
 
@@ -147,6 +148,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--steps", type=int, default=5)
     ap.add_argument("--device", default="cpu")
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite the receipt even though it is tracked (utils.receipts)",
+    )
     args = ap.parse_args()
 
     print(f"=== determinism feasibility probe (device={args.device}, steps={args.steps}) ===")
@@ -251,7 +257,22 @@ def main() -> int:
         },
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(out, indent=2, sort_keys=True))
+    # ★ Printed "PROBE INVALID - this measured nothing", exited 0, and overwrote a VALID
+    # receipt. The standing norm — a probe whose control arm fails may not emit a verdict — is
+    # enforced here instead of merely written down.
+    _invalid = "PROBE INVALID" in json.dumps(out)
+    try:
+        write_receipt(
+            OUT,
+            out,
+            measured=1,
+            valid=not _invalid,
+            invalid_reason="the run's own output contains PROBE INVALID",
+            force=args.force,
+        )
+    except ReceiptRefused as e:
+        print(f"[determinism-probe] {e}")
+        return 2
     print(f"\nVERDICT: {verdict}")
     print(f"[receipt] -> {OUT}")
     return 0

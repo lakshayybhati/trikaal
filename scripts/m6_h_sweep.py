@@ -27,7 +27,6 @@ modules rather than reimplementing any of it. Its equivalence to ``score_cell`` 
 from __future__ import annotations
 
 import argparse
-import json
 import time
 import zlib
 from dataclasses import dataclass
@@ -53,6 +52,7 @@ from trikaal.model.predictor import TrikaalAR
 from trikaal.tokenizer.model import TokenizerAE
 from trikaal.train.arms import ARM_MICRO_SHUFFLED, select_arm
 from trikaal.train.checkpoint import load_checkpoint
+from trikaal.utils.receipts import ReceiptRefused, write_receipt
 
 HORIZONS: tuple[int, ...] = (1, 2, 3, 5, 15)
 OUT_SWEEP = Path("runs_manifest/m6_h_sweep.json")
@@ -508,8 +508,11 @@ def run_sweep(args) -> int:
         "upgrade_test": upgrade,
         "cells": cells,
     }
-    OUT_SWEEP.parent.mkdir(parents=True, exist_ok=True)
-    OUT_SWEEP.write_text(json.dumps(out, indent=2, sort_keys=True))
+    try:
+        write_receipt(OUT_SWEEP, out, measured=cells, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[upgrade-test] {e}")
+        return 2
     print(f"\n[upgrade-test] {upgrade['verdict']}")
     print(f"[receipt] -> {OUT_SWEEP}")
     return 0
@@ -635,8 +638,11 @@ def run_guard_stability(args) -> int:
         ),
         "variants": results,
     }
-    OUT_GUARD.parent.mkdir(parents=True, exist_ok=True)
-    OUT_GUARD.write_text(json.dumps(out, indent=2, sort_keys=True))
+    try:
+        write_receipt(OUT_GUARD, out, measured=results, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[band] {e}")
+        return 2
     print(f"\n[band] grid_stable={stable} worst={worst} drift={drifts.get(worst)}")
     print(f"[receipt] -> {OUT_GUARD}")
     return 0
@@ -779,7 +785,14 @@ def run_rescore(args) -> int:
         "cells": cells,
     }
     out_path = Path("runs_manifest/m6_moneyleg_local_rescore.json")
-    out_path.write_text(json.dumps(out, indent=2, sort_keys=True))
+    # ★ `all(...)` over an EMPTY dict is True. Three skipped cells produced
+    # `L1_all_reproduced: true` from zero measurements, printed beside "worst |delta| = None",
+    # and deleted 317 lines of this tracked receipt. The gate refuses on an empty measured set.
+    try:
+        write_receipt(out_path, out, measured=cells, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[L1] {e}")
+        return 2
     print(
         f"\n[L1] worst |delta| = {out['worst_abs_delta_sci']} vs {L1_CRITERION_ABS:g} — "
         f"all_reproduced={out['L1_all_reproduced']}"
@@ -940,7 +953,11 @@ def run_bias_bound(args) -> int:
         ),
     }
     p = Path("runs_manifest/m6_estimator_bias_bound.json")
-    p.write_text(json.dumps(out, indent=2, sort_keys=True))
+    try:
+        write_receipt(p, out, measured=per_cell, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[bias-bound] {e}")
+        return 2
     print(f"[receipt] -> {p}")
     return 0
 
@@ -1123,7 +1140,11 @@ def run_traded_sign_agreement(args) -> int:
         },
     }
     p = Path("runs_manifest/m6_traded_sign_agreement.json")
-    p.write_text(json.dumps(out, indent=2, sort_keys=True))
+    try:
+        write_receipt(p, out, measured=1, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[traded-sign] {e}")
+        return 2
     print(
         f"  sign agreement ON TRADED SET = {agree:.4f} (identical position {same_position:.4f}) "
         f"vs threshold {TRADED_AGREEMENT_THRESHOLD} -> expectation_stands={passes} "
@@ -1338,7 +1359,11 @@ def run_estimator_forensics(args) -> int:
         ),
     }
     p = Path("runs_manifest/m6_estimator_forensics.json")
-    p.write_text(json.dumps(out, indent=2, sort_keys=True))
+    try:
+        write_receipt(p, out, measured=1, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[forensics] {e}")
+        return 2
     np.savez_compressed(
         "runs_manifest/m6_estimator_forensics_vectors.npz",
         decisions=sub,
@@ -1390,6 +1415,11 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--skip-uncapped", action="store_true")
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite the receipt even though it is tracked (see utils.receipts)",
+    )
     args = ap.parse_args()
     if args.sweep:
         return run_sweep(args)

@@ -91,6 +91,45 @@ itself `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN` and it is not being compared to i
 as the spread of the statistic across replicates. **The direction is robust across all 18; the exact
 percentage is not.**
 
+## Verifying what you downloaded
+
+**A partial download must not look like a clean one.** Run this from the directory holding
+`m6_weights_release.json`; it hashes every file in the inference bundle, **counts what it checked
+against the manifest's own expected count**, and exits non-zero on any missing or mismatched file.
+
+```python
+import hashlib, json, sys
+from pathlib import Path
+
+root = Path(sys.argv[1] if len(sys.argv) > 1 else ".")
+man = json.loads((root / "m6_weights_release.json").read_text())
+
+ok = missing = bad = 0
+for seed, unit in sorted(man["units"].items()):
+    for name, meta in sorted(unit["files"].items()):
+        if not meta["needed_for_inference"]:
+            continue                      # optimizer state: not part of the inference bundle
+        p = root / f"seed{seed}" / name
+        if not p.is_file():
+            print(f"MISSING   seed{seed}/{name}"); missing += 1; continue
+        got = hashlib.sha256(p.read_bytes()).hexdigest()
+        if got == meta["sha256"]:
+            print(f"MATCH     seed{seed}/{name}"); ok += 1
+        else:
+            print(f"MISMATCH  seed{seed}/{name}"); bad += 1
+
+expected = sum(1 for u in man["units"].values()
+               for f in u["files"].values() if f["needed_for_inference"])
+print(f"\n{ok}/{expected} inference files verified, {missing} missing, {bad} mismatched")
+sys.exit(0 if (ok == expected and not missing and not bad) else 1)
+```
+
+It verifies the **9 inference files** (3 units × `tokenizer.pt`, `predictor.pt`,
+`run_manifest.json`) and deliberately skips the 6 optimizer-state files, which are resume-only. A
+verifier that prints per-file `MATCH` lines without a count cannot tell a complete download from a
+partial one — that exact gap produced a false finding during the audit of this release, which then
+had to be retracted.
+
 ## Loading them
 
 `TrikaalAR()`'s defaults are the **FSQ** vocabulary (`v_c=891`, `v_f=1225`, `max_len=512`) — the arm

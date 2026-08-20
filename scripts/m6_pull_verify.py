@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import sys
 from pathlib import Path
+
+from trikaal.utils.receipts import ReceiptRefused, write_receipt
 
 OUT = Path("runs_manifest/m6_teardown_verification.json")
 
@@ -53,6 +54,11 @@ def main() -> int:
     ap.add_argument("--local-dir", type=Path, required=True)
     ap.add_argument("--sums", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=OUT)
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite the receipt even though it is tracked (utils.receipts)",
+    )
     args = ap.parse_args()
 
     expected = parse_sums(args.sums)
@@ -101,7 +107,13 @@ def main() -> int:
         ),
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(rec, indent=2, sort_keys=True))
+    # ★ Its own docstring says "Exit 0 ONLY if every file verifies", yet it printed
+    # "PASS - verified 0/0" and rewrote 9/9 to 0/0. Zero files verified is not a pass.
+    try:
+        write_receipt(args.out, rec, measured=verified, valid=ok, force=args.force)
+    except ReceiptRefused as e:
+        print(f"[pull-verify] {e}")
+        return 2
     print(f"=== PRE-TEARDOWN VERIFICATION: {'PASS' if ok else 'FAIL'} ===")
     print(f"  verified {len(verified)}/{len(expected)}")
     for k in ("missing", "mismatched", "unreadable"):

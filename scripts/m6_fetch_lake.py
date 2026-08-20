@@ -33,6 +33,9 @@ from pathlib import Path
 REPO = "lakshayybhati/trikaal-m6-snapshot"
 MANIFEST = Path("runs_manifest/m6_lake_subset_manifest.json")
 HF_PATTERN = re.compile(r"hf_[A-Za-z0-9]{16,}")
+#: Bound on how much shell history the scrub check will read. A token pasted into a shell
+#: is recent; scanning a decade of history to find one is not worth holding the file open.
+_HISTORY_LINE_CAP = 50_000
 CHUNK = 1 << 22
 
 
@@ -90,10 +93,23 @@ def assert_no_token(root: Path) -> list[str]:
     ):
         if cand.exists():
             found.append(f"token file present on this machine: {cand}")
+    # ★ SCOPED, NOT DROPPED. This used to slurp the ENTIRE ~/.bash_history and ~/.zsh_history
+    # into memory with `read_text()`. The CHECK is worth keeping — a token pasted into a shell is
+    # exactly how it survives a scrub — but a repo script has no business holding a user's whole
+    # command history in a string. It now streams line by line, stops at the first hit, is capped,
+    # and NEVER carries any history content into a message: the report names the file and the line
+    # NUMBER, never the line. Runs only under an explicit --assert-no-token.
     for hist in (Path.home() / ".bash_history", Path.home() / ".zsh_history"):
         try:
-            if hist.exists() and HF_PATTERN.search(hist.read_text(errors="ignore")):
-                found.append(f"an hf_ token appears in {hist}")
+            if not hist.exists():
+                continue
+            with hist.open("r", errors="ignore") as fh:
+                for lineno, line in enumerate(fh, 1):
+                    if lineno > _HISTORY_LINE_CAP:
+                        break
+                    if HF_PATTERN.search(line):
+                        found.append(f"an hf_ token appears in {hist} at line {lineno}")
+                        break
         except OSError:
             pass
     print("[scrub] " + ("CLEAN — no hf_ credential found" if not found else f"{len(found)} LEAKS"))

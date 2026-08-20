@@ -65,6 +65,12 @@ ignore = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# -rs: ALWAYS print the reason for every skip in the summary. Eleven tests in the demo
+# suite need the published weights, which a public clone does not have — without this the
+# suite simply "greens out" in a thirtieth of the time and the strongest checks vanish
+# silently. Their absence is now stated in the run summary rather than inferred from a
+# count of "s" characters.
+addopts = ["-rs"]
 # The repo root must be importable: a few tests reuse fixtures from a sibling module via
 # `from tests.eval.test_verdict import ...`. `python -m pytest` puts CWD on sys.path and the
 # `pytest` console script does not, so without this the suite passed locally under one

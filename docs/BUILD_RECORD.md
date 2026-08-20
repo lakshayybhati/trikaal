@@ -1303,7 +1303,7 @@ local check passed, and nothing in the repository could tell the difference. **T
 pre-declaration defect repeating, in a new costume: an artifact whose existence is asserted rather
 than checked.**
 
-The commit is the instance. The fix is `tests/test_paper_artifact_citations.py`, which sweeps every
+The commit is the instance. **[NOT LANDED — RELABELLED 2026-08-20 AS PROPOSED. `tests/test_paper_artifact_citations.py` is not tracked and never was; nothing described below fails CI. It was created and then deleted on 2026-08-19 when `paper/` left the repository, at which point one of its five passing cases had become vacuous — and with `paper/` gone it would now sweep an EMPTY DIRECTORY, so it is not being rewritten. The sentence 'it reproduced the auditor's finding independently' describes a run that happened; the test that performed it no longer exists.]** The fix is `tests/test_paper_artifact_citations.py`, which sweeps every
 `% artifact:` citation under `paper/` and requires each path to EXIST and to be TRACKED. "Tracked"
 is the operative word: "exists on the builder's disk" is precisely the state that makes an
 unverifiable claim look verified, and it is the only place the two predicates disagreed. Run
@@ -1424,7 +1424,7 @@ not a check. Five negative cases prove it bites.
 
 `appendix_repro.tex` states its values are *"imported live … none is transcribed"*. No generator
 exists; they are hand-typed, and they are all currently correct. Rather than write into `paper/`,
-`tests/test_paper_pins.py` reads the table and asserts every printed pin equals its live constant —
+**[NOT LANDED — RELABELLED 2026-08-20 AS PROPOSED. `tests/test_paper_pins.py` is not tracked; no drifted pin fails CI, and the table it would read lives in `paper/appendix_repro.tex`, which left the repository on 2026-08-19.]** `tests/test_paper_pins.py` reads the table and asserts every printed pin equals its live constant —
 which makes the claim operationally true, since a drifted pin now fails CI. The header's wording is
 the writer's to keep or soften.
 

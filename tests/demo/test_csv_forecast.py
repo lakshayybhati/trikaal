@@ -740,9 +740,19 @@ def test_the_derived_value_matches_a_PINNED_reference():
         u, x_arm, m_arm, out.segment_id, out.ts, out.sigma, i, h=15, n_samples=48, seed=20260704
     )
     got = cf.mc_mean_from_paths(paths, float(out.sigma[i]), 32)
-    assert got.hex() == "0x1.f26f6f43c08cdp-12", (
-        f"the derived mc_mean@32 on the 1,400-bar fixture is {got.hex()}, pinned "
-        "0x1.f26f6f43c08cdp-12 — an agreement test would not have noticed this"
+    # ★ RELATIVE, NOT BIT-EXACT — and the discriminating power is unchanged. The bit pin holds
+    # exactly on the reference platform (measured again on macOS-arm64 with the locked torch:
+    # 0x1.f26f6f43c08cdp-12), but an audit on a different arm64 environment measured
+    # 0x1.f26f6c66688b2p-12 — a RELATIVE difference of 8.8e-08, i.e. float32 reduction-order
+    # noise, with no platform guard and no tolerance. A logic change moves this value by orders of
+    # magnitude more than 1e-6, so the tolerance below still catches everything the pin was for
+    # while no longer failing on which machine ran it. Both hexes are printed on failure so a
+    # genuine bit change is still legible.
+    pinned = float.fromhex("0x1.f26f6f43c08cdp-12")
+    assert math.isclose(got, pinned, rel_tol=1e-6), (
+        f"the derived mc_mean@32 on the 1,400-bar fixture is {got.hex()} ({got!r}), pinned "
+        f"{pinned.hex()} ({pinned!r}), relative delta {abs(got - pinned) / pinned:.3e} > 1e-6 — "
+        "an agreement test would not have noticed this"
     )
 
 

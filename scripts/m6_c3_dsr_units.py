@@ -26,6 +26,7 @@ from __future__ import annotations
 import glob
 import json
 import math
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -39,6 +40,11 @@ from trikaal.eval.verdict import (
     DSR_VAR_SR_BASIS_CELL,
     PRIMARY_H,
 )
+from trikaal.utils.receipts import ReceiptRefused, write_receipt
+
+#: This script has no argparse. `--force` is still the switch that permits overwriting a
+#: TRACKED receipt; see trikaal.utils.receipts for why that is gated.
+_FORCE = "--force" in sys.argv
 
 TOY_EVAL = Path("runs_cloud/runs/m6_toy/eval")
 TOY_MANIFEST = Path("runs_manifest/m6_toy_verdict_manifest.json")
@@ -93,7 +99,20 @@ def main() -> int:
     }
     if not control_ok:
         rep["verdict"] = "PROBE INVALID — re-derivation path differs from the one the code used"
-        OUT.write_text(json.dumps(rep, indent=2, sort_keys=True) + "\n")
+        # ★ Printed "PROBE INVALID" and wrote regardless, deleting 103 lines of CONFIRMED
+        # audit findings from a tracked receipt.
+        try:
+            write_receipt(
+                OUT,
+                rep,
+                measured=1,
+                valid="PROBE INVALID" not in json.dumps(rep),
+                invalid_reason="the report verdict is PROBE INVALID",
+                force=_FORCE,
+            )
+        except ReceiptRefused as e:
+            print(f"[c3-dsr-units] {e}")
+            return 2
         print(json.dumps(rep["control"], indent=2))
         print("PROBE INVALID")
         return 1
@@ -268,7 +287,20 @@ def main() -> int:
     rep["reported_not_fixed"] = (
         "§3 clause 5 and PINNED_DSR are frozen. No value moved, no clause touched, no code changed."
     )
-    OUT.write_text(json.dumps(rep, indent=2, sort_keys=True) + "\n")
+    # ★ Printed "PROBE INVALID" and wrote regardless, deleting 103 lines of CONFIRMED
+    # audit findings from a tracked receipt.
+    try:
+        write_receipt(
+            OUT,
+            rep,
+            measured=1,
+            valid="PROBE INVALID" not in json.dumps(rep),
+            invalid_reason="the report verdict is PROBE INVALID",
+            force=_FORCE,
+        )
+    except ReceiptRefused as e:
+        print(f"[c3-dsr-units] {e}")
+        return 2
     print(json.dumps(rep, indent=2, sort_keys=True))
     return 0
 

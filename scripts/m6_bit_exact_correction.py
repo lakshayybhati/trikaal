@@ -27,7 +27,14 @@ SCOPE — this is neither broader nor narrower than the following:
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
+
+from trikaal.utils.receipts import ReceiptRefused, write_receipt
+
+#: This script has no argparse. `--force` is still the switch that permits
+#: overwriting a TRACKED receipt; see trikaal.utils.receipts for why that is gated.
+_FORCE = "--force" in sys.argv
 
 OUT = Path("runs_manifest/m6_bit_exact_claim_correction.json")
 
@@ -163,7 +170,12 @@ def main() -> int:
         "derived_copies_excluded_from_the_run_count": derived_copies,
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(out, indent=2, sort_keys=True))
+    # ★ Exited 0 while silently rewriting a disclosure receipt from 46 records to 19.
+    try:
+        write_receipt(OUT, out, measured=1, force=_FORCE)
+    except ReceiptRefused as e:
+        print(f"[bit-exact] {e}")
+        return 2
     c = out["counts"]
     print(f"determinism records found            : {c['determinism_records_found_total']}")
     n_bad = c["records_claiming_bit_exact_without_forced_determinism"]

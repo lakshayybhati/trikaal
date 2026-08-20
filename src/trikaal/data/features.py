@@ -159,9 +159,16 @@ def compute_features(stream: RawStream, cfg: FeatureConfig) -> PerBarOutput:
     x_f64 = np.zeros((T, N_FEATURES), dtype=np.float64)
     m = np.zeros((T, N_FEATURES), dtype=np.uint8)
 
-    # bounded features (§3.1): clip only
+    # bounded features (§3.1): clip only — but an INFINITY is not a large value to be clamped.
+    # ★ THE OTHER HALF OF THE _clip DEFECT. `np.clip` propagates NaN (which is why the z-scored
+    # path's laundering was the visible half) but CLAMPS +/-inf to the bounds, so an infinity on
+    # any of these seven dims arrived at the guard below as a finite +/-5 and the message
+    # "NaN/Inf in emitted features" could only ever fire on the NaN half. `normalize._clip` now
+    # propagates every non-finite input; this makes the bounded path agree, so the tripwire can
+    # see an infinity on all sixteen dims rather than nine.
     for idx in BOUNDED_IDX:
-        x_f64[:, idx] = np.clip(raw_feat[:, idx], cfg.clip[0], cfg.clip[1])
+        col = raw_feat[:, idx]
+        x_f64[:, idx] = np.where(np.isfinite(col), np.clip(col, cfg.clip[0], cfg.clip[1]), np.nan)
 
     # z-scored features (§3.2): causal EWMA / rolling, per segment
     for idx in Z_SCORED_IDX:

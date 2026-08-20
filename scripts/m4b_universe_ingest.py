@@ -213,12 +213,34 @@ def main() -> int:
         action="store_true",
         help="regenerate the manifest from the ledger + lake (no download/build/sweep)",
     )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help=(
+            "permit the LIVE network fetch of the Binance dump index and the overwrite of the "
+            "tracked config/universe_full.yaml. Without it this script refuses to do either."
+        ),
+    )
     args = ap.parse_args()
 
     win = (args.window_start, args.window_end)
     sel = SelectionRule(
         top_n=args.top_n, min_live_days=30, include_delisted=True, quote_asset="USDT"
     )
+    # ★ A NO-ARGUMENT RUN USED TO MAKE AN UNPROMPTED LIVE NETWORK CALL and then overwrite the
+    # committed config/universe_full.yaml with whatever the exchange listed today. The universe
+    # is a PINNED experimental input — the 200-symbol selection is what the whole lake and every
+    # published number rests on — so refreshing it is a deliberate act, not a side effect of
+    # invoking the script to read its help or run one sub-mode.
+    cfg_path = Path("config/universe_full.yaml")
+    if not args.force:
+        print(
+            "[bootstrap] REFUSING: this run would fetch the Binance dump index over the network "
+            f"and overwrite {cfg_path}, which is tracked and pins the 200-symbol universe every "
+            "published number was computed on. Re-run with --force if you mean to re-select the "
+            "universe."
+        )
+        return 2
     print(f"[bootstrap] scanning dump index … (window {win[0]}..{win[1]}, top-{args.top_n})")
     index = load_index()
     spec, est = bootstrap_from_index(index, window_start=win[0], window_end=win[1], selection=sel)
@@ -228,7 +250,7 @@ def main() -> int:
         f"[bootstrap] {len(live)} symbols ({sum(1 for s in live if s.delisting_date)} delisted), "
         f"full-plan agg download ~{total_gb:.0f} GB"
     )
-    write_config(spec, est, Path("config/universe_full.yaml"))
+    write_config(spec, est, cfg_path)
     print("[bootstrap] wrote config/universe_full.yaml + corpus-purpose metadata")
     if args.config_only:
         return 0
