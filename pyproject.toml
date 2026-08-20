@@ -20,10 +20,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# ★ EXACT, FOR THE SAME REASON THE RUNTIME PINS ARE EXACT — the comment above says floor-only
+# constraints "let numpy/torch drift twice and silently moved the anchor", and then these three
+# were left as floors. They drifted: `ruff>=0.5` resolves to 0.16.x under a plain `pip install`
+# while uv.lock pins 0.15.18, and 0.16 formats Python inside markdown fences, so a contributor
+# following the README got four lint failures the locked environment does not produce. A LINTER
+# VERSION IS PART OF THE GATE, not a convenience.
 dev = [
-    "ruff>=0.5",
-    "pytest>=8.0",
-    "mypy>=1.8",
+    "ruff==0.15.18",
+    "pytest==9.1.1",
+    "mypy==2.1.0",
 ]
 # Real data pipeline (§2-§4). The synthetic slice (core) needs only numpy + torch.
 data = [

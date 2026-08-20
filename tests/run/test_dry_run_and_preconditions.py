@@ -215,18 +215,43 @@ def test_a_reasonable_requirement_passes(tmp_path):
 
 
 def test_low_strategy_can_rescue_a_host_that_fast_cannot(tmp_path):
-    """The whole point of making strategy a HOST property rather than a spec one."""
+    """The whole point of making strategy a HOST property rather than a spec one.
+
+    ★ THE HOST USED TO BE PART OF THIS FIXTURE. ``ram`` below is the host being reasoned about,
+    but the call read the REAL machine's physical RAM and only ``headroom`` carried the intent —
+    so whether this arithmetic passed depended on the developer's laptop. Measured by bisection,
+    it passed only between ~12.05 GiB and ~35.12 GiB: under the floor the rescue leg failed, and
+    OVER THE CEILING the "fast cannot" leg failed, so a 64 GiB workstation or a large CI runner
+    went red on a test that has nothing to do with either machine. The host is now injected."""
     n = 84_153_600
     fast = memory_requirement_bytes(n, STRATEGY_FAST)["peak_bytes"]
     low = memory_requirement_bytes(n, STRATEGY_LOW)["peak_bytes"]
     assert low < fast
-    ram = (fast + low) // 2  # a host between the two
-    assert resource_failures(
-        n_bars=n, strategy=STRATEGY_FAST, out_dir=tmp_path, headroom=ram / fast * 0.999
+    ram = (fast + low) // 2  # the host under test: between the two requirements
+    assert resource_failures(n_bars=n, strategy=STRATEGY_FAST, out_dir=tmp_path, ram_bytes=ram), (
+        "fast should not fit a host between the two requirements"
     )
     assert not resource_failures(
-        n_bars=n, strategy=STRATEGY_LOW, out_dir=tmp_path, headroom=ram / low
-    )
+        n_bars=n, strategy=STRATEGY_LOW, out_dir=tmp_path, ram_bytes=ram
+    ), "low should fit that same host — this is the rescue the strategy exists for"
+
+
+@pytest.mark.parametrize("host_gib", [1, 8, 12, 16, 32, 64, 256, 1024])
+def test_the_rescue_holds_on_every_host_size(tmp_path, host_gib):
+    """THE PROPERTY IS ABOUT THE ARITHMETIC, NOT THE MACHINE, so assert it across the range that
+    used to decide the outcome. Any host too small for `fast` must still be offered `low`, and the
+    two verdicts must never both be failures for a host that `low` fits."""
+    n = 84_153_600
+    ram = host_gib * 2**30
+    fast = memory_requirement_bytes(n, STRATEGY_FAST)["peak_bytes"]
+    low = memory_requirement_bytes(n, STRATEGY_LOW)["peak_bytes"]
+    f_fails = resource_failures(n_bars=n, strategy=STRATEGY_FAST, out_dir=tmp_path, ram_bytes=ram)
+    l_fails = resource_failures(n_bars=n, strategy=STRATEGY_LOW, out_dir=tmp_path, ram_bytes=ram)
+    mem = lambda fs: [x for x in fs if x.startswith("MEMORY:")]  # noqa: E731
+    assert bool(mem(f_fails)) == (fast > ram), (host_gib, mem(f_fails))
+    assert bool(mem(l_fails)) == (low > ram), (host_gib, mem(l_fails))
+    if mem(l_fails):
+        assert mem(f_fails), "low failed where fast passed — the strategies are misordered"
 
 
 def test_the_record_states_that_both_strategies_are_numerically_identical(tmp_path):

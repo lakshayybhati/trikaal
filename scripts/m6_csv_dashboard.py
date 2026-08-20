@@ -74,6 +74,7 @@ from trikaal.demo.inference import (  # noqa: E402
     available_seeds,
     load_unit,
     reverify_identity,
+    use_units_from,
 )
 
 # ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -1621,7 +1622,18 @@ def main() -> int:
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--device", default="cpu")
     ap.add_argument("--stage-timeout", type=float, default=STAGE_TIMEOUT_S)
+    ap.add_argument(
+        "--units",
+        type=Path,
+        default=None,
+        help=(
+            "Directory holding the three cell-1 units (any layout — the repo tree or a "
+            "HuggingFace download). Units are found by content: a folder with run_manifest.json, "
+            "predictor.pt and tokenizer.pt. Omit to use the in-repo runs_cloud/ paths."
+        ),
+    )
     args = ap.parse_args()
+    use_units_from(args.units)
 
     seeds = available_seeds()
     if not seeds:

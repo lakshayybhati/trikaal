@@ -1287,13 +1287,13 @@ dev = [
 requires-dist = [
     { name = "certifi", marker = "extra == 'data'" },
     { name = "duckdb", marker = "extra == 'data'", specifier = ">=1.0" },
-    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = "==2.1.0" },
     { name = "numpy", specifier = "==2.4.6" },
     { name = "polars", marker = "extra == 'data'", specifier = ">=1.0" },
     { name = "pyarrow", marker = "extra == 'data'", specifier = ">=15" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = "==9.1.1" },
     { name = "pyyaml", marker = "extra == 'data'", specifier = ">=6.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.5" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = "==0.15.18" },
     { name = "torch", specifier = "==2.12.1" },
     { name = "wandb", specifier = "==0.28.0" },
 ]

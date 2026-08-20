@@ -37,11 +37,38 @@ LEGIBILITY = REPO / "runs_manifest/m6_micro_legibility_stop.json"
 RELEASE = REPO / "runs_manifest/m6_weights_release.json"
 SWEEP = REPO / "runs_manifest/m6_lambda_sweep.json"
 
+# EVERY READER-FACING SURFACE, NOT JUST THE CARD. The first version of this file guarded
+# `docs/MODEL_CARD.md` alone, so two defects sat unguarded on the MORE-read pages: the README
+# quoted the replicate spread without the prohibition that governs it and cited the wrong receipt
+# for it, and ROADMAP did the same. A guard scoped to one file measures that file's discipline,
+# not the project's.
+PUBLISHED_SURFACES = {
+    "README.md": REPO / "README.md",
+    "docs/MODEL_CARD.md": CARD,
+    "docs/ROADMAP.md": REPO / "docs/ROADMAP.md",
+}
+
 # The card renders ranges with an EN DASH. Matching it needs the same character, and a bare
 # literal trips ruff's ambiguous-unicode rule — so it is named once rather than noqa'd twice.
 EN_DASH = "\u2013"
 
 GATE_THRESHOLD = 0.90
+
+
+def _code_blocks(md: str, lang: str = "python") -> list[str]:
+    """The fenced ``lang`` blocks only.
+
+    ★ THIS EXISTS BECAUSE THE SAME MISTAKE WAS MADE THREE TIMES IN THIS FILE. A check written
+    against the whole document passes whenever the prose DISCUSSING a thing contains the string
+    the check is looking for — a tilde in an explanation, a neighbouring mention of cell 4, a
+    sentence warning against ``weights_only=False``. A recipe is code, so a claim about the recipe
+    must be asserted against the code and nothing else.
+    """
+    import re as _re
+
+    return _re.findall(rf"```{lang}\n(.*?)```", md, _re.S)
+
+
 SIGNED_DIMS = (7, 8)
 MAGNITUDE_DIMS = (9, 10, 11, 12)
 
@@ -143,6 +170,79 @@ def test_the_signed_share_recomputes_to_the_published_number(per_dim, card) -> N
     assert "97.3%" in card
 
 
+@pytest.mark.parametrize("name", sorted(PUBLISHED_SURFACES))
+def test_no_surface_publishes_an_unqualified_97_3(name) -> None:
+    """The 97.3% claim-form check, on every page a reader meets — not only on the card."""
+    text = PUBLISHED_SURFACES[name].read_text()
+    if "97.3" not in text:
+        pytest.fail(f"{name} no longer states the finding at all — check this list is current")
+    for pat in (r"97\.3% of the shortfall", r"carry 97\.3%(?! of \*?cell)"):
+        m = re.search(pat, text, re.I)
+        assert m is None, f"{name}: unqualified 97.3% — ...{text[m.start() - 80 : m.end() + 80]}..."
+    assert re.search(r"97\.3% of \*{0,2}(?:the )?cell ?4", text, re.I), (
+        f"{name} states 97.3% but never scopes it to cell 4"
+    )
+
+
+@pytest.mark.parametrize("name", sorted(PUBLISHED_SURFACES))
+def test_the_replicate_spread_never_travels_without_its_prohibition(name) -> None:
+    """m6_lambda_sweep declares itself NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN. A page that prints
+    97.3% and 77-93% near each other invites exactly the delta that file forbids, so any page
+    quoting the spread must carry the prohibition AND name the file the spread came from."""
+    text = PUBLISHED_SURFACES[name].read_text()
+    quotes_spread = re.search(r"77\s*(?:%|\u2013|-)?\s*(?:%|and|to|\u2013|-)\s*93", text)
+    if not quotes_spread:
+        return
+    assert "NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN" in text, (
+        f"{name} quotes the 77-93% replicate spread without the prohibition that governs it"
+    )
+    assert "m6_lambda_sweep.json" in text, (
+        f"{name} quotes the replicate spread without naming the receipt it comes from"
+    )
+
+
+@pytest.mark.parametrize("name", sorted(PUBLISHED_SURFACES))
+def test_no_surface_publishes_the_superseded_magnitude_range(name) -> None:
+    text = PUBLISHED_SURFACES[name].read_text()
+    assert f"0.8975{EN_DASH}0.9320" not in text, (
+        f"{name}: 0.8975 is dim 9's value, not the magnitude minimum (dim 11 is 0.8962)"
+    )
+
+
+@pytest.mark.parametrize("name", sorted(PUBLISHED_SURFACES))
+def test_the_canary_figure_keeps_its_approximation_marker(name) -> None:
+    """A TILDE WAS DROPPED AND A DIGIT WAS INVENTED. The feature-space canary is recorded in
+    docs/BUILD_RECORD.md only as "~1.15 nats"; no receipt holds a more exact value (checked by
+    VALUE across every manifest, not by string). "1.151" published bare is manufactured
+    precision — the mirror of an unqualified 97.3%, which lost scope going the other way."""
+    text = PUBLISHED_SURFACES[name].read_text()
+    assert "1.151" not in text, (
+        f"{name}: 1.151 traces to no receipt; the recorded figure is ~1.15 (docs/BUILD_RECORD.md)"
+    )
+    # CHECKED AT THE CLAIM SITE, NOT ANYWHERE IN THE FILE. The first version searched the whole
+    # text for a tilde and passed on a mutation that dropped it from the CLAIM, because the
+    # sentence explaining the provenance of "~1.15" still contained one. Same weakness as a
+    # proximity check satisfied by a neighbouring mention.
+    for m in re.finditer(r"nats?\s+(?:planted\s+)?in feature space", text):
+        lead = text[max(0, m.start() - 24) : m.start()]
+        assert "~" in lead, (
+            f"{name} states the feature-space canary without its approximation marker: "
+            f"...{lead}{text[m.start() : m.end()]}..."
+        )
+
+
+def test_the_receipt_named_for_a_number_actually_contains_it() -> None:
+    """THE README CITED THE WRONG RECEIPT: it said every number was in the legibility stop file,
+    then gave three that live in the lambda sweep. Assert by CONTENT, not by plausibility."""
+    leg = LEGIBILITY.read_text()
+    for v in ("0.8223", "0.7528", "0.8962"):
+        assert v in leg, f"{v} is not in m6_micro_legibility_stop.json"
+    for v in ("77", "93"):
+        assert v not in json.loads(leg).get("legibility_receipt", {}).keys()
+    sweep = SWEEP.read_text()
+    assert '"configs"' in sweep and len(json.loads(sweep)["configs"]) == 18
+
+
 def test_every_published_97_3_names_cell_4(card) -> None:
     """Unqualified, it reads as a property of the released weights. It is not — cell 4 is not
     released, so a reader cannot check it without being told which cell it belongs to.
@@ -221,3 +321,57 @@ def test_the_card_names_exactly_the_four_uncaptured_identity_keys(card) -> None:
     assert "unavailable: AttributeError" in card, (
         "the card no longer discloses that driver_version holds a placeholder"
     )
+
+
+# ── the published weights must be reachable and safely loadable ───────────────────────────────
+def test_the_card_carries_a_load_recipe_that_uses_the_checkpoint_config(card) -> None:
+    """THE OBVIOUS LOAD FAILS. ``TrikaalAR()`` defaults to the FSQ vocabulary — the arm that was
+    never trained — while these checkpoints are BSQ with a different ``max_len``. Without a recipe
+    a reader hits a shape error with nothing telling them why."""
+    from trikaal.model.predictor import TrikaalAR
+
+    defaults = {
+        k: v.default
+        for k, v in __import__("inspect").signature(TrikaalAR.__init__).parameters.items()
+    }
+    assert (defaults["v_c"], defaults["v_f"], defaults["max_len"]) == (891, 1225, 512), defaults
+    code = "\n".join(_code_blocks(card))
+    assert code.strip(), "the card has no python recipe at all"
+    assert 'TrikaalAR(**ckpt["config"])' in code, "the card lost its config-driven load recipe"
+    assert "from trikaal.model.predictor import TrikaalAR" in code, (
+        "the recipe must give the real import path — TrikaalAR is not exported from trikaal.model"
+    )
+    for v in ("1024", "572"):
+        assert v in card, f"the card no longer states the published arm's {v}"
+
+
+def test_the_card_recipe_loads_safely_and_never_recommends_arbitrary_unpickling(card) -> None:
+    code = "\n".join(_code_blocks(card))
+    assert "weights_only=True" in code, "the recipe no longer loads safely"
+    assert "add_safe_globals" in code, (
+        "the recipe dropped add_safe_globals — without it weights_only=True REFUSES these files, "
+        "which is what pushes a reader to weights_only=False"
+    )
+    # CHECKED AS A CALL, NOT AS A STRING. The first version banned the literal anywhere on the
+    # page and fired on the sentence WARNING against it — the same reference-vs-subject mistake a
+    # mechanical replacement makes. What must not appear is an actual load using it.
+    calls = [ln for ln in card.splitlines() if "torch.load(" in ln and "weights_only=False" in ln]
+    assert not calls, (
+        f"the card shows a load that executes arbitrary pickle from a download: {calls}"
+    )
+
+
+def test_the_card_says_how_to_point_the_scripts_at_a_download(card) -> None:
+    """The weights could not reach the demo: the unit paths were hardcoded under gitignored
+    runs_cloud/ and documented nowhere."""
+    assert "--units" in card, "the card does not say how to run the scripts against a download"
+
+
+@pytest.mark.parametrize(
+    "script",
+    ["m6_csv_dashboard.py", "m6_demo_build.py", "m6_demo_acceptance.py"],
+)
+def test_the_entry_points_accept_a_units_path(script) -> None:
+    src = (REPO / "scripts" / script).read_text()
+    assert '"--units"' in src, f"{script} has no --units flag"
+    assert "use_units_from(args.units)" in src, f"{script} parses --units but never applies it"

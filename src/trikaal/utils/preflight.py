@@ -117,14 +117,23 @@ def resource_failures(
     out_dir: Path,
     disk_needed_bytes: int = 2 * 2**30,
     headroom: float = 1.0,
+    ram_bytes: int | None = None,
 ) -> list[str]:
     """Every unmet precondition (empty = safe to start). Fail-fast inputs, with both numbers.
 
     ``headroom`` = 1.0 means "the requirement must not exceed physical RAM". Anything above that
-    ratio is swap territory, which is the hazard this exists to stop."""
+    ratio is swap territory, which is the hazard this exists to stop.
+
+    ``ram_bytes`` OVERRIDES the host read, and exists because the host was silently part of a
+    test fixture. Two cases in the precondition suite asserted a decision computed from real
+    physical RAM, so the fast suite passed only on machines inside a window — measured by
+    bisection as roughly 12 GiB at the low end and a CEILING around 35 GiB at the high end, which
+    means a large CI runner or workstation failed a test about arithmetic. Injecting the figure
+    keeps the production default identical (``None`` reads the host, as before) while letting a
+    test state the host it is reasoning about instead of inheriting it."""
     fails: list[str] = []
     req = memory_requirement_bytes(n_bars, strategy)
-    ram = physical_ram_bytes()
+    ram = physical_ram_bytes() if ram_bytes is None else ram_bytes
     if ram is None:
         fails.append(
             "could not read physical RAM — refusing to start blind on the one resource "

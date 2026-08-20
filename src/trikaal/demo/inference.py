@@ -53,6 +53,66 @@ UNIT_DIRS: dict[int, Path] = {
     2: REPO / "runs_cloud/rescue/r1/cell1_bsq_ohlcv_seed2",
     4: REPO / "runs_cloud/rescue/r2/cell1_bsq_ohlcv_seed4",
 }
+PINNED_SEEDS: tuple[int, ...] = (0, 2, 4)
+
+
+class UnitDiscoveryError(RuntimeError):
+    """Raised when a ``--units`` root does not hold exactly the three cell-1 units."""
+
+
+def discover_units(root: Path) -> dict[int, Path]:
+    """Map seed -> unit directory under ``root``, identified by CONTENT rather than by path.
+
+    ★ WHY THIS EXISTS. The three paths above are the on-box layout of a run that happened, they
+    sit under gitignored ``runs_cloud/``, and they were written down nowhere a reader could find.
+    So the published weights could not reach the demo: the code was correct and the plumbing was
+    private. Anyone who downloaded the HuggingFace bundle had to guess this tree and recreate it
+    exactly before a single script would load.
+
+    Discovery is by content — a directory holding ``run_manifest.json`` + ``predictor.pt`` +
+    ``tokenizer.pt`` is a unit, and its seed is read from the manifest — so ANY layout works: the
+    repo tree, a flat HuggingFace download, or three folders named whatever the downloader chose.
+    Matching on directory NAMES would have re-imposed the private convention in a new place.
+    """
+    root = Path(root)
+    if not root.is_dir():
+        raise UnitDiscoveryError(f"--units path is not a directory: {root}")
+    found: dict[int, Path] = {}
+    for man in sorted(root.rglob("run_manifest.json")):
+        d = man.parent
+        if not ((d / "predictor.pt").is_file() and (d / "tokenizer.pt").is_file()):
+            continue
+        try:
+            seed = int(json.loads(man.read_text())["seed"])
+        except (OSError, ValueError, KeyError, TypeError) as e:
+            raise UnitDiscoveryError(f"unreadable seed in {man}: {e}") from e
+        if seed in found:
+            raise UnitDiscoveryError(
+                f"two units claim seed {seed}: {found[seed]} and {d} — refusing to guess"
+            )
+        found[seed] = d
+    if set(found) != set(PINNED_SEEDS):
+        raise UnitDiscoveryError(
+            f"expected the three cell-1 units (seeds {list(PINNED_SEEDS)}) under {root}, found "
+            f"{sorted(found) or 'none'}. A unit directory must hold run_manifest.json, "
+            f"predictor.pt and tokenizer.pt together."
+        )
+    return found
+
+
+def use_units_from(root: Path | str | None) -> dict[int, Path]:
+    """Point the demo at a downloaded weights bundle. ``None`` keeps the built-in repo paths.
+
+    Mutates ``UNIT_DIRS`` IN PLACE because other modules import the dict itself by name; rebinding
+    the module global would leave those importers pointing at the old mapping.
+    """
+    if root is None:
+        return dict(UNIT_DIRS)
+    found = discover_units(Path(root))
+    UNIT_DIRS.clear()
+    UNIT_DIRS.update(found)
+    return dict(UNIT_DIRS)
+
 
 # Pinned observation window / split — must match the money run's own pins, asserted on load.
 PINNED_WINDOW = ("2021-01-01", "2025-01-01")

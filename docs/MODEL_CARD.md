@@ -52,8 +52,14 @@ that number is recomputed below from the receipt rather than asserted.
 
 Measured three ways that do not share an input: a synthetic fixture (return dim reconstructs at
 0.98, the correlated filler dims 0.82–0.92, an independent low-variance dim 0.001–0.014), a canary
-(1.151 nats planted in feature space → **zero** extracted; 0.900 nats planted in token space →
-94.4% extracted), and real data (40 symbols, n=150k/dim, cell 4 seed 0).
+(**~1.15** nats planted in feature space → **zero** extracted; **0.900** nats planted in token
+space → 94.4% extracted), and real data (40 symbols, n=150k/dim, cell 4 seed 0).
+**The two canary figures are not equally precise and the notation says so.** The token-space
+half is exact: `runs_manifest/m6_token_control_run_manifest.json` carries
+`i_planted_full_stream = 0.9002715667652758` and `final_val_minus_H0 = −0.8496`, and
+0.8496 / 0.90027 = 0.943715 — the 94.4% to the digit. The feature-space half is **recorded only
+as an approximation**: `docs/BUILD_RECORD.md` says *"~1.15 nats"*, no receipt in
+`runs_manifest/` holds a more exact value, and the tilde is kept here rather than dropped.
 The cause is that an MSE reconstruction objective allocates capacity by variance **and
 covariance**, which makes an independent low-variance channel the worst per-bit investment
 available. A 512-bar windowed read recovers nothing beyond the per-bar read, so this is eviction
@@ -84,6 +90,56 @@ arms) put the same signed share between **77% and 93%** (cell 4 alone: 88–93%)
 itself `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN` and it is not being compared to it — it is quoted only
 as the spread of the statistic across replicates. **The direction is robust across all 18; the exact
 percentage is not.**
+
+## Loading them
+
+`TrikaalAR()`'s defaults are the **FSQ** vocabulary (`v_c=891`, `v_f=1225`, `max_len=512`) — the arm
+that was never trained. These checkpoints are **BSQ** (`v_c=v_f=1024`, `max_len=572`), so the
+obvious load raises a shape error. Build from the checkpoint's own config instead:
+
+```python
+import torch
+from trikaal.model.predictor import TrikaalAR
+from trikaal.tokenizer.model import TokenizerAE
+
+# These checkpoints stamp torch's version as a TorchVersion OBJECT, which weights_only=True
+# refuses by default. Allow that one global and the safe loader works — do NOT reach for
+# weights_only=False, which executes arbitrary pickle from a 127 MB download.
+torch.serialization.add_safe_globals([torch.torch_version.TorchVersion])
+
+ckpt = torch.load("seed0/predictor.pt", map_location="cpu", weights_only=True)
+model = TrikaalAR(**ckpt["config"])
+model.load_state_dict(ckpt["state_dict"])
+model.eval()
+
+tok = torch.load("seed0/tokenizer.pt", map_location="cpu", weights_only=True)
+tokenizer = TokenizerAE(**tok["config"])
+tokenizer.load_state_dict(tok["state_dict"])
+tokenizer.eval()
+```
+
+Summing `numel()` over the predictor's `state_dict` reproduces **31,725,568**, the
+`n_params_realized_total` in `runs_manifest/m6_weights_release.json`. That is the check to run
+first: it proves you loaded the artifact the manifest describes.
+
+**The `add_safe_globals` line is needed only for these already-published files.** The stamp is a
+plain string from now on (`provenance.py`), so future checkpoints load under `weights_only=True`
+with nothing registered. The line is kept here rather than the files being re-uploaded, because
+re-pickling a published artifact changes its SHA-256 and every hash on this page with it.
+
+## Running them
+
+The scripts take `--units`, pointing at wherever you downloaded the bundle. Units are found by
+**content** — any folder holding `run_manifest.json`, `predictor.pt` and `tokenizer.pt` — so the
+layout of your download does not matter, and an incomplete bundle is refused rather than
+half-loaded:
+
+```bash
+uv run python scripts/m6_csv_dashboard.py --units /path/to/download
+```
+
+Without `--units` the scripts look under the in-repo `runs_cloud/` paths of the original run,
+which a fresh clone does not have.
 
 ## Intended use
 

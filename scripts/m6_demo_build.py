@@ -28,6 +28,7 @@ from trikaal.demo.inference import (  # noqa: E402
     forecast_at,
     load_unit,
     prepare_symbol,
+    use_units_from,
 )
 from trikaal.demo.render import render_svg  # noqa: E402
 from trikaal.utils.paths import display_path  # noqa: E402
@@ -68,7 +69,18 @@ def main() -> int:
         type=Path,
         default=REPO / "runs_manifest/m6_demo_acceptance.json",
     )
+    ap.add_argument(
+        "--units",
+        type=Path,
+        default=None,
+        help=(
+            "Directory holding the three cell-1 units (any layout — the repo tree or a "
+            "HuggingFace download). Units are found by content: a folder with run_manifest.json, "
+            "predictor.pt and tokenizer.pt. Omit to use the in-repo runs_cloud/ paths."
+        ),
+    )
     args = ap.parse_args()
+    use_units_from(args.units)
 
     # ── REFUSE WITHOUT A PASSING ACCEPTANCE RECEIPT ───────────────────────────────────────────
     if not args.acceptance.exists():

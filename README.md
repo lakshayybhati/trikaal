@@ -26,10 +26,14 @@ variance **and covariance**, making an independent low-variance channel the wors
 investment available. The gate named the channels: **97.3% of *cell 4's* shortfall** — one seed,
 one run — sits on `TFI` and `signed_count_imbalance`, the two **signed** channels, while the four
 **magnitude** channels — the ones that co-vary with **volume**, not with price — essentially clear
-it. The per-dim arithmetic is printed in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) and every
-number is in `runs_manifest/m6_micro_legibility_stop.json`; the 18 stored calibration replicates
-put the same signed share between 77% and 93%, so the direction is robust and the exact percentage
-is not. Measured three ways that share no input (a synthetic fixture, a planted-information canary,
+it. The per-dim arithmetic is printed in [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md), and the six
+sign accuracies it recomputes from are in `runs_manifest/m6_micro_legibility_stop.json`.
+
+The 18 stored calibration replicates — a **different** file, `runs_manifest/m6_lambda_sweep.json`
+— put the same signed share between 77% and 93%, so the direction is robust and the exact
+percentage is not. **That file declares itself `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN`, and no
+delta between the 97.3% and the 77–93% spread is a measured quantity.** The spread is quoted as
+the dispersion of the statistic across replicates and for nothing else. Measured three ways that share no input (a synthetic fixture, a planted-information canary,
 and 40 real symbols at n=150k/dim), and a 512-bar windowed read recovers nothing beyond the per-bar
 read — so it is eviction, not smearing.
 
@@ -48,11 +52,14 @@ held out**. Read the draw back from `draw.drawn_by_symbol_stage1` in any unit's 
 
 | You want | Read |
 |---|---|
+| **the trained weights themselves** | <https://huggingface.co/lakshayybhati/trikaal-v1-baseline> |
 | what the weights are, and what they are **not** | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) |
 | what ships, and its content hashes | [`runs_manifest/m6_weights_release.json`](runs_manifest/m6_weights_release.json) |
 | the build order and its exit gates | [`docs/ROADMAP.md`](docs/ROADMAP.md) |
 | the M6 design and pre-registration | [`docs/m6_design.md`](docs/m6_design.md), [`docs/m6_prereg.md`](docs/m6_prereg.md) |
 | the local forecast dashboard | [`docs/v1_csv_dashboard.md`](docs/v1_csv_dashboard.md) |
+| the engineering invariants and working norms | [`docs/ENGINEERING.md`](docs/ENGINEERING.md) |
+| what v1 does **not** do, and what v2 would have to fix | [`docs/v2_and_limitations.md`](docs/v2_and_limitations.md) |
 
 **The economics are negative and are reported as such.** Break-even is the mean gross return per
 active period: 0.00232% / 0.00538% / 0.02082% against a realistic ~0.10% round trip — 4.8× to 43×
@@ -98,14 +105,26 @@ It builds, in order:
 
 ## Running
 
-```bash
-pip install -e ".[dev]"
+The pinned environment, from the committed lockfile — the same command CI runs
+(`.github/workflows/ci.yml`) and the same one `scripts/setup_cloud.sh` uses on a rented box:
 
-ruff check . && ruff format --check .     # lint + format
-pytest -q -m "not slow"                   # fast suite (G0 units, G1 stage-2, G2)
-pytest -q -m slow                         # the longer G1 stage-1 overfit gate
-python scripts/preflight.py               # G0/G1/G2 summary (the launcher's pre-flight)
+```bash
+uv sync --locked --extra data --extra dev
 ```
+
+```bash
+uv run ruff check . && uv run ruff format --check .   # lint + format
+uv run pytest -q -m "not slow"                        # fast suite (G0 units, G1 stage-2, G2)
+uv run pytest -q -m slow                              # the longer G1 stage-1 overfit gate
+uv run python scripts/preflight.py                    # G0/G1/G2 summary
+```
+
+**Both extras are required, and this used to say `pip install -e ".[dev]"`.** That omits
+`data`, so `polars` and `duckdb` are absent, four test modules fail to import, and pytest
+exits **2 during collection with zero tests run** — the documented setup verified nothing.
+`uv sync --locked` additionally installs the *locked* tool versions: `ruff` is now pinned
+exactly, because a floor-only constraint resolved to a newer minor that formats Python inside
+markdown fences and failed lint on files the locked version passes.
 
 ## Deferred to later milestones (explicitly out of this slice)
 

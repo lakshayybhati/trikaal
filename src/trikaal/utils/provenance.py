@@ -259,7 +259,14 @@ def run_provenance(device: str = "cpu", *, attention_mode: str = "unknown") -> d
         "cuda_build": cuda_build,
         "driver_version": driver,
         "device": device,
-        "torch": torch.__version__,
+        # ★ str(), AND IT IS NOT COSMETIC. `torch.__version__` is a `TorchVersion` object, not a
+        # str. Pickled into a checkpoint it becomes a GLOBAL that `torch.load(weights_only=True)`
+        # refuses by default — so every published checkpoint could only be opened with
+        # `weights_only=False`, i.e. by executing arbitrary pickle from a 127 MB download. One
+        # attribute made the safe path unavailable to every reader of these weights. Checkpoints
+        # already published still carry the object; the model card shows the `add_safe_globals`
+        # one-liner that opens them safely without it.
+        "torch": str(torch.__version__),
         "numpy": np.__version__,
         "python": platform.python_version(),  # C-18 — the pin uv.lock does NOT carry
         "python_executable": sys.executable,
