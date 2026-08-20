@@ -706,6 +706,56 @@ three stacked judgment calls = an unlimited re-run license):**
     Lakshay rules on where it lives** — and in a session where history was rewritten five times,
     an ignored directory is the most fragile place any work has been kept today.
 
+  - **★★ A PROHIBITED COMPARISON SHOULD BE NAMED AND REFUSED IN THE OPEN, NEVER OMITTED.** The
+    lambda sweep forbids differencing its replicates against the gate-firing run. The mistake was
+    treating that as a forbidden *number*; it is a forbidden *inference*, and the fact underneath
+    it is ours to state. **Omission is indistinguishable from not having noticed**, and this
+    paper's credibility rests on the reader believing we noticed. **The direction is the part that
+    makes this candour rather than technique**: cell 4's 97.3% exceeds all eighteen replicates
+    (max 92.5%), so the published headline is the **most concentrated measurement of that quantity
+    anywhere in our records** — which, unstated, is exactly what cherry-picking looks like from
+    outside. **And the defence has to sit beside the admission and be allowed to cut both ways:**
+    the replicates held out the last tenth of the training region and the gate-firing run did not,
+    so they measure a *different configuration* rather than eighteen attempts at the same one —
+    which is also why the headline cannot be called **corroborated** by them. A reader cannot
+    establish that from the numbers, so it is handed to them. What survives is unanimous and is
+    said plainly: signed dimensions carry the majority in **18 of 18**. **The working test: the
+    sharpest sentence a hostile reviewer could compose should be one we composed first.**
+  - **§8 WAS FALSE WHEN IT WAS WRITTEN AND IS TRUE NOW, AND I RE-VERIFIED IT FROM THE HUB RATHER
+    THAN FROM THE REPORT.** 20 files where there were 13. The evidence manifest served by the Hub
+    is byte-identical to the repository's; the two tokenizer hashes §8 publishes match the actual
+    Hub **bytes** and the stop receipt, as do both unit logs. **The decisive test passes**: pulling
+    `cell4_seed0/unit.log` and recomputing from that file alone gives shortfalls
+    0.0777 / 0.1472 / 0.0025 / 0 / 0.0038 / 0, total 0.2312, signed 0.2249, **share 97.2751%** —
+    the published figure, from one downloaded file and four lines of arithmetic. Two claims in my
+    own §8 text also checked rather than assumed: the six files total 139.38 MiB, and the stop
+    receipt was committed **2026-08-13** against the bundle manifest's **2026-08-20**, so *"before
+    the bundle existed"* holds by seven days. **And the log records a sampling rule with no seed**,
+    which is what makes §8's refusal to claim bit-exactness correct rather than modest.
+  - **★ A LOCAL REPOSITORY WITH NO REMOTE IS VERSION HISTORY, NOT A BACKUP — AND THIS IS A STANDING
+    CONDITION OF HOW THE PAPER IS KEPT, NOT AN INCIDENT.** The manuscript now has its own history
+    from a verified baseline, which is a real improvement over an ignored directory. **It is still
+    a single copy on a single disk.** The proof is already on the record: the patch I wrote
+    specifically to protect six edits **evaporated** — the scratchpad holding it was wiped between
+    sessions — and the edits survived only because another seat happened to preserve the working
+    tree. **The backup failed before the thing it was backing up did.** Nothing in the paper's
+    repository is replicated anywhere, by deliberate decision, so the risk is accepted rather than
+    absent; it should be re-decided rather than forgotten, and it is recorded here so that the next
+    person to lose work cannot call it a surprise.
+  - **AND THE DEFECT LEDGER HAS ABSORBED TIERS 1b–4, SO §8.9's TABLE IS NOW STALE IN FIVE PLACES**
+    — measured from the ledger, not from a summary. It runs **D1–D45**, not 36: **23 critical**
+    (was 19), 16 high, 6 medium. Two structural changes rather than a re-count. **A detection
+    layer exists that the paper's table has no row for** — the fourth independent audit, **4
+    defects of which 3 critical** — and the *self-found* row moves **8 → 13**, criticals **3 → 4**,
+    which is the larger shift: nine defects were added and **five of them were found by the seats
+    doing the work rather than by any audit**. The paper's own sentence still holds and needs only
+    its denominator moved — no single layer found even a third of the criticals, the first audit
+    remaining the largest at **6 of 23**. **One caution against updating too fast:** the ledger
+    lists D42 as *"card closed; paper OPEN"*, and the paper half was closed this session, so
+    *"all but one are closed"* becomes true again once that row catches up — leaving D10, the
+    eviction finding, which is mitigated rather than closed because it is a property of the
+    objective. **§8.9 is not edited here**: the numbers move only after the ledger settles.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
