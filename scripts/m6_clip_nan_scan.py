@@ -94,23 +94,58 @@ def main() -> int:
         default=None,
     )
 
-    # 3. the contrast that makes the method load-bearing: the longest run ANYWHERE mid-segment
-    mid = con.execute(
-        f"""
-        WITH s AS (
-          SELECT symbol, segment_id, bar_open_ms,
-                 row_number() OVER (PARTITION BY symbol, segment_id ORDER BY bar_open_ms) rn
-          FROM bars WHERE x_0 = {CLIP_LO}
-        ),
-        g AS (
-          SELECT symbol, segment_id, rn,
-                 row_number() OVER (PARTITION BY symbol, segment_id ORDER BY bar_open_ms) r2
-          FROM s
+    # 3. the contrast that makes the method load-bearing: the longest CONSECUTIVE RUN anywhere.
+    #
+    # ★ THIS QUERY WAS WRONG AND PUBLISHED A CORRECT MEASUREMENT UNDER THE WRONG NAME. The first
+    # version computed `row_number()` AFTER the `WHERE x = CLIP_LO` filter, in both CTEs — so
+    # `rn - r2` was identically 0, the GROUP BY collapsed each segment into ONE island, and
+    # `count(*)` returned the segment's TOTAL COUNT of -5.0 bars. It reported 3,018 for DOGEUSDT
+    # segment 0 dim 0 and called it a run; measured directly, that segment has 3,018 such bars and
+    # its longest run is 9. Gaps-and-islands needs the row number over ALL rows minus the row
+    # number over the HITS; taking it over the filtered set twice cancels to nothing.
+    #
+    # A COUNT LABELLED A RUN IS INVISIBLE TO EVERY CHECK, because both numbers are real. The
+    # invariant below (`longest_run <= count_in_that_segment`, with equality only for a single
+    # contiguous block) is what makes it visible, and it is asserted rather than trusted.
+    per_dim_runs = {}
+    for i in Z_SCORED_IDX:
+        row = con.execute(
+            f"""
+            WITH a AS (
+              SELECT symbol, segment_id, x_{i},
+                     row_number() OVER (PARTITION BY symbol, segment_id ORDER BY bar_open_ms)
+                       AS rn_all
+              FROM bars
+            ),
+            h AS (
+              SELECT symbol, segment_id, rn_all,
+                     row_number() OVER (PARTITION BY symbol, segment_id ORDER BY rn_all) AS rn_hit
+              FROM a WHERE x_{i} = {CLIP_LO}
+            )
+            SELECT symbol, segment_id, count(*) AS run
+            FROM h GROUP BY symbol, segment_id, (rn_all - rn_hit)
+            ORDER BY run DESC LIMIT 1
+            """
+        ).fetchone()
+        if row:
+            per_dim_runs[f"x_{i}"] = {"symbol": row[0], "segment_id": int(row[1]),
+                                      "longest_run_bars": int(row[2])}
+    worst_dim = max(per_dim_runs, key=lambda k: per_dim_runs[k]["longest_run_bars"])
+    mid = per_dim_runs[worst_dim]
+    # the invariant that makes a run-vs-count mislabel impossible to publish
+    n_in_segment = con.execute(
+        f"""SELECT count(*) FROM bars WHERE symbol = ? AND segment_id = ?
+            AND {worst_dim} = {CLIP_LO}""",
+        [mid["symbol"], mid["segment_id"]],
+    ).fetchone()[0]
+    if mid["longest_run_bars"] > n_in_segment:
+        raise SystemExit(
+            f"IMPOSSIBLE: longest run {mid['longest_run_bars']} exceeds the {n_in_segment} "
+            f"matching bars in {mid['symbol']} segment {mid['segment_id']} — the island query is "
+            "wrong again"
         )
-        SELECT symbol, segment_id, count(*) c
-        FROM g GROUP BY symbol, segment_id, (rn - r2) ORDER BY c DESC LIMIT 1
-        """
-    ).fetchone()
+    mid["matching_bars_in_that_segment"] = int(n_in_segment)
+    mid["dim"] = worst_dim
 
     drawn = []
     if DRAW.is_file():
@@ -133,9 +168,21 @@ def main() -> int:
             "segment end, which is what makes this a COMPLETE test rather than an indicative one."
         ),
         "WHY_THE_DISTINCTION_MATTERS": (
-            f"Ordinary quiet-period clipping reaches {mid[2]:,} consecutive bars of exactly -5.0 "
-            f"mid-segment ({mid[0]}, segment {mid[1]}, dim 0). A scan for '-5.0 anywhere' would be "
-            "swamped by legitimate clipping; only the trailing form is diagnostic."
+            f"Ordinary quiet-period clipping reaches {mid['longest_run_bars']:,} CONSECUTIVE bars "
+            f"of exactly -5.0 mid-segment ({mid['symbol']}, segment {mid['segment_id']}, "
+            f"{mid['dim']}), against a longest TRAILING run of "
+            f"{worst['trailing_bars'] if worst else 0} — a factor of "
+            f"{mid['longest_run_bars'] // max(1, worst['trailing_bars'] if worst else 1)}. A scan "
+            "for '-5.0 anywhere' would be swamped by legitimate clipping; only the trailing form "
+            "is diagnostic."
+        ),
+        "CORRECTION_2026_08_20": (
+            "This field previously read 3,018 and was named longest_mid_segment_run_dim0. 3,018 is "
+            "a REAL measurement — the COUNT of -5.0 bars in DOGEUSDT segment 0 dim 0 — published "
+            "under the name of a different quantity, because the island query computed both row "
+            "numbers over the already-filtered set and cancelled to a single group. That segment's "
+            "longest actual run is 9. A correct value under a wrong name passes every check, so "
+            "the receipt now asserts longest_run <= matching bars in the same segment."
         ),
         "lake": {"n_bars": int(n_bars), "n_symbols": int(n_syms)},
         "clip_lo": CLIP_LO,
@@ -144,11 +191,8 @@ def main() -> int:
         "non_finite_persisted_total": sum(non_finite.values()),
         "trailing_runs_by_dim": trailing,
         "worst_trailing_run": worst,
-        "longest_mid_segment_run_dim0": {
-            "symbol": mid[0],
-            "segment_id": int(mid[1]),
-            "bars": int(mid[2]),
-        },
+        "longest_mid_segment_RUN_any_z_dim": mid,
+        "longest_mid_segment_run_by_dim": per_dim_runs,
         "symbols_with_any_trailing_run": affected,
         "any_affected_symbol_in_the_training_draw": sorted(set(affected) & set(drawn)),
         "training_draw_available": bool(drawn),
@@ -168,7 +212,11 @@ def main() -> int:
         return 2
     print(f"non-finite persisted: {doc['non_finite_persisted_total']}")
     print(f"worst trailing run:   {worst}")
-    print(f"longest mid-segment:  {mid[2]:,} bars ({mid[0]} seg {mid[1]})")
+    print(
+        f"longest mid-segment RUN: {mid['longest_run_bars']:,} bars "
+        f"({mid['symbol']} seg {mid['segment_id']} {mid['dim']}), "
+        f"of {mid['matching_bars_in_that_segment']:,} matching bars in that segment"
+    )
     print(f"affected in the draw: {doc['any_affected_symbol_in_the_training_draw'] or 'none'}")
     print(f"wrote {display_path(OUT, REPO)}")
     return 0

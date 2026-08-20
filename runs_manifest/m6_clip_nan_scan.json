@@ -1,17 +1,59 @@
 {
+  "CORRECTION_2026_08_20": "This field previously read 3,018 and was named longest_mid_segment_run_dim0. 3,018 is a REAL measurement \u2014 the COUNT of -5.0 bars in DOGEUSDT segment 0 dim 0 \u2014 published under the name of a different quantity, because the island query computed both row numbers over the already-filtered set and cancelled to a single group. That segment's longest actual run is 9. A correct value under a wrong name passes every check, so the receipt now asserts longest_run <= matching bars in the same segment.",
   "METHOD": "The signature is a TRAILING run of exactly -5.0 reaching the END of a segment, not a run of -5.0 anywhere. The EWMA state updates as mu <- mu + alpha*(f[i]-mu), so a single non-finite input makes mu non-finite and it CAN NEVER RECOVER; every later live bar in that segment then reads -5.0. Poisoning therefore always runs to the segment end, which is what makes this a COMPLETE test rather than an indicative one.",
   "VERDICT": "NO LAUNDERING. Zero non-finite values are persisted anywhere in the lake, and the longest trailing run of exactly -5.0 on any z-scored dim is 2 bar(s) on a segment of 13503 bars \u2014 ordinary tail clipping, not a poisoned segment, which would cover the whole tail. No published number depended on the old behaviour.",
-  "WHY_THE_DISTINCTION_MATTERS": "Ordinary quiet-period clipping reaches 3,018 consecutive bars of exactly -5.0 mid-segment (DOGEUSDT, segment 0, dim 0). A scan for '-5.0 anywhere' would be swamped by legitimate clipping; only the trailing form is diagnostic.",
+  "WHY_THE_DISTINCTION_MATTERS": "Ordinary quiet-period clipping reaches 265 CONSECUTIVE bars of exactly -5.0 mid-segment (RNDRUSDT, segment 0, x_6), against a longest TRAILING run of 2 \u2014 a factor of 132. A scan for '-5.0 anywhere' would be swamped by legitimate clipping; only the trailing form is diagnostic.",
   "any_affected_symbol_in_the_training_draw": [],
   "clip_lo": -5.0,
   "lake": {
     "n_bars": 304625181,
     "n_symbols": 200
   },
-  "longest_mid_segment_run_dim0": {
-    "bars": 3018,
+  "longest_mid_segment_RUN_any_z_dim": {
+    "dim": "x_6",
+    "longest_run_bars": 265,
+    "matching_bars_in_that_segment": 549,
     "segment_id": 0,
-    "symbol": "DOGEUSDT"
+    "symbol": "RNDRUSDT"
+  },
+  "longest_mid_segment_run_by_dim": {
+    "x_0": {
+      "longest_run_bars": 10,
+      "segment_id": 0,
+      "symbol": "OGNUSDT"
+    },
+    "x_1": {
+      "longest_run_bars": 3,
+      "segment_id": 1,
+      "symbol": "FTMUSDT"
+    },
+    "x_10": {
+      "longest_run_bars": 82,
+      "segment_id": 0,
+      "symbol": "BANDUSDT"
+    },
+    "x_11": {
+      "longest_run_bars": 30,
+      "segment_id": 0,
+      "symbol": "1000LUNCUSDT"
+    },
+    "x_5": {
+      "longest_run_bars": 263,
+      "segment_id": 0,
+      "symbol": "MATICUSDT"
+    },
+    "x_6": {
+      "dim": "x_6",
+      "longest_run_bars": 265,
+      "matching_bars_in_that_segment": 549,
+      "segment_id": 0,
+      "symbol": "RNDRUSDT"
+    },
+    "x_9": {
+      "longest_run_bars": 70,
+      "segment_id": 0,
+      "symbol": "1000LUNCUSDT"
+    }
   },
   "non_finite_persisted_by_dim": {},
   "non_finite_persisted_total": 0,
