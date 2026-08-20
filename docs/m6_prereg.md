@@ -19,6 +19,21 @@ calendar boundary) → 2025-01-01 — of which the §3a **primary** region is fo
   as strong as m6_design §2 warned: 40 symbols carry an **effective breadth of only ~1.6
   independent symbols** (N_eff = N / (1 + (N−1)·ρ̄)). Cross-sectional pooling adds robustness and
   coverage, NOT 40× statistical power. Any power claim ignoring this would be fiction.
+  - **★ ANNOTATED 2026-08-20 — THE ROW IS A DATED RECORD AND STAYS; THE BASIS UNDER IT MOVED.**
+    Both figures above were **true when written**: at the commit that wrote this section, the
+    inputs receipt carried ρ̄_raw of 0.622 / 0.6223 / 0.6227 and `N_breadth_eff` of 1.6. The §3a
+    recomputation onto the pinned blocks-1–5 primary region then moved them, and **that same
+    commit updated §2's table, its T, and its honest reading — and added §2's own supersession
+    note — while leaving this sentence, one section above the diff, untouched.** On the current
+    basis, from `runs_manifest/m6_mde_inputs.json`: **ρ̄_raw = 0.6529 (h=5), 0.6387 (h=15),
+    0.6488 (h=60)**, all giving **N_eff ≈ 1.51–1.54**, which the receipt records as **1.5**.
+    **Read the row as the pre-§3a basis, and the values on this line as current.** The direction
+    matters and is stated rather than buried: the retained figures **understate the correlation
+    and overstate the breadth**, both toward more apparent power. **The operative threshold is
+    unaffected** — MDE deflates by the *temporal* `T_eff`, not by this cross-sectional N_eff, and
+    §2's table was recomputed on the new basis; what was stale is the narrative explaining why
+    the deflation was mandatory, and the argument it makes is strengthened by the true numbers,
+    not weakened.
 - **Residual correlation after market-factor removal ρ̄_resid ≈ −0.02** — the equal-weight market
   factor captures essentially all commonality; per-symbol residuals are near-independent.
 - **Pooled-series temporal autocorrelation ρ₁ ≈ 0** at h=5/15 (0.03 at h=60) — periods are
@@ -582,6 +597,52 @@ three stacked judgment calls = an unlimited re-run license):**
     **Repairing only the false positives leaves two checks that cannot fail**, which is the same
     shape as the sweep above. One remedy covers both: judge a mention by its own paragraph or its
     own code block; a mention whose own paragraph retires it is a record, not a claim.
+
+  - **★★ A CORRECT MEASUREMENT PUBLISHED UNDER ANOTHER QUANTITY'S NAME PASSES EVERY CHECK, AND
+    THIS IS THE MOST DURABLE THING RECORDED TODAY.** The scan receipt carried **3,018** as
+    `longest_mid_segment_run_dim0`. Verified here: DOGEUSDT segment 0 dim 0 has **exactly 3,018
+    bars at −5.0**, its longest *consecutive* run is **9**, and it does not trail. **Both numbers
+    are real. Only the name was wrong** — the island query took the row number over the
+    already-filtered set in both terms, so the difference was identically zero, every segment
+    collapsed to one group, and the count came back wearing a run's name. **Nothing structural
+    can see this**: the value is plausible, its type is right, its siblings are consistent, and no
+    range check fires. It surfaced only because two agents disagreed and a third recomputed it.
+    **The durable fix is therefore the invariant, not the number** — a longest run must be
+    *strictly* less than the matching bars in its segment, since equality means either one
+    contiguous block or, far more likely, a count wearing a run's name again.
+  - **★ AND THE LIMIT ON THAT FIX, NAMED HONESTLY RATHER THAN PAPERED OVER.** Names that imply
+    **arithmetic** can be swept — fractions into [0,1], counts to integers, `mean` ≤ `max`, a run
+    against its own segment — and that sweep now runs over every receipt. **Names that imply only
+    MEANING cannot be.** A median stored in a `*_mean` field, a p95 in a `*_max`, wall-clock in a
+    `*_cpu_s`: each is a plausible value in a plausible field **with no sibling to contradict
+    it**, and no amount of schema work creates one. That is a real boundary of the method and it
+    is stated as a boundary, not as a to-do.
+  - **AND ONE SHARPENING, FROM THE ρ̄ ITEM BELOW: A SELF-CONSISTENT PAIR ALSO SURVIVES AN
+    ARITHMETIC SWEEP.** §1's retired figures are ρ̄ ≈ 0.62 with breadth ≈ 1.6. Those two are
+    *consistent with each other* — 0.62 through N/(1+(N−1)ρ̄) at N = 40 gives 1.5886, which is
+    "~1.6" — so a guard checking that the breadth follows from the correlation **passes**, and
+    only a guard tying each number to the artifact fails. **The lesson is not merely that
+    semantic names are unsweepable; it is that internal consistency is not evidence.** Two
+    numbers must each be anchored to the measurement, never to one another.
+  - **★ THE ρ̄ / BREADTH ITEM ITSELF: MEASURED, AND IT IS A DATED RECORD RATHER THAN AN ERROR.**
+    Verified from `runs_manifest/m6_mde_inputs.json` rather than taken from the routing message:
+    **ρ̄_raw = 0.6529 (h=5), 0.6387 (h=15), 0.6488 (h=60)**, every one giving N_eff ≈ 1.51–1.54,
+    recorded as **1.5**. **No measured ρ̄ is 0.62** on the current basis. But the question was
+    whether it was ever true, and it was: at the commit that wrote §1, the receipt carried 0.622 /
+    0.6223 / 0.6227 and a breadth of 1.6. **So the row stays and is annotated in place**, which is
+    this log's own reference-versus-subject rule applied to itself — a statement true on its date,
+    superseded by a later basis, is a record and not a mistake, and rewriting it would destroy the
+    record.
+  - **AND THE WAY IT SURVIVED IS THE PROPAGATION CLASS IN ITS PUREST FORM YET.** The §3a
+    recomputation **did** update the prose: same commit, §2's table, its T, its honest reading,
+    and an explicit note that the previous table was superseded. **It documented the supersession
+    for the section it was about, and left the section one above it that shares its inputs** —
+    the diff hunk begins below §1, so the summary explaining *why the deflation was mandatory*
+    kept describing the pre-recompute basis for six weeks. **A correction reaches what you edit,
+    not what derives from it**, recorded here for the sixth time and the first where the same
+    commit both corrected and missed. **The damage is bounded and the bound is stated**: MDE
+    deflates by the temporal `T_eff`, not by this cross-sectional N_eff, so the operative
+    threshold never depended on the stale pair.
 
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
