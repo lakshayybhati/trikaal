@@ -210,25 +210,57 @@ def test_no_surface_publishes_the_superseded_magnitude_range(name) -> None:
 
 
 @pytest.mark.parametrize("name", sorted(PUBLISHED_SURFACES))
-def test_the_canary_figure_keeps_its_approximation_marker(name) -> None:
-    """A TILDE WAS DROPPED AND A DIGIT WAS INVENTED. The feature-space canary is recorded in
-    docs/BUILD_RECORD.md only as "~1.15 nats"; no receipt holds a more exact value (checked by
-    VALUE across every manifest, not by string). "1.151" published bare is manufactured
-    precision — the mirror of an unqualified 97.3%, which lost scope going the other way."""
+def test_the_canary_figure_is_the_exact_closed_form(name) -> None:
+    """★ THIS TEST USED TO ASSERT THE OPPOSITE, AND IT WAS WRONG.
+
+    From 2026-08-20 it forbade ``1.151`` and REQUIRED a tilde, on the reasoning that no receipt in
+    ``runs_manifest/`` held a more exact value — checked by VALUE across every manifest, not by
+    string. The check was sound; the SEARCH SPACE was not. The figure is not a stored measurement
+    at all, so no sweep of ``runs_manifest/`` could ever have found it: the plant is a Gaussian
+    channel and the information it injects is a CLOSED FORM,
+
+        I(s_t ; r_{t+2}) = 1/2 ln(1 + c^2),  c = C_SIGNAL = 3.0  (scripts/m6_canary.py:100)
+                         = 1/2 ln 10 = 1.151292546497023
+
+    fixed by a constant in ``scripts/``, which none of the three people who reviewed the change
+    searched. Calling a number approximate because you looked in one place is not a finding about
+    the number; it is an unfinished search — and it made a PUBLISHED document less precise than its
+    own evidence for a day.
+
+    The assertion is therefore inverted: the exact figure must appear, and it must appear WITH its
+    derivation, so a reader can tell a closed form from manufactured precision without trusting us.
+    """
     text = PUBLISHED_SURFACES[name].read_text()
-    assert "1.151" not in text, (
-        f"{name}: 1.151 traces to no receipt; the recorded figure is ~1.15 (docs/BUILD_RECORD.md)"
+    if "in feature space" not in text and "-nat signal" not in text:
+        pytest.skip(f"{name} does not state the feature-space canary")
+    assert "1.151" in text, f"{name} no longer carries the exact figure 1.151"
+    assert re.search(r"C_SIGNAL|ln\(1 ?\+ ?c|½·ln|1/2 ln", text), (
+        f"{name} states 1.151 without the closed form that fixes it — which is exactly how a "
+        "derived constant becomes indistinguishable from an invented digit"
     )
-    # CHECKED AT THE CLAIM SITE, NOT ANYWHERE IN THE FILE. The first version searched the whole
-    # text for a tilde and passed on a mutation that dropped it from the CLAIM, because the
-    # sentence explaining the provenance of "~1.15" still contained one. Same weakness as a
-    # proximity check satisfied by a neighbouring mention.
+    # AT THE CLAIM SITE, not anywhere in the file: the withdrawn-note paragraph still contains a
+    # tilde, and a whole-document check would read that as the claim still being hedged.
     for m in re.finditer(r"nats?\s+(?:planted\s+)?in feature space", text):
-        lead = text[max(0, m.start() - 24) : m.start()]
-        assert "~" in lead, (
-            f"{name} states the feature-space canary without its approximation marker: "
+        lead = text[max(0, m.start() - 30) : m.start()]
+        assert "~" not in lead, (
+            f"{name} still hedges the feature-space canary at the claim site: "
             f"...{lead}{text[m.start() : m.end()]}..."
         )
+
+
+def test_the_derivation_reproduces_from_the_source_constant() -> None:
+    """Bound to the CODE, not to another document. If C_SIGNAL ever moves, 1.151 is wrong and this
+    fails before any surface can quote it."""
+    import math
+
+    src = (REPO / "scripts/m6_canary.py").read_text()
+    m = re.search(r"^C_SIGNAL = ([\d.]+)", src, re.M)
+    assert m, "C_SIGNAL is gone from scripts/m6_canary.py — the derivation has lost its constant"
+    c = float(m.group(1))
+    assert c == 3.0, f"C_SIGNAL moved to {c}; every published 1.151 is now wrong"
+    exact = 0.5 * math.log(1 + c * c)
+    assert exact == pytest.approx(1.151292546497023, abs=1e-12)
+    assert f"{exact:.3f}" == "1.151"
 
 
 def test_the_receipt_named_for_a_number_actually_contains_it() -> None:

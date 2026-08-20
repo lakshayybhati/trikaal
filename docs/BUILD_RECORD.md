@@ -916,7 +916,7 @@ forecast from.** Everything below is the measurement of that assumption failing.
 **Commit `6feb60f`, 2026-07-20, ~$0.60, box destroyed.**
 
 Design: a sub-epoch stream of **42M bars** (0.75 epochs, so memorization is not available as an
-explanation), two arms — one carrying a planted lag-2 conditional worth **~1.15 nats**, one noise —
+explanation), two arms — one carrying a planted lag-2 conditional worth **~1.15 nats** **[the exact value is 1.151292546497023 = ½·ln(1+c²) at c = `C_SIGNAL = 3.0`, `scripts/m6_canary.py:100`; this line's tilde was later cited as evidence that no more exact figure existed, which was wrong — annotated 2026-08-21, the recorded wording is left as written]**, one noise —
 with the arithmetic recorded and asserted, and a `train_nll_main` log for the memorization-gap check.
 
 Result:

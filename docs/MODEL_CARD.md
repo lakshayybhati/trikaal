@@ -52,14 +52,25 @@ that number is recomputed below from the receipt rather than asserted.
 
 Measured three ways that do not share an input: a synthetic fixture (return dim reconstructs at
 0.98, the correlated filler dims 0.82–0.92, an independent low-variance dim 0.001–0.014), a canary
-(**~1.15** nats planted in feature space → **zero** extracted; **0.900** nats planted in token
+(**1.151** nats planted in feature space → **zero** extracted; **0.900** nats planted in token
 space → 94.4% extracted), and real data (40 symbols, n=150k/dim, cell 4 seed 0).
-**The two canary figures are not equally precise and the notation says so.** The token-space
-half is exact: `runs_manifest/m6_token_control_run_manifest.json` carries
+**Both canary figures are exact, and each is exact for a different reason.** The token-space half
+is *measured*: `runs_manifest/m6_token_control_run_manifest.json` carries
 `i_planted_full_stream = 0.9002715667652758` and `final_val_minus_H0 = −0.8496`, and
-0.8496 / 0.90027 = 0.943715 — the 94.4% to the digit. The feature-space half is **recorded only
-as an approximation**: `docs/BUILD_RECORD.md` says *"~1.15 nats"*, no receipt in
-`runs_manifest/` holds a more exact value, and the tilde is kept here rather than dropped.
+0.8496 / 0.90027 = 0.943715 — the 94.4% to the digit. The feature-space half is *derived*: the plant
+is a Gaussian channel, so the information it injects is
+I(s_t ; r_{t+2}) = ½·ln(1 + c²) with c = `C_SIGNAL = 3.0` (`scripts/m6_canary.py:100`), giving
+½·ln 10 = **1.151292546497023**, i.e. **1.151** to four significant figures. Nothing is rounded and
+nothing is estimated.
+
+**[CORRECTED 2026-08-21, AND THE WITHDRAWN NOTE IS SHOWN RATHER THAN DELETED.** From 2026-08-20
+this paragraph read *"the feature-space half is recorded only as an approximation"* and published
+**~1.15**, justified by *"no receipt in `runs_manifest/` holds a more exact value"*. That
+justification was **false**, and the search behind it was the wrong shape: the figure is not a
+stored measurement at all, so no sweep of `runs_manifest/` could ever have found it. It is a closed
+form fixed by a constant in `scripts/` — which none of the three people who reviewed the change
+searched. A figure called approximate because you looked in one place is not an approximate
+figure; it is an unfinished search.**]**
 The cause is that an MSE reconstruction objective allocates capacity by variance **and
 covariance**, which makes an independent low-variance channel the worst per-bit investment
 available. A 512-bar windowed read recovers nothing beyond the per-bar read, so this is eviction

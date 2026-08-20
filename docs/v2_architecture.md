@@ -42,7 +42,7 @@ independent state dim allocated capacity as: return **0.98**, correlated fillers
 **0.82–0.92**, the independent dim **0.001–0.014**. Reproduced across seeds with corrs
 "≈identical", i.e. deterministic rather than noisy.
 
-**(b) Canary, canonical scale** (prereg §7 v1.4; paper §3). A ~1.15-nat signal planted in
+**(b) Canary, canonical scale** (prereg §7 v1.4; paper §3). A **1.151**-nat signal (exact: ½·ln(1+c²) at c = `C_SIGNAL = 3.0`, `scripts/m6_canary.py:100`) planted in
 *feature* space produced **zero nats** of extraction by the AR, while per-bar id visibility of
 the planted dim measured **0.5135 — chance**. The identical rule planted directly in *token*
 space was learned to **Spearman 0.9999, 94% of the planted nats**. The tokenizer was the
