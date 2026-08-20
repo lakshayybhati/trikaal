@@ -644,6 +644,68 @@ three stacked judgment calls = an unlimited re-run license):**
     deflates by the temporal `T_eff`, not by this cross-sectional N_eff, so the operative
     threshold never depended on the stale pair.
 
+  - **★★ THE MANUSCRIPT WAS OUTSIDE EVERY GUARD FOR THE WHOLE CORRECTION CAMPAIGN, AND FOUR TIERS
+    OF FIXES DID NOT REACH IT.** Restored and audited 2026-08-20. Two of the four defects put to me
+    **did not exist**, and I confirmed that before touching either. **`1.151` nats is EXACT** —
+    `C_SIGNAL = 3.0` gives ½·ln(1+3²) = ½·ln 10 = 1.1512925, and the manuscript already derives it
+    in a displayed equation, labels it *derived* in the claims table and points at the derivation
+    from the appendix. **`0.8975` is correct at both sites** (dim 9's own value and a fixture cell);
+    the paper never states the range it was said to state and already carries 0.8962 for dim 11.
+  - **★★ AND THE 1.151 ERROR WAS MINE, WITH CONSEQUENCES THAT LANDED IN A PUBLISHED DOCUMENT.** I
+    searched `runs_manifest/` by value for the planted-information figure, found nothing, and wrote
+    that the number *"traces to nothing"* — twice in this log. **It traces to a closed form in
+    `scripts/`, which I never searched.** My instrument was narrower than my claim, which is the
+    class this log has recorded six times and which I have now committed three times in two days.
+    The consequence is the part that matters: the finding was carried into a brief, acted on, and
+    the model card was changed from `1.151` to `~1.15` — **so my error made a published document
+    LESS precise than its evidence supports.** The card should be restored to the derived value
+    with its derivation; that file is not mine.
+  - **THE REAL DEFECT WAS UNBRIEFED AND NO STRING SWEEP COULD HAVE FOUND IT.** §5 said the other
+    160 instruments *"are lake breadth and training data"*. They are not: the Stage-1 draw is 40
+    symbols in all three units and is **identical to the scored set**, so the units were trained on
+    the same 40 they are scored on and the other 160 were never trained on at all. The sentence
+    contains no retired string and no wrong number — it conflates two things, one true (the
+    preceding three years ARE the training region for those 40) and one false. **Corrected keeping
+    the true half.**
+  - **★ AND ONE MORE THAT ONLY READING FOUND: A CAPTION WHOSE BASIS LABEL COVERED TWO BASES.** The
+    validation figure says the embargo premise is *"measured on all 200 instruments"* and then
+    gives the signed figures on the all-200 basis (0.0067, 0.0191) and the absolute-return figures
+    on the **pinned 40** (0.2323, 0.3604) under the same label. Every number is real; the label is
+    right for half of them. **It is the A2 defect in a caption, and it understates the same way** —
+    the all-200 worst is 0.4158, larger than the figure shown. Now names a basis per number.
+  - **97.3% CARRIED ITS SCOPE TO THE TWO SURFACES A READER ACTUALLY READS**, with the qualification
+    that makes it survive: one cell, one seed, one run, and the two near-miss dims at 0.0025 and
+    0.0038 against the gate's own ±0.03 seed-noise band — an order of magnitude inside it. **This
+    is not a weakening.** A number that survives its own stability statement is stronger than one
+    that omits it, and a referee computes the sensitivity regardless.
+  - **★ BUT THE INSTRUCTED WORDING WOULD HAVE BROKEN A STANDING PROHIBITION, AND I DECLINED IT.**
+    I was told to write that the eighteen replicates span 77–93% *"and none reaches"* 97.3%. **That
+    is a statement about the difference between the two sets, which the sweep receipt forbids** —
+    it is `NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN`, and §6's own table note says no difference
+    between them is a measured quantity. The spread is therefore quoted **as a spread**, inside the
+    note that carries the prohibition, so it cannot travel without it — and the abstract carries
+    the scope and the band instead, because a prohibition that long cannot ride in an abstract.
+  - **THE PROVENANCE ANALOGUE, FOUND BY SWEEPING FOR WHAT WAS NOT NAMED.** §8 said sixteen keys
+    define a run's identity and *"the remaining fifteen are unchanged"* — true of the definition,
+    silent on the release. **The three published run manifests carry twelve**; `git_commit`,
+    `image`, `lockfile_sha256` and `platform_abi` were never captured, and `driver_version` holds
+    the literal string `unavailable: AttributeError`. Measured from the manifests themselves. The
+    card had disclosed this in tier 1; the paper had not.
+  - **★ WHAT THE GUARDS CAUGHT VERSUS WHAT ONLY READING CAUGHT, WHICH IS THE POINT OF THE ENTRY.**
+    The new claim audit found six things and was **right about two** — the unscoped 97.3% on the
+    two reader-facing surfaces, and the training-data sentence. It was **wrong about two** (1.151
+    and, after correction, the sentence it had itself demanded), and it **could not see** the
+    caption's mixed basis or the provenance gap, which have no retired string to match. **Four of
+    its five surviving findings now fire on my corrections**, because a correction names what it
+    retires — the same class, in the instrument written to close the class.
+  - **AND THE PAPER IS UNVERSIONED, WHICH IS NOW THE LARGEST RISK TO IT.** It sits at `<repo>/paper`
+    and is ignored, so `git status` is empty while six manuscript files are edited. Committing it
+    would mean forcing sixty files back into a repository they were removed from **by operator
+    decision**, which is not a writer's call to reverse. The edits are held as a patch outside the
+    tree and this entry is the record of them. **Nothing about this manuscript is durable until
+    Lakshay rules on where it lives** — and in a session where history was rewritten five times,
+    an ignored directory is the most fragile place any work has been kept today.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
