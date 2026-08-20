@@ -357,6 +357,68 @@ three stacked judgment calls = an unlimited re-run license):**
     and can be restored with `git checkout <commit> -- paper/`. What changed is what the repository
     presents, which is what the decision was about.
 
+  - **★★ TWO INDEPENDENT AUDITS FOUND ONE SHAPE: THIS LOG HELD THE SCOPE AND THE SURFACES PEOPLE
+    READ DID NOT.** Several numbers are qualified correctly here — by cell, by seed, by run, and by
+    the prohibitions that travel with them — and were stated unqualified on `README.md` and
+    `docs/MODEL_CARD.md`, which is what a reader meets first. **The pre-registration was right and
+    unreachable.** The builder's correction **propagated scope outward and changed no measured
+    value**: not one figure moved. The whole of the fix is carrying the cell, the seed, the run,
+    the selection rule and the replicate spread to text that already had the number. That is the
+    correct direction, and it is worth stating as a rule — **a scope defect is repaired by carrying
+    the qualification to the number, never by softening the number to fit the qualification.**
+  - **VERIFIED AGAINST THIS LOG'S VALUES BY RECOMPUTATION, NOT BY COMPARING TEXT.** From
+    `runs_manifest/m6_micro_legibility_stop.json`: cell 4's six per-dim `sign_acc` readings, their
+    shortfalls against 0.90, the 0.2312 total, the 0.2249 signed contribution and the resulting
+    **0.972751** all reproduce exactly; so does cell 5's **0.834592**. The 18 stored λ replicates
+    give **0.7727–0.9254** across all configs and **0.8827–0.9254** for cell 4 alone. **No
+    disagreement, on any value, between the corrected surfaces and this log.**
+  - **★ BUT THE PROHIBITION REACHED ONE SURFACE AND NOT THE OTHER — THE SAME CLASS, ONE REMOVE
+    OUT.** The comparability prohibition recorded above travels with every λ-sweep number and, where
+    they reach a caption, goes *in* it. `docs/MODEL_CARD.md` carries it. `README.md` does not, and
+    there the 97.3% and the 77–93% spread sit four lines apart — an arrangement that invites
+    precisely the delta the prohibition forbids treating as measured, since 97.3% falls outside
+    both that range and cell 4's own 88–93%. Two adjacent findings, both measured: `README.md`
+    states that *every number is in* the stop receipt and then, in the same sentence, gives three
+    that are not in it (the 18 replicates and the two bounds live in `m6_lambda_sweep.json`; the
+    values 0.7727 and 0.9254 do not occur in the receipt it names); and the new card guard reads
+    `docs/MODEL_CARD.md` only, so both claims stand unguarded on the more-read surface. **The
+    instrument built to close the class is again narrower than the claim** — the fifth time that
+    sentence has been true here. Routed to the builder; not edited by me.
+  - **★★ AND AN ERROR IN THE SPECIFICATION OF THE FIX, RECORDED BECAUSE IT BELONGS IN THE LOG AND
+    NOT IN A MESSAGE.** The reconciliation identity was specified as *"headers + in-body-only ==
+    total distinct tags"*. But in-body-only is **defined** as tags minus headers, so the sum is a
+    set identity — true by construction, for any input whatsoever. **Measured rather than argued:**
+    it holds on 2,000 random strings, on an empty file, on a one-line file, and on this log with
+    **every** header stripped out. The failure it was written to catch — a tag losing its header —
+    leaves it true. The guard's own mutation-3 docstring already says *"The identity still SUMS —
+    that is what makes it an identity"*, so the fact was written down without being recognised.
+  - **TWO REFINEMENTS TO THAT, BOTH IN THE DIRECTION OF LESS COMFORT.** (1) The assertions are not
+    *unconditionally* tautologous: the header pattern accepts any major version while the tag
+    pattern is anchored to `v1`, so a header at major version 2 is the one input that falsifies
+    them. That is not a check that fires on a defect — it is a **latent false positive** waiting
+    for the first legitimate non-`v1` entry. (2) The honest scope is that the *identity* is vacuous,
+    not the file: its populated-log bounds do reject the emptied and truncated logs the identity
+    waves through, and its mutation tests exercise the helpers. **The class is the point.** This is
+    an instance of the exact defect it was written to catch — an instrument narrower than its claim
+    — produced by the person specifying the repair, and called the durable win of the day while it
+    tested nothing. The repair is tier 4 and the builder's; the record is this.
+
+  - **★ AND ONE NUMBER TRAVELS THE OTHER WAY: IT GAINS PRECISION AS IT MOVES OUTWARD.** The
+    canary sentence now on `docs/MODEL_CARD.md` and `docs/ROADMAP.md` reads *"1.151 nats planted in
+    feature space → zero extracted; 0.900 nats planted in token space → 94.4% extracted"*. **The
+    second half is exact**: `m6_token_control_run_manifest.json` carries
+    `i_planted_full_stream = 0.90027…` and `final_val_minus_H0 = −0.8496`, and 0.8496 / 0.90027 =
+    **0.943715**, which is the published 94.4% to the digit. **The first half traces to nothing.**
+    No receipt in `runs_manifest/` contains 1.151 as a planted-information quantity — checked by
+    value, not by string: every float in [1.14, 1.16] across every manifest is a variance ratio, an
+    IR, a t-statistic or a determinism ratio. The only recorded form of the figure is
+    `docs/BUILD_RECORD.md`'s **"~1.15 nats"** — approximate, tilde and all, in an internal
+    document. **A tilde was dropped and a third decimal appeared somewhere between that file and
+    the two public ones.** This is the mirror image of the defect the audits found: that one shed
+    its scope on the way out, this one acquired precision on the way out, and both are the same
+    failure to carry a number's qualification with the number. Unguarded — the new card guard does
+    not cover the canary figures. Routed to the builder; not edited by me.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
