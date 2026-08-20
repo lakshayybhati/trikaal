@@ -30,7 +30,21 @@ a scored artifact (`artifacts_produced: 0`). Cells 4 and 5 *did* run through **S
 path — that run is what produced the legibility receipt this whole finding rests on
 (`runs_manifest/m6_micro_legibility_stop.json`), so the numbers below are measured, not inferred.
 Cell 2 has a separate Stage-1 probe that is explicitly not a unit (`runs_manifest/m6_cell2_stage1_probe.json`).
-There are no microstructure weights to release, and there will not be.
+**There is no microstructure MODEL to release, and there will not be.** Stage 2 was never entered,
+so no predictor exists for cells 2–5 and nothing from those arms can forecast anything.
+
+**What does ship is the evidence.** The cell-4 and cell-5 **Stage-1** artifacts are published beside
+the three cell-1 units, at `cell4_seed0/` and `cell5_seed0/`: each a tokenizer, its optimizer
+state, and the run's log — six files, 139.4 MiB, with their SHA-256s in
+`m6_legibility_evidence_manifest.json` and cross-checkable against
+`runs_manifest/m6_micro_legibility_stop.json` in the code repository, which was committed before
+the bundle existed.
+
+**★ THEY ARE THE STAGE-1 ARTIFACTS OF AN ARM THE GATE REFUSED, and publishing them is not a claim
+that the arm worked.** It did not — that refusal *is* the finding. They are here so the 97.3%
+can be checked against the thing it was measured on, which otherwise existed nowhere public.
+Nothing in that bundle is a predictor and nothing in it can forecast; the three cell-1 units
+remain the only trained forecasters this project released.
 
 So cell 1 is the only arm with scored artifacts, and it is the arm the claim was supposed to be
 measured *against*. These weights demonstrate the **measurement vehicle** — the held-fixed backbone

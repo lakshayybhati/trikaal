@@ -209,8 +209,16 @@ Severity: **CRITICAL** (would produce a wrong published result), **HIGH** (would
 invalid run), **MEDIUM** (degrades a claim or a record), **LOW** (documentation, hygiene).
 
 Detection layer: **DESIGN-REVIEW**, **GATE** (an automated check), **CANARY** (a planted-signal
-experiment), **AUDIT-1**, **RE-AUDIT**, **EXECUTION** (found by running the thing), **SELF** (found
-by the builder or supervisor outside a formal pass).
+experiment), **AUDIT-1**, **RE-AUDIT**, **AUDIT-4** (the two independent audits of the PUBLISHED
+repository, 2026-08-19 → 08-21, worked as tiers 1 / 1b / 2 / 3 / 4), **EXECUTION** (found by
+running the thing), **SELF** (found by the builder, the writer or the supervisor outside a formal
+pass).
+
+*(`D35` carries the layer `AUDIT-3 (C-12)`. That label predates this section's list and matches no
+round named in §1, which records Audit round 1, Audit round 2 — the independent audit — and the
+Re-audit. Left exactly as recorded and flagged here rather than renamed, because it is a dated
+entry and not this pass's finding; the 2026-08-19 → 08-21 rounds are labelled **AUDIT-4** so that no
+existing label is redefined underneath a row that already used it.)*
 
 | # | defect | sev | layer | status |
 |---|---|---|---|---|
@@ -250,6 +258,98 @@ by the builder or supervisor outside a formal pass).
 | D34 | Offer filter had no driver constraint | MEDIUM | EXECUTION (P2) | closed `31dbffc` |
 | D35 | Three clause strings named the quantity `ΔIR_info` | CRITICAL | AUDIT-3 (C-12) | closed `af3164d` |
 | D36 | Invariants 4 and 8 asserted a validation never performed | HIGH | SELF | closed `0cffb4f` |
+| D37 | `_clip` laundered NaN to -5.0, disabling the project's own NaN tripwire | CRITICAL | AUDIT-4 | closed `d1f5f59` |
+| D38 | Six scripts wrote "VERIFIED" from zero measurements | CRITICAL | AUDIT-4 | closed `7f60f5e` |
+| D39 | The IP sweep could not match on the platform that ran it | HIGH | SELF | closed `93afd34` / `d3d43cb` |
+| D40 | A COUNT published under a RUN's name in a tracked receipt | MEDIUM | SELF | closed `937117b` |
+| D41 | The model card claimed 16 provenance keys; the units carry 12 | MEDIUM | AUDIT-4 | closed `ec5e539` |
+| D42 | The 200-symbol lake presented as what the model trained on | CRITICAL | AUDIT-4 | card closed `ec5e539`; paper OPEN |
+| D43 | One figure caption, two bases under a single label | MEDIUM | SELF | closed by the writer |
+| D44 | Paper §8 stated the 16-key definition and was silent on the release | MEDIUM | SELF | closed by the writer |
+| D45 | A correct published figure was replaced with a less precise one | CRITICAL | SELF | closed `2a2abef` |
+
+### D37 — a NaN became -5.0, and that disabled the guard built to catch it
+
+**What.** `normalize._clip` was `min(CLIP_HI, max(CLIP_LO, x))`. Every comparison against NaN is
+False, so `max(CLIP_LO, nan)` returns `CLIP_LO`: a NaN became **-5.0**, the most extreme negative
+value a normalized feature can take, on the nine z-scored dims including the return channel.
+
+**Why CRITICAL.** The wrong value is the smaller half. `features.compute_features` ends with
+`if not np.all(np.isfinite(x_f64)): raise ValueError("NaN/Inf in emitted features")` — a tripwire
+built for exactly this — and it **cannot fire against a laundered value**, because -5.0 is finite.
+A violated eps or segment rule would have entered the model's data path in silence. The BOUNDED
+dims used `np.clip`, which propagates NaN, so the two halves of one function disagreed.
+
+**Did it ever fire?** No, and the test is complete rather than indicative: `mu` updates as
+`mu + alpha*(f[i]-mu)`, so one non-finite input makes `mu` non-finite and it can never recover —
+poisoning always runs to the end of its segment. Scanned across all 200 symbols and 304,625,181
+bars (`runs_manifest/m6_clip_nan_scan.json`): **zero non-finite persisted**, and the longest
+trailing run of exactly -5.0 on any z-scored dim is 2 bars, in two symbols not in the 40-symbol
+training draw. Ordinary tail clipping.
+
+**Related.** `np.clip` CLAMPS ±inf, so the same message could only ever fire on the NaN half —
+sixteen dims claimed that protection and nine had it. Closed with the same commit.
+
+### D38 — six scripts wrote a confident receipt from nothing
+
+**What.** `m6_h_sweep` skipped all three cells and wrote `L1_all_reproduced: true` from an EMPTY
+dict — `all()` over nothing is True — exiting 0 while deleting 317 lines of a tracked receipt.
+`m6_pull_verify` printed `PASS … verified 0/0` beneath its own docstring's *"Exit 0 ONLY if every
+file verifies"*. `m6_determinism_probe` and `m6_c3_dsr_units` both printed `PROBE INVALID` and
+wrote anyway, the latter deleting 103 lines of CONFIRMED audit findings. `m6_bit_exact_correction`
+silently rewrote a disclosure receipt from 46 records to 19. `m4b_universe_ingest` made an
+unprompted LIVE NETWORK CALL on a no-argument run and overwrote the committed
+`config/universe_full.yaml` that pins the 200-symbol universe.
+
+**Why CRITICAL.** Individually each is a rough edge; together they are the mechanism by which a
+repository starts asserting things nobody measured. The norm forbidding it — *a probe must REFUSE
+to emit a verdict when its own control arm fails* — was already written down, and had been
+implemented for exactly one receipt.
+
+**Fix.** One gate, `trikaal.utils.receipts.write_receipt`, refusing on an empty measured set, on a
+run that self-reports invalid, and on a TRACKED target without `--force`. All six wired; each now
+exits 2 and leaves the tree byte-unchanged. Wiring it surfaced **five more** ungated writers inside
+`m6_h_sweep` alone.
+
+### D42 — the lake presented as what the model trained on
+
+**What.** The model card gave "200 USDT-perpetual symbols … 304,625,181 bars" as the training
+data. The draw is **40 symbols and 84,153,600 bars** — `len(drawn_by_symbol_stage1) == 40` in all
+three units, and the ledger's per-symbol counts sum to exactly 84,153,600 over those 40. The
+project had already computed this and registered it as risk 7 (§8.1 below). A **5x** overstatement
+of what the model saw.
+
+**Still open in the paper.** `sections/05_data.tex` says the other 160 instruments "are lake
+breadth and **training data**". They are not: the trained set and the scored set are the SAME 40
+(`drawn_by_symbol_stage1` == `m6_mde_inputs.symbols_sampled`, exactly, in all three units), so the
+other 160 were never trained on at all. No string sweep can find this — it contains no retired
+string and no wrong number.
+
+### D45 — a correct published figure was replaced with a less precise one
+
+**What.** The canary's feature-space plant is **1.151 nats**, and it is EXACT: the plant is a
+Gaussian channel, so the information it injects is `½·ln(1+c²)` at `c = C_SIGNAL = 3.0`
+(`scripts/m6_canary.py:100`) `= ½·ln 10 = 1.151292546497023`. On 2026-08-20 the supervisor's
+tier-1b brief reported it as manufactured precision, and the model card and ROADMAP were changed to
+**~1.15**, justified by *"no receipt in `runs_manifest/` holds a more exact value"*.
+
+**Why CRITICAL.** By this ledger's own definition — it produced a wrong published document. For a
+day, two reader-facing surfaces stated a figure less precise than the project's own evidence
+supported, with a false justification attached to it.
+
+**Root cause, and it is the transferable part.** The sweep behind the justification was correctly
+executed: every float in every manifest was checked BY VALUE. The **search space** was the wrong
+shape. The figure is not a stored measurement at all, so no sweep of `runs_manifest/` could ever
+have found it — it is a closed form fixed by a constant in `scripts/`, which none of the three
+people who reviewed the change searched. **A number called approximate because you looked in one
+place is not a finding about the number; it is an unfinished search.**
+
+**Fix.** Restored on the card, ROADMAP and `v2_architecture`, each with the derivation and its
+source line; `BUILD_RECORD` §7's own "~1.15" annotated in place rather than rewritten, because it
+is a dated record of what the run wrote and it is the document the false justification pointed at.
+The guard was INVERTED — it used to forbid `1.151` and require a tilde — and a second test
+re-derives the value from `C_SIGNAL` itself, so if that constant ever moves every published
+instance fails before anyone can quote it.
 
 ### D1 — the causal gate checked ~2.5% of bars
 
