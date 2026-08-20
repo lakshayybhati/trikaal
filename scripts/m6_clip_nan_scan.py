@@ -128,8 +128,11 @@ def main() -> int:
             """
         ).fetchone()
         if row:
-            per_dim_runs[f"x_{i}"] = {"symbol": row[0], "segment_id": int(row[1]),
-                                      "longest_run_bars": int(row[2])}
+            per_dim_runs[f"x_{i}"] = {
+                "symbol": row[0],
+                "segment_id": int(row[1]),
+                "longest_run_bars": int(row[2]),
+            }
     worst_dim = max(per_dim_runs, key=lambda k: per_dim_runs[k]["longest_run_bars"])
     mid = per_dim_runs[worst_dim]
     # the invariant that makes a run-vs-count mislabel impossible to publish
