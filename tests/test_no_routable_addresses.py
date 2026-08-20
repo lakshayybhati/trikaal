@@ -1,13 +1,18 @@
-"""NO ROUTABLE ADDRESS IN THE TRACKED TREE — and the sweep that said so was broken.
+"""NO ROUTABLE ADDRESS IN THE TRACKED TREE — and the sweep that said so was not portable.
 
-THE SWEEP THAT COULD NOT FAIL. This item was reported closed on the strength of
-``git grep -E '\\b(...)\\b'`` returning nothing. ``git grep``'s ERE has no ``\\b``: the pattern
-silently never matches, so the command returns "clean" for every possible repository. Plain
-``grep`` supports it, which is why it looked right. Four public IPv4 addresses of rented GPU boxes
-were sitting in two tracked receipts the whole time, under the field name ``public_ipaddr``.
+THE SWEEP THAT GAVE A DIFFERENT ANSWER ON A DIFFERENT MACHINE. This item was reported closed
+on the strength of ``git grep -E '\\b(...)\\b'`` returning nothing. ``git grep``'s ERE is the
+PLATFORM's regex engine: glibc (Linux, and CI) implements ``\\b`` as a GNU extension and
+MATCHES, while BSD (macOS) does not and returns a silent, confident nothing. The same command
+therefore reads "clean" on one machine and finds the problem on another — and a pattern that
+cannot match is indistinguishable from a clean repository. Four public IPv4 addresses of rented
+GPU boxes were sitting in two tracked receipts the whole time, under ``public_ipaddr``.
 
-This file therefore does its own matching in Python, where ``\\b`` means what it looks like, and
-classifies with ``ipaddress`` rather than with a regex.
+(The platform split was found the hard way: the first version of the test below asserted that
+``git grep`` NEVER supports ``\\b``, passed on macOS, and FAILED IN CI on Linux.)
+
+This file therefore does its own matching in Python, where ``\\b`` means what it looks like on
+every platform, and classifies with ``ipaddress`` rather than with a regex.
 
 REDACTED, NOT DELETED. The receipts exist to prove the M6 shards ran on THREE DISTINCT MACHINES —
 ``host_id`` cannot establish that, because one host_id is a provider ACCOUNT operating many
@@ -24,6 +29,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import platform
 import re
 import subprocess
 from pathlib import Path
@@ -113,20 +119,45 @@ def test_the_version_exemption_is_justified_not_assumed() -> None:
         )
 
 
-def test_git_grep_cannot_be_used_for_this() -> None:
-    """THE LESSON, PINNED. git grep's ERE has no \\b, so the pattern that closed this item could
-    not match anything. Asserted rather than remembered."""
-    r = subprocess.run(
+def test_a_word_boundary_in_git_grep_is_NOT_PORTABLE() -> None:
+    """THE LESSON, PINNED — AND IT IS WORSE THAN "git grep has no \\b".
+
+    The first version of this test asserted that ``git grep -E '\\bnumpy\\b'`` never matches. It
+    passed on macOS and FAILED IN CI, which is how the real rule was found: ``git grep``'s ERE is
+    the PLATFORM's regex engine. glibc (Linux, and CI) implements ``\\b`` as a GNU extension and
+    matches; BSD (macOS) does not, and returns a silent, confident nothing.
+
+    So the same sweep gives DIFFERENT ANSWERS ON DIFFERENT MACHINES — which is exactly how this
+    item came to be reported closed with four addresses sitting in the tree. A pattern that cannot
+    match on the machine you ran it on looks identical to a clean repository.
+
+    This test therefore asserts the PORTABLE rule and refuses to encode either platform's answer:
+    the explicit character-class form must work everywhere, Python ``re`` supports ``\\b``
+    everywhere, and ``\\b`` in ``git grep`` is recorded as unreliable rather than as absent.
+    """
+    portable = subprocess.run(
+        ["git", "grep", "-cE", r"(^|[^A-Za-z])numpy([^A-Za-z]|$)", "--", "pyproject.toml"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    )
+    assert portable.returncode == 0 and portable.stdout.strip(), (
+        "the explicit character-class form must match on every platform; if this fails the "
+        "subject file changed, not the rule"
+    )
+    assert re.search(r"\bnumpy\b", (REPO / "pyproject.toml").read_text()), (
+        "python re supports \\b on every platform — that asymmetry with git grep is the trap"
+    )
+    boundary = subprocess.run(
         ["git", "grep", "-cE", r"\bnumpy\b", "--", "pyproject.toml"],
         cwd=REPO,
         capture_output=True,
         text=True,
     )
-    assert r.returncode != 0 and not r.stdout.strip(), (
-        "git grep now supports \\b — this repo's sweeps may be re-checked, but do not assume it"
-    )
-    assert re.search(r"\bnumpy\b", (REPO / "pyproject.toml").read_text()), (
-        "python re DOES support \\b — that asymmetry is the whole trap"
+    # Deliberately NOT asserted either way. Recorded so a future reader sees which engine ran.
+    print(
+        f"[platform note] git grep -E '\\b' on {platform.system()}: "
+        f"{'MATCHED' if boundary.returncode == 0 else 'silently matched NOTHING'}"
     )
 
 
