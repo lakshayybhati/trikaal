@@ -1,5 +1,14 @@
 # M6 Readiness Audit (recon only — built nothing)
 
+> **★ SUPERSEDED — THIS IS A SNAPSHOT OF 2026-06-23, NOT A STATEMENT ABOUT THE CODE TODAY.**
+> The inventory below marks several components **❌ MISSING** with *"zero executable code"*.
+> **All of them were subsequently built**, and one of them — the **BSQ tokenizer** — is the
+> quantizer of the three checkpoints this project actually PUBLISHED
+> (`docs/MODEL_CARD.md`). Also built since: the OHLCV-only/+micro arm switch, the purged
+> walk-forward harness, and the cross-sectional eval path. **Do not read any ❌ in this file
+> as a description of the current tree** — check `src/` and `docs/MODEL_CARD.md` instead.
+> Retained because it is the record the M6 design was written against.
+
 **Date:** 2026-06-23 · **Branch:** `real-data-slice` · **Lake:** 200 symbols / 304.6 M bars / 7,024-file compacted lake, anchored `sha256:5dfd667d05b97bda…`.
 
 M6 = the 5-cell ablation **{BSQ,FSQ} × {OHLCV-only, +micro} + shuffled-micro placebo (Cell 5)**, trained on the universe, scored by the M5 harness cross-sectionally. This audit inventories what exists vs what M6 must build, verifies the eval path on universe symbols, benchmarks lake reads, and restates Gate A as a binding result. **No code, no training, no cloud.**

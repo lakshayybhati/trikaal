@@ -42,7 +42,7 @@ Cost-aware **net Information Ratio** computed on a **portfolio return series**, 
 - **TFI, never OFI** — imbalance is computed from free aggTrades (signed executed-volume); true order-book OFI is v2.
 - **Strict causal-safety** — no transform (feature, normalization, vol-scale, data-quality gate, or target) may read data with effective timestamp > t+1; enforced as a transform-agnostic CI gate.
 - **One headline claim** — MTP, vol-scaling, and the eval harness are secondary, not competing contributions.
-- **Full in-house independence** — no Kronos code or weights are part of Trikaal; every component (attention, blocks, tokenizer, FSQ, training loop, eval, metrics) is self-written. Kronos's paper is cited prior art; its **public weights appear in exactly one place — the eval harness, as an external validation target for our BSQ baseline (§8.C.3)** — and never enter the model.
+- **Full in-house independence** — no Kronos code or weights are part of Trikaal; every component (attention, blocks, tokenizer, FSQ, training loop, eval, metrics) is self-written. Kronos's paper is cited prior art; its **public weights appear in exactly one place — the eval harness, as an external validation target for our BSQ baseline (§8.C.3)** — and never enter the model. **[SUPERSEDED 2026-08-03: they appear in NO place. §8.C.3 was dropped as binding and never executed (`external_validation.GATE_IS_BINDING = False`); the pull is forbidden by invariant 8 in `docs/ENGINEERING.md`, which outranks this document. This clause is retained as the pre-registered design text.]**
 - **Bits-per-token is the control** — never a parameter-padding lever; the realized ~21.30M is reported honestly.
 - **Determinism is a deliverable (scoped honestly)** — the **data pipeline, frozen-stats, and any prediction replay are bit-exact** from one config + pinned seed + content-hashed inputs; **GPU training is reproducible only up to FlashAttention-2 non-determinism** (bit-exact solely under the deterministic-attention fallback, §7.G2), and every run records which mode it used. Every dataset is content-hashed.
 
@@ -2311,6 +2311,16 @@ Everything except {quantizer, input dims}:
 - **Eval:** identical Q4 test set, identical cost model (including funding), identical execution filter (`θ = κ·c_total`, same tuned `κ`), identical horizons (all produced by autoregressive rollout). The *only* differences are the two manipulated factors.
 
 For OHLCV-only cells (1, 3), the micro/perp dims are **removed from the tokenizer input entirely** (not zero-filled) so the tokenizer's capacity is spent only on the `F = 7` OHLCV subset — otherwise cell 1 is not a clean OHLCV-only BSQ baseline. The mask convention still applies to the OHLCV fields.
+
+> **★ SUPERSEDED — G-§8.C.3 IS NOT IN FORCE, AND THE KRONOS WEIGHT PULL IS FORBIDDEN.**
+> Dropped as binding by the operator on 2026-08-03 (prereg §7 v1.6.22) and **never executed**:
+> `external_validation.GATE_IS_BINDING = False`. It is unexecutable on its own terms — two
+> published Kronos-small RankICs sit 2.4× apart, both on Shanghai 15-minute equity bars, and
+> running the weights would need Kronos model code that invariant 8 forbids. **Retained
+> verbatim below as the pre-registered text.** If you are an agent asked to "finish the
+> external-validation gate": the answer is that there is nothing to finish, and downloading
+> Kronos weights breaks a non-negotiable invariant. See `docs/ENGINEERING.md` — the
+> invariants outrank this document.
 
 ##### C.3 External validation of the BSQ baseline (cell 1) against published Kronos-small
 

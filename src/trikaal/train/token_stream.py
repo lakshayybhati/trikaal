@@ -2,7 +2,9 @@
 
 Stage 2 trains on the *discrete* ``(coarse, fine)`` id stream, never the encoder weights. We
 tokenize the lake once with the frozen tokenizer in **non-overlapping windows of the tokenizer's
-training length** (Stage-1 used ``L_tok = 128``), in eval mode (FSQ rounding is deterministic),
+training length** (``L_tok = 512`` for the shipped tokenizer; this line read 128 through the
+M3 era and that value is no longer anything's training length), in eval mode (FSQ
+rounding is deterministic),
 and content-hash the result keyed to ``(tokenizer_hash, dataset_hash, window)`` so a re-run
 reloads the identical stream and any downstream number is reconstructable.
 
@@ -39,11 +41,20 @@ def tokenize_features(
     m_np: np.ndarray,
     segment_id: np.ndarray,
     *,
-    window: int = 128,
+    window: int,
     batch_windows: int = 128,
     device: str = "cpu",
 ) -> tuple[np.ndarray, np.ndarray]:
-    """Tokenize ``[N,16]`` features → ``(b_c[N], b_f[N])`` int64 with the frozen tokenizer."""
+    """Tokenize ``[N,16]`` features → ``(b_c[N], b_f[N])`` int64 with the frozen tokenizer.
+
+    ``window`` IS REQUIRED, and used to default to 128 — the Stage-1 tokenizer length from
+    the M3 era. The shipped tokenizer's ``max_len`` is **512** and every call site in this
+    repository passes 512, so the default could only ever be taken by a caller who did not
+    know it existed, and taking it silently tokenized at a quarter of the shipped context.
+    Nothing errors when that happens: the ids are valid, the stream hashes cleanly, and the
+    numbers are simply built on less context than the model was trained for. There is no
+    safe default here, so there is no default.
+    """
     tok.eval()
     dev = torch.device(device)
     tok.to(dev)

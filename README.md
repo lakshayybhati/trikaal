@@ -126,22 +126,18 @@ exits **2 during collection with zero tests run** — the documented setup verif
 exactly, because a floor-only constraint resolved to a newer minor that formats Python inside
 markdown fences and failed lint on files the locked version passes.
 
-## Deferred to later milestones (explicitly out of this slice)
+## What was deferred at M1, and what happened to it
 
-- **Binance ingest (§2.1)** + the Parquet/DuckDB lake + content-hashed manifest — the whole
-  point of this slice is to be green *before* downloading anything.
-- **Inference / generation subsystem (§8)** — the end-to-end KV-cache generation path
-  (`TrikaalAR.step`, `BackboneOutput.kv_cache`) and Monte-Carlo rollout. The KV-cache *primitive*
-  (`MultiHeadSelfAttention.step`) is implemented and verified bit-equivalent to the full forward
-  (`tests/model/test_attention.py`); wiring it through block→model belongs with the eval harness.
-- **Eval harness (§8)** — purged walk-forward + embargo, the 2×2 ablation runner, the cost-aware
-  net-IR backtest. The training gates here use the parallel (non-cached) forward.
-- **Full-corpus Stage-1/Stage-2 training** — this slice overfits *single batches* to prove the
-  architecture is bug-free; convergence on the real corpus is a separate run.
+This section used to list the Binance ingest and lake, the eval harness, the generation
+path and full-corpus training as **not built**. **All four shipped.** The lake is the
+200-symbol / 304,625,181-bar universe named above; the eval harness is the seventeen modules
+under `src/trikaal/eval/`; generation is `TrikaalAR.init_caches()` / `TrikaalAR.step()`; and
+full-corpus training produced the three published cell-1 units. The old block also cited
+`BackboneOutput.kv_cache`, which never existed under that name.
 
-This scope was confirmed by a 4-dimension adversarial review (causal-safety / FSQ / backbone-MTP
-/ spec-invariants); its high-severity findings on the harness (sparse sampling → exhaustive
-coverage; unchecked `target_valid`/`ts`) and on §6.3 sampled-coarse conditioning were fixed here.
+It is replaced rather than silently deleted because an agent that reads a present-tense
+"not built" and believes it writes a second copy of a subsystem that already exists — which
+is the same failure the package docstrings under `src/` carried until 2026-08-20.
 
 ## Non-negotiable invariants (from `docs/ENGINEERING.md`)
 

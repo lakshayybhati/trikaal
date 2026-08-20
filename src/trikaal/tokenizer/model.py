@@ -133,6 +133,15 @@ class TokenizerAE(nn.Module):
         return dict(self._config)
 
     def latent(self, x: Tensor, mask: Tensor) -> Tensor:
+        """``x:[B,L,16]`` -> the pre-quantization latent.
+
+        ``mask``: **1 = INVALID / absent, 0 = valid.** This is the OPPOSITE of the
+        HuggingFace ``attention_mask`` convention, and nothing errors if you get it
+        backwards — the loss is weighted by ``keep = 1.0 - mask``, so passing 1=valid
+        trains on the exact complement of the bars you meant. It matches the data layer,
+        where ``compute_features`` sets a mask bit to 1 for a warm-up, zero-volume,
+        missing-funding or missing-OI bar.
+        """
         z = self.w_in(self.encoder(x, mask))
         if self.fine_pointwise:
             z_f = self.w_in_fine(self.point_encoder(x, mask))
@@ -142,7 +151,15 @@ class TokenizerAE(nn.Module):
         return z
 
     def encode_tokens(self, x: Tensor, mask: Tensor) -> tuple[Tensor, Tensor]:
-        """``encode(x:[B,L,16], mask) -> (b_c:[B,L], b_f:[B,L])`` — the AR-backbone interface."""
+        """``encode(x:[B,L,16], mask) -> (b_c:[B,L], b_f:[B,L])`` — the AR-backbone interface.
+
+        ``mask``: **1 = INVALID / absent, 0 = valid.** This is the OPPOSITE of the
+        HuggingFace ``attention_mask`` convention, and nothing errors if you get it
+        backwards — the loss is weighted by ``keep = 1.0 - mask``, so passing 1=valid
+        trains on the exact complement of the bars you meant. It matches the data layer,
+        where ``compute_features`` sets a mask bit to 1 for a warm-up, zero-volume,
+        missing-funding or missing-OI bar.
+        """
         _z_hat, _codes, cidx, fidx = self.quant(self.latent(x, mask))
         return cidx, fidx
 
@@ -202,6 +219,15 @@ class TokenizerAE(nn.Module):
         return self.decode_latent(z_hat)
 
     def forward(self, x: Tensor, mask: Tensor) -> dict[str, Tensor]:
+        """Training step: reconstruct ``x`` and return the loss terms.
+
+        ``mask``: **1 = INVALID / absent, 0 = valid.** This is the OPPOSITE of the
+        HuggingFace ``attention_mask`` convention, and nothing errors if you get it
+        backwards — the loss is weighted by ``keep = 1.0 - mask``, so passing 1=valid
+        trains on the exact complement of the bars you meant. It matches the data layer,
+        where ``compute_features`` sets a mask bit to 1 for a warm-up, zero-volume,
+        missing-funding or missing-OI bar.
+        """
         z = self.latent(x, mask)
         z_hat, codes, cidx, fidx = self.quant(z)
         if self.fine_pointwise:

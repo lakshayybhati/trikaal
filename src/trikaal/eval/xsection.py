@@ -56,7 +56,14 @@ class XSectionConfig:
     window_end: str = "2025-01-01"
     train_frac: float = 0.7
     h: int = 15
-    seq_len: int = 128
+    # ★ 512, NOT 128. The old default was the Stage-1 TOKENIZER training length on a
+    # Stage-2/eval config: every real call site passes 512, the shipped tokenizer's own
+    # `max_len` IS 512, and `conformance.PINNED_MONEY_SEQ_LEN` is 512 — so a caller who
+    # accepted the default silently evaluated at a QUARTER of the shipped context with the
+    # signature and the docstring agreeing with each other and disagreeing with the artifact.
+    # The literal is spelled out rather than imported because `conformance` imports THIS
+    # module; `test_seq_len_defaults.py` binds the two so they cannot drift apart.
+    seq_len: int = 512
     # decisions per (symbol, grid) — a DEV bound (like M5's cap). None = no cap; money mode
     # REQUIRES None (§3a pins the full primary region, uncapped — conformance-gated).
     cap_per_symbol: int | None = 200

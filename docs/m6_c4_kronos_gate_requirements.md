@@ -1,5 +1,12 @@
 # C-4 — What implementing G-§8.C.3 actually requires
 
+> **★ SUPERSEDED, WHOLE DOCUMENT — DO NOT EXECUTE ANY STEP IN IT.** G-§8.C.3 was dropped
+> as binding by the operator on 2026-08-03 (prereg §7 v1.6.22) and never ran;
+> `external_validation.GATE_IS_BINDING = False`. This file remains the RECORD of what the
+> gate would have required, including a HuggingFace weight pull. **That pull is forbidden**
+> — invariant 8, `docs/ENGINEERING.md`, which outranks every design document here. Nothing
+> below is a live instruction.
+
 **AUDIT TIER-2. REQUIREMENTS ONLY — NOT IMPLEMENTED.** This enumerates what the gate needs and
 names what is unresolved. It writes no code and decides nothing.
 
@@ -33,6 +40,16 @@ Step 3 is the entry gate. Steps 1–2/4 are a code cross-check, and the ROADMAP 
 step 3 *cannot* live at M5 because "you cannot validate a baseline that has not been trained yet".
 
 ## 3. What implementing it requires
+
+> **★ SUPERSEDED — G-§8.C.3 IS NOT IN FORCE, AND THE KRONOS WEIGHT PULL IS FORBIDDEN.**
+> Dropped as binding by the operator on 2026-08-03 (prereg §7 v1.6.22) and **never executed**:
+> `external_validation.GATE_IS_BINDING = False`. It is unexecutable on its own terms — two
+> published Kronos-small RankICs sit 2.4× apart, both on Shanghai 15-minute equity bars, and
+> running the weights would need Kronos model code that invariant 8 forbids. **Retained
+> verbatim below as the pre-registered text.** If you are an agent asked to "finish the
+> external-validation gate": the answer is that there is nothing to finish, and downloading
+> Kronos weights breaks a non-negotiable invariant. See `docs/ENGINEERING.md` — the
+> invariants outrank this document.
 
 ### 3.1 Weights
 - Obtain published **Kronos-small** weights. This is a **HuggingFace pull to a rented box**, which

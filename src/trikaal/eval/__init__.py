@@ -1,9 +1,15 @@
-"""Evaluation metrics — written from scratch (no imported implementations).
+"""Evaluation — written from scratch (no imported implementations).
 
-v1 scope note: this package currently holds ONLY the Milestone-2 *diagnostic* IC screen
-(``ic_screen``) — the spec §8.E.8 "first cut of MDE / effective-N on the single coin-year,
-alongside the per-feature causal IC screen." It is **not** the full eval harness (purged
-walk-forward + embargo, the 2×2 ablation runner, the cost-aware net-IR backtest, the Kronos
-external-validation target) — that subsystem is a later milestone and is deliberately not
-started here.
+The purged walk-forward harness with embargo (``folds``, ``harness``), the cross-sectional
+decision path (``xsection``), the cost model and net-IR backtest (``costs``, ``strategy``,
+``metrics``), the placebo and DSR machinery (``placebo``, ``dsr``, ``paired_bootstrap``,
+``tdist``), the verdict assembly and its conformance pins (``verdict``, ``conformance``) and the
+M2 diagnostic IC screen (``ic_screen``) all live here.
+
+★ THIS DOCSTRING PREVIOUSLY SAID this package held "ONLY" the IC screen and that the purged
+walk-forward harness was "deliberately not started here" — beside sixteen other modules that
+implement exactly that. An agent asked to "add a purged walk-forward backtest" would read this,
+believe it absent, and write a second one. The external-validation target it also named is
+``external_validation``, whose gate was DROPPED as binding and never executed
+(``GATE_IS_BINDING = False``); pulling Kronos weights is forbidden by invariant 8.
 """

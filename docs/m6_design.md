@@ -91,6 +91,16 @@ Matched fairness is at the **token** level (bits-per-token), not the input level
 
 **Between Phase 1 and Phase 2 sits the 8-item PRE-FLIGHT GATE (`docs/m6_preflight.md`)** — including the toy-CUDA rehearsal (full 5-cell toy run + kill-resume on the real GPU type, ~$5–20). The full-budget run is authorized only when all 8 items are green with committed evidence. `setup_cloud.sh` must install from the **committed lockfile** (done: it now runs `uv sync --locked` from the committed `uv.lock`; it previously installed latest-torch + floors — the exact drift failure mode).
 
+> **★ SUPERSEDED — G-§8.C.3 IS NOT IN FORCE, AND THE KRONOS WEIGHT PULL IS FORBIDDEN.**
+> Dropped as binding by the operator on 2026-08-03 (prereg §7 v1.6.22) and **never executed**:
+> `external_validation.GATE_IS_BINDING = False`. It is unexecutable on its own terms — two
+> published Kronos-small RankICs sit 2.4× apart, both on Shanghai 15-minute equity bars, and
+> running the weights would need Kronos model code that invariant 8 forbids. **Retained
+> verbatim below as the pre-registered text.** If you are an agent asked to "finish the
+> external-validation gate": the answer is that there is nothing to finish, and downloading
+> Kronos weights breaks a non-negotiable invariant. See `docs/ENGINEERING.md` — the
+> invariants outrank this document.
+
 **Phase 2 — CLOUD, M6 proper (the real run):** provision the GPU (cloud Phase B), transfer the compacted lake, run the 5-cell × ≥3-seed training + the cross-sectional eval → the headline, under recorded determinism mode. Verify G-§8.C.3 (Kronos parity) as the first cloud check.
 
 ## 7. Cost + hardware

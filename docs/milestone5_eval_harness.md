@@ -57,6 +57,14 @@ harness, on a Q4-representative synthetic slice (bad-tick / segment-boundary / b
 regions): **PASS — leak-free, 100% bar coverage** — and it still has teeth (a planted lookahead is
 caught). On the runner's real pass: `gate-A PASS ✓ (420/420 bars)`.
 
+> **★ SUPERSEDED — THE M6 DEFERRAL BELOW NEVER HAPPENED AND MUST NOT BE ACTED ON.**
+> This paragraph says the Kronos integration "is folded into M6's Cell-1 work, where
+> Kronos weights load anyway". **They do not load anywhere.** G-§8.C.3 was dropped as
+> binding on 2026-08-03 (prereg §7 v1.6.22) and never executed
+> (`external_validation.GATE_IS_BINDING = False`), and downloading Kronos weights is
+> forbidden by invariant 8 in `docs/ENGINEERING.md`, which outranks this document.
+> Retained as the M5 record.
+
 **Metric-code cross-check vs Kronos — deferred to M6 (documented).** Loading official Kronos-small
 weights through our harness validates our IC/RankIC *implementations* against an external reference
 (§8.C.3 steps 1–2,4). The binding metric validation at M5 is the Phase-1 known-answer tests; the

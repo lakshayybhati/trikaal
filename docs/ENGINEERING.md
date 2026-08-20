@@ -10,7 +10,17 @@ Project overview, the non-negotiable invariants, and the engineering norms this 
 
 ## Sources of truth
 
-- **Blueprint spec (design):** `docs/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness). If anything here conflicts with the spec, the spec wins.
+★ **PRECEDENCE, AND IT IS THE OPPOSITE OF WHAT THIS SECTION USED TO SAY.** In order, highest first:
+
+1. **The non-negotiable invariants below**, and `docs/MODEL_CARD.md` for anything about what the released weights are.
+2. **`docs/m6_prereg.md`** for what was pre-registered and how it was adjudicated.
+3. **The blueprint spec** — `docs/specs/2026-06-18-trikaal-v1-design.md`.
+
+**This line previously read "if anything here conflicts with the spec, the spec wins", and that was a live hazard rather than a stylistic choice.** The spec is a FROZEN design record written before the work — it still states ~21.30M parameters, a ~500M–1B-bar training corpus, and, at §8.C.3, a step-by-step protocol for **downloading published Kronos weights into the eval harness**. Invariant 8 forbids exactly that. Under the old precedence an agent asked to "finish the external-validation gate" would follow the stated chain to the spec, pull third-party weights, and **break a non-negotiable invariant while believing it was obeying the project**. The spec describes what was intended; the invariants and the model card describe what was done and what is permitted, and where they disagree the spec is the one that is out of date.
+
+**The concrete answer, so no one has to derive it:** *may I download Kronos weights?* **No.** Not into the eval harness, not as an external yardstick, not "only for calibration". The §8.C.3 gate was **dropped as binding** on 2026-08-03 and never executed (`external_validation.GATE_IS_BINDING = False`); every document that still describes the pull carries a superseded banner saying so.
+
+- **Blueprint spec (design):** `docs/specs/2026-06-18-trikaal-v1-design.md` — the full v1 design (per-bar feature spec, FSQ tokenizer, AR backbone, MTP heads, volatility-scaling, data pipeline, training plan, eval harness). **Frozen, and outranked by the invariants above.**
 - **Execution roadmap (build order):** `docs/ROADMAP.md` — the milestone sequence from here to a shipped paper, each with a testable exit gate, plus the two binding M6 entry gates. Self-sequence against it; update it when a milestone closes.
 - **Parent paper:** Kronos (arXiv 2508.02739), read locally and never redistributed. Trikaal inherits its two-stage tokenizer→autoregressive design and most of its training/eval scaffolding.
 

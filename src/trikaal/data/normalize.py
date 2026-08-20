@@ -11,6 +11,8 @@ any real run.
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 
 from trikaal.constants import CLIP_HI, CLIP_LO, EPS_VAR
@@ -89,4 +91,20 @@ def causal_zscore_segment(
 
 
 def _clip(x: float) -> float:
+    """Clamp to ``[CLIP_LO, CLIP_HI]``, but PROPAGATE non-finite input instead of clamping it.
+
+    ★ THE DEFECT THIS FIXES, AND IT DISABLED A TRIPWIRE RATHER THAN MERELY MISCOMPUTING. Every
+    comparison against NaN is False, so ``max(CLIP_LO, nan)`` returns ``CLIP_LO`` and ``min`` then
+    keeps it: a NaN became **-5.0**, the most extreme negative value the feature can take. That is
+    already wrong, but the worse half is what it did to ``features.compute_features``, which ends
+    with ``if not np.all(np.isfinite(x_f64)): raise ValueError("NaN/Inf in emitted features")``.
+    That guard exists precisely to catch this, and it CANNOT FIRE against a laundered value —
+    -5.0 is finite. A violated eps/segment rule would have been absorbed into the data path,
+    silently, on nine of sixteen dims including the return channel.
+
+    ``np.clip`` — which the BOUNDED dims use — already propagates NaN, so this makes the z-scored
+    path agree with the path beside it rather than inventing a new rule.
+    """
+    if not math.isfinite(x):
+        return math.nan
     return min(CLIP_HI, max(CLIP_LO, x))

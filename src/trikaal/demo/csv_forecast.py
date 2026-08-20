@@ -192,27 +192,67 @@ class CsvBars:
 
 
 def _to_ms(v: str) -> int:
-    s = v.strip().strip('"')
+    """Epoch number or ISO-ish string -> epoch milliseconds.
+
+    TWO DEFECTS FIXED HERE, BOTH SILENT.
+
+    (1) ``n > 1e17`` used to return ``n / 1000``, which turns NANOSECONDS into MICROSECONDS —
+    off by a factor of 1,000, with no error. ``DatetimeIndex.astype("int64")`` yields nanoseconds
+    and is how most Python users produce an integer timestamp column, so this was the common path.
+    Magnitudes are now separated explicitly: ~1.7e9 s, ~1.7e12 ms, ~1.7e15 us, ~1.7e18 ns.
+
+    (2) The string path did ``strptime(s[:19], fmt)`` and then stamped UTC — truncating any
+    timezone offset off the end of the string and pretending it was not there. ``...T22:13:20Z``
+    and ``...T22:13:20-05:00`` parsed to the SAME instant, five hours apart from the truth.
+    ``fromisoformat`` is tried first and honours the offset; a naive stamp is still read as UTC,
+    which is now stated rather than assumed.
+    """
+    s = v.strip().strip('"').lstrip("\ufeff")
     try:
         n = float(s)
-        # epoch s / ms / us, disambiguated by magnitude
-        if n > 1e17:
-            return int(n / 1000)
-        if n > 1e11:
-            return int(n)
-        return int(n * 1000)
     except ValueError:
         pass
-    from datetime import datetime
+    else:
+        if n > 1e17:  # nanoseconds
+            return int(n / 1e6)
+        if n > 1e14:  # microseconds
+            return int(n / 1e3)
+        if n > 1e11:  # milliseconds
+            return int(n)
+        return int(n * 1000)  # seconds
 
-    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%dT%H:%M:%SZ"):
+    from datetime import UTC, datetime
+
+    iso = s.replace("Z", "+00:00") if s.endswith("Z") else s
+    try:
+        dt = datetime.fromisoformat(iso)
+        return int((dt if dt.tzinfo else dt.replace(tzinfo=UTC)).timestamp() * 1000)
+    except ValueError:
+        pass
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M"):
         try:
-            from datetime import UTC
-
-            return int(datetime.strptime(s[:19], fmt).replace(tzinfo=UTC).timestamp() * 1000)
+            return int(datetime.strptime(s, fmt).replace(tzinfo=UTC).timestamp() * 1000)
         except ValueError:
             continue
-    raise CsvRefused(f"could not parse timestamp {v!r}")
+    raise CsvRefused(
+        f"could not parse timestamp {v!r}. Accepted: epoch seconds/ms/us/ns, or an ISO-8601 "
+        "string such as 2023-11-14T22:13:20Z or 2023-11-14 22:13:20 (naive is read as UTC)."
+    )
+
+
+def _rows_named(flags: np.ndarray, order: np.ndarray, limit: int = 5) -> str:
+    """Name the offending file lines: a refusal that says WHERE is actionable, a count is not.
+
+    ``order`` maps sorted position back to body position; +2 converts a body index to a 1-based
+    file line, accounting for the header.
+    """
+    idx = np.nonzero(flags)[0]
+    if idx.size == 0:
+        return ""
+    lines = sorted(int(order[i]) + 2 for i in idx[:limit])
+    more = f" (+{idx.size - limit:,} more)" if idx.size > limit else ""
+    label = "lines " if len(lines) > 1 else "line "
+    return " First at file " + label + ", ".join(map(str, lines)) + more + "."
 
 
 def parse_csv(text: str, *, progress: Progress = _no_progress) -> CsvBars:
@@ -222,12 +262,19 @@ def parse_csv(text: str, *, progress: Progress = _no_progress) -> CsvBars:
     rows = [r for r in rdr if r and any(c.strip() for c in r)]
     if not rows:
         raise CsvRefused("the file is empty")
-    head = [h.strip().lower().replace(" ", "_") for h in rows[0]]
+    # ``lstrip("\ufeff")``: Excel writes a UTF-8 BOM by default, which glued itself to the first
+    # header cell so ``timestamp`` read as ``\ufefftimestamp`` and the file was refused for a
+    # missing column it plainly had.
+    head = [h.strip().lstrip("\ufeff").lower().replace(" ", "_") for h in rows[0]]
     col = {}
     for want, names in _ALIASES.items():
-        for i, h in enumerate(head):
-            if h in names:
-                col[want] = i
+        # ★ THE CANONICAL NAME WINS, WHEREVER IT SITS. This used to walk the headers in FILE order
+        # and take the first cell matching any alias, so a sheet with both `price` and `close`
+        # resolved `close` to whichever came first — silently forecasting a different column.
+        # Aliases are now tried in priority order (canonical first) across all headers.
+        for name in [want, *sorted(names - {want})]:
+            if name in head:
+                col[want] = head.index(name)
                 break
     missing = [k for k in ("timestamp", "open", "high", "low", "close") if k not in col]
     if missing:
@@ -287,10 +334,45 @@ def parse_csv(text: str, *, progress: Progress = _no_progress) -> CsvBars:
         keep = np.r_[True, np.diff(ts) > 0]
         ts, o, h, low_, c, v, amt = (a[keep] for a in (ts, o, h, low_, c, v, amt))
     dropped = n_before - int(ts.shape[0])
+    # ★ RE-CHECKED. The floor above ran on ``len(body)`` — before this dedup, and the count was
+    # never looked at again. A 1,400-row file with 700 rows duplicated cleared the 1,232 floor and
+    # then forecast from 700 bars, i.e. below the warm-up the floor exists to guarantee.
+    if int(ts.shape[0]) < MIN_ROWS:
+        raise CsvRefused(
+            f"after dropping {dropped:,} duplicate or out-of-order timestamp(s), only "
+            f"{int(ts.shape[0]):,} distinct bars remain — this needs at least {MIN_ROWS:,}. "
+            f"The file had {n_before:,} rows, so the shortfall is duplicates rather than length: "
+            "check for a repeated export or a concatenation of overlapping windows."
+        )
 
     bad = ~(np.isfinite(o) & np.isfinite(h) & np.isfinite(low_) & np.isfinite(c))
     if bad.any():
-        raise CsvRefused(f"{int(bad.sum()):,} row(s) have non-numeric or missing OHLC values")
+        raise CsvRefused(
+            f"{int(bad.sum()):,} row(s) have non-numeric or missing OHLC values"
+            + _rows_named(bad, order)
+        )
+
+    # ── (6) prices must be positive. A forecast price of -93.79 was rendered from a file with a
+    # negative close, because nothing ever looked. Log-returns of a non-positive price are not a
+    # number, and the tripwire in compute_features is downstream of the damage.
+    nonpos = ~((o > 0) & (h > 0) & (low_ > 0) & (c > 0))
+    if nonpos.any():
+        raise CsvRefused(
+            f"{int(nonpos.sum()):,} row(s) have a non-positive open/high/low/close. Prices must "
+            "be > 0 — the features are built from log returns, which are undefined at or below "
+            "zero." + _rows_named(nonpos, order)
+        )
+
+    # ── (7) high/low must bracket open and close. Swapped columns are otherwise undetectable:
+    # every downstream number is computed happily from an inverted bar.
+    eps = 1e-9
+    inconsistent = (h < low_ - eps) | (h < np.maximum(o, c) - eps) | (low_ > np.minimum(o, c) + eps)
+    if inconsistent.any():
+        raise CsvRefused(
+            f"{int(inconsistent.sum()):,} row(s) are not a valid bar: high must be >= low and >= "
+            "max(open, close), and low must be <= min(open, close). The usual cause is a swapped "
+            "high/low column." + _rows_named(inconsistent, order)
+        )
     progress(
         "READING VALUES",
         f"{int(ts.shape[0]):,} bars sorted by timestamp, "
@@ -308,6 +390,52 @@ def parse_csv(text: str, *, progress: Progress = _no_progress) -> CsvBars:
         "ok" if inferred == BAR_MS else "warn",
     )
     warns: list[str] = []
+
+    # ── (8) a series with no variation. MEASURED: a dead-flat 1,400-bar file produced a confident
+    # +0.092% call whose ENTIRE 80% band sat above zero, narrower than any real input tested —
+    # because a constant series has zero realized volatility, so sigma collapses to its floor and
+    # every z-score is a ratio of ~0 to ~0. There is no forecast to make from a constant.
+    if float(np.max(c) - np.min(c)) == 0.0:
+        raise CsvRefused(
+            f"the close price is constant at {float(c[0]):g} for all {len(c):,} bars. There is no "
+            "return series to forecast: realized volatility is exactly zero, so every normalized "
+            "feature is 0/0 and the model's output would be an artefact of the epsilon floors, "
+            "not a prediction. This is refused rather than returned with a caveat because it "
+            "produces a NARROWER, more confident band than real data does."
+        )
+    n_distinct = int(np.unique(c).size)
+    if n_distinct < max(10, len(c) // 500):
+        warns.append(
+            f"NEAR-CONSTANT INPUT: only {n_distinct:,} distinct close prices across "
+            f"{len(c):,} bars. Confidence bands narrow as variation falls, so a tight band here "
+            "reflects the input, not conviction."
+        )
+
+    # ── (5) volume is not optional information. Two of the seven model-visible dims are
+    # log_volume and log_amount; when volume is absent, unparseable or zero they are FABRICATED
+    # from zeros with no notice. MEASURED: the corrupted file produced a MORE confident call
+    # (+0.333%, whole band above zero) than the clean one (+0.079%, band straddling zero).
+    vol_finite = np.isfinite(v)
+    if "volume" not in col:
+        warns.append(
+            "NO VOLUME COLUMN: 2 of the 7 model-visible dimensions (log_volume, log_amount) are "
+            "FABRICATED as zeros. The model was trained with real volume; treat the forecast as "
+            "running on a 5-dimensional subset of its input, and note that this can make the "
+            "output MORE confident rather than less."
+        )
+    elif not vol_finite.all():
+        warns.append(
+            f"UNPARSEABLE VOLUME on {int((~vol_finite).sum()):,} of {len(v):,} rows — those bars "
+            "feed zeros into log_volume and log_amount, 2 of the 7 model-visible dimensions. The "
+            "forecast is computed on fabricated values for them."
+        )
+    elif float(np.max(v)) == 0.0:
+        warns.append(
+            "VOLUME IS ZERO ON EVERY BAR: log_volume and log_amount — 2 of the 7 model-visible "
+            "dimensions — carry no information. This is not equivalent to a quiet market; it is "
+            "equivalent to deleting two inputs, and it can narrow the band rather than widen it."
+        )
+
     if inferred != BAR_MS:
         warns.append(
             f"OUT OF DISTRIBUTION: inferred bar interval is {inferred / 1000:g}s, not 60s. "
