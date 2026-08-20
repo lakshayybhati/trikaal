@@ -34,6 +34,24 @@ from trikaal.utils.receipts import ReceiptRefused, write_receipt  # noqa: E402
 RECEIPT = REPO / "runs_manifest/m6_micro_legibility_stop.json"
 SOURCE = REPO / "runs_cloud/legibility_stop"
 MANIFEST = REPO / "runs_manifest/m6_legibility_evidence_manifest.json"
+BUNDLED_MANIFEST = "m6_legibility_evidence_manifest.json"
+
+ARMS = {"cell4_seed0": "micro", "cell5_seed0": "micro_shuffled"}
+ROLES = {
+    "tokenizer.pt": "Stage-1 FSQ tokenizer — the object the legibility gate measured",
+    "stage1_state.pt": "Stage-1 optimizer/scheduler state — resume only",
+    "unit.log": "the run's own log, ending in the gate's RuntimeError with all six per-dim "
+    "sign accuracies",
+}
+
+
+def _git_head() -> str:
+    import subprocess
+
+    r = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=REPO, capture_output=True, text=True, check=False
+    )
+    return r.stdout.strip() or "unavailable"
 
 
 def sha256(p: Path) -> str:
@@ -92,24 +110,50 @@ def main() -> int:
         rec["copy_verifies"] = rec["sha256_after_copy"] == rec["sha256"]
 
     total = sum(r["bytes"] for r in files.values())
+    by_cell: dict[str, dict] = {}
+    for name, rec in files.items():
+        cell, fname = name.split("/", 1)
+        by_cell.setdefault(
+            cell,
+            {"cell": int(cell[4]), "seed": 0, "arm": ARMS[cell], "quantizer": "fsq", "files": {}},
+        )
+        by_cell[cell]["files"][fname] = {
+            "bytes": rec["bytes"],
+            "sha256": rec["sha256"],
+            "role": ROLES[fname],
+            "needed_to_reproduce_the_gate": fname == "tokenizer.pt",
+        }
     doc = {
-        "receipt": "m6_legibility_evidence_manifest",
+        "schema": "m6_legibility_evidence_v1",
         "script": "scripts/m6_stage_legibility_evidence.py",
-        "what": (
-            "The cell-4 and cell-5 Stage-1 artifacts the micro-legibility gate produced before it "
-            "refused both arms. The paper's headline (97.3% of cell 4's shortfall) is measured on "
-            "cell 4, which exists nowhere public: 0 files in the repository across every commit, "
-            "0 of 13 on HuggingFace."
+        "git_head": _git_head(),
+        "license_weights": "Apache-2.0 — same terms as the code and the cell-1 weights",
+        "WHAT_THIS_IS": (
+            "The Stage-1 artifacts of CELL 4 (FSQ + microstructure) and CELL 5 (FSQ + SHUFFLED "
+            "microstructure, the placebo), seed 0, from the M6 money run. The paper's headline — "
+            "97.3% of cell 4's shortfall on the two signed channels — is measured on CELL 4, which "
+            "existed nowhere public: 0 files in the code repository across every commit, 0 of the "
+            "13 files in the weights release. These six files are what that number is computed "
+            "from, and unit.log is the gate's own refusal with all six per-dim sign accuracies in "
+            "it."
         ),
-        "★_THIS_IS_EVIDENCE_NOT_A_MODEL": (
-            "There is NO predictor here and none exists on the money path: Stage 2 was never "
-            "entered for these cells (stage2_entered=false, artifacts_produced=0), so nothing in "
-            "this bundle can forecast. The tokenizers ARE microstructure-arm weights — "
-            "quantizer=fsq, n_features=16, micro_point_weight=3.0 — and unit.log is the gate's own "
-            "RuntimeError carrying all six per-dim sign accuracies the 97.3% is computed from."
+        "★_WHAT_THIS_IS_NOT": (
+            "NOT A MODEL, AND NOT AN ARM THAT WORKED. These are Stage-1 tokenizers of an arm the "
+            "pre-registered micro-legibility gate REFUSED on real data on 2026-08-12. Stage 2 was "
+            "never entered (stage2_entered=false, artifacts_produced=0), so NO PREDICTOR EXISTS "
+            "for either cell and nothing here can forecast anything. Publishing them is publishing "
+            "the EVIDENCE FOR A NEGATIVE RESULT — do not read it as the microstructure arm having "
+            "succeeded. The three cell-1 units in the sibling seed0/seed2/seed4 directories are "
+            "the only trained predictors this project released."
         ),
-        "UPLOAD_IS_THE_OPERATOR'S": (
-            "This script stages and stops. It reads no credential and performs no network call."
+        "how_to_verify": (
+            "sha256sum each file and compare against .cells[cell].files[name].sha256; every one "
+            "also appears under the SAME path key in runs_manifest/m6_micro_legibility_stop.json "
+            "in the code repository, which was committed before this bundle existed."
+        ),
+        "cross_check_receipt": (
+            "runs_manifest/m6_micro_legibility_stop.json — the gate's own stop record; all six "
+            "hashes here were verified against it before staging and again after copying"
         ),
         "n_files": len(files),
         "bytes_total": total,
@@ -119,7 +163,10 @@ def main() -> int:
         ),
         "all_copies_verify": all(r["copy_verifies"] for r in files.values()),
         "staged_at": display_path(args.out, REPO),
-        "files": files,
+        "cells": by_cell,
+        "UPLOAD_IS_THE_OPERATOR'S": (
+            "This script stages and stops. It reads no credential and performs no network call."
+        ),
     }
     try:
         write_receipt(MANIFEST, doc, measured=files, force=args.force)
@@ -127,7 +174,9 @@ def main() -> int:
         print(e, file=sys.stderr)
         return 2
 
+    (args.out / BUNDLED_MANIFEST).write_text(json.dumps(doc, indent=2, sort_keys=True) + "\n")
     print(f"staged {len(files)} files, {total / 2**20:.1f} MiB -> {display_path(args.out, REPO)}")
+    print(f"  + {BUNDLED_MANIFEST} written INTO the bundle, so one upload carries everything")
     verified = doc["all_hashes_verify_against_m6_micro_legibility_stop"]
     print(f"  all hashes verify against the stop receipt: {verified}")
     print(f"  all copies verify after staging:            {doc['all_copies_verify']}")

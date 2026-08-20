@@ -82,10 +82,13 @@ RULES = (
     (
         "replicate-spread-unqualified",
         r"77\s*(?:-|--|—|to|and)\s*93|77\s*%[^.]{0,20}93",
-        r"NOT_COMPARABLE|not comparable",
+        r"NOT_COMPARABLE|not comparable|spread rather than|dispersion rather than|"
+        r"not a comparison|rather than as a comparison",
         "require",
         "m6_lambda_sweep.json declares itself NOT_COMPARABLE_TO_THE_GATE_FIRING_RUN. Quoting the "
-        "spread beside 97.3% invites a delta that file forbids. Tier 1b.2.",
+        "spread beside 97.3% invites a delta that file forbids. Tier 1b.2. The prose form of the "
+        "prohibition counts — a rule that demanded the field NAME would cry wolf on a sentence "
+        "that carries the meaning, and a guard that fires on correct text gets ignored.",
     ),
     (
         "canary-1.151-underived",

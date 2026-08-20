@@ -1,75 +1,71 @@
 {
   "UPLOAD_IS_THE_OPERATOR'S": "This script stages and stops. It reads no credential and performs no network call.",
+  "WHAT_THIS_IS": "The Stage-1 artifacts of CELL 4 (FSQ + microstructure) and CELL 5 (FSQ + SHUFFLED microstructure, the placebo), seed 0, from the M6 money run. The paper's headline \u2014 97.3% of cell 4's shortfall on the two signed channels \u2014 is measured on CELL 4, which existed nowhere public: 0 files in the code repository across every commit, 0 of the 13 files in the weights release. These six files are what that number is computed from, and unit.log is the gate's own refusal with all six per-dim sign accuracies in it.",
   "all_copies_verify": true,
   "all_hashes_verify_against_m6_micro_legibility_stop": true,
   "bytes_total": 146153540,
-  "files": {
-    "cell4_seed0/stage1_state.pt": {
-      "bytes": 54808501,
-      "bytes_in_receipt": 54808501,
-      "copy_verifies": true,
-      "sha256": "b3f6c13fef3a3f6f3a24e50ff52cd650728b525118eb1602ba280e0f672e5e12",
-      "sha256_after_copy": "b3f6c13fef3a3f6f3a24e50ff52cd650728b525118eb1602ba280e0f672e5e12",
-      "sha256_in_receipt": "b3f6c13fef3a3f6f3a24e50ff52cd650728b525118eb1602ba280e0f672e5e12",
-      "source": "runs_cloud/legibility_stop/cell4_seed0/stage1_state.pt",
-      "verifies": true
+  "cells": {
+    "cell4_seed0": {
+      "arm": "micro",
+      "cell": 4,
+      "files": {
+        "stage1_state.pt": {
+          "bytes": 54808501,
+          "needed_to_reproduce_the_gate": false,
+          "role": "Stage-1 optimizer/scheduler state \u2014 resume only",
+          "sha256": "b3f6c13fef3a3f6f3a24e50ff52cd650728b525118eb1602ba280e0f672e5e12"
+        },
+        "tokenizer.pt": {
+          "bytes": 18266149,
+          "needed_to_reproduce_the_gate": true,
+          "role": "Stage-1 FSQ tokenizer \u2014 the object the legibility gate measured",
+          "sha256": "8d94ac4a7a46d4c239b3fa10d6b00fb389dc889a7d814dd53fafdd6a81e5f262"
+        },
+        "unit.log": {
+          "bytes": 2115,
+          "needed_to_reproduce_the_gate": false,
+          "role": "the run's own log, ending in the gate's RuntimeError with all six per-dim sign accuracies",
+          "sha256": "d3707f8fcfc03df04e437d10b73f5d302556c14f04878b9c4eb89b586cc796c8"
+        }
+      },
+      "quantizer": "fsq",
+      "seed": 0
     },
-    "cell4_seed0/tokenizer.pt": {
-      "bytes": 18266149,
-      "bytes_in_receipt": 18266149,
-      "copy_verifies": true,
-      "sha256": "8d94ac4a7a46d4c239b3fa10d6b00fb389dc889a7d814dd53fafdd6a81e5f262",
-      "sha256_after_copy": "8d94ac4a7a46d4c239b3fa10d6b00fb389dc889a7d814dd53fafdd6a81e5f262",
-      "sha256_in_receipt": "8d94ac4a7a46d4c239b3fa10d6b00fb389dc889a7d814dd53fafdd6a81e5f262",
-      "source": "runs_cloud/legibility_stop/cell4_seed0/tokenizer.pt",
-      "verifies": true
-    },
-    "cell4_seed0/unit.log": {
-      "bytes": 2115,
-      "bytes_in_receipt": 2115,
-      "copy_verifies": true,
-      "sha256": "d3707f8fcfc03df04e437d10b73f5d302556c14f04878b9c4eb89b586cc796c8",
-      "sha256_after_copy": "d3707f8fcfc03df04e437d10b73f5d302556c14f04878b9c4eb89b586cc796c8",
-      "sha256_in_receipt": "d3707f8fcfc03df04e437d10b73f5d302556c14f04878b9c4eb89b586cc796c8",
-      "source": "runs_cloud/legibility_stop/cell4_seed0/unit.log",
-      "verifies": true
-    },
-    "cell5_seed0/stage1_state.pt": {
-      "bytes": 54808501,
-      "bytes_in_receipt": 54808501,
-      "copy_verifies": true,
-      "sha256": "cef4d7ab59772fcb3d3d1d49d22773b784d8be2cf922b354609aa8087c190efc",
-      "sha256_after_copy": "cef4d7ab59772fcb3d3d1d49d22773b784d8be2cf922b354609aa8087c190efc",
-      "sha256_in_receipt": "cef4d7ab59772fcb3d3d1d49d22773b784d8be2cf922b354609aa8087c190efc",
-      "source": "runs_cloud/legibility_stop/cell5_seed0/stage1_state.pt",
-      "verifies": true
-    },
-    "cell5_seed0/tokenizer.pt": {
-      "bytes": 18266149,
-      "bytes_in_receipt": 18266149,
-      "copy_verifies": true,
-      "sha256": "d8f9df04a4764303aab05809ee773e89fdf0724d5335ff0a0df3ff041a240b70",
-      "sha256_after_copy": "d8f9df04a4764303aab05809ee773e89fdf0724d5335ff0a0df3ff041a240b70",
-      "sha256_in_receipt": "d8f9df04a4764303aab05809ee773e89fdf0724d5335ff0a0df3ff041a240b70",
-      "source": "runs_cloud/legibility_stop/cell5_seed0/tokenizer.pt",
-      "verifies": true
-    },
-    "cell5_seed0/unit.log": {
-      "bytes": 2125,
-      "bytes_in_receipt": 2125,
-      "copy_verifies": true,
-      "sha256": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25",
-      "sha256_after_copy": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25",
-      "sha256_in_receipt": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25",
-      "source": "runs_cloud/legibility_stop/cell5_seed0/unit.log",
-      "verifies": true
+    "cell5_seed0": {
+      "arm": "micro_shuffled",
+      "cell": 5,
+      "files": {
+        "stage1_state.pt": {
+          "bytes": 54808501,
+          "needed_to_reproduce_the_gate": false,
+          "role": "Stage-1 optimizer/scheduler state \u2014 resume only",
+          "sha256": "cef4d7ab59772fcb3d3d1d49d22773b784d8be2cf922b354609aa8087c190efc"
+        },
+        "tokenizer.pt": {
+          "bytes": 18266149,
+          "needed_to_reproduce_the_gate": true,
+          "role": "Stage-1 FSQ tokenizer \u2014 the object the legibility gate measured",
+          "sha256": "d8f9df04a4764303aab05809ee773e89fdf0724d5335ff0a0df3ff041a240b70"
+        },
+        "unit.log": {
+          "bytes": 2125,
+          "needed_to_reproduce_the_gate": false,
+          "role": "the run's own log, ending in the gate's RuntimeError with all six per-dim sign accuracies",
+          "sha256": "e1235e150a262cb05af52d1202997d52ff05d5f68be177b345e75d0a2c5c4d25"
+        }
+      },
+      "quantizer": "fsq",
+      "seed": 0
     }
   },
+  "cross_check_receipt": "runs_manifest/m6_micro_legibility_stop.json \u2014 the gate's own stop record; all six hashes here were verified against it before staging and again after copying",
+  "git_head": "2a2abefcd1a4be67c0931cc6538435082aa6ceac",
+  "how_to_verify": "sha256sum each file and compare against .cells[cell].files[name].sha256; every one also appears under the SAME path key in runs_manifest/m6_micro_legibility_stop.json in the code repository, which was committed before this bundle existed.",
+  "license_weights": "Apache-2.0 \u2014 same terms as the code and the cell-1 weights",
   "mib_total": 139.38,
   "n_files": 6,
-  "receipt": "m6_legibility_evidence_manifest",
+  "schema": "m6_legibility_evidence_v1",
   "script": "scripts/m6_stage_legibility_evidence.py",
   "staged_at": "runs_cloud/legibility_evidence_bundle",
-  "what": "The cell-4 and cell-5 Stage-1 artifacts the micro-legibility gate produced before it refused both arms. The paper's headline (97.3% of cell 4's shortfall) is measured on cell 4, which exists nowhere public: 0 files in the repository across every commit, 0 of 13 on HuggingFace.",
-  "\u2605_THIS_IS_EVIDENCE_NOT_A_MODEL": "There is NO predictor here and none exists on the money path: Stage 2 was never entered for these cells (stage2_entered=false, artifacts_produced=0), so nothing in this bundle can forecast. The tokenizers ARE microstructure-arm weights \u2014 quantizer=fsq, n_features=16, micro_point_weight=3.0 \u2014 and unit.log is the gate's own RuntimeError carrying all six per-dim sign accuracies the 97.3% is computed from."
+  "\u2605_WHAT_THIS_IS_NOT": "NOT A MODEL, AND NOT AN ARM THAT WORKED. These are Stage-1 tokenizers of an arm the pre-registered micro-legibility gate REFUSED on real data on 2026-08-12. Stage 2 was never entered (stage2_entered=false, artifacts_produced=0), so NO PREDICTOR EXISTS for either cell and nothing here can forecast anything. Publishing them is publishing the EVIDENCE FOR A NEGATIVE RESULT \u2014 do not read it as the microstructure arm having succeeded. The three cell-1 units in the sibling seed0/seed2/seed4 directories are the only trained predictors this project released."
 }
