@@ -43,6 +43,9 @@ RUNBOX = REPO / "runs_manifest/m6_run_box_identity.json"
 TEXT_SUFFIXES = {".md", ".py", ".txt", ".json", ".jsonl", ".yml", ".yaml", ".sh", ".toml", ".cfg"}
 #: A quad on one of these lines is a package version, not a host.
 VERSION_CONTEXT = re.compile(r"version\s*=|\.whl|\.tar\.gz|files\.pythonhosted\.org|upload-time")
+#: An ACTUAL git-grep invocation: the list form with flags, or the shell form with a flag. Prose
+#: that merely names ``git grep`` — which every explanation of the defect must — is not a usage.
+INVOCATION = re.compile(r'"git"\s*,\s*"grep"|\bgit\s+grep\s+-')
 
 
 #: THIS FILE IS EXEMPT FROM ITS OWN SWEEP, and that is the sixth instance of the class in
@@ -164,19 +167,39 @@ def test_a_word_boundary_in_git_grep_is_NOT_PORTABLE() -> None:
 def test_no_test_or_script_passes_a_word_boundary_to_git_grep() -> None:
     """Nothing in the repo may inherit the defect. Measured: no git grep exists here at all.
 
-    This file is exempt: its docstring QUOTES the broken pattern in order to explain it, which is
-    a record and not a usage — the reference-vs-subject distinction in ``tests/claim_site.py``.
+    ★ JUDGED PER PARAGRAPH, BECAUSE THIS FIRED ON A DESCRIPTION OF THE DEFECT. Explaining the
+    trap requires naming it, so every document that teaches it contains both ``git grep`` and
+    ``\\b`` — and the first version of this check flagged ``tests/claim_site.py`` for saying so.
+    That is Mode B in ``tests/claim_site.py``'s own taxonomy, on the file that defines the
+    taxonomy. A mention whose paragraph retires or describes it is a record, not a usage.
     """
     offenders = []
     for f in _tracked_text_files():
         if f.suffix not in {".py", ".sh"}:
             continue
         text = f.read_text(errors="ignore")
-        for m in re.finditer(r"git[\"'\s,\]]+grep", text):
+        for m in re.finditer(INVOCATION, text):
             window = text[m.start() : m.start() + 300]
             if r"\b" in window:
                 offenders.append(f"{f.relative_to(REPO)}: {window[:90]}")
     assert not offenders, offenders
+
+
+@pytest.mark.parametrize(
+    ("src", "is_invocation"),
+    [
+        ('run(["git", "grep", "-E", r"\\bnumpy\\b"])', True),
+        ("git grep -nE '\\bnumpy\\b' -- x", True),
+        ("the ``git grep``/``\\b`` defect: a pattern that cannot match", False),
+        ("git grep's ERE has no \\b, so the pattern never matches", False),
+    ],
+)
+def test_the_invocation_pattern_tells_a_command_from_prose(src, is_invocation) -> None:
+    """FIXTURE DISCRIMINATION, and the reason the check is shaped this way. Teaching this trap
+    requires NAMING it, so every document that explains it contains both ``git grep`` and ``\\b``.
+    A proximity check flagged ``tests/claim_site.py`` for explaining the defect it defines. What
+    separates a command from prose is not distance — it is the flags and the list form."""
+    assert bool(re.search(INVOCATION, src)) is is_invocation, src
 
 
 # ── the sweep itself ──────────────────────────────────────────────────────────────────────────
