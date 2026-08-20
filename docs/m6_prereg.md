@@ -419,6 +419,95 @@ three stacked judgment calls = an unlimited re-run license):**
     failure to carry a number's qualification with the number. Unguarded — the new card guard does
     not cover the canary figures. Routed to the builder; not edited by me.
 
+  - **★★ THE TIER 1b / 2 / 3 CORRECTIONS, CHECKED AGAINST THE RECEIPTS: NO MEASURED VALUE MOVED IN
+    ANY OF THEM.** Every one is a scope, a qualifier, a default or a document made to say what was
+    already true. The tier-1 figures were recomputed here in an earlier pass and none had shifted;
+    tier 3's one production change to a numeric path is checked below and did not shift anything
+    either. **That is the signature of a correct correction pass** — the readings stand and only
+    their reachability changed — and it is the reason the class is worth naming rather than
+    treating each instance as a separate mistake.
+  - **★★ THE PRODUCTION NaN, AND THE ANSWER TO THE ONLY QUESTION THAT MATTERED: NO PUBLISHED
+    NUMBER DEPENDED ON THE OLD BEHAVIOUR.** `_clip` was `min(HI, max(LO, x))`; every comparison
+    against NaN is False, so a non-finite value became **exactly −5.0** and the finiteness guard at
+    the end of feature computation could not fire against it, because −5.0 is finite. **The
+    structural half first, because it is half an answer and reads like a whole one.** The nine
+    z-scored dims (0, 1, 5, 6, 9, 10, 11, 14, 15) took the broken path; the seven bounded dims
+    (2, 3, 4, 7, 8, 12, 13) use `np.clip`, which propagates NaN and would have raised. **Dims 7 and
+    8 are bounded** — so `TFI` and `signed_count_imbalance`, which carry the entire 97.3%
+    *numerator*, were never exposed at all. **But its denominator was**: dims 9, 10 and 11 are
+    z-scored, and so are four of the seven OHLCV reconstruction dims — including the return channel
+    and **both volume channels**, which is exactly what the "magnitude dims co-vary with volume"
+    argument rests on. **The code path therefore does not close this. The scan does**, and that is
+    why the scan is load-bearing rather than confirmatory.
+  - **SO IT WAS RE-RUN HERE INDEPENDENTLY, ON THE LAKE'S OWN PERSISTED VALUES.** The lake stores
+    the normalized `x_*` columns, so a laundering event is durable and directly checkable rather
+    than transient. The mechanism makes the test a **proof rather than a sample**: `mu = mu +
+    alpha·(f−mu)` cannot recover from a non-finite `f`, so any poisoning necessarily emits −5.0 for
+    every live bar to the **end of its segment**. The signature is therefore a *trailing* run, not
+    a run anywhere — a distinction that matters, since ordinary quiet-period clipping reaches 265
+    consecutive bars mid-segment while the longest **trailing** run in the entire lake is **2**.
+    Measured over all 200 symbols and **304,625,181 bars**, matching the pinned count exactly:
+    **zero non-finite values persist anywhere**, and **no symbol in the 40-symbol draw carries a
+    trailing run at all**. Two bars against segments up to 1,445,760 is not an ambiguous margin.
+  - **THE CONCLUSION REPRODUCES; TWO OF ITS PARTICULARS DO NOT, AND THE SCAN HAS NO RECEIPT.**
+    Exactly two symbols in the lake carry any trailing run: **HOTUSDT** (2 bars, dims 9 and 10) and
+    **BNXUSDT** (1 bar, dims 5 and 6). Neither is in the draw, so the finding stands. But the
+    second symbol was reported as YFIIUSDT, which measures **0**, and the segment length 72,378
+    matches **no segment in the lake** (13,503 is real, and belongs to the symbol with no trailing
+    run). **A load-bearing scan over 304 million bars exists only as prose in a commit message** —
+    no artifact, nothing to re-run, and the two particulars that drifted are exactly what a receipt
+    would have pinned. The conclusion is now independently reproduced, which is better than a
+    receipt; the receipt is still owed.
+  - **★ A NUMBER TRAVELLING OUTWARD CAN GAIN FALSE PRECISION AS EASILY AS IT CAN SHED SCOPE, AND
+    NEITHER DIRECTION WAS GUARDED.** The audits found scope shedding: correct qualification here,
+    bare number on the public surface. The opposite motion was running at the same time and nobody
+    was looking for it — *"~1.15 nats"* in an internal document became **"1.151 nats"** on two
+    reader-facing pages, a tilde dropped and a third decimal invented, for a quantity no receipt
+    contains. **The rule, stated so it covers both:** a number is only as qualified and only as
+    precise as its receipt, and travel is where both are lost. A guard that checks scope will not
+    see precision inflation, and a guard that checks precision will not see scope loss.
+  - **AND THE TILDE HAD A GUARD, WHICH IS THE PART THAT MATTERS.** It required the tilde to appear
+    *somewhere in the file* — and was satisfied by the sentence **explaining** the tilde. **The
+    instrument that existed to preserve the qualification was discharged by prose about the
+    qualification.** That is not a near miss; it is the guard class below, met in the wild.
+  - **★★ THE GUARD CLASS: FIVE INSTANCES, ONE ROOT CAUSE, TWO OPPOSITE FAILURE MODES — AND THE
+    TAXONOMY MATTERS MORE THAN THE COUNT.** All five judged a claim by the whole document rather
+    than by its own site. But they did not fail in the same direction, and a record naming only one
+    would leave the other in place. **Two passed vacuously** (`assert GOOD in text` satisfied by a
+    page that merely discusses the topic): the tilde above, and `cell 4` satisfied by an unrelated
+    neighbouring sentence. **Three fired wrongly** (`assert BAD not in text` firing on the fix,
+    because every correction NAMES what it retires): the `weights_only=False` warning, the line
+    quoting *"the spec wins"* as superseded, and the docstring quoting a claim in order to call it
+    false. **A reader who repairs only the false positives leaves two checks that cannot fail.**
+    One remedy covers both, correctly: judge a mention by its own paragraph or its own code block,
+    never by the document — a mention whose own paragraph retires it is a record, not a claim.
+  - **★ THE PROVENANCE STAMP MAKES A CONCURRENT COMMIT LOOK LIKE A MIXED ENVIRONMENT.**
+    `provenance` reads `git rev-parse HEAD` live at stamp time, and `git_commit` is an IDENTITY
+    key, so a fan-out where shards disagree is a refusal — correctly. But a full suite runs about
+    eleven minutes, session-scoped fixtures stamp early and later tests stamp fresh, so **a commit
+    landing mid-run gives two groups two different commits and the verdict refuses to assemble.**
+    It happened here: a suite started before a commit and finished after it went red on artifacts
+    stamped with two SHAs, and the same test passes in isolation once HEAD holds still. **Nothing
+    was wrong with the tree and the guard did exactly its job** — a concurrent commit manufactured
+    the mixed-environment condition out of nothing. This is the two-seats-one-branch hazard already
+    recorded here, surfacing in the test suite rather than in the history. **The working rule:
+    start a suite after committing, never before.**
+
+  - **★ AND ONE PUBLISHED LIMITATION QUOTES THE SECONDARY BASIS FOR THE NUMBER THAT IS THE POINT.**
+    The A2 row states the \|return\| ACF at lag 60 as **0.20**. That is the **all-200** mean
+    (0.2097) — the artifact's own `scope` names the **pinned 40** as `primary_set`, *"the symbols
+    the headline IR is computed on, which is the comparison the embargo defends"*, and calls the
+    200 an also-measured robustness check. On the primary basis the value is **0.2323**, and the
+    **worst symbol is 0.3604** — which appears on no reader-facing surface, in the row whose entire
+    point is that this ACF is large. **The asymmetry inside one sentence is the finding:** the
+    signed channel is quoted across *both* bases as a range (0.0067–0.0072), where the margin is
+    comfortable; the \|return\| channel is quoted on the smaller basis alone, where the number is
+    the problem. The companion figure runs the same way — *"0.15 at lag 240"* against a measured
+    0.1597, which is 0.16 to two places, with an all-200 worst of 0.3315. **Both understatements
+    point the same direction, toward a milder limitation.** The artifact itself records
+    `premise_supported_for_ABS_returns = False`. Routed to the builder with the measured values;
+    the file is theirs and I did not touch it.
+
 - **v1.6.50 (2026-08-19, THE COMMIT MAP APPLIED — 36 POINTERS RE-STAMPED, 6 SUBJECTS LEFT, AND THE
   POINTER/SUBJECT RULE TRANSFERRED FROM FILENAMES TO SHAs UNCHANGED.)**
   - **36 OCCURRENCES RE-STAMPED FROM THE MAP, NEVER FROM A PATTERN**, across 19 in-map tokens: 16
