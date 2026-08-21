@@ -263,10 +263,27 @@ existing label is redefined underneath a row that already used it.)*
 | D39 | The IP sweep could not match on the platform that ran it | HIGH | SELF | closed `93afd34` / `d3d43cb` |
 | D40 | A COUNT published under a RUN's name in a tracked receipt | MEDIUM | SELF | closed `937117b` |
 | D41 | The model card claimed 16 provenance keys; the units carry 12 | MEDIUM | AUDIT-4 | closed `ec5e539` |
-| D42 | The 200-symbol lake presented as what the model trained on | CRITICAL | AUDIT-4 | card closed `ec5e539`; paper OPEN |
+| D42 | The 200-symbol lake presented as what the model trained on | CRITICAL | AUDIT-4 | closed — card `ec5e539`, paper `7d2d6c1` (manuscript repo) |
 | D43 | One figure caption, two bases under a single label | MEDIUM | SELF | closed by the writer |
 | D44 | Paper §8 stated the 16-key definition and was silent on the release | MEDIUM | SELF | closed by the writer |
 | D45 | A correct published figure was replaced with a less precise one | CRITICAL | SELF | closed `2a2abef` |
+
+**Status of the 45, and D10 is not one of the closed ones.** Forty-four are CLOSED, each against a
+named commit. **D10 is MITIGATED AND CANNOT BE CLOSED**, and that distinction is the reason it is
+recorded separately rather than counted with the rest: capacity eviction is not a bug in the code,
+it is a property of the reconstruction objective — MSE allocates capacity by variance *and*
+covariance, so an independent low-variance channel is always the worst per-bit investment
+available. `PINNED_MICRO_POINT_WEIGHT = 3.0` (`39be8ba`) reduces it; nothing removes it, and a
+future commit claiming to "fix D10" would be claiming to have repealed the objective. It is
+**the result**, not a defect awaiting repair — which is why the mechanism finding is the paper's
+primary and not its limitation section.
+
+D42 was the last row carrying an open half. It closed on both surfaces: the model card at
+`ec5e539` in this repository, and `sections/05_data.tex` at `7d2d6c1` in the manuscript's own
+repository, where "the other 160 instruments … are lake breadth and training data" became "the
+other 160 are lake breadth and nothing more: the units were trained on *the same 40 symbols they
+are scored on*". Verified by reading the sentence and by re-running
+`scripts/m6_paper_claim_audit.py`, whose `trained-on-the-lake` rule now returns 0 findings.
 
 ### D37 — a NaN became -5.0, and that disabled the guard built to catch it
 

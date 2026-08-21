@@ -64,12 +64,18 @@ RULES = (
     (
         "trained-on-the-lake",
         r"\b(other\s+)?160\b|\b200\b[^.]{0,60}(instrument|symbol)",
-        r"training data|trained on",
+        r"(?:training data|trained on)(?![^.]*?(?:same \$?40|identical to the scored|"
+        r"never trained|40 symbols they are scored))",
         "forbid",
         "The units were trained on the SAME 40 symbols they were scored on — "
         "draw.drawn_by_symbol_stage1 is 40 in all three units and equals m6_mde_inputs "
         "symbols_sampled exactly. The other 160 instruments were never trained on. Saying they "
-        "are 'training data' overstates what the model saw by 5x.",
+        "are 'training data' overstates what the model saw by 5x. "
+        "\u2605 THE NEGATIVE LOOKAHEAD IS LOAD-BEARING: a CORRECT statement of this fact must "
+        "name BOTH halves — '160' and 'trained on' — so a rule matching the two together fires on "
+        "the FIX. It did, on the writer's correction at the paper repo's 7d2d6c1, which is the "
+        "eighth instance of the class in tests/claim_site.py. A sentence that asserts the "
+        "40-symbol identity is the fix, not the defect.",
     ),
     (
         "magnitude-range-0.8975",
